@@ -1318,11 +1318,11 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 
 	RAY_MASTER_MODE_PHYLOGENY_MAIN=core->allocateMasterModeHandle(m_plugin);
 	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,"RAY_MASTER_MODE_PHYLOGENY_MAIN");
-	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,&m_adapter_RAY_MASTER_MODE_PHYLOGENY_MAIN);
+	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,__GetAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN));
 
 	RAY_SLAVE_MODE_PHYLOGENY_MAIN=core->allocateSlaveModeHandle(m_plugin);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,"RAY_SLAVE_MODE_PHYLOGENY_MAIN");
-	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,&m_adapter_RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,__GetAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN));
 
 	RAY_MPI_TAG_PHYLOGENY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_PHYLOGENY_MAIN,"RAY_MPI_TAG_PHYLOGENY_MAIN");
@@ -1335,7 +1335,7 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_TOUCH_TAXON=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,"RAY_MPI_TAG_TOUCH_TAXON");
-	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,&m_adapter_RAY_MPI_TAG_TOUCH_TAXON);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,__GetAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON));
 
 	RAY_MPI_TAG_TOUCH_TAXON_REPLY=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TOUCH_TAXON_REPLY,"RAY_MPI_TAG_TOUCH_TAXON_REPLY");

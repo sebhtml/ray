@@ -1087,15 +1087,15 @@ void GenomeNeighbourhood::registerPlugin(ComputeCore*core){
 	
 	RAY_MASTER_MODE_NEIGHBOURHOOD=core->allocateMasterModeHandle(m_plugin);
 	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,"RAY_MASTER_MODE_NEIGHBOURHOOD");
-	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,&m_adapter_RAY_MASTER_MODE_NEIGHBOURHOOD);
+	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_NEIGHBOURHOOD,__GetAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD));
 
 	RAY_SLAVE_MODE_NEIGHBOURHOOD=core->allocateSlaveModeHandle(m_plugin);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_NEIGHBOURHOOD,"RAY_SLAVE_MODE_NEIGHBOURHOOD");
-	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_NEIGHBOURHOOD,&m_adapter_RAY_SLAVE_MODE_NEIGHBOURHOOD);
+	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_NEIGHBOURHOOD,__GetAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD));
 
 	RAY_MPI_TAG_NEIGHBOURHOOD_DATA=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,"RAY_MPI_TAG_NEIGHBOURHOOD_DATA");
-	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,&m_adapter_RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD_DATA,__GetAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA));
 
 	RAY_MPI_TAG_NEIGHBOURHOOD=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NEIGHBOURHOOD,"RAY_MPI_TAG_NEIGHBOURHOOD");

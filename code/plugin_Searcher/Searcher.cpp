@@ -3715,51 +3715,51 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,__GetAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,"RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
 
 	RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,__GetAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,"RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES");
 
 	RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,&m_adapter_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,__GetAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS,"RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS");
 
 	RAY_MASTER_MODE_ADD_COLORS=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_ADD_COLORS,&m_adapter_RAY_MASTER_MODE_ADD_COLORS);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_ADD_COLORS,__GetAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_ADD_COLORS,"RAY_MASTER_MODE_ADD_COLORS");
 
 	RAY_MASTER_MODE_SEARCHER_CLOSE=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,&m_adapter_RAY_MASTER_MODE_SEARCHER_CLOSE);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,__GetAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_SEARCHER_CLOSE,"RAY_MASTER_MODE_SEARCHER_CLOSE");
 
 	RAY_SLAVE_MODE_ADD_COLORS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ADD_COLORS,&m_adapter_RAY_SLAVE_MODE_ADD_COLORS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ADD_COLORS,__GetAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_ADD_COLORS,"RAY_SLAVE_MODE_ADD_COLORS");
 
 	RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,__GetAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES,"RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES");
 
 	RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,&m_adapter_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,__GetAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES,"RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES");
 
 	RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,&m_adapter_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,__GetAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS,"RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS");
 
 	RAY_SLAVE_MODE_SEARCHER_CLOSE=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEARCHER_CLOSE,&m_adapter_RAY_SLAVE_MODE_SEARCHER_CLOSE);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEARCHER_CLOSE,__GetAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEARCHER_CLOSE,"RAY_SLAVE_MODE_SEARCHER_CLOSE");
 
 	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,&m_adapter_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,__GetAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS,"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS");
 
 	RAY_MPI_TAG_ADD_KMER_COLOR=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ADD_KMER_COLOR,&m_adapter_RAY_MPI_TAG_ADD_KMER_COLOR);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ADD_KMER_COLOR,__GetAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_KMER_COLOR,"RAY_MPI_TAG_ADD_KMER_COLOR");
 
 	RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS=core->allocateMessageTagHandle(plugin);
@@ -3824,7 +3824,7 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GRAPH_COUNTS,"RAY_MPI_TAG_GRAPH_COUNTS");
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,&m_adapter_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,__GetAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY");
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY=core->allocateMessageTagHandle(plugin);
@@ -3840,11 +3840,11 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_KMER_COLOR_REPLY,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
 
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,&m_adapter_RAY_MPI_TAG_CONTIG_IDENTIFICATION);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,__GetAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,"RAY_MPI_TAG_CONTIG_IDENTIFICATION");
 
 	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS=core->allocateMessageTagHandle(m_plugin);
-	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,&m_adapter_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,__GetAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS));
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS");
 	
 	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY=core->allocateMessageTagHandle(m_plugin);

@@ -2499,11 +2499,11 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_EXTENSION=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,&m_adapter_RAY_SLAVE_MODE_EXTENSION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTENSION,__GetAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTENSION,"RAY_SLAVE_MODE_EXTENSION");
 
 	RAY_MPI_TAG_ADD_GRAPH_PATH=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ADD_GRAPH_PATH,&m_adapter_RAY_MPI_TAG_ADD_GRAPH_PATH);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ADD_GRAPH_PATH,__GetAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_GRAPH_PATH,"RAY_MPI_TAG_ADD_GRAPH_PATH");
 
 	RAY_MPI_TAG_CONTIG_INFO_REPLY=core->allocateMessageTagHandle(plugin);
@@ -2515,11 +2515,11 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	m_switchMan=core->getSwitchMan();
 
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED, __GetAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED,"RAY_MPI_TAG_ASK_IS_ASSEMBLED");
 
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, &m_adapter_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, __GetAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 
 

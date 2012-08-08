@@ -381,7 +381,7 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, &m_adapter_RAY_SLAVE_MODE_EXTRACT_VERTICES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, __GetAdapter(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
 
 	RAY_MPI_TAG_WRITE_KMERS=core->allocateMessageTagHandle(plugin);

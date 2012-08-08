@@ -219,7 +219,7 @@ void CoverageGatherer::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION, &m_adapter_RAY_SLAVE_MODE_SEND_DISTRIBUTION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION, __GetAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
 
 	RAY_MPI_TAG_COVERAGE_DATA_REPLY=core->allocateMessageTagHandle(plugin);

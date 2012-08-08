@@ -202,7 +202,7 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_FUSION=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FUSION, &m_adapter_RAY_SLAVE_MODE_FUSION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_FUSION, __GetAdapter(FusionTaskCreator,RAY_SLAVE_MODE_FUSION));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_FUSION,"RAY_SLAVE_MODE_FUSION");
 
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->allocateMessageTagHandle(plugin);

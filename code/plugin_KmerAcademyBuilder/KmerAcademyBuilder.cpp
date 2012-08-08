@@ -266,7 +266,7 @@ void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, &m_adapter_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, __GetAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
 
 	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->allocateMessageTagHandle(plugin);

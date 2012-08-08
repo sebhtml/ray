@@ -1449,26 +1449,26 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 
 	RAY_MASTER_MODE_ONTOLOGY_MAIN=core->allocateMasterModeHandle(m_plugin);
 	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_ONTOLOGY_MAIN,"RAY_MASTER_MODE_ONTOLOGY_MAIN");
-	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_ONTOLOGY_MAIN,&m_adapter_RAY_MASTER_MODE_ONTOLOGY_MAIN);
+	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_ONTOLOGY_MAIN,__GetAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN));
 
 	RAY_SLAVE_MODE_ONTOLOGY_MAIN=core->allocateSlaveModeHandle(m_plugin);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_ONTOLOGY_MAIN,"RAY_SLAVE_MODE_ONTOLOGY_MAIN");
-	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_ONTOLOGY_MAIN,&m_adapter_RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_ONTOLOGY_MAIN,__GetAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN));
 
 	RAY_MPI_TAG_ONTOLOGY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_ONTOLOGY_MAIN,"RAY_MPI_TAG_ONTOLOGY_MAIN");
 
 	RAY_MPI_TAG_SYNCHRONIZATION_DONE=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZATION_DONE,"RAY_MPI_TAG_SYNCHRONIZATION_DONE");
-	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZATION_DONE,&m_adapter_RAY_MPI_TAG_SYNCHRONIZATION_DONE);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZATION_DONE,__GetAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE));
 
 	RAY_MPI_TAG_SYNCHRONIZE_TERMS=m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,"RAY_MPI_TAG_SYNCHRONIZE_TERMS");
-	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,&m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS,__GetAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS));
 
 	RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY=m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY,"RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY");
-	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY,&m_adapter_RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+	m_core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY,__GetAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY));
 
 
 

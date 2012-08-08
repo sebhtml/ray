@@ -655,7 +655,7 @@ void FusionData::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, &m_adapter_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS, __GetAdapter(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
 }
 

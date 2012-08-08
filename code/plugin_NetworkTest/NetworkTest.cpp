@@ -371,11 +371,11 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_TEST_NETWORK=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_TEST_NETWORK, &m_adapter_RAY_SLAVE_MODE_TEST_NETWORK);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_TEST_NETWORK, __GetAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_TEST_NETWORK,"RAY_SLAVE_MODE_TEST_NETWORK");
 
 	RAY_MASTER_MODE_TEST_NETWORK=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, &m_adapter_RAY_MASTER_MODE_TEST_NETWORK);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, __GetAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_TEST_NETWORK,"RAY_MASTER_MODE_TEST_NETWORK");
 
 	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin);

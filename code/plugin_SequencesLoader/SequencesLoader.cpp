@@ -368,7 +368,7 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, &m_adapter_RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, __GetAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
 }
 

@@ -478,15 +478,15 @@ void Library::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, &m_adapter_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION, __GetAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION,"RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION");
 
 	RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, &m_adapter_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES, __GetAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES,"RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES");
 
 	RAY_MASTER_MODE_UPDATE_DISTANCES=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES, &m_adapter_RAY_MASTER_MODE_UPDATE_DISTANCES);
+	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES, __GetAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,"RAY_MASTER_MODE_UPDATE_DISTANCES");
 
 	RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY=core->allocateMessageTagHandle(plugin);
