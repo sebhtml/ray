@@ -139,7 +139,11 @@ void Parameters::loadCommandsFromFile(char*file){
 
 		f.read(buffer,__BLOCK_SIZE);
 
-		content<<buffer;
+		int i=0;
+		int characterRead=f.gcount();
+
+		while(i<characterRead)
+			content<<buffer[i++];
 	}
 	f.close();
 
