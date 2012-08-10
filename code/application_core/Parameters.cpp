@@ -23,7 +23,7 @@
  * TODO: add option -minimumScaffoldLength
  */
 
-#define __DEFAULT_BUCKETS 262144
+#define __DEFAULT_BUCKETS 1048576
 #define __DEFAULT_LOAD_FACTOR_THRESHOLD 0.75 /* Like Java HashMap */
 #define __DEFAULT_BUCKETS_PER_GROUP 64
 
