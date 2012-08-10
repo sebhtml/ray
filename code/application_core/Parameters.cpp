@@ -236,50 +236,11 @@ void Parameters::parseCommands(){
 
 	m_originalCommands=m_commands;
 
-	/* shuffle randomly arguments */
+	#if 0
 
-	vector<vector<string> > opCodes;
-	int i=0;
-	while(i<(int)m_commands.size()){
-		int j=i;
-		while(j+1<(int)m_commands.size() && m_commands[j+1][0]!='-'){
-			j++;
-		}
-		vector<string> opCode;
-		opCode.push_back(m_commands[i]);
-		for(int k=i+1;k<=j;k++){
-			opCode.push_back(m_commands[k]);
-		}
-		opCodes.push_back(opCode);
-		i=j+1;
-	}
+	__shuffleOperationCodes();
 
-	vector<int> indexes;
-	getIndexes(opCodes.size(),&indexes);
-
-	vector<string> newCommands;
-
-	for(int i=0;i<(int)indexes.size();i++){
-		for(int j=0;j<(int)opCodes[indexes[i]].size();j++){
-			newCommands.push_back(opCodes[indexes[i]][j]);
-		}
-	}
-
-	#ifdef ASSERT
-	assert(newCommands.size()==m_commands.size());
 	#endif
-
-	m_commands=newCommands;
-	newCommands.clear();
-	opCodes.clear();
-
-	if(getRank() == MASTER_RANK){
-		cout<<"Rank 0: Shuffled opcodes"<<endl;
-		for(int i=0;i<(int)m_commands.size();i++){
-			cout<<" "<<m_commands[i]<<" \\"<<endl;
-		}
-		cout<<endl;
-	}
 
 	set<string> singleReadsCommands;
 	singleReadsCommands.insert("-s");
@@ -933,18 +894,28 @@ void Parameters::parseCommands(){
 }
 
 void Parameters::writeCommandFile(){
+	cout<<endl;
+	cout<<"Ray command: "<<endl;
+
 	ostringstream commandFile;
 	commandFile<<getPrefix()<<"RayCommand.txt";
 	ofstream f(commandFile.str().c_str());
+
 	f<<"mpiexec -n "<<getSize()<<" Ray \\"<<endl;
+	cout<<"mpiexec -n "<<getSize()<<" Ray \\"<<endl;
+
 	for(int i=0;i<(int)m_originalCommands.size();i++){
 		if(i!=(int)m_originalCommands.size()-1){
 			f<<" "<<m_originalCommands[i]<<" \\"<<endl;
+			cout<<" "<<m_originalCommands[i]<<" \\"<<endl;
 		}else{
 			f<<" "<<m_originalCommands[i]<<endl;
+			cout<<" "<<m_originalCommands[i]<<endl;
 		}
 	}
 	f.close();
+	cout<<endl;
+
 	cout<<"Rank "<<MASTER_RANK<<" wrote "<<commandFile.str()<<endl;
 	cout<<endl;
 
@@ -2046,3 +2017,50 @@ int Parameters::getConfigurationInteger(const char*string,int offset){
 	return 0;
 }
 
+void Parameters::__shuffleOperationCodes(){
+	/* shuffle randomly arguments */
+
+	vector<vector<string> > opCodes;
+	int i=0;
+	while(i<(int)m_commands.size()){
+		int j=i;
+		while(j+1<(int)m_commands.size() && m_commands[j+1][0]!='-'){
+			j++;
+		}
+		vector<string> opCode;
+		opCode.push_back(m_commands[i]);
+		for(int k=i+1;k<=j;k++){
+			opCode.push_back(m_commands[k]);
+		}
+		opCodes.push_back(opCode);
+		i=j+1;
+	}
+
+	vector<int> indexes;
+	getIndexes(opCodes.size(),&indexes);
+
+	vector<string> newCommands;
+
+	for(int i=0;i<(int)indexes.size();i++){
+		for(int j=0;j<(int)opCodes[indexes[i]].size();j++){
+			newCommands.push_back(opCodes[indexes[i]][j]);
+		}
+	}
+
+	#ifdef ASSERT
+	assert(newCommands.size()==m_commands.size());
+	#endif
+
+	m_commands=newCommands;
+	newCommands.clear();
+	opCodes.clear();
+
+	if(getRank() == MASTER_RANK){
+		cout<<"Rank 0: Shuffled opcodes"<<endl;
+		for(int i=0;i<(int)m_commands.size();i++){
+			cout<<" "<<m_commands[i]<<" \\"<<endl;
+		}
+		cout<<endl;
+	}
+
+}

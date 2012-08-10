@@ -39,6 +39,7 @@ using namespace std;
  */
 class Parameters{
 	
+
 	string m_configurationContent;
 
 	void writeConfigurationFile();
@@ -129,6 +130,8 @@ class Parameters{
 
 	string m_checkpointDirectory;
 	bool m_hasCheckpointDirectory;
+
+	void __shuffleOperationCodes();
 
 public:
 	Parameters();
