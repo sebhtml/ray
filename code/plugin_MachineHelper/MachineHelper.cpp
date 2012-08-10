@@ -445,9 +445,16 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		cout<<"Rank "<<getRank()<<" wrote "<<edgeFile.str()<<endl;
 	
 	}else if(m_coverageRank==m_numberOfRanksDone){
-		Message aMessage(NULL,0,m_coverageRank,RAY_MPI_TAG_WRITE_KMERS,getRank());
-		m_outbox->push_back(aMessage);
-		m_coverageRank++;
+
+		if(m_parameters->writeKmers()){
+			// do it in serial mode because we need to write a parallel file
+			m_switchMan->sendEmptyMessage(m_outbox,getRank(),m_coverageRank,RAY_MPI_TAG_WRITE_KMERS);
+			m_coverageRank ++ ;
+		}else{
+			// do it in parallel
+			m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_WRITE_KMERS);
+			m_coverageRank+=m_parameters->getSize();
+		}
 	}
 }
 
