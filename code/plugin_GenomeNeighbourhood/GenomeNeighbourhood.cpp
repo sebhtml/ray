@@ -612,51 +612,19 @@ all other cases are invalid.
 
 		int depth=m_finalList[i].getDepth();
 
-		bool valid=false;
+		bool valid=true;
 
 		int windows=(0x00000001 << 0x00000002);
 
 		int width1=length1/windows;
 		int width2=length2/windows;
 
-/*
-                           *        *
- -------------------------->        --------------------------->
-*/
-		if(strand1=='F' && progression1 > length1-1-width1
-		&& strand2=='F' && progression2 < width2){
+		/*The pair is considered valid unless the similarity is after the first 1/4 and before the last 3/4*/
 
-			valid=true; // case 1.
-
-/*
- 
- ------------------------->     +
-                                <-----------------------------
-*/
-		}else if(strand1=='F' && progression1 > length1-1-width1
-		&& strand2=='R' && progression2 > length2-1-width2){
-
-			valid=true;// case 2.
-
-/*
- 
- <------------------------
-                              ------------------------------------>
-*/
-		}else if(strand1=='R' && progression1 < width1
-		&& strand2=='F' && progression2 < width2){
-
-			valid=true; // case 3.
-
-/*
- <-------------------------------
-                                   <-----------------------------
-*/
-		}else if(strand1=='R' && progression1 < width1
-		&& strand2=='R' && progression2 > length2-1 - width2){
-
-			valid=true; // case 4.
+		if((progression1>width1 && progression1<(length1-width1-1)) || (progression2>width2 && progression2<(length2-width2-1))){
+			valid=false;
 		}
+
 
 		operationBuffer<<"contig-"<<contig1<<"	"<<length1<<"	"<<strand1<<"	"<<progression1<<"";
 		operationBuffer<<"	contig-"<<contig2<<"	"<<length2<<"	"<<strand2<<"	"<<progression2<<"";
