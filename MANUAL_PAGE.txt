@@ -31,9 +31,10 @@ DESCRIPTION:
 
   Using a configuration file
 
-  Ray can be launched with
-  mpiexec -n 16 Ray Ray.conf
-  The configuration file can include comments (starting with #).
+    Ray can be launched with
+    mpiexec -n 16 Ray Ray.conf
+    The configuration file can include comments (starting with #).
+
   K-mer length
 
        -k kmerLength
@@ -55,11 +56,15 @@ DESCRIPTION:
        -s sequenceFile
               Provides a file containing single-end reads.
 
-  Distributed storage engine
+  Distributed storage engine (all these values are for each MPI rank)
+
+       -bloom-filter-bits bits
+              Sets the number of bits for the Bloom filter
+              Default is 500000000 bits, 0 bits disables the Bloom filter.
 
        -hash-table-buckets buckets
               Sets the initial number of buckets. Must be a power of 2 !
-              Default value: 262144
+              Default value: 1048576
 
        -hash-table-buckets-per-group buckets
               Sets the number of buckets per group for sparse storage

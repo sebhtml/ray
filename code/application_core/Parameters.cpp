@@ -1352,9 +1352,16 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
-	cout<<"  Distributed storage engine"<<endl;
+	cout<<"  Distributed storage engine (all these values are for each MPI rank)"<<endl;
 	cout<<endl;
+
 	ostringstream text;
+	showOption("-bloom-filter-bits bits","Sets the number of bits for the Bloom filter");
+	text<<"Default is "<<__BLOOM_DEFAULT_BITS<<" bits, 0 bits disables the Bloom filter.";
+	showOptionDescription(text.str());
+	cout<<endl;
+	
+	text.str("");
 	text<<"Default value: "<<__DEFAULT_BUCKETS;
 	showOption("-hash-table-buckets buckets","Sets the initial number of buckets. Must be a power of 2 !");
 	showOptionDescription(text.str());
@@ -2014,7 +2021,7 @@ const char*Parameters::getConfigurationString(const char*string,int offset){
 }
 
 
-int Parameters::getConfigurationInteger(const char*string,int offset){
+uint64_t Parameters::getConfigurationInteger(const char*string,int offset){
 	#ifdef ASSERT
 	assert(hasConfigurationOption(string,offset+1));
 	#endif
@@ -2024,7 +2031,7 @@ int Parameters::getConfigurationInteger(const char*string,int offset){
 
 			istringstream buffer(m_commands[i+1]);
 
-			int value=-1;
+			uint64_t value=-1;
 			buffer>>value;
 
 			return value;

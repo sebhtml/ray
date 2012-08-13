@@ -771,7 +771,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 	m_subgraph->getKmerAcademy()->destructor();
-	m_bloomFilter.destructor();
+
+	if(m_bloomBits>0)
+		m_bloomFilter.destructor();
 
 	m_subgraph->completeResizing();
 
@@ -848,7 +850,16 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*message){
-	m_bloomFilter.constructor();
+
+	// with 4 000 000 kmers, the ratio is objects/bits is 16.
+	// with 0.000574
+	m_bloomBits=__BLOOM_DEFAULT_BITS; 
+
+	if(m_parameters->hasConfigurationOption("-bloom-filter-bits",1))
+		m_bloomBits=m_parameters->getConfigurationInteger("-bloom-filter-bits",0);
+
+	if(m_bloomBits>0)
+		m_bloomFilter.constructor(m_bloomBits);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
@@ -2278,7 +2289,7 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 			m_subgraph->getKmerAcademy()->printStatistics();
 		}
 
-		if(!m_bloomFilter.hasValue(&l)){
+		if(m_bloomBits>0 && !m_bloomFilter.hasValue(&l)){
 /*
 			cout<<"inserting in Bloom filter: "<<endl;
 			l.print();

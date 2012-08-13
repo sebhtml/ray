@@ -27,7 +27,7 @@
 #endif
 using namespace std;
 
-void BloomFilter::constructor(){
+void BloomFilter::constructor(uint64_t numberOfBits){
 	/*
 http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
 
@@ -39,7 +39,24 @@ k = 8
 false positive rate = 0.00846 = 0.846%
 */
 
-	m_bits=500000000; /* 500 000 000 */
+	m_bits=numberOfBits; /* 500 000 000 */
+
+	#ifdef ASSERT
+	assert(numberOfBits>0);
+	#endif
+
+	while(m_bits%64!=0)
+		m_bits++;
+
+	if(m_bits!=numberOfBits){
+		cout<<"Warning: the number of bits must be a multiple of 64."<<endl;
+		cout<<"Warning: adjusted the number of bits to "<<m_bits<<" in the Bloom filter"<<endl;
+	}
+
+	#ifdef ASSERT
+	assert(m_bits%64==0);
+	#endif
+
 	m_hashFunctions=0;
 
 /**
@@ -70,11 +87,11 @@ Basically, these are used in XOR hash functions below...
 	assert(m_bits % 64 == 0);
 	#endif
 
-	int requiredBytes=m_bits/8;
-	int required8Bytes=requiredBytes/8;
+	uint64_t requiredBytes=m_bits/8;
+	uint64_t required8Bytes=requiredBytes/8;
 	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
 
-	cout<<"[BloomFilter] allocated "<<requiredBytes<<" bytes for table"<<endl;
+	cout<<"[BloomFilter] allocated "<<requiredBytes<<" bytes for table with "<<m_bits<<" bits"<<endl;
 	cout<<"[BloomFilter] hash numbers:";
 	for(int i=0;i<m_hashFunctions;i++){
 		cout<<hex<<" "<<m_hashNumbers[i];
@@ -86,18 +103,19 @@ Basically, these are used in XOR hash functions below...
 	assert(m_bitmap != NULL);
 	#endif
 
-	for(int i=0;i<required8Bytes;i++){
+	for(uint64_t i=0;i<required8Bytes;i++){
 		m_bitmap[i]=0;
 	}
 }
 
 bool BloomFilter::hasValue(Kmer*kmer){
+
 	uint64_t origin=kmer->hash_function_2();
 
 	for(int i=0;i<m_hashFunctions;i++){
 		uint64_t hashValue = origin ^ m_hashNumbers[i];
-		int bit=hashValue % m_bits;
-		int chunk=bit/64;
+		uint64_t bit=hashValue % m_bits;
+		uint64_t chunk=bit/64;
 		int bitInChunk=bit%64;
 		int bitValue=(m_bitmap[chunk] << (63-bitInChunk)) >> 63;
 
@@ -119,6 +137,7 @@ bool BloomFilter::hasValue(Kmer*kmer){
 }
 
 void BloomFilter::insertValue(Kmer*kmer){
+
 	uint64_t origin = kmer->hash_function_2();
 
 	#ifdef ASSERT
@@ -127,11 +146,13 @@ void BloomFilter::insertValue(Kmer*kmer){
 
 	for(int i=0;i<m_hashFunctions;i++){
 		uint64_t hashValue = origin ^ m_hashNumbers[i];
-		int bit=hashValue % m_bits;
-		int chunk=bit/64;
-		int bitInChunk=bit%64;
+		uint64_t bit=hashValue % m_bits;
+		uint64_t chunk=bit/64;
+		uint64_t bitInChunk=bit%64;
 		uint64_t filter=1;
+
 		filter <<= bitInChunk;
+
 		m_bitmap[chunk] |= filter;
 
 		#ifdef ASSERT
@@ -148,6 +169,7 @@ void BloomFilter::insertValue(Kmer*kmer){
 }
 
 void BloomFilter::destructor(){
+
 	#ifdef ASSERT
 	assert(m_bitmap != NULL);
 	assert(m_hashFunctions > 0);

@@ -29,6 +29,8 @@
 #include<vector>
 using namespace std;
 
+#define __BLOOM_DEFAULT_BITS 500000000
+
 /**
  * This class is the implementation of an interpreter for the RayInputFile.
  * It allows the following commands:
@@ -251,7 +253,7 @@ public:
 	double getLoadFactorThreshold();
 
 
-	int getConfigurationInteger(const char*string,int offset);
+	uint64_t getConfigurationInteger(const char*string,int offset);
 	double getConfigurationDouble(const char*string,int offset);
 	bool hasConfigurationOption(const char*string,int count);
 	const char*getConfigurationString(const char*string,int offset);
