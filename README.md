@@ -90,6 +90,10 @@ the compilation.
 	make PREFIX=Build.native DEBUG=n ASSERT=n EXTRA=" -march=native"
 	make install
 
+The best way to build Ray is to use whole-program optimization.
+With gcc, use this script:
+
+	./scripts/Build-Link-Time-Optimization.sh
 
 ## Use large k-mers
 
