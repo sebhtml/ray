@@ -1997,6 +1997,23 @@ double Parameters::getConfigurationDouble(const char*string,int offset){
 
 }
 
+const char*Parameters::getConfigurationString(const char*string,int offset){
+
+	#ifdef ASSERT
+	assert(hasConfigurationOption(string,offset+1));
+	#endif
+
+	for(int i=0;i<(int)m_commands.size();i++){
+		if(strcmp(m_commands[i].c_str(),string)==0){
+
+			return m_commands[i].c_str();
+		}
+	}
+
+	return NULL;
+}
+
+
 int Parameters::getConfigurationInteger(const char*string,int offset){
 	#ifdef ASSERT
 	assert(hasConfigurationOption(string,offset+1));

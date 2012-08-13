@@ -254,6 +254,7 @@ public:
 	int getConfigurationInteger(const char*string,int offset);
 	double getConfigurationDouble(const char*string,int offset);
 	bool hasConfigurationOption(const char*string,int count);
+	const char*getConfigurationString(const char*string,int offset);
 };
 
 #endif
