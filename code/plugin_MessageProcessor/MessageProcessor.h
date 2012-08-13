@@ -72,6 +72,8 @@ using namespace std;
  */
 class MessageProcessor :  public CorePlugin {
 
+	uint64_t m_bloomBits;
+
 	MessageTag RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION;
 	MessageTag RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER;
 	MessageTag RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION;

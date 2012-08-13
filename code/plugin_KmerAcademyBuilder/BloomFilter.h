@@ -41,7 +41,7 @@ class BloomFilter{
 	uint64_t m_hashNumbers[8];
 public:
 	/** initialize the filter */
-	void constructor();
+	void constructor(uint64_t bits);
 	/** check for a value */
 	bool hasValue(Kmer*kmer);
 	/** check is a value was inserted. false positive rate is not 0 */
