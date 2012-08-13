@@ -79,7 +79,7 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 
 	m_messagesPerRank=1000;
 
-	m_numberOfTestMessages=m_parameters->getSize()*m_messagesPerRank;
+	m_numberOfTestMessages=m_messagesPerRank;
 
 	m_writeRawData=m_parameters->hasOption("-write-network-test-raw-data");
 	/* the seed must be different for all MPI ranks */
