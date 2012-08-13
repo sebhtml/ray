@@ -60,7 +60,7 @@ DESCRIPTION:
 
        -bloom-filter-bits bits
               Sets the number of bits for the Bloom filter
-              Default is 500000000 bits, 0 bits disables the Bloom filter.
+              Default is 64000000 bits, 0 bits disables the Bloom filter.
 
        -hash-table-buckets buckets
               Sets the initial number of buckets. Must be a power of 2 !

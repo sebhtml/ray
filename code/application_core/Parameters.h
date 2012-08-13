@@ -29,7 +29,8 @@
 #include<vector>
 using namespace std;
 
-#define __BLOOM_DEFAULT_BITS 500000000
+// 8 bytes
+#define __BLOOM_DEFAULT_BITS 64000000
 
 /**
  * This class is the implementation of an interpreter for the RayInputFile.
