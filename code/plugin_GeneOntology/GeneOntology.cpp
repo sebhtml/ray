@@ -206,38 +206,40 @@ void GeneOntology::fetchRelevantColors(){
 
 bool GeneOntology::fetchArguments(){
 
-	int count=m_core->getNumberOfArguments();
-
-	char**arguments=m_core->getArgumentValues();
-
 	string operationCode="-gene-ontology";
 	int numberOfOperands=2;
 
-	for(int i=0;i<count;i++){
-		
-		string token=arguments[i];
+	if(m_parameters->hasConfigurationOption(operationCode.c_str(),numberOfOperands)){
 
-		if(token==operationCode){
-	
-			int remaining=count-(i+1);
+		int offset=0;
+		m_ontologyFileName=m_parameters->getConfigurationString(operationCode.c_str(),offset++);
+		m_annotationFileName=m_parameters->getConfigurationString(operationCode.c_str(),offset++);
 
-			// check that we have at least
-			// the required number of operands
-			if(remaining < numberOfOperands){
-				cout<<"Error: needs "<<numberOfOperands<<" operands, you provided "<<remaining<<endl;
+		cout<<"[GeneOntology] ontology file: "<<m_ontologyFileName<<", annotation file: ";
+		cout<<m_annotationFileName<<endl;
 
-				return false;
-			}
-	
-			m_ontologyFileName=arguments[i+1];
-			m_annotationFileName=arguments[i+2];
+		ifstream test1(m_ontologyFileName.c_str());
+		bool test1Result=test1;
+		test1.close();
 
-			return true;
+		if(!test1Result){
+			cout<<"Error: the file "<<m_ontologyFileName<<" does not exist."<<endl;
+			return false;
 		}
+
+		ifstream test2(m_annotationFileName.c_str());
+		bool test2Result=test2;
+		test2.close();
+
+		if(!test2Result){
+			cout<<"Error: the file "<<m_annotationFileName<<" does not exist."<<endl;
+			return false;
+		}
+
+		return true;
 	}
 
 	return false;
-
 
 }
 
@@ -257,7 +259,7 @@ void GeneOntology::loadAnnotations(){
 	m_gotGeneOntologyParameter=true;
 
 	ifstream f;
-	f.open(m_annotationFileName);
+	f.open(m_annotationFileName.c_str());
 
 	cout<<"Rank "<<m_rank<<" is loading annotations from "<<m_annotationFileName<<endl;
 
@@ -902,7 +904,7 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 
 	char line[2048];
 
-	ifstream f(m_ontologyFileName);
+	ifstream f(m_ontologyFileName.c_str());
 
 	string identifier="";
 	bool processing=false;

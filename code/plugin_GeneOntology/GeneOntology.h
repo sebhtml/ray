@@ -48,8 +48,8 @@ using namespace std;
  */
 class GeneOntology: public CorePlugin{
 
-	char*m_ontologyFileName;
-	char*m_annotationFileName;
+	string m_ontologyFileName;
+	string m_annotationFileName;
 
 	map<PhysicalKmerColor,vector<GeneOntologyIdentifier> > m_annotations;
 	bool m_slaveStarted;
