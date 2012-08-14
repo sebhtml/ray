@@ -21,10 +21,12 @@
 
 #ifndef _BzReader 
 #define _BzReader
+
 #ifdef HAVE_LIBBZ2
 
-#include<bzlib.h>
-#include<stdio.h>
+#include <bzlib.h>
+#include <stdint.h>
+#include <stdio.h>
 
 /**
  * \author Sébastien Boisvert
@@ -35,12 +37,20 @@ class BzReader{
 	char*m_buffer;
 	int m_bufferSize;
 	int m_bufferPosition;
+	uint64_t m_bytesLoaded;
 	
+	char m_unused[BZ_MAX_UNUSED];
+	int m_nUnused;
+	void*m_unused1;
+
+	void processError(int error);
+
 public:
 	void open(const char*file);
 	char*readLine(char*s, int n);
 	void close();
 };
 
-#endif
-#endif
+#endif /* HAVE_LIBBZ2 */
+
+#endif /* _BzReader */

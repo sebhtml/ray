@@ -1991,7 +1991,7 @@ double Parameters::getConfigurationDouble(const char*string,int offset){
 	for(int i=0;i<(int)m_commands.size();i++){
 		if(strcmp(m_commands[i].c_str(),string)==0){
 
-			istringstream buffer(m_commands[i+1]);
+			istringstream buffer(m_commands[i+1+offset]);
 
 			double value=-1;
 			buffer>>value;
@@ -2013,7 +2013,7 @@ const char*Parameters::getConfigurationString(const char*string,int offset){
 	for(int i=0;i<(int)m_commands.size();i++){
 		if(strcmp(m_commands[i].c_str(),string)==0){
 
-			return m_commands[i].c_str();
+			return m_commands[i+1+offset].c_str();
 		}
 	}
 
@@ -2029,7 +2029,7 @@ uint64_t Parameters::getConfigurationInteger(const char*string,int offset){
 	for(int i=0;i<(int)m_commands.size();i++){
 		if(strcmp(m_commands[i].c_str(),string)==0){
 
-			istringstream buffer(m_commands[i+1]);
+			istringstream buffer(m_commands[i+offset+1]);
 
 			uint64_t value=-1;
 			buffer>>value;

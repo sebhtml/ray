@@ -61,6 +61,8 @@ int Loader::load(string file,bool isGenome){
 		return EXIT_SUCCESS;
 	}
 
+	cout<<"[Loader::load] File: "<<file<<" (please wait...)"<<endl;
+
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() &&
 		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
