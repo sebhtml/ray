@@ -1940,9 +1940,9 @@ CoverageDepth Parameters::getMaximumSeedCoverage(){
 }
 
 
-int Parameters::getNumberOfBuckets(){
+uint64_t Parameters::getNumberOfBuckets(){
 
-	int buckets=__DEFAULT_BUCKETS;
+	uint64_t buckets=__DEFAULT_BUCKETS;
 
 	if(hasConfigurationOption("-hash-table-buckets",1))
 		return getConfigurationInteger("-hash-table-buckets",0);

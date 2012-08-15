@@ -249,7 +249,7 @@ public:
 /** gets the maximum coverage depth allowed for seeds. **/
 	CoverageDepth getMaximumSeedCoverage();
 
-	int getNumberOfBuckets();
+	uint64_t getNumberOfBuckets();
 	int getNumberOfBucketsPerGroup();
 	double getLoadFactorThreshold();
 

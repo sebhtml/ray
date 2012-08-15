@@ -34,7 +34,7 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	m_size=0;
 
 
-	int buckets=m_parameters->getNumberOfBuckets();
+	uint64_t buckets=m_parameters->getNumberOfBuckets();
 	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
 	double loadFactorThreshold=m_parameters->getLoadFactorThreshold();
 
