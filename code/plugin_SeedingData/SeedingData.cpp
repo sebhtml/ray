@@ -113,11 +113,15 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			assert(seed.size() == coverageValues->size());
 			#endif
 
-			int nucleotides=seed.size()+(m_wordSize)-1;
+			int nucleotides=getNumberOfNucleotides(seed.size(),m_wordSize);
 
 			if(seed.size() > 0 && m_parameters->debugSeeds()){
 				cout<<"Raw seed length: "<<nucleotides<<" nucleotides"<<endl;
 			}
+
+			#ifdef ASSERT
+			assert(nucleotides==0 || nucleotides>=m_wordSize);
+			#endif
 
 			// only consider the long ones.
 			if(nucleotides>=m_parameters->getMinimumContigLength()){
@@ -125,6 +129,10 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				#endif
 				
+				#ifdef ASSERT
+				assert(seed.size()>0);
+				#endif
+
 				Kmer firstVertex=seed[0];
 				Kmer lastVertex=seed[seed.size()-1];
 				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
@@ -332,7 +340,8 @@ void SeedingData::updateStates(){
 void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 	if(!m_initialized){
 		for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
-			int length=m_SEEDING_seeds[i].size()+m_parameters->getWordSize()-1;
+			int length=getNumberOfNucleotides(m_SEEDING_seeds[i].size(),
+				m_parameters->getWordSize());
 			m_slaveSeedLengths[length]++;
 		}
 		m_iterator=m_slaveSeedLengths.begin();

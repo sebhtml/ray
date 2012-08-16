@@ -930,7 +930,9 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,
 Kmer *currentVertex,BubbleData*bubbleData){
 
-	if((int)ed->m_EXTENSION_extension.size()+m_parameters->getWordSize()-1>=m_parameters->getMinimumContigLength()){
+	int length=getNumberOfNucleotides(ed->m_EXTENSION_extension.size(),m_parameters->getWordSize());
+
+	if(length>=m_parameters->getMinimumContigLength()){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 

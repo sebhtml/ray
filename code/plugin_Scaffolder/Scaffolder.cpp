@@ -203,7 +203,7 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 	m_allScaffoldLengths.reserve(m_masterContigs.size());
 
 	for(int i=0;i<(int)m_masterContigs.size();i++){
-		int length=m_masterLengths[i]+m_parameters->getWordSize()-1;
+		int length=getNumberOfNucleotides(m_masterLengths[i],m_parameters->getWordSize());
 
 		operationBuffer<<"contig-"<<m_masterContigs[i]<<"\t"<<length<<endl;
 
