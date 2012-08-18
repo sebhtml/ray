@@ -207,7 +207,13 @@ DESCRIPTION:
 
        -connection-type type
               Sets the connection type for routes.
-              Accepted values are debruijn, group, random, kautz and complete. Default is debruijn.
+              Accepted values are debruijn, hypercube, group, random, kautz and complete. Default is debruijn.
+               debruijn: a full de Bruijn graph a given alphabet and diameter
+               hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2
+               group: silly model where one representative per group can communicate with outsiders
+               random: Erdős–Rényi model
+               kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph
+               complete: a full graph with all the possible connections
               With the type debruijn, the number of ranks must be a power of something.
               Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.
               Otherwise, don't use debruijn routing but use another one

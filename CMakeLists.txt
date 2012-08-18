@@ -105,6 +105,7 @@ RayPlatform/routing/GraphImplementationGroup.cpp
 RayPlatform/routing/GraphImplementationComplete.cpp
 RayPlatform/routing/GraphImplementationDeBruijn.cpp
 RayPlatform/routing/GraphImplementationRandom.cpp
+RayPlatform/routing/Hypercube.cpp
 RayPlatform/scheduling/TaskCreator.cpp
 RayPlatform/scheduling/SwitchMan.cpp
 RayPlatform/scheduling/VirtualProcessor.cpp

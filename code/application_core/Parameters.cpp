@@ -1519,7 +1519,14 @@ void Parameters::showUsage(){
 	showOptionDescription("and Routing/Summary.txt");
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
-	showOptionDescription("Accepted values are debruijn, group, random, kautz and complete. Default is debruijn.");
+	showOptionDescription("Accepted values are debruijn, hypercube, group, random, kautz and complete. Default is debruijn.");
+	showOptionDescription(" debruijn: a full de Bruijn graph a given alphabet and diameter");
+	showOptionDescription(" hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2");
+	showOptionDescription(" group: silly model where one representative per group can communicate with outsiders");
+	showOptionDescription(" random: Erdős–Rényi model");
+	showOptionDescription(" kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph");
+	showOptionDescription(" complete: a full graph with all the possible connections");
+
 	showOptionDescription("With the type debruijn, the number of ranks must be a power of something.");
 	showOptionDescription("Examples: 256 = 16*16, 512=8*8*8, 49=7*7, and so on.");
 	showOptionDescription("Otherwise, don't use debruijn routing but use another one");
