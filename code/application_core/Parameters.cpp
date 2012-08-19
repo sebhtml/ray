@@ -1534,6 +1534,7 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	showOption("-routing-graph-degree degree","Specifies the outgoing degree for the routing graph.");
+	showOptionDescription("See Documentation/Routing.txt");
 	cout<<endl;
 
 	cout<<"  Hardware testing"<<endl;

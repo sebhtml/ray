@@ -221,6 +221,7 @@ DESCRIPTION:
 
        -routing-graph-degree degree
               Specifies the outgoing degree for the routing graph.
+              See Documentation/Routing.txt
 
   Hardware testing
 

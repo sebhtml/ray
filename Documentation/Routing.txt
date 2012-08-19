@@ -8,7 +8,30 @@ Vertices is the number of computer cores to use (mpiexec -n ###)
 
 See also Documentation/Very-Large-Jobs.txt.
 
+## Hypercube
 
+Messages can be routed with a hypercube or a polytope using
+the hypercube connection type.
+
+For the hypercube, we have
+
+vertices:= alphabetSize^wordLength
+degree:= (alphabetSize-1)*wordLength
+
+Vertices: 1024
+Type: Hypercube
+Degree: 62=(32-1)*2
+Diameter: 2 (32^2=1024)
+Options:  -route-messages -connection-type hypercube -routing-graph-degree 62
+
+Vertices: 1024
+Type: Hypercube
+Degree: 10
+Diameter: 10 (2^10=1024)
+Options:  -route-messages -connection-type hypercube -routing-graph-degree 10
+
+
+## de Bruijn
 
 Vertices: 256
 Type: de Bruijn
@@ -41,7 +64,7 @@ Diameter: 10 (2^10)
 Options:  -route-messages -connection-type debruijn -routing-graph-degree 2
 
 
-
+## Kautz
 
 Vertices: 750
 Type: Kautz
