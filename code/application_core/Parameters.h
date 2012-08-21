@@ -29,8 +29,32 @@
 #include<vector>
 using namespace std;
 
+/**
+ * the default number of buckets in the
+ * distributed hash table, for a single agent
+ */
+#define __DEFAULT_BUCKETS 268435456 // old value: 1048576
+
+/**
+ * The threshold for triggering incremental resizing
+ * of the distributed hash table, valid for a single
+ * agent
+ */
+#define __DEFAULT_LOAD_FACTOR_THRESHOLD 0.75 /* Like Java HashMap */
+
+/**
+ * The number of buckets per group in the distributed
+ * hash table. The table uses a sparse model.
+ * This value can not exceed 64 because bits are stored
+ * with a uint64_t 
+ */
+#define __DEFAULT_BUCKETS_PER_GROUP 64
+
 // 8 bytes
-#define __BLOOM_DEFAULT_BITS 64000000
+/*
+ * The default number of bits in the Bloom filter.
+ */
+#define __BLOOM_DEFAULT_BITS 268435456 //64000000
 
 /**
  * This class is the implementation of an interpreter for the RayInputFile.

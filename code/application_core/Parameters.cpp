@@ -23,10 +23,6 @@
  * TODO: add option -minimumScaffoldLength
  */
 
-#define __DEFAULT_BUCKETS 1048576
-#define __DEFAULT_LOAD_FACTOR_THRESHOLD 0.75 /* Like Java HashMap */
-#define __DEFAULT_BUCKETS_PER_GROUP 64
-
 #include <core/OperatingSystem.h>
 #include<application_core/common_functions.h>
 #include<application_core/Parameters.h>
