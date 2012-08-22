@@ -1380,9 +1380,12 @@ void Parameters::showUsage(){
 	buffer3<<"The default is "<<getMaximumAllowedCoverage()<<".";
 	showOption("-use-maximum-seed-coverage","Ignores any seed with a coverage depth above this threshold.");
 	showOptionDescription(buffer3.str());
-
 	cout<<endl;
 
+	showOption("-use-minimum-seed-coverage minimumSeedCoverageDepth",
+		"Sets the minimum seed coverage depth.");
+	showOptionDescription("Any path with a coverage depth lower than this will be discarded. The default is 0.");
+	cout<<endl;
 
 
 	cout<<"  Distributed storage engine (all these values are for each MPI rank)"<<endl;

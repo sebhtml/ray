@@ -51,6 +51,12 @@ using namespace std;
  */
 class SeedingData : public CorePlugin{
 
+/**
+ * the minimum seed coverage allowed
+ */
+	
+	CoverageDepth m_minimumSeedCoverageDepth;
+
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
 	MessageTag RAY_MPI_TAG_SEEDING_IS_OVER;
 	MessageTag RAY_MPI_TAG_SEND_SEED_LENGTHS;

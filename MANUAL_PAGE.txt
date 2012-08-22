@@ -89,6 +89,10 @@ DESCRIPTION:
               Ignores any seed with a coverage depth above this threshold.
               The default is 4294967295.
 
+       -use-minimum-seed-coverage minimumSeedCoverageDepth
+              Sets the minimum seed coverage depth.
+              Any path with a coverage depth lower than this will be discarded. The default is 0.
+
   Distributed storage engine (all these values are for each MPI rank)
 
        -bloom-filter-bits bits

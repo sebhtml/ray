@@ -158,9 +158,12 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					cout<<"Got a seed, peak coverage: "<<peakCoverage;
 	
 					/* ignore the seed if it has too much coverage. */
-					if(peakCoverage <= m_parameters->getMaximumSeedCoverage()){
+					if(peakCoverage >= m_minimumSeedCoverageDepth
+						&& peakCoverage <= m_parameters->getMaximumSeedCoverage()){
+
 						cout<<", adding seed."<<endl;
 						m_SEEDING_seeds.push_back(theSeed);
+
 					}else{
 						cout<<", ignoring seed."<<endl;
 					}
@@ -274,6 +277,7 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
+
 	m_checkedCheckpoint=false;
 	m_virtualCommunicator=vc;
 	m_seedExtender=seedExtender;
@@ -293,6 +297,13 @@ int*mode,
 	#endif
 	m_subgraph=subgraph;
 	m_initiatedIterator=false;
+
+	m_minimumSeedCoverageDepth=0;
+
+	if(m_parameters->hasConfigurationOption("-use-minimum-seed-coverage",1)){
+		m_minimumSeedCoverageDepth=m_parameters->getConfigurationInteger("-use-minimum-seed-coverage",0);
+		cout<<"[SeedingData] will use "<<m_minimumSeedCoverageDepth<<" for the minimum seed coverage"<<endl;
+	}
 }
 
 int SeedingData::getRank(){
