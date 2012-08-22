@@ -118,8 +118,16 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 	if(!m_started){
 
 		m_started=true;
+		
+		bool skip=false;
 
 		if(m_parameters->hasOption("-skip-network-test"))
+			skip=true;
+
+		if(m_parameters->hasOption("-disable-network-test"))
+			skip=true;
+
+		if(skip)
 			m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 

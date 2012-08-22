@@ -1129,6 +1129,9 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	if(m_parameters->hasOption("-find-neighbourhoods"))
 		m_pluginIsEnabled=true;
 
+	if(m_parameters->hasOption("-enable-neighbourhoods"))
+		m_pluginIsEnabled=true;
+
 	__BindPlugin(GenomeNeighbourhood);
 }
 

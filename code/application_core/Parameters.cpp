@@ -1412,7 +1412,7 @@ void Parameters::showUsage(){
 
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
-	showOption("-find-neighbourhoods","Computes contig neighborhoods in the de Bruijn graph");
+	showOption("-enable-neighbourhoods","Computes contig neighborhoods in the de Bruijn graph");
 	showOptionDescription("Output file: RayOutput/NeighbourhoodRelations.txt");
 	cout<<endl;
 
@@ -1541,7 +1541,7 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-write-network-test-raw-data","Writes one additional file per rank detailing the network test.");
 	cout<<endl;
-	showOption("-skip-network-test","Skips the network test.");
+	showOption("-disable-network-test","Skips the network test.");
 	cout<<endl;
 
 	cout<<"  Debugging"<<endl;

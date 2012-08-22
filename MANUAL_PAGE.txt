@@ -110,7 +110,7 @@ DESCRIPTION:
 
   Other outputs
 
-       -find-neighbourhoods
+       -enable-neighbourhoods
               Computes contig neighborhoods in the de Bruijn graph
               Output file: RayOutput/NeighbourhoodRelations.txt
 
@@ -236,7 +236,7 @@ DESCRIPTION:
        -write-network-test-raw-data
               Writes one additional file per rank detailing the network test.
 
-       -skip-network-test
+       -disable-network-test
               Skips the network test.
 
   Debugging
