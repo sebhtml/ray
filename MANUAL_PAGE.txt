@@ -78,14 +78,14 @@ DESCRIPTION:
        -disable-scaffolder
               Disables the scaffolder.
 
-       -minimum-contig-length
-              Changes the minimum contig length, default is 100
+       -minimum-contig-length minimumContigLength
+              Changes the minimum contig length, default is 100 nucleotides
 
        -color-space
               Runs in color-space
               Needs csfasta files. Activated automatically if csfasta files are provided.
 
-       -use-maximum-seed-coverage
+       -use-maximum-seed-coverage maximumSeedCoverageDepth
               Ignores any seed with a coverage depth above this threshold.
               The default is 4294967295.
 

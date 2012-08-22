@@ -1369,7 +1369,8 @@ void Parameters::showUsage(){
 
 	showOption("-disable-scaffolder","Disables the scaffolder.");
 	cout<<endl;
-	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
+	showOption("-minimum-contig-length minimumContigLength",
+		"Changes the minimum contig length, default is 100 nucleotides");
 	cout<<endl;
 
 	showOption("-color-space","Runs in color-space");
@@ -1378,7 +1379,8 @@ void Parameters::showUsage(){
 
 	ostringstream buffer3;
 	buffer3<<"The default is "<<getMaximumAllowedCoverage()<<".";
-	showOption("-use-maximum-seed-coverage","Ignores any seed with a coverage depth above this threshold.");
+	showOption("-use-maximum-seed-coverage maximumSeedCoverageDepth",
+		"Ignores any seed with a coverage depth above this threshold.");
 	showOptionDescription(buffer3.str());
 	cout<<endl;
 
