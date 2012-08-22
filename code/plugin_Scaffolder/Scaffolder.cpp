@@ -374,7 +374,25 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 		m_positionOnContig=0;
 		m_forwardDone=false;
 		m_coverageRequested=false;
-		m_hasPairedReads=m_parameters->hasPairedReads();
+		bool hasPairedReads=m_parameters->hasPairedReads();
+
+		bool disableScaffolder=false;
+
+		const char*option="-disable-scaffolder";
+
+		if(m_parameters->hasConfigurationOption(option,0))
+			disableScaffolder=true;
+
+		if(!hasPairedReads)
+			cout<<"[Scaffolder] there are no paired reads, disabling self."<<endl;
+		else if(disableScaffolder)
+			cout<<"[Scaffolder] found option "<<option<<", disabling self."<<endl;
+
+/**
+ * skip the scaffolding if there are no paired reads or if
+ * the user does not want do to any scaffolding
+ */
+		m_skipScaffolding=( !hasPairedReads || disableScaffolder );
 	}
 
 	m_virtualCommunicator->forceFlush();
@@ -382,7 +400,7 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	m_activeWorkers.clear();
 	
 	//Add the condition hasPairedReads to skip scaffolding in case of unpaired reads
-	if(m_hasPairedReads && m_contigId<(int)(*m_contigs).size()){
+	if(m_contigId<(int)(*m_contigs).size()){
 		processContig();
 	}else{
 
@@ -405,6 +423,21 @@ void Scaffolder::setContigPaths(vector<PathHandle>*names,vector<vector<Kmer> >*p
 }
 
 void Scaffolder::processContig(){
+
+	/** skip the time-consuming parts **/
+	if(m_positionOnContig==0&&m_skipScaffolding){
+		// move the position at the end
+		m_positionOnContig=(*m_contigs)[m_contigId].size();
+
+		// don't send any summary
+		m_summaryPerformed=true;
+		m_summarySent=true;
+		
+		// but send the contig meta information
+		m_sentContigMeta=false;
+		m_sentContigInfo=false;
+	}
+
 	if(m_positionOnContig<(int)(*m_contigs)[m_contigId].size()){
 		processContigPosition();
 	}else if(!m_summaryPerformed){

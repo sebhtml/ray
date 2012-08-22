@@ -1469,6 +1469,8 @@ void Parameters::showUsage(){
 	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
 	cout<<endl;
 
+	showOption("-disable-scaffolder","Disables the scaffolder.");
+	cout<<endl;
 	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
 	cout<<endl;
 

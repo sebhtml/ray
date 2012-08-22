@@ -79,7 +79,10 @@ class Scaffolder :  public CorePlugin{
 	
 	TimePrinter*m_timePrinter;
 
-	bool m_hasPairedReads;    //Added to skip scaffolding in case of unpaired reads
+/**
+ * Added to skip scaffolding in case of unpaired reads
+ */
+	bool m_skipScaffolding;    
 
 	int m_rankIdForContig;
 	bool m_hasContigSequence_Initialised;

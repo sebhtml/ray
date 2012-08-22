@@ -1,3 +1,5 @@
+[RingAllocator] m_chunks: 128 m_max: 4000
+[RingAllocator] m_chunks: 1 m_max: 4000
 NAME
        Ray - assemble genomes in parallel using the message-passing interface
 
@@ -60,11 +62,11 @@ DESCRIPTION:
 
        -bloom-filter-bits bits
               Sets the number of bits for the Bloom filter
-              Default is 64000000 bits, 0 bits disables the Bloom filter.
+              Default is 268435456 bits, 0 bits disables the Bloom filter.
 
        -hash-table-buckets buckets
               Sets the initial number of buckets. Must be a power of 2 !
-              Default value: 1048576
+              Default value: 268435456
 
        -hash-table-buckets-per-group buckets
               Sets the number of buckets per group for sparse storage
@@ -173,6 +175,9 @@ DESCRIPTION:
               see Constrained traversal of repeats with paired sequences.
               Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.
               First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.
+
+       -disable-scaffolder
+              Disables the scaffolder.
 
        -minimum-contig-length
               Changes the minimum contig length, default is 100
