@@ -1348,6 +1348,43 @@ void Parameters::showUsage(){
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
 	cout<<endl;
 
+	cout<<"  Outputs"<<endl;
+	cout<<endl;
+	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
+	cout<<endl;
+
+
+	cout<<"  Assembly options (defaults work well)"<<endl;
+	cout<<endl;
+	
+	showOption("-disable-recycling","Disables read recycling during the assembly");
+	showOptionDescription("reads will be set free in 3 cases:");
+	showOptionDescription("1. the distance did not match for a pair");
+	showOptionDescription("2. the read has not met its mate");
+	showOptionDescription("3. the library population indicates a wrong placement");
+	showOptionDescription("see Constrained traversal of repeats with paired sequences.");
+	showOptionDescription("Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.");
+	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
+	cout<<endl;
+
+	showOption("-disable-scaffolder","Disables the scaffolder.");
+	cout<<endl;
+	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
+	cout<<endl;
+
+	showOption("-color-space","Runs in color-space");
+	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
+	cout<<endl;
+
+	ostringstream buffer3;
+	buffer3<<"The default is "<<getMaximumAllowedCoverage()<<".";
+	showOption("-use-maximum-seed-coverage","Ignores any seed with a coverage depth above this threshold.");
+	showOptionDescription(buffer3.str());
+
+	cout<<endl;
+
+
+
 	cout<<"  Distributed storage engine (all these values are for each MPI rank)"<<endl;
 	cout<<endl;
 
@@ -1405,11 +1442,6 @@ void Parameters::showUsage(){
 	showOptionDescription("See Documentation/GeneOntology.txt");
 	
 
-	cout<<"  Outputs"<<endl;
-	cout<<endl;
-	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
-	cout<<endl;
-
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
 	showOption("-enable-neighbourhoods","Computes contig neighborhoods in the de Bruijn graph");
@@ -1455,36 +1487,6 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-show-consensus","Shows the consensus when a choice is done.");
 	cout<<endl;
-
-	cout<<"  Assembly options (defaults work well)"<<endl;
-	cout<<endl;
-	
-	showOption("-disable-recycling","Disables read recycling during the assembly");
-	showOptionDescription("reads will be set free in 3 cases:");
-	showOptionDescription("1. the distance did not match for a pair");
-	showOptionDescription("2. the read has not met its mate");
-	showOptionDescription("3. the library population indicates a wrong placement");
-	showOptionDescription("see Constrained traversal of repeats with paired sequences.");
-	showOptionDescription("Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.");
-	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
-	cout<<endl;
-
-	showOption("-disable-scaffolder","Disables the scaffolder.");
-	cout<<endl;
-	showOption("-minimum-contig-length","Changes the minimum contig length, default is 100");
-	cout<<endl;
-
-	showOption("-color-space","Runs in color-space");
-	showOptionDescription("Needs csfasta files. Activated automatically if csfasta files are provided.");
-	cout<<endl;
-
-	ostringstream buffer3;
-	buffer3<<"The default is "<<getMaximumAllowedCoverage()<<".";
-	showOption("-use-maximum-seed-coverage","Ignores any seed with a coverage depth above this threshold.");
-	showOptionDescription(buffer3.str());
-
-	cout<<endl;
-
 
 /*
 	showOption("-minimumCoverage minimumCoverage","Sets manually the minimum coverage.");
