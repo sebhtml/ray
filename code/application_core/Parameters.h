@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -280,7 +280,25 @@ public:
 
 	uint64_t getConfigurationInteger(const char*string,int offset);
 	double getConfigurationDouble(const char*string,int offset);
+
+
+/**
+ ** returns true if there is a command named <string> with exactly 
+ ** <count> operands
+ **
+ ** Examples:
+ **   -foo
+ **           1 operator, 0 operand
+ **
+ **   -add 1 2
+ **           1 operator, 2 operands
+ **
+ **   -malloc 2000
+ **           1 operator, 1 operand
+ **
+ **/
 	bool hasConfigurationOption(const char*string,int count);
+
 	const char*getConfigurationString(const char*string,int offset);
 };
 
