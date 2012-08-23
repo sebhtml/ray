@@ -604,12 +604,11 @@ Machine::~Machine(){
 void Machine::showRayVersionShort(){
 	cout<<"Ray version "<<RAY_VERSION<<endl;
 	cout<<"License for Ray: GNU General Public License version 3"<<endl;
-	cout<<endl;
+
 	cout<<"RayPlatform version: "<<m_computeCore.getRayPlatformVersion()<<endl;
 	cout<<"License for RayPlatform: GNU Lesser General Public License version 3"<<endl;
 	cout<<endl;
 
-	cout<<endl;
 	CoverageDepth maximumCoverageDepth=0;
 	maximumCoverageDepth--; // underflow it
 
@@ -734,6 +733,33 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#endif
 	cout<<endl;
 
+	#if defined(MPI_VERSION) && defined(MPI_SUBVERSION)
+	cout<<"MPI standard version: MPI "<<MPI_VERSION<<"."<<MPI_SUBVERSION<<endl;
+	#endif
+
+	#if defined(MPICH2) && defined(MPICH2_VERSION)
+        cout<<"MPI library: MPICH2 "<<MPICH2_VERSION;
+	cout<<endl;
+	#endif
+
+	#if defined(OMPI_MPI_H) && defined(OMPI_MAJOR_VERSION) && defined(OMPI_MINOR_VERSION) && defined(OMPI_RELEASE_VERSION)
+        cout<<"MPI library: Open-MPI "<<OMPI_MAJOR_VERSION;
+	cout<<"."<<OMPI_MINOR_VERSION<<"."<<OMPI_RELEASE_VERSION;
+	cout<<endl;
+	#endif
+
+	#if defined(__VERSION__) && defined(__GNUC_PATCHLEVEL__)
+	cout<<"Compiler: GNU gcc/g++ "<<__VERSION__<<endl;
+	#endif
+
+	
+	#ifdef __SSE4_2__
+	cout<<"With SSE 4.2"<<endl;
+	#endif
+
+	#ifdef __POPCNT__
+	cout<<"With hardware pop count"<<endl;
+	#endif
 }
 
 void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
