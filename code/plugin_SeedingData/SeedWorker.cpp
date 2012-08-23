@@ -344,6 +344,18 @@ void SeedWorker::do_1_1_test(){
 		}
 
 		m_SEEDING_1_1_test_result=oneChild&&oneParent;
+
+/** 
+ * weed out vertices that don't have enough
+ * k-mer coverage depth.
+ * getMinimumCoverageToStore returns 2 as of 2012-08-23
+ */
+		int minimumCoverageToStore=
+			m_parameters->getMinimumCoverageToStore();
+
+		if(m_mainVertexCoverage<minimumCoverageToStore)
+			m_SEEDING_1_1_test_result=false;
+
 	}
 }
 

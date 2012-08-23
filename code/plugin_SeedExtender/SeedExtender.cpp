@@ -2267,6 +2267,9 @@ int SeedExtender::chooseWithSeed(){
 		cout<<"m_compactEdges -> "<<endl;
 		print8(m_compactEdges);
 
+		cout<<"Warning: This problem may be due to another plugin that does not honor the policy about the minimum k-mer coverage depth for eligibility."<<endl;
+		cout<<" For instance, it may be a problem with the part that build seeds from the bits available in the distributed storage engine."<<endl;
+
 
 		#endif
 
