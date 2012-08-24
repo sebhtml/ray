@@ -32,7 +32,7 @@
 #include <vector>
 using namespace std;
 
-#define DUMMY_IDENTIFIER 999999999999
+#define DUMMY_IDENTIFIER 999999999999ULL
 #define CONFIG_COLORED_LINE_MAX_LENGTH 10000
 
 /**

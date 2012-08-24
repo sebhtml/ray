@@ -71,16 +71,18 @@ date|md5sum
 8 bytes = 1 64-bit integer)
 
 Basically, these are used in XOR hash functions below...
+
+ULL means unsigned long long, it is necessary on some architectures
 */
 
-	m_hashNumbers[m_hashFunctions++]=0xe70b369c4c19f0f9;
-	m_hashNumbers[m_hashFunctions++]=0xbeb7f38b993441a2;
-	m_hashNumbers[m_hashFunctions++]=0x3149cd9246ca7995;
-	m_hashNumbers[m_hashFunctions++]=0x2ef5b2c17d479ee8;
-	m_hashNumbers[m_hashFunctions++]=0xfb8daceab90fe233;
-	m_hashNumbers[m_hashFunctions++]=0x20fa74e37d497859;
-	m_hashNumbers[m_hashFunctions++]=0x9007d0caef749698;
-	m_hashNumbers[m_hashFunctions++]=0x4e4100a5605ef967;
+	m_hashNumbers[m_hashFunctions++]=0xe70b369c4c19f0f9ULL;
+	m_hashNumbers[m_hashFunctions++]=0xbeb7f38b993441a2ULL;
+	m_hashNumbers[m_hashFunctions++]=0x3149cd9246ca7995ULL;
+	m_hashNumbers[m_hashFunctions++]=0x2ef5b2c17d479ee8ULL;
+	m_hashNumbers[m_hashFunctions++]=0xfb8daceab90fe233ULL;
+	m_hashNumbers[m_hashFunctions++]=0x20fa74e37d497859ULL;
+	m_hashNumbers[m_hashFunctions++]=0x9007d0caef749698ULL;
+	m_hashNumbers[m_hashFunctions++]=0x4e4100a5605ef967ULL;
 
 	#ifdef ASSERT
 	assert(m_hashFunctions == 8);

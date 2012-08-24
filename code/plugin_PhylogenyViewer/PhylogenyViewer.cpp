@@ -950,7 +950,7 @@ TaxonIdentifier PhylogenyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxo
 		}
 	}
 
-	return 999999999999;
+	return 999999999999ULL;
 }
 
 TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
@@ -958,7 +958,7 @@ TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
 		return m_treeParents[taxon];
 	}
 
-	return 999999999999;
+	return 999999999999ULL;
 }
 
 void PhylogenyViewer::loadTaxonNames(){

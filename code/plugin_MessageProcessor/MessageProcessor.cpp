@@ -749,7 +749,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		assert(candidate!=NULL);
 		#endif
 
-		if((int) candidate->m_count<m_parameters->getMinimumCoverageToStore())
+		CoverageDepth value=candidate->m_count;
+
+		if(value<m_parameters->getMinimumCoverageToStore())
 			continue;
 
 		Vertex*tmp=m_subgraph->insert(&l);
