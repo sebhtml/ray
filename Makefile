@@ -107,7 +107,7 @@ ifeq ($(INTEL_COMPILER),n)
 # g++ options
 ifeq ($(uname_S),Linux)
 	#-std=c++98
-	CXXFLAGS += -Wall -ansi
+	CXXFLAGS += -Wall -std=c++98
 	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
 endif
 endif
