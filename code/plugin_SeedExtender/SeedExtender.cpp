@@ -2277,6 +2277,16 @@ int SeedExtender::chooseWithSeed(){
 		assert(m_ed->m_EXTENSION_coverages.size()==m_ed->m_enumerateChoices_outgoingEdges.size());
 		#endif
 
+		vector<Kmer> compactData=m_currentVertex->_getOutgoingEdges(m_compactEdges,
+			m_parameters->getWordSize());
+
+		cout<<"Choices from compactEdges: ";
+		for(int i=0;i<(int)compactData.size();i++){
+			Kmer*kmer=&(compactData[i]);
+			cout<<" "<<kmer->idToWord(wordSize,m_parameters->getColorSpaceMode());
+		}
+
+		cout<<"Exiting..."<<endl;
 
 		#ifdef ASSERT
 		assert(false);
