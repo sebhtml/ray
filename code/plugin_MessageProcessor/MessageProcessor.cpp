@@ -725,8 +725,12 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
  *
  * I am not sure it would work but if it does that would reduces the number of sent messages */
 		Kmer reverseComplement=l.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+/* TODO: I think this cause messages to be discarded...
+ * Anyway, the message was delivered anyway already.
 		if(reverseComplement<l)
 			continue;
+*/
 
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
@@ -755,12 +759,15 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			continue;
 
 		Vertex*tmp=m_subgraph->insert(&l);
+
 		#ifdef ASSERT
 		assert(tmp!=NULL);
 		#endif
+
 		if(m_subgraph->inserted()){
 			tmp->constructor(); 
 		}
+
 		tmp->setCoverage(&l,tmp->getCoverage(&l)+1);
 	}
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,m_rank);
@@ -874,6 +881,15 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int length=count;
 
+/**
+ * We process each edge.
+ * For each block, there are KMER_U64_ARRAY_SIZE elements for the vertex1 and
+ * KMER_U64_ARRAY_SIZE elements for vertex2.
+ *
+ * It is like this:
+ *
+ * | vertex1 | vertex2 | vertex1 |vertex 2 | ...
+ */
 	for(int i=0;i<(int)length;i+=2*KMER_U64_ARRAY_SIZE){
 		int bufferPosition=i;
 		Kmer prefix;
@@ -889,6 +905,9 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 
 		node->addIngoingEdge(&suffix,&prefix,(*m_wordSize));
 
+/*
+ * Make sure that the edge was added.
+ */
 		#ifdef ASSERT
 		vector<Kmer>inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
 		bool found=false;
