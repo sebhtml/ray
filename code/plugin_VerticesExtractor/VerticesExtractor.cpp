@@ -73,7 +73,8 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 	}
 
 	if(m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
-	&&m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
+		&&m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
+
 		string reverse="";
 		if(m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
@@ -86,12 +87,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
-	if(m_mode_send_vertices_sequence_id>(int)m_myReads->size()-1){
+	if(m_mode_send_vertices_sequence_id==(int)m_myReads->size()){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		// flush data
 		flushAll(m_outboxAllocator,m_outbox,m_parameters->getRank());
+
 		if(m_pendingMessages==0){
 			#ifdef ASSERT
 			assert(m_bufferedData.isEmpty());
@@ -114,11 +116,16 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
+/*
+ * Decode the DNA sequence 
+ * and store it in a local buffer.
+ */
 		if(m_mode_send_vertices_sequence_id_position==0){
 			(*m_myReads)[(m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
 		
 			//cout<<"DEBUG Read="<<*m_mode_send_vertices_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<m_readSequence<<endl;
 		}
+
 		int len=strlen(m_readSequence);
 
 		if(len<m_parameters->getWordSize()){
@@ -131,7 +138,8 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		char memory[1000];
-		int lll=len-m_parameters->getWordSize()+1;
+
+		int maximumPosition=len-m_parameters->getWordSize()+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
@@ -141,27 +149,35 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		memcpy(memory,m_readSequence+p,m_parameters->getWordSize());
 		memory[m_parameters->getWordSize()]='\0';
 
-
 		MACRO_COLLECT_PROFILING_INFORMATION();
+
 		if(isValidDNA(memory)){
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
-			Kmer a=wordId(memory);
-
-			int rankToFlush=0;
+			Kmer currentForwardKmer=wordId(memory);
 
 			/* TODO: possibly don't flush k-mer that are not lower. not sure it that would work though. -Seb */
 
-			rankToFlush=m_parameters->_vertexRank(&a);
+			Rank rankToFlush=m_parameters->_vertexRank(&currentForwardKmer);
+
+/*
+ *                   previousForwardKmer   ->   currentForwardKmer
+ *                   previousReverseKmer   <-   currentReverseKmer
+ */
+
+
+/*
+ * Push the kmer
+ */
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,a.getU64(i));
+				m_bufferedData.addAt(rankToFlush,currentForwardKmer.getU64(i));
 			}
 
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
-				m_parameters->getRank(),false)){
+			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,
+				RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
+					m_parameters->getRank(),false))
 				m_pendingMessages++;
-			}
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -170,12 +186,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				// outgoing edge
-				int outgoingRank=m_parameters->_vertexRank(&m_previousVertex);
+				// PreviousVertex(*) -> CurrentVertex
+				Rank outgoingRank=m_parameters->_vertexRank(&m_previousVertex);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex.getU64(i));
 				}
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,a.getU64(i));
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,currentForwardKmer.getU64(i));
 				}
 
 				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
@@ -190,12 +207,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 				}
 
 				// ingoing edge
-				int ingoingRank=m_parameters->_vertexRank(&a);
+				// PreviousVertex -> CurrentVertex(*)
+				Rank ingoingRank=m_parameters->_vertexRank(&currentForwardKmer);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex.getU64(i));
 				}
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-					m_bufferedDataForIngoingEdges.addAt(ingoingRank,a.getU64(i));
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,currentForwardKmer.getU64(i));
 				}
 
 				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
@@ -212,11 +230,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			}
 
 			// reverse complement
-			Kmer b=a.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+			//
+			Kmer currentReverseKmer=currentForwardKmer.
+				complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-			rankToFlush=m_parameters->_vertexRank(&b);
+			rankToFlush=m_parameters->_vertexRank(&currentReverseKmer);
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,b.getU64(i));
+				m_bufferedData.addAt(rankToFlush,currentReverseKmer.getU64(i));
 			}
 
 			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
@@ -225,10 +245,13 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 			if(m_hasPreviousVertex){
 				MACRO_COLLECT_PROFILING_INFORMATION();
+
 				// outgoing edge
-				int outgoingRank=m_parameters->_vertexRank(&b);
+				// 
+				Rank outgoingRank=m_parameters->_vertexRank(&currentReverseKmer);
+
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,b.getU64(i));
+					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,currentReverseKmer.getU64(i));
 				}
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertexRC.getU64(i));
@@ -249,9 +272,10 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				// ingoing edge
-				int ingoingRank=m_parameters->_vertexRank(&m_previousVertexRC);
+				Rank ingoingRank=m_parameters->_vertexRank(&m_previousVertexRC);
+
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-					m_bufferedDataForIngoingEdges.addAt(ingoingRank,b.getU64(i));
+					m_bufferedDataForIngoingEdges.addAt(ingoingRank,currentReverseKmer.getU64(i));
 				}
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertexRC.getU64(i));
@@ -273,8 +297,8 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 			// there is a previous vertex.
 			m_hasPreviousVertex=true;
-			m_previousVertex=a;
-			m_previousVertexRC=b;
+			m_previousVertex=currentForwardKmer;
+			m_previousVertexRC=currentReverseKmer;
 		}else{
 			m_hasPreviousVertex=false;
 		}
@@ -282,7 +306,8 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		(m_mode_send_vertices_sequence_id_position++);
-		if((m_mode_send_vertices_sequence_id_position)==lll){
+
+		if((m_mode_send_vertices_sequence_id_position)==maximumPosition){
 			m_hasPreviousVertex=false;
 			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
