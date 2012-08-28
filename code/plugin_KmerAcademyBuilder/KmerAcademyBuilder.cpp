@@ -128,35 +128,40 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 		}
 
 		char memory[MAXKMERLENGTH+1];
-		int lll=len-m_parameters->getWordSize()+1;
+		int maximumPosition=len-m_parameters->getWordSize()+1;
 		
 		#ifdef ASSERT
 		assert(m_readSequence!=NULL);
 		#endif
 
-		int p=(m_mode_send_vertices_sequence_id_position);
+		int position=(m_mode_send_vertices_sequence_id_position);
 
-		memcpy(memory,m_readSequence+p,m_parameters->getWordSize());
+		memcpy(memory,m_readSequence+position,m_parameters->getWordSize());
 		memory[m_parameters->getWordSize()]='\0';
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		if(isValidDNA(memory)){
-			Kmer a=wordId(memory);
+			Kmer forwardKmer=wordId(memory);
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
-			// reverse complement
-			Kmer reverseComplementKmer=a.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-			Kmer lowerKmer=a;
-			if(reverseComplementKmer<lowerKmer)
-				lowerKmer=reverseComplementKmer;
+/*
+ * We only send one of the two kmer at this point.
+ * The two kmers are the forwardKmer and the reverseKmer.
+ * The reason is that the ForwardKmer will add +1 to
+ * its coverage and the ReverseKmer will also add +1 to
+ * its coverage. But in the implementation,
+ * ForwardKmer and ReverseKmer are stored together.
+ * To avoid doubling the coverage of any k-mer, we sent
+ * only one of them.
+ */
 
-			int rankToFlush=lowerKmer.hash_function_1()%m_parameters->getSize();
+			Rank rankToFlush=forwardKmer.hash_function_1()%m_parameters->getSize();
 			
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,lowerKmer.getU64(i));
+				m_bufferedData.addAt(rankToFlush,forwardKmer.getU64(i));
 			}
 
 			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_KMER_ACADEMY_DATA,m_outboxAllocator,m_outbox,
@@ -168,7 +173,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 		}
 
 		(m_mode_send_vertices_sequence_id_position++);
-		if((m_mode_send_vertices_sequence_id_position)==lll){
+		if((m_mode_send_vertices_sequence_id_position)==maximumPosition){
 			(m_mode_send_vertices_sequence_id)++;
 			(m_mode_send_vertices_sequence_id_position)=0;
 		}
