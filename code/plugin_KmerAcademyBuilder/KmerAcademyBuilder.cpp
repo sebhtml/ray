@@ -74,7 +74,10 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	if(m_pendingMessages!=0){
+/*
+ * Busy wait if there are pending messages.
+ */
+	if(m_pendingMessages>0){
 		return;
 	}
 
@@ -142,7 +145,24 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		if(isValidDNA(memory)){
-			Kmer forwardKmer=wordId(memory);
+			Kmer kmerToSend=wordId(memory);
+
+/*
+ * Sets this if you only want to send the lower 
+ * k-mer.
+ *
+ * TODO: the code is suppose to work without __SEND_LOWER, but it does not.
+ */
+			#define __SEND_LOWER
+
+			#ifdef __SEND_LOWER
+			Kmer reverseKmer=kmerToSend.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+			if(reverseKmer<kmerToSend)
+				kmerToSend=reverseKmer;
+			#endif
+	
+			#undef __SEND_LOWER
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -158,10 +178,10 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
  * only one of them.
  */
 
-			Rank rankToFlush=forwardKmer.hash_function_1()%m_parameters->getSize();
+			Rank rankToFlush=kmerToSend.hash_function_1()%m_parameters->getSize();
 			
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,forwardKmer.getU64(i));
+				m_bufferedData.addAt(rankToFlush,kmerToSend.getU64(i));
 			}
 
 			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_KMER_ACADEMY_DATA,m_outboxAllocator,m_outbox,
@@ -205,7 +225,7 @@ SlaveMode*mode,RingAllocator*outboxAllocator){
 	m_finished=false;
 	m_distributionIsCompleted=false;
 
-	m_reverseComplementVertex=false;
+	m_reverseComplementVertex=false;// TODO: remove this
 
 	m_mode_send_vertices_sequence_id=0;
 	m_mode_send_vertices_sequence_id_position=0;

@@ -24,7 +24,8 @@
 
 #include "plugin_KmerAcademyBuilder/Kmer.h"
 
-/** a KmerCandidate may become a genomic super-star --
+/** 
+ * A KmerCandidate may become a genomic super-star --
  * one of the fews that make it to the graph
  * \author Sébastien Boisvert
  */
@@ -35,6 +36,16 @@ public:
 
 	Kmer getKey();
 	void setKey(Kmer key);
+
+/**
+ * Gets the k-mer coverage
+ */
+	CoverageDepth getCoverage(Kmer*key);
+
+/**
+ * Updates the k-mer coverage.
+ */
+	void setCoverage(Kmer*key,CoverageDepth value);
 
 }ATTRIBUTE_PACKED;
 

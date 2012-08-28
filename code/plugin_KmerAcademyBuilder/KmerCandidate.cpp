@@ -28,3 +28,23 @@ Kmer KmerCandidate::getKey(){
 void KmerCandidate::setKey(Kmer key){
 	m_lowerKey=key;
 }
+
+void KmerCandidate::setCoverage(Kmer*a,CoverageDepth coverage){
+	if(*a==m_lowerKey){
+
+		CoverageDepth max=0;
+		max=max-1;// underflow.
+
+		if(m_count==max){ // maximum value
+			return;
+		}
+
+		m_count=coverage;
+	}
+}
+
+CoverageDepth KmerCandidate::getCoverage(Kmer*a){
+	return m_count;
+}
+
+

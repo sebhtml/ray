@@ -176,8 +176,9 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,
 				RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
-					m_parameters->getRank(),false))
+					m_parameters->getRank(),false)){
 				m_pendingMessages++;
+			}
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 

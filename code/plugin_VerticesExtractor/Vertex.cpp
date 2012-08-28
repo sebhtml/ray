@@ -58,9 +58,11 @@ bool Vertex::isAssembledByGreaterRank(Rank origin){
 }
 
 void Vertex::setCoverage(Kmer*a,CoverageDepth coverage){
-	CoverageDepth max=0;
-	max=max-1;// underflow.
 	if(*a==m_lowerKey){
+
+		CoverageDepth max=0;
+		max=max-1;// underflow.
+
 		if(m_coverage_lower==max){ // maximum value
 			return;
 		}

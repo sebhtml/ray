@@ -717,21 +717,35 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
-		Kmer l;
+		Kmer kmerObject;
 		int pos=i;
-		l.unpack(incoming,&pos);
+		kmerObject.unpack(incoming,&pos);
+		//bool isTheLowerKmer=false;
 
-		/* TODO: remove call to reverseComplement, this if should never be picked up because only the lowest k-mers are sent
- *
- * I am not sure it would work but if it does that would reduces the number of sent messages */
-		Kmer reverseComplement=l.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+/* 
+ * TODO: remove call to reverseComplement, this if should never be 
+ * picked up because only the lowest k-mers are sent
+ * I am not sure it would work but if it does that would reduces 
+ * the number of sent messages 
+ * 
+ * *** Anyway, the message was delivered anyway already.
+ */
+		Kmer reverseComplement=kmerObject.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-/* TODO: I think this cause messages to be discarded...
- * Anyway, the message was delivered anyway already.
-		if(reverseComplement<l)
-			continue;
-*/
+/*
+ * This assert can only fail if the user modified
+ * the source code to enable odd k-mer length
+ * values
+ */
+		#ifdef ASSERT
+		assert(reverseComplement!=kmerObject);
+		#endif
 
+		#if 0
+		if(kmerObject < reverseComplement)
+			isTheLowerKmer=true;
+		#endif
+		
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",m_rank,(int)m_subgraph->size());
@@ -742,12 +756,15 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			}
 		}
 		
-		KmerCandidate*candidate=m_subgraph->getKmerAcademy()->find(&l);
+		KmerCandidate*candidate=m_subgraph->getKmerAcademy()->find(&kmerObject);
 
-		/** the candidate remained in the Bloom filter ! , good.*/
-		if(candidate == NULL){
+/* 
+ * The candidate remained in the Bloom filter. This is good 
+ * because we save memory.
+ */
+
+		if(candidate == NULL)
 			continue;
-		}
 
 		#ifdef ASSERT
 		assert(candidate!=NULL);
@@ -755,10 +772,19 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 
 		CoverageDepth value=candidate->m_count;
 
+/*
+ * To go in the actual distributed de Bruijn graph,
+ * we require the k-mer to occur at least a certain
+ * number of times in the data.
+ */
 		if(value<m_parameters->getMinimumCoverageToStore())
 			continue;
 
-		Vertex*tmp=m_subgraph->insert(&l);
+/*
+ * We have a go. We insert the k-mer in the distributed
+ * de Bruijn graph.
+ */
+		Vertex*tmp=m_subgraph->insert(&kmerObject);
 
 		#ifdef ASSERT
 		assert(tmp!=NULL);
@@ -768,8 +794,17 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			tmp->constructor(); 
 		}
 
-		tmp->setCoverage(&l,tmp->getCoverage(&l)+1);
+/*
+ * We only increase the k-mer coverage of the pair
+ * when we see the lower k-mer of the pair. Otherwise,
+ * the coverage will be double what it should be.
+ * This logic is implemented in the class Vertex.
+ */
+		CoverageDepth oldCoverage=tmp->getCoverage(&kmerObject);
+		CoverageDepth newCoverage=oldCoverage+1;
+		tmp->setCoverage(&kmerObject,newCoverage);
 	}
+
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
@@ -2293,13 +2328,55 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 
 	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
-		/** the Kmer l is the lower between l and revcomp(l) */
-		Kmer l;
-		int pos=i;
-		l.unpack(incoming,&pos);
 
-		if((*m_last_value)!=(int)m_subgraph->getKmerAcademy()->size() && (int)m_subgraph->getKmerAcademy()->size()%100000==0){
+/*
+ * The Kmer kmerObject is a short DNA sequence.
+ */
+		Kmer kmerObject;
+		int pos=i;
+		kmerObject.unpack(incoming,&pos);
+
+/*
+ * We need the lower k-mer because the sender did not
+ * pledge to send the lower k-mer.
+ * The storage engine only process the command 
+ * setCoverage() if its operand is the lower k-mer 
+ * of a pair.
+ */
+		Kmer reverseComplement=kmerObject.complementVertex(m_parameters->getWordSize(),
+			m_parameters->getColorSpaceMode());
+
+		#ifdef ASSERT
+		Kmer twin=reverseComplement.complementVertex(m_parameters->getWordSize(),
+			m_parameters->getColorSpaceMode());
+		assert(twin==kmerObject);
+		#endif
+
+		#ifdef ASSERT
+		assert(kmerObject!=reverseComplement);
+		#endif
+
+		Kmer lowerKmer=kmerObject;
+
+		if(reverseComplement<lowerKmer)
+			lowerKmer=reverseComplement;
+
+		#ifdef ASSERT
+		if(reverseComplement<kmerObject)
+			assert(lowerKmer==reverseComplement);
+		else
+			assert(lowerKmer==kmerObject);
+		#endif
+/*
+ * This displays some progression
+ * on the screen.
+ */
+
+		if((*m_last_value)!=(int)m_subgraph->getKmerAcademy()->size() 
+			&& (int)m_subgraph->getKmerAcademy()->size()%100000==0){
+
 			(*m_last_value)=m_subgraph->getKmerAcademy()->size();
+
 			printf("Rank %i has %i k-mers\n",m_rank,(int)m_subgraph->getKmerAcademy()->size());
 			fflush(stdout);
 
@@ -2310,34 +2387,68 @@ void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
 			m_subgraph->getKmerAcademy()->printStatistics();
 		}
 
-		if(m_bloomBits>0 && !m_bloomFilter.hasValue(&l)){
+/*
+ * If the Bloom filter has exactly 0 bits,
+ * this means that it is disabled.
+ * The Bloom filter only contain the lower k-mers.
+ */
+		if(m_bloomBits>0 && !m_bloomFilter.hasValue(&lowerKmer)){
 /*
 			cout<<"inserting in Bloom filter: "<<endl;
-			l.print();
+			kmerObject.print();
 */
 
-			m_bloomFilter.insertValue(&l);
+			m_bloomFilter.insertValue(&lowerKmer);
+
 			continue;
 		}
 
-		/** the Kmer object is in the BloomFilter */
+/*
+ * The Kmer object is in the BloomFilter.
+ * The storage engine will take care of the k-mer even
+ * if it is not the lower k-mer for the insertion.
+ */
 
-		KmerCandidate*tmp=m_subgraph->insertInAcademy(&l);
+		KmerCandidate*tmp=m_subgraph->insertInAcademy(&lowerKmer);
+
 		#ifdef ASSERT
 		assert(tmp!=NULL);
 		#endif
 
-		/** start at 1 since this step was avoided by the BloomFilter */
+/*
+ * We start at 1 since this step was avoided by the BloomFilter.
+ */
 		if(m_subgraph->insertedInAcademy()){
-			tmp->m_count=1;
+			CoverageDepth startingValue=0;
+
+			if(m_bloomBits>0)
+				startingValue++;
+
+			tmp->setCoverage(&lowerKmer,startingValue);
 		}
 
-		CoverageDepth oldValue=tmp->m_count;
-		if(tmp->m_lowerKey==l)
-			tmp->m_count++;
-		if(tmp->m_count<oldValue)
-			tmp->m_count=oldValue; /* avoids overflow */
+/*
+ * getCoverage works fine even on other k-mer that is not the lower 
+ */
+		CoverageDepth oldValue=tmp->getCoverage(&lowerKmer);
+		CoverageDepth newValue=oldValue+1;
+
+		#ifdef ASSERT
+		assert(oldValue < newValue);
+		#endif
+
+/*
+ * The class KmerCandidate takes care of discarding method calls
+ * if the object is not the selected from any pair.
+ */
+		tmp->setCoverage(&lowerKmer,newValue);
+
+		#ifdef ASSERT
+		assert(newValue>0);
+		assert(newValue==tmp->getCoverage(&lowerKmer));
+		#endif
 	}
+
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }
