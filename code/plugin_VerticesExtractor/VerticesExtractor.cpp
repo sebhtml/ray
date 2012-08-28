@@ -317,10 +317,18 @@ void VerticesExtractor::setReadiness(){
 	#ifdef ASSERT
 	assert(m_pendingMessages>0);
 	#endif
+
 	m_pendingMessages--;
 }
 
 void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_outbox,int rank){
+
+/**
+ * wait for the reply for current messages
+ */
+	if(m_pendingMessages)
+		return;
+
 	if(!m_bufferedData.isEmpty()){
 		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
 		return;
