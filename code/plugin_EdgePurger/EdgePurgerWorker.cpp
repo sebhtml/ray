@@ -48,9 +48,13 @@ void EdgePurgerWorker::work(){
 
 				CoverageDepth coverage=response[0];
 
-				if(coverage<m_parameters->getMinimumCoverageToStore()){
+/*
+ * The vertex is not in the graph.
+ */
+				if(coverage==0){
 					m_vertex->deleteIngoingEdge(&m_currentKmer,&vertex,m_parameters->getWordSize());
 				}
+
 				m_iterator++;
 				m_coverageRequested=false;
 			}
@@ -81,7 +85,10 @@ void EdgePurgerWorker::work(){
 
 				CoverageDepth coverage=response[0];
 
-				if(coverage<m_parameters->getMinimumCoverageToStore()){
+/*
+ * The vertex is not in the graph
+ */
+				if(coverage==0){
 					m_vertex->deleteOutgoingEdge(&m_currentKmer,&vertex,m_parameters->getWordSize());
 				}
 				m_iterator++;
