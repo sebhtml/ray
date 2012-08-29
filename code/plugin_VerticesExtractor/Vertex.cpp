@@ -32,7 +32,6 @@ using namespace std;
 void Vertex::constructor(){
 	m_coverage_lower=0;
 	m_edges_lower=0;
-	m_edges_higher=0;
 	m_readsStartingHere=NULL;
 	m_directions=NULL;
 	m_assembled=__NO_ORIGIN;
@@ -76,28 +75,19 @@ CoverageDepth Vertex::getCoverage(Kmer*a){
 }
 
 vector<Kmer> Vertex::getIngoingEdges(Kmer *a,int k){
-	if((*a)==m_lowerKey){
-		return a->_getIngoingEdges(m_edges_lower,k);
-	}
-	return a->_getIngoingEdges(m_edges_higher,k);
+	return a->_getIngoingEdges(getEdges(a),k);
 }
 
 vector<Kmer> Vertex::getOutgoingEdges(Kmer*a,int k){
-	if(*a==m_lowerKey){
-		return a->_getOutgoingEdges(m_edges_lower,k);
-	}
-	return a->_getOutgoingEdges(m_edges_higher,k);
+	return a->_getOutgoingEdges(getEdges(a),k);
 }
 
 void Vertex::addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
 	uint8_t s1First=a->getFirstSegmentFirstCode(k);
 	// add s1First to edges.
 	uint8_t newBits=(1<<(s1First));
-	if(*vertex==m_lowerKey){
-		m_edges_lower=m_edges_lower|newBits;
-	}else{
-		m_edges_higher=m_edges_higher|newBits;
-	}
+
+	setEdges(vertex,getEdges(vertex)|newBits);
 }
 
 void Vertex::deleteIngoingEdge(Kmer*vertex,Kmer*a,int k){
@@ -105,11 +95,8 @@ void Vertex::deleteIngoingEdge(Kmer*vertex,Kmer*a,int k){
 	// delete s1First from edges.
 	uint8_t newBits=(1<<(s1First));
 	newBits=~newBits;
-	if(*vertex==m_lowerKey){
-		m_edges_lower=m_edges_lower&newBits;
-	}else{
-		m_edges_higher=m_edges_higher&newBits;
-	}
+
+	setEdges(vertex,getEdges(vertex)&newBits);
 }
 
 void Vertex::addIngoingEdge(Kmer*vertex,Kmer*a,int k){
@@ -127,33 +114,33 @@ void Vertex::addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){
 	// put s2Last in m_edges
 	uint8_t s2Last=a->getSecondSegmentLastCode(k);
 	uint64_t newBits=1<<(4+s2Last);
-	if(*vertex==m_lowerKey){
-		m_edges_lower=m_edges_lower|newBits;
-	}else{
-		m_edges_higher=m_edges_higher|newBits;
-	}
+
+	setEdges(vertex,getEdges(vertex)|newBits);
 }
 
 void Vertex::deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k){
 	uint8_t s2Last=a->getSecondSegmentLastCode(k);
 	uint64_t newBits=1<<(4+s2Last);
 	newBits=~newBits;
-	if(*vertex==m_lowerKey){
-		m_edges_lower=m_edges_lower&newBits;
-	}else{
-		m_edges_higher=m_edges_higher&newBits;
-	}
+
+	setEdges(vertex,getEdges(vertex)&newBits);
 }
 
 void Vertex::addOutgoingEdge(Kmer*vertex,Kmer*a,int k){
 	addOutgoingEdge_ClassicMethod(vertex,a,k);
 }
 
+void Vertex::setEdges(Kmer*a,uint8_t edges){
+	if(*a==m_lowerKey)
+		m_edges_lower=edges;
+	else
+		m_edges_lower=convertBitmap(edges);
+}
+
 uint8_t Vertex::getEdges(Kmer*a){
-	if(*a==m_lowerKey){
+	if(*a==m_lowerKey)
 		return m_edges_lower;
-	}
-	return m_edges_higher;
+	return convertBitmap(m_edges_lower);
 }
 
 void Vertex::addRead(Kmer*vertex,ReadAnnotation*e){
@@ -298,4 +285,102 @@ void Vertex::setKey(Kmer key){
 	m_lowerKey=key;
 }
 
+/*
+ *   The algorithm to convert these maps:
+ *
+ * [Swap the 4 bits for children with the 4 bits for parents]
+ *   swap 7 and 3
+ *   swap 6 and 2
+ *   swap 5 and 1
+ *   swap 4 and 0
+ * [Swap nucleotides]
+ *   swap 7 and 4
+ *   swap 6 and 5
+ *   swap 3 and 0
+ *   swap 2 and 1
+ *  
+ *      children   parents
+ *      |--------|-------|
+ *      |7 6 5 4 |3 2 1 0| bit index
+ *      |T G C A |T G C A| nucleotide
+ *      |--------|-------|
+ *     < 0 0 1 0  1 0 0 1 > bit value
+ *       ................
+*
+ *  see also the .h that has more documentation for this.
+ */
+uint8_t Vertex::convertBitmap(uint8_t bitMap){
+
+/*
+ * [Swap the 4 bits for children with the 4 bits for parents]
+ * This is equivalent to swapping bits as described
+ * above.
+ */
+	uint8_t newBits4_7=bitMap<<4;
+	uint8_t newBits0_3=bitMap>>4;
+	uint8_t baseMap=newBits4_7|newBits0_3;
+
+/*
+ * Swap nucleotides
+ */
+	baseMap=swapBits(baseMap,7,4);
+	baseMap=swapBits(baseMap,6,5);
+	baseMap=swapBits(baseMap,3,0);
+	baseMap=swapBits(baseMap,2,1);
+
+	return baseMap;
+}
+
+uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2){
+	int bit1Value=((uint64_t)map<<(63-bit1))>>63;
+	int bit2Value=((uint64_t)map<<(63-bit2))>>63;
+
+	#ifdef ASSERT
+	assert(bit1>=0);
+	assert(bit1<8);
+	assert(bit2>=0);
+	assert(bit2<8);
+	#endif
+
+/*
+ * The bit are the same, no need to swap anything.
+ */
+	if(bit1Value==bit2Value)
+		return map;
+
+	#ifdef ASSERT
+	if(bit1Value+bit2Value!=1){
+		cout<<"bit values: "<<bit1Value<<" "<<bit2Value<<endl;
+	}
+
+	assert(bit1Value==0||bit2Value==0);
+	assert(bit1Value==1||bit2Value==1);
+	assert(bit1Value+bit2Value==1);
+	#endif
+
+	if(bit1Value==1){
+		// set bit2 to 1 
+		map|=(1<<bit2);
+		// and bit1 to 0
+		map&=~(1<<bit1);
+	}else if(bit2Value==1){
+		// set bit1 to 1 
+		map|=(1<<bit1);
+		// and bit2 to 0
+		map&=~(1<<bit2);
+	}
+
+	#ifdef ASSERT
+	int newBit1Value=((uint64_t)map<<(63-bit1))>>63;
+	int newBit2Value=((uint64_t)map<<(63-bit2))>>63;
+
+	assert(newBit1Value==bit2Value);
+	assert(newBit2Value==bit1Value);
+	assert(newBit1Value+newBit2Value==1);
+	assert(newBit1Value==0||newBit2Value==0);
+	assert(newBit1Value==1||newBit2Value==1);
+	#endif /* ASSERT */
+
+	return map;
+}
 

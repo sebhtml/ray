@@ -33,19 +33,102 @@
 #include <vector>
 using namespace std;
 
-/*
- * the vertex is important in the algorithm
- * a DNA sequence is simply an ordered array of vertices. Two consecutive 
+/**
+ * The vertex is important in the algorithm.
+ * A DNA sequence is simply an ordered array of vertices. 
+ * Two consecutive 
  * vertices always respect the de Bruijn property.
- * a Vertex actually stores two k-mers: only the lower is stored.
+ * A Vertex actually stores two k-mers: only the lower is stored.
  * This halves the memory usage.
+ * It is also required when using the probabilistic error
+ * module implemented in the Bloom filter for 
+ * coherency.
+ *
  * \author Sébastien Boisvert
+ * \date 2012-08-29 now using only one bitmap for the edges of 
+ * both k-mers of the pair.
  */
 class Vertex{
 	
 	VirtualKmerColorHandle m_color;
 
-// TODO: move these attributes in the private or protected zone
+
+/**
+ *	the ingoing and outgoing edges.
+ *
+ *      A=0x0,C=0x1,G=0x2,T=0x3
+ *     
+ *	bits 0-3: ingoing edges
+ *	bits 4-7: outgoing edges
+ *
+ *	7 6 5 4 3 2 1 0
+ *
+ *
+ *      T G C A T G C A
+ *
+ *      Example:
+ *
+ *       parents    main k-mer       children
+ *
+ *       GATGA --->   ATGAC  --->  TGACT
+ *                           --->  TGACA
+ *
+ *      In this case, the bitmap is:
+ *
+ *      children   parents
+ *      |--------|-------|
+ *      |7 6 5 4 |3 2 1 0| bit index
+ *      |T G C A |T G C A| nucleotide
+ *      |--------|-------|
+ *     < 1 0 0 1  0 1 0 0 > bit value
+ *       ................
+ *
+ *
+ *      In the graph, there will also be this:
+ *
+ *       parents    main k-mer       children
+ *
+ *       AGTCA --->   GTCAT  ---> TCATC
+ *       TGTCA --->
+ *
+ *      In this case, the bitmap is:
+ *
+ *      children   parents
+ *      |--------|-------|
+ *      |7 6 5 4 |3 2 1 0| bit index
+ *      |T G C A |T G C A| nucleotide
+ *      |--------|-------|
+ *     < 0 0 1 0  1 0 0 1 > bit value
+ *       ................
+ *
+ *   The algorithm to convert these maps:
+ *
+ * [Swap the 4 bits for children with the 4 bits for parents]
+ *   swap 7 and 3
+ *   swap 6 and 2
+ *   swap 5 and 1
+ *   swap 4 and 0
+ * [Swap nucleotides]
+ *   swap 7 and 4
+ *   swap 6 and 5
+ *   swap 3 and 0
+ *   swap 2 and 1
+ *
+ *  This is exactly 8 operations and no dynamic memory allocation.
+ */
+	uint8_t m_edges_lower;
+
+/*
+ * Below are the methods
+ */
+	void setEdges(Kmer*kmer,uint8_t edgeData);
+
+	uint8_t convertBitmap(uint8_t bitmap);
+	uint8_t swapBits(uint8_t map,int bit1,int bit2);
+/*
+ * TODO: move these attributes in the private or protected zone
+ */
+
 public:
 	Kmer m_lowerKey;
 	/*
@@ -53,13 +136,6 @@ public:
  */
 	CoverageDepth m_coverage_lower;
 
-	/*
- *	the ingoing and outgoing edges.
- */
-	// outgoing  ingoing
-	
-	uint8_t m_edges_lower;
-	uint8_t m_edges_higher;
 
 /*
  * 	read annotations
@@ -84,8 +160,17 @@ public:
 	CoverageDepth getCoverage(Kmer*p);
 	void addOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge(Kmer*vertex,Kmer*a,int k);
+
+/*
+ * TODO, the vector should be a out parameter
+ */
 	vector<Kmer> getIngoingEdges(Kmer*a,int k);
+
+/*
+ * TODO, the vector should be a out parameter
+ */
 	vector<Kmer> getOutgoingEdges(Kmer*a,int k);
+
 	uint8_t getEdges(Kmer*a);
 	void deleteIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	void deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k);
@@ -111,8 +196,6 @@ public:
 	Kmer getKey();
 	void setKey(Kmer key);
 
-
-
 } ATTRIBUTE_PACKED;
 
-#endif
+#endif /* _Vertex */
