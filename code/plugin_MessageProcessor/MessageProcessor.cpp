@@ -770,7 +770,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		assert(candidate!=NULL);
 		#endif
 
-		CoverageDepth value=candidate->m_count;
+		CoverageDepth value=candidate->getCoverage(&kmerObject);
 
 /*
  * To go in the actual distributed de Bruijn graph,
@@ -873,7 +873,9 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int length=count;
 
-	for(int i=0;i<(int)length;i+=2*KMER_U64_ARRAY_SIZE){
+	int period=2*KMER_U64_ARRAY_SIZE;
+
+	for(int i=0;i<(int)length;i+=period){
 		int pos=i;
 		Kmer prefix;
 		prefix.unpack(incoming,&pos);
@@ -925,7 +927,9 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
  *
  * | vertex1 | vertex2 | vertex1 |vertex 2 | ...
  */
-	for(int i=0;i<(int)length;i+=2*KMER_U64_ARRAY_SIZE){
+	int period=2*KMER_U64_ARRAY_SIZE;
+
+	for(int i=0;i<(int)length;i+=period){
 		int bufferPosition=i;
 		Kmer prefix;
 		prefix.unpack(incoming,&bufferPosition);
@@ -934,6 +938,9 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 
 		Vertex*node=m_subgraph->find(&suffix);
 
+/*
+ * The suffix is not in the graph.
+ */
 		if(node==NULL){
 			continue;
 		}
