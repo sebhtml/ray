@@ -10,3 +10,6 @@ mpicxx \
  -I. -Icode -IRayPlatform \
  $(find code/|grep .cpp$;find RayPlatform/|grep .cpp$) \
  -o Ray
+
+# remove even more stuff from the executable
+strip Ray
