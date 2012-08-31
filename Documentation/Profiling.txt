@@ -39,7 +39,8 @@ a slave mode or master mode that must be executed for one tick.
 All scheduling information is written in RayOutput/Scheduling/*.
 These reports provide, for each MPI rank, the granularity in nanoseconds
 the number of messages sent/received per second, the number of ticks
-in the supervisor, and so on.
+in the supervisor, the total number of milliseconds for any given
+slave mode or master mode, and so on.
 
 Statistics on messages sent or received are written in
 RayOutput/MessagePassingInterface.txt
@@ -51,6 +52,11 @@ The option -run-profiler will run Ray in slow mode, but the supervisor
 will collect a lot of profiling information. There is also a compile
 time option to add collectors in the code. The option is 
 CONFIG_PROFILER_COLLECT=y (or -D CONFIG_PROFILER_COLLECT).
+
+## Running time
+
+The file RayOutput/ElapsedTime.txt contains a human-readable report of
+the time required by each step.
 
 ## Memory usage
 
