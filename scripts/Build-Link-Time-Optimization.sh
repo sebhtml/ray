@@ -2,7 +2,7 @@
 
 
 mpicxx \
--Wall -ansi -O3 -march=native -flto -fwhole-program \
+-Wall -std=c++98 -O3 -march=native -flto -fwhole-program \
  -D HAVE_LIBZ -D HAVE_LIBBZ2 -lz -lbz2 \
  -flto-report \
  -D MAXKMERLENGTH=32  \

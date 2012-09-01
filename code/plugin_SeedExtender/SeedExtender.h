@@ -126,6 +126,8 @@ class SeedExtender: public CorePlugin  {
 	/* for sliced computation */
 	AssemblySeed m_complementedSeed;
 
+	void printSeed();
+
 	int m_slicedProgression;
 	bool m_slicedComputationStarted;
 

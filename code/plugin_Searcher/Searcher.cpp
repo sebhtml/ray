@@ -1089,7 +1089,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		for(int i=0;i<count;i+=period){
 
 			int bufferPosition=i;
-			bufferPosition+=KMER_U64_ARRAY_SIZE;
+			bufferPosition+=KMER_U64_ARRAY_SIZE;// skip the k-mer
 
 			int position=(int)buffer[bufferPosition++];
 
@@ -1108,6 +1108,18 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			}
 
 			if(m_writeDetailedFiles){
+				#ifdef ASSERT
+				int length=(*m_contigs)[m_contig].size();
+
+				if(position>=length){
+					cout<<"Error: index out of bound: position: "<<position<<" size: ";
+					cout<<length<<endl;
+				}
+
+				assert(position<length);
+				assert(position>=0);
+				#endif
+
 				m_coverageValues[position]=coverage;
 				m_colorValues[position]=colors;
 			}

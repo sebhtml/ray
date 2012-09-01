@@ -2217,6 +2217,35 @@ void SeedExtender::processExpiredReads(){
 
 }
 
+void SeedExtender::printSeed(){
+
+	int position=m_ed->m_EXTENSION_currentSeed.size()-1;
+
+	#ifdef ASSERT
+	assert(position>=0);
+	#endif
+
+	bool colored=m_parameters->getColorSpaceMode();
+
+	int wordSize=m_parameters->getWordSize();
+	cout<<"Ray info ***********************"<<endl;
+	cout<<"Initial seed has "<<m_ed->m_EXTENSION_currentSeed.size()<<" k-mers"<<endl;
+	cout<<"Path content:"<<endl;
+	cout<<" Position Kmer Coverage"<<endl;
+
+	while(position>=0){
+		Kmer*kmer= (m_ed->m_EXTENSION_currentSeed.at(position));
+		CoverageDepth depth=m_ed->m_EXTENSION_currentSeed.getCoverageAt(position);
+
+		cout<<" "<<position<<" "<<kmer->idToWord(wordSize,colored)<<" ";
+		cout<<depth<<endl;
+
+		position--;
+	}
+
+
+}
+
 int SeedExtender::chooseWithSeed(){
 	// use the seed to extend the thing.
 
@@ -2224,8 +2253,14 @@ int SeedExtender::chooseWithSeed(){
 	if(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_currentSeed.size()){
 
 		if(m_ed->m_EXTENSION_currentPosition==0){
+
+			cout<<"Initial seed used in the current flow:"<<endl;
+			printSeed();
+
 			m_ed->m_EXTENSION_currentSeed.resetCoverageValues();
 		}
+
+		bool colored=m_parameters->getColorSpaceMode();
 
 		Kmer*kmerInSeed=m_ed->m_EXTENSION_currentSeed.at(m_ed->m_EXTENSION_currentPosition);
 
@@ -2254,7 +2289,9 @@ int SeedExtender::chooseWithSeed(){
 		}
 
 		cout<<endl;
-		cout<<"Seed length: "<<m_ed->m_EXTENSION_currentSeed.size()<<" vertices"<<endl;
+
+		printSeed();
+
 		cout<<"Choices: ";
 		for(int i=0;i<(int)m_ed->m_enumerateChoices_outgoingEdges.size();i++){
 			cout<<" "<<(m_ed->m_enumerateChoices_outgoingEdges[i]).idToWord(wordSize,m_parameters->getColorSpaceMode());
@@ -2280,11 +2317,36 @@ int SeedExtender::chooseWithSeed(){
 		vector<Kmer> compactData=m_currentVertex->_getOutgoingEdges(m_compactEdges,
 			m_parameters->getWordSize());
 
-		cout<<"Choices from compactEdges: ";
+		cout<<"Ray info ***********************"<<endl;
+		cout<<"Choices from compactEdges: "<<compactData.size()<<endl;
 		for(int i=0;i<(int)compactData.size();i++){
 			Kmer*kmer=&(compactData[i]);
-			cout<<" "<<kmer->idToWord(wordSize,m_parameters->getColorSpaceMode());
+			cout<<" "<<kmer->idToWord(wordSize,colored)<<endl;
 		}
+
+		//int last=100;
+		int position=m_ed->m_EXTENSION_extension.size()-1;
+
+		#ifdef ASSERT
+		assert(position>=0);
+		#endif
+
+		cout<<"Ray info ***********************"<<endl;
+		cout<<"Current path has "<<m_ed->m_EXTENSION_extension.size()<<" k-mers"<<endl;
+		cout<<"Path content:"<<endl;
+		cout<<" Position Kmer Coverage"<<endl;
+
+		while(position>=0){
+			Kmer*kmer=&(m_ed->m_EXTENSION_extension[position]);
+			CoverageDepth depth=m_ed->m_extensionCoverageValues[position];
+
+			cout<<" "<<position<<" "<<kmer->idToWord(wordSize,colored)<<" ";
+			cout<<depth<<endl;
+
+			position--;
+		}
+
+
 
 		cout<<"Exiting..."<<endl;
 

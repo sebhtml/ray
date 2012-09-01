@@ -36,6 +36,14 @@ Kmer*AssemblySeed::at(int i){
 	return &(m_vertices.at(i));
 }
 
+CoverageDepth AssemblySeed::getCoverageAt(int position){
+
+	if(m_coverageValues.size()==0)
+		return 0;
+
+	return m_coverageValues[position];
+}
+
 void AssemblySeed::push_back(Kmer*a){
 	m_vertices.push_back(*a);
 }
@@ -58,6 +66,7 @@ void AssemblySeed::computePeakCoverage(){
 	bool useMean=true;
 
 	#ifdef ASSERT
+	assert(m_coverageValues.size() == m_vertices.size());
 	assert((useMode || useMean) && !(useMode && useMean));
 	#endif
 
@@ -75,17 +84,17 @@ void AssemblySeed::computePeakCoverage(){
 	}
 }
 
-int AssemblySeed::getPeakCoverage(){
+CoverageDepth AssemblySeed::getPeakCoverage(){
 	return m_peakCoverage;
 }
 
-void AssemblySeed::addCoverageValue(int value){
+void AssemblySeed::addCoverageValue(CoverageDepth value){
 	m_coverageValues.push_back(value);
 }
 
 void AssemblySeed::computePeakCoverageUsingMode(){
 
-	map<int,int> frequencies;
+	map<CoverageDepth,int> frequencies;
 
 	for(int i=0;i<(int)m_coverageValues.size();i++){
 		frequencies[m_coverageValues[i]]++;
@@ -93,7 +102,7 @@ void AssemblySeed::computePeakCoverageUsingMode(){
 
 	int best=-1;
 
-	for(map<int,int>::iterator i=frequencies.begin();
+	for(map<CoverageDepth,int>::iterator i=frequencies.begin();
 		i!=frequencies.end();i++){
 
 		if(frequencies.count(best)==0 || i->second > frequencies[best]){
@@ -113,7 +122,7 @@ void AssemblySeed::computePeakCoverageUsingMode(){
 
 void AssemblySeed::computePeakCoverageUsingMean(){
 
-	map<int,int> frequencies;
+	map<CoverageDepth,int> frequencies;
 
 	for(int i=0;i<(int)m_coverageValues.size();i++){
 		frequencies[m_coverageValues[i]]++;
@@ -122,7 +131,7 @@ void AssemblySeed::computePeakCoverageUsingMean(){
 	LargeCount sum=0;
 	LargeCount count=0;
 
-	for(map<int,int>::iterator i=frequencies.begin();
+	for(map<CoverageDepth,int>::iterator i=frequencies.begin();
 		i!=frequencies.end();i++){
 
 		CoverageDepth coverage=i->first;
@@ -143,7 +152,7 @@ void AssemblySeed::computePeakCoverageUsingMean(){
 	assert(sum > 0);
 	#endif
 
-	int mean=( sum / count );
+	CoverageDepth mean=( sum / count );
 
 	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<endl;
 

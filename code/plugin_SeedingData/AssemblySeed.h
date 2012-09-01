@@ -35,9 +35,9 @@ using namespace std;
  */
 class AssemblySeed{
 	vector<Kmer> m_vertices;
-	vector<int> m_coverageValues;
+	vector<CoverageDepth> m_coverageValues;
 
-	int m_peakCoverage;
+	CoverageDepth m_peakCoverage;
 
 /** computes locality with a weighted mean (locality object is peak coverage) **/
 	void computePeakCoverageUsingMean();
@@ -50,12 +50,14 @@ public:
 
 	int size()const;
 	Kmer*at(int i);
+	CoverageDepth getCoverageAt(int i);
+	
 	void push_back(Kmer*a);
 	vector<Kmer>*getVertices();
 	void clear();
 
-	void addCoverageValue(int value);
-	int getPeakCoverage();
+	void addCoverageValue(CoverageDepth value);
+	CoverageDepth getPeakCoverage();
 	void resetCoverageValues();
 
 	void computePeakCoverage();
