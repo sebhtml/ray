@@ -1,23 +1,22 @@
-## Design
+## Programmers
 
 - Sébastien Boisvert
 
-## Implementation
+## Designers
 
 - Sébastien Boisvert
+- Élénie Godzaridis (some design insights for parallel programming)
+- Frédéric Raymond (colored graph algorithms)
 
-## Mentoring:
+## Code reviewers
 
-- François Laviolette
+- Élénie Godzaridis
+
+## Mentors
+
 - Jacques Corbeil
+- François Laviolette
 
-## Some code reviews
-
-- Élénie Godzaridis
-
-## Some design insights for parallel programming
-
-- Élénie Godzaridis
 
 
 For contributors, check the 'git log'.
