@@ -984,7 +984,12 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 		double ratio=100.0*setBits/bits;
 
 		cout<<"Rank "<<m_rank<<" number of set bits in the Bloom filter: ";
-		cout<<"[ "<<setBits<<" / "<<bits<<" ] ("<<ratio<<"%)"<<endl;
+		cout<<"[ "<<setBits<<" / "<<bits<<" ] ("<<ratio<<"%)";
+
+		if(ratio >= 0.5)
+			cout<<" Warning: the oracle is half full."<<endl;
+
+		cout<<endl;
 
 		m_bloomFilter.destructor();
 		cout<<"Rank "<<m_rank<<" destroyed its Bloom filter"<<endl;
