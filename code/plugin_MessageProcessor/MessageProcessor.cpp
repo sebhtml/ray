@@ -782,6 +782,17 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 
 		if(m_subgraph->inserted()){
 			tmp->constructor(); 
+		
+			CoverageDepth startingValue=0;
+
+/*
+ * If the k-mers must go in the Bloom filter first,
+ * their coverage must start at 1 instead of 0.
+ */
+			if(m_bloomBits>0)
+				startingValue++;
+
+			tmp->setCoverage(&kmerObject,startingValue);
 		}
 
 /*
