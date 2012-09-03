@@ -23,8 +23,8 @@
 #define _GridTable
 
 #include <plugin_KmerAcademyBuilder/Kmer.h>
+#include <structures/MyHashTable.h>
 #include <memory/MyAllocator.h>
-#include <plugin_KmerAcademyBuilder/KmerAcademy.h>
 #include <application_core/Parameters.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 
@@ -36,7 +36,6 @@
  */
 class GridTable{
 	MyHashTable<Kmer,Vertex> m_hashTable;
-	KmerAcademy m_kmerAcademy;
 	Parameters*m_parameters;
 	LargeCount m_size;
 	bool m_inserted;
@@ -62,9 +61,6 @@ public:
 	bool isAssembled(Kmer*a);
 	bool isAssembledByGreaterRank(Kmer*a,Rank origin);
 
-	bool insertedInAcademy();
-	KmerCandidate*insertInAcademy(Kmer*key);
-	KmerAcademy*getKmerAcademy();
 	MyHashTable<Kmer,Vertex>*getHashTable();
 	void printStatistics();
 	void completeResizing();

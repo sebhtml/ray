@@ -30,9 +30,9 @@
 
 void GridTable::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
-	m_kmerAcademy.constructor(rank,m_parameters);
 	m_size=0;
 
+	showMemoryUsage(rank);
 
 	uint64_t buckets=m_parameters->getNumberOfBuckets();
 	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
@@ -91,14 +91,6 @@ Vertex*GridTable::find(Kmer*key){
 	return vertex;
 }
 
-KmerCandidate*GridTable::insertInAcademy(Kmer*key){
-	#ifdef ASSERT
-	assert(key!=NULL);
-	#endif
-
-	return m_kmerAcademy.insert(key);
-}
-
 Vertex*GridTable::insert(Kmer*key){
 	#ifdef ASSERT
 	assert(key!=NULL);
@@ -118,10 +110,6 @@ Vertex*GridTable::insert(Kmer*key){
 	}
 
 	return entry;
-}
-
-bool GridTable::insertedInAcademy(){
-	return m_kmerAcademy.inserted();
 }
 
 bool GridTable::inserted(){
@@ -154,10 +142,6 @@ bool GridTable::isAssembled(Kmer*a){
 	#endif
 
 	return entry->isAssembled();
-}
-
-KmerAcademy*GridTable::getKmerAcademy(){
-	return &m_kmerAcademy;
 }
 
 void GridTable::addRead(Kmer*a,ReadAnnotation*e){

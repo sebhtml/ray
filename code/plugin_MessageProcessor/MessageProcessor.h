@@ -219,7 +219,7 @@ class MessageProcessor :  public CorePlugin {
 	SlaveMode RAY_SLAVE_MODE_AMOS;
 	SlaveMode RAY_SLAVE_MODE_ASSEMBLE_WAVES;
 	SlaveMode RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION;
-	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
+	SlaveMode RAY_SLAVE_MODE_ADD_VERTICES;
 	SlaveMode RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS;
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_FINISH_FUSIONS;
@@ -392,7 +392,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message);
 	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
-	void call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message);
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message);

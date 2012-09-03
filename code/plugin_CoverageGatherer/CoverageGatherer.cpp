@@ -32,7 +32,7 @@
 #include <application_core/constants.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <plugin_KmerAcademyBuilder/KmerAcademyIterator.h>
+#include <plugin_VerticesExtractor/Vertex.h>
 #include <sstream>
 
 __CreatePlugin(CoverageGatherer);
@@ -50,7 +50,7 @@ void CoverageGatherer::writeKmers(){
 	LargeCount n=0;
 	#endif
 
-	if(m_subgraph->getKmerAcademy()->size()==0){
+	if(m_subgraph->size()==0){
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 			m_parameters->getRank());
@@ -94,7 +94,7 @@ void CoverageGatherer::writeKmers(){
 	while(iterator.hasNext()){
 		Vertex*node=iterator.next();
 		Kmer key=*(iterator.getKey());
-		int coverage=node->getCoverage(&key);
+		CoverageDepth coverage=node->getCoverage(&key);
 		m_distributionOfCoverage[coverage]++;
 		#ifdef ASSERT
 		n++;
@@ -139,30 +139,31 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		LargeCount n=0;
 		#endif
 
-		if(m_subgraph->getKmerAcademy()->size()==0){
+		if(m_subgraph->size()==0){
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
 			(*m_outbox).push_back(aMessage);
 			return;
 		}
-		KmerAcademyIterator iterator;
-		iterator.constructor(m_subgraph->getKmerAcademy(),m_parameters->getWordSize(),m_parameters);
+		GridTableIterator iterator;
+		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 		while(iterator.hasNext()){
-			KmerCandidate*node=iterator.next();
+			Vertex*node=iterator.next();
 			Kmer key=*(iterator.getKey());
-			int coverage=node->m_count;
+			CoverageDepth coverage=node->getCoverage(&key);
 			m_distributionOfCoverage[coverage]++;
+
 			#ifdef ASSERT
 			n++;
 			#endif
 		}
 			
 		#ifdef ASSERT
-		if(n!=m_subgraph->getKmerAcademy()->size()){
-			cout<<"Expected (from iterator)="<<n<<" Actual (->size())="<<m_subgraph->getKmerAcademy()->size()<<endl;
+		if(n!=m_subgraph->size()){
+			cout<<"Expected (from iterator)="<<n<<" Actual (->size())="<<m_subgraph->size()<<endl;
 		}
-		assert(n==m_subgraph->getKmerAcademy()->size());
+		assert(n==m_subgraph->size());
 		#endif
 		m_waiting=false;
 		m_coverageIterator=m_distributionOfCoverage.begin();

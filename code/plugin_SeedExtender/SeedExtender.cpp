@@ -266,11 +266,13 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 					ed->m_EXTENSION_coverages.push_back((*receivedVertexCoverage));
 					ed->m_enumerateChoices_outgoingEdges.push_back(kmer);
 				}else{
+					#ifdef __SHOW_BLOOM_FALSE_POSITIVES
 					cout<<"Warning: the kmer ";
 					cout<<kmer.idToWord(m_parameters->getWordSize(),
 						m_parameters->getColorSpaceMode());
 					cout<<" has a strange coverage: "<<coverageValue;
 					cout<<", it will be skipped for the children listing"<<endl;
+					#endif
 
 				}
 
