@@ -28,7 +28,9 @@
 using namespace std;
 
 void BloomFilter::constructor(uint64_t numberOfBits){
-	/*
+	m_numberOfSetBits=0;
+
+/*
 http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
 
 n = 50 000 000
@@ -43,18 +45,6 @@ false positive rate = 0.00846 = 0.846%
 
 	#ifdef ASSERT
 	assert(numberOfBits>0);
-	#endif
-
-	while(m_bits%64!=0)
-		m_bits++;
-
-	if(m_bits!=numberOfBits){
-		cout<<"Warning: the number of bits must be a multiple of 64."<<endl;
-		cout<<"Warning: adjusted the number of bits to "<<m_bits<<" in the Bloom filter"<<endl;
-	}
-
-	#ifdef ASSERT
-	assert(m_bits%64==0);
 	#endif
 
 	m_hashFunctions=0;
@@ -91,13 +81,24 @@ ULL means unsigned long long, it is necessary on some architectures
 
 	uint64_t requiredBytes=m_bits/8;
 	uint64_t required8Bytes=requiredBytes/8;
+
+/*
+ * We need more 64-bit integers for storing
+ * these extra bits.
+ */
+
+	if(m_bits%64!=0)
+		required8Bytes++;
+
 	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
 
-	cout<<"[BloomFilter] allocated "<<requiredBytes<<" bytes for table with "<<m_bits<<" bits"<<endl;
+	cout<<"[BloomFilter] allocated "<<required8Bytes*sizeof(uint64_t)<<" bytes for table with "<<m_bits<<" bits"<<endl;
 	cout<<"[BloomFilter] hash numbers:";
+
 	for(int i=0;i<m_hashFunctions;i++){
 		cout<<hex<<" "<<m_hashNumbers[i];
 	}
+
 	cout<<dec<<endl;
 
 	#ifdef ASSERT
@@ -105,6 +106,9 @@ ULL means unsigned long long, it is necessary on some architectures
 	assert(m_bitmap != NULL);
 	#endif
 
+/*
+ * Set all the bits to 0.
+ */
 	for(uint64_t i=0;i<required8Bytes;i++){
 		m_bitmap[i]=0;
 	}
@@ -147,10 +151,21 @@ void BloomFilter::insertValue(Kmer*kmer){
 	#endif
 
 	for(int i=0;i<m_hashFunctions;i++){
+
 		uint64_t hashValue = origin ^ m_hashNumbers[i];
 		uint64_t bit=hashValue % m_bits;
 		uint64_t chunk=bit/64;
 		uint64_t bitInChunk=bit%64;
+
+		int oldBitValue=(m_bitmap[chunk] << (63-bitInChunk)) >> 63;
+
+/*
+ * The bit is already set to 1. We don't need to do anything else.
+ */
+		if(oldBitValue==1)
+			continue;
+
+
 		uint64_t filter=1;
 
 		filter <<= bitInChunk;
@@ -163,6 +178,11 @@ void BloomFilter::insertValue(Kmer*kmer){
 			cout<<"Fatal: bit is "<<bitValue<<" but should be 1 bit="<<bit<<" chunk="<<chunk<<" bitInChunk="<<bitInChunk<<" chunkContent="<<m_bitmap[chunk]<<" filter="<<filter<<endl;
 		assert(bitValue == 1);
 		#endif
+
+/*
+ * We increased the number of set bits by 1.
+ */
+		m_numberOfSetBits++;
 	}
 
 	#ifdef ASSERT
@@ -188,3 +208,10 @@ void BloomFilter::destructor(){
 	#endif
 }
 
+uint64_t BloomFilter::getNumberOfBits(){
+	return m_bits;
+}
+
+uint64_t BloomFilter::getNumberOfSetBits(){
+	return m_numberOfSetBits;
+}

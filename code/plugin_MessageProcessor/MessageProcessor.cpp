@@ -885,8 +885,10 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 	if(m_parameters->hasConfigurationOption("-bloom-filter-bits",1))
 		m_bloomBits=m_parameters->getConfigurationInteger("-bloom-filter-bits",0);
 
-	if(m_bloomBits>0)
+	if(m_bloomBits>0){
 		m_bloomFilter.constructor(m_bloomBits);
+		cout<<"Rank "<<m_rank<<" created its Bloom filter"<<endl;
+	}
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA_REPLY(Message*message){
@@ -970,8 +972,29 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 
-	if(m_bloomBits>0)
+	if(m_bloomBits>0){
+		uint64_t setBits=m_bloomFilter.getNumberOfSetBits();
+		uint64_t bits=m_bloomFilter.getNumberOfBits();
+	
+		#ifdef ASSERT
+		assert(bits>0);
+		assert(bits==m_bloomBits);
+		#endif
+
+		double ratio=100.0*setBits/bits;
+
+		cout<<"Rank "<<m_rank<<" number of set bits in the Bloom filter: ";
+		cout<<"[ "<<setBits<<" / "<<bits<<" ] ("<<ratio<<"%)";
+
+		if(ratio >= 0.5)
+			cout<<" Warning: the oracle is half full."<<endl;
+
+		cout<<endl;
+
 		m_bloomFilter.destructor();
+		cout<<"Rank "<<m_rank<<" destroyed its Bloom filter"<<endl;
+	
+	}
 
 	// complete incremental resizing, if any
 	m_subgraph->completeResizing();
