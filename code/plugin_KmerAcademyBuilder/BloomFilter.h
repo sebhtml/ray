@@ -42,6 +42,8 @@ class BloomFilter{
  */
 	uint64_t m_numberOfSetBits;
 
+	uint64_t m_numberOfInsertions;
+
 	/** the number of hash functions */
 	int m_hashFunctions;
 
@@ -59,6 +61,8 @@ public:
 
 	uint64_t getNumberOfBits();
 	uint64_t getNumberOfSetBits();
+
+	uint64_t getNumberOfInsertions();
 };
 
 #endif
