@@ -54,7 +54,7 @@ class KmerAcademyBuilder : public CorePlugin{
 	MessageTag RAY_MPI_TAG_VERTICES_DATA_REPLY;
 	MessageTag RAY_MPI_TAG_VERTICES_DATA;
 
-	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
+	SlaveMode RAY_SLAVE_MODE_ADD_VERTICES;
 
 	Profiler*m_profiler;
 
@@ -101,7 +101,7 @@ SlaveMode*mode,RingAllocator*outboxAllocator
 
 	void setProfiler(Profiler*profiler);
 
-	void call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY();
+	void call_RAY_SLAVE_MODE_ADD_VERTICES();
 
 	void setReadiness();
 

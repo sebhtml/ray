@@ -34,12 +34,12 @@ __CreatePlugin(VerticesExtractor);
 
  /**/
  /**/
-__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES); /**/
+__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES); /**/
  /**/
  /**/
 
 
-void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
+void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -79,11 +79,11 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 		if(m_reverseComplementVertex==true){
 			reverse="(reverse complement) ";
 		}
-		printf("Rank %i is computing vertices & edges %s[%i/%i]\n",m_parameters->getRank(),reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
+		printf("Rank %i is adding edges %s[%i/%i]\n",m_parameters->getRank(),reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
 		fflush(stdout);
 
 		m_derivative.addX(m_mode_send_vertices_sequence_id);
-		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTRACT_VERTICES],RAY_SLAVE_MODE_EXTRACT_VERTICES);
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_ADD_EDGES],RAY_SLAVE_MODE_ADD_EDGES);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
@@ -103,7 +103,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			Message aMessage(NULL,0, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,m_parameters->getRank());
 			m_outbox->push_back(aMessage);
 			m_finished=true;
-			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
+			printf("Rank %i is adding edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
 			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
@@ -366,9 +366,9 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES, __GetAdapter(VerticesExtractor,RAY_SLAVE_MODE_EXTRACT_VERTICES));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EXTRACT_VERTICES,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+	RAY_SLAVE_MODE_ADD_EDGES=core->allocateSlaveModeHandle(plugin);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ADD_EDGES, __GetAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES));
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_ADD_EDGES,"RAY_SLAVE_MODE_ADD_EDGES");
 
 	RAY_MPI_TAG_WRITE_KMERS=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_KMERS,"RAY_MPI_TAG_WRITE_KMERS");
@@ -384,7 +384,7 @@ void VerticesExtractor::registerPlugin(ComputeCore*core){
 }
 
 void VerticesExtractor::resolveSymbols(ComputeCore*core){
-	RAY_SLAVE_MODE_EXTRACT_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTRACT_VERTICES");
+	RAY_SLAVE_MODE_ADD_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ADD_EDGES");
 	RAY_SLAVE_MODE_WRITE_KMERS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_WRITE_KMERS");
 
 	RAY_MPI_TAG_IN_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IN_EDGES_DATA");
@@ -399,7 +399,7 @@ void VerticesExtractor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_VERTEX_INFO_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_INFO_REPLY");
 
 
-	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_BUILD_GRAPH,          RAY_SLAVE_MODE_EXTRACT_VERTICES );
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_BUILD_GRAPH,          RAY_SLAVE_MODE_ADD_EDGES );
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_KMERS,   RAY_SLAVE_MODE_WRITE_KMERS);
 
 	__BindPlugin(VerticesExtractor);

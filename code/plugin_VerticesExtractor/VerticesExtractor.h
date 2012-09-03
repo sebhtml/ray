@@ -60,7 +60,7 @@ class VerticesExtractor: public CorePlugin{
 	MessageTag RAY_MPI_TAG_VERTICES_DATA;
 	MessageTag RAY_MPI_TAG_VERTICES_DISTRIBUTED;
 	
-	SlaveMode RAY_SLAVE_MODE_EXTRACT_VERTICES;
+	SlaveMode RAY_SLAVE_MODE_ADD_EDGES;
 	SlaveMode RAY_SLAVE_MODE_WRITE_KMERS;
 
 
@@ -104,7 +104,7 @@ public:
 	void constructor(int size,Parameters*parameters,GridTable*graph,
 StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*myReads
 );
-	void call_RAY_SLAVE_MODE_EXTRACT_VERTICES();
+	void call_RAY_SLAVE_MODE_ADD_EDGES();
 	void setReadiness();
 	
 	bool finished();

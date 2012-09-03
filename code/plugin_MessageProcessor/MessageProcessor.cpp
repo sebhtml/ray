@@ -2987,7 +2987,7 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_AMOS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AMOS");
 	RAY_SLAVE_MODE_ASSEMBLE_WAVES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ASSEMBLE_WAVES");
 	RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION");
-	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+	RAY_SLAVE_MODE_ADD_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ADD_VERTICES");
 	RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS");
 	RAY_SLAVE_MODE_EXTENSION=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_EXTENSION");
 	RAY_SLAVE_MODE_FINISH_FUSIONS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_FINISH_FUSIONS");
@@ -3143,7 +3143,7 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_LOAD_SEQUENCES, RAY_SLAVE_MODE_LOAD_SEQUENCES);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_AMOS, RAY_SLAVE_MODE_AMOS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_INDEXING_SEQUENCES, RAY_SLAVE_MODE_INDEX_SEQUENCES );
-	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION, RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION, RAY_SLAVE_MODE_ADD_VERTICES);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION, RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_SEEDING, RAY_SLAVE_MODE_START_SEEDING);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_REQUEST_SEED_LENGTHS, RAY_SLAVE_MODE_SEND_SEED_LENGTHS);

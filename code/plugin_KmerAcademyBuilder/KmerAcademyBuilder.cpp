@@ -36,13 +36,13 @@ __CreatePlugin(KmerAcademyBuilder);
 
  /**/
  /**/
-__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY); /**/
+__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES); /**/
  /**/
  /**/
 
 using namespace std;
 
-void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
+void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 	
 	if(!m_initialised){
 		m_initialised=true;
@@ -92,7 +92,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_BUILD_KMER_ACADEMY(){
 		fflush(stdout);
 
 		m_derivative.addX(m_mode_send_vertices_sequence_id);
-		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_BUILD_KMER_ACADEMY],RAY_SLAVE_MODE_BUILD_KMER_ACADEMY);
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_ADD_VERTICES],RAY_SLAVE_MODE_ADD_VERTICES);
 		m_derivative.printEstimatedTime(m_myReads->size());
 	}
 
@@ -293,15 +293,15 @@ void KmerAcademyBuilder::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY, __GetAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_BUILD_KMER_ACADEMY,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+	RAY_SLAVE_MODE_ADD_VERTICES=core->allocateSlaveModeHandle(plugin);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_ADD_VERTICES, __GetAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES));
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_ADD_VERTICES,"RAY_SLAVE_MODE_ADD_VERTICES");
 
 
 }
 
 void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
-	RAY_SLAVE_MODE_BUILD_KMER_ACADEMY=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_BUILD_KMER_ACADEMY");
+	RAY_SLAVE_MODE_ADD_VERTICES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_ADD_VERTICES");
 
 	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
 	RAY_MPI_TAG_VERTICES_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTICES_DATA_REPLY");

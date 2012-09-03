@@ -32,6 +32,7 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	m_parameters=parameters;
 	m_size=0;
 
+	showMemoryUsage(rank);
 
 	uint64_t buckets=m_parameters->getNumberOfBuckets();
 	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
