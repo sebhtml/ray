@@ -33,10 +33,18 @@
 class BloomFilter{
 	/** the bits */
 	uint64_t*m_bitmap;
+
 	/** the number of bits */
 	uint64_t m_bits;
+
+/**
+ * Number of used bits
+ */
+	uint64_t m_numberOfSetBits;
+
 	/** the number of hash functions */
 	int m_hashFunctions;
+
 	/** a random number for each hash function */
 	uint64_t m_hashNumbers[8];
 public:
@@ -48,6 +56,9 @@ public:
 	void insertValue(Kmer*kmer);
 	/** destroy the BloomFilter */
 	void destructor();
+
+	uint64_t getNumberOfBits();
+	uint64_t getNumberOfSetBits();
 };
 
 #endif

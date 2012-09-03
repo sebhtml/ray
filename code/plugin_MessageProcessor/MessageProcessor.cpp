@@ -973,8 +973,22 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 
 	if(m_bloomBits>0){
+		uint64_t setBits=m_bloomFilter.getNumberOfSetBits();
+		uint64_t bits=m_bloomFilter.getNumberOfBits();
+	
+		#ifdef ASSERT
+		assert(bits>0);
+		assert(bits==m_bloomBits);
+		#endif
+
+		double ratio=100.0*setBits/bits;
+
+		cout<<"Rank "<<m_rank<<" number of set bits in the Bloom filter: ";
+		cout<<"[ "<<setBits<<" / "<<bits<<" ] ("<<ratio<<"%)"<<endl;
+
 		m_bloomFilter.destructor();
 		cout<<"Rank "<<m_rank<<" destroyed its Bloom filter"<<endl;
+	
 	}
 
 	// complete incremental resizing, if any

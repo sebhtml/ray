@@ -28,7 +28,9 @@
 using namespace std;
 
 void BloomFilter::constructor(uint64_t numberOfBits){
-	/*
+	m_numberOfSetBits=0;
+
+/*
 http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
 
 n = 50 000 000
@@ -147,10 +149,21 @@ void BloomFilter::insertValue(Kmer*kmer){
 	#endif
 
 	for(int i=0;i<m_hashFunctions;i++){
+
 		uint64_t hashValue = origin ^ m_hashNumbers[i];
 		uint64_t bit=hashValue % m_bits;
 		uint64_t chunk=bit/64;
 		uint64_t bitInChunk=bit%64;
+
+		int oldBitValue=(m_bitmap[chunk] << (63-bitInChunk)) >> 63;
+
+/*
+ * The bit is already set to 1. We don't need to do anything else.
+ */
+		if(oldBitValue==1)
+			continue;
+
+
 		uint64_t filter=1;
 
 		filter <<= bitInChunk;
@@ -163,6 +176,11 @@ void BloomFilter::insertValue(Kmer*kmer){
 			cout<<"Fatal: bit is "<<bitValue<<" but should be 1 bit="<<bit<<" chunk="<<chunk<<" bitInChunk="<<bitInChunk<<" chunkContent="<<m_bitmap[chunk]<<" filter="<<filter<<endl;
 		assert(bitValue == 1);
 		#endif
+
+/*
+ * We increased the number of set bits by 1.
+ */
+		m_numberOfSetBits++;
 	}
 
 	#ifdef ASSERT
@@ -188,3 +206,10 @@ void BloomFilter::destructor(){
 	#endif
 }
 
+uint64_t BloomFilter::getNumberOfBits(){
+	return m_bits;
+}
+
+uint64_t BloomFilter::getNumberOfSetBits(){
+	return m_numberOfSetBits;
+}
