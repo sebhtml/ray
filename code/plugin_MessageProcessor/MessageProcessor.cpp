@@ -997,7 +997,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 		cout<<"Rank "<<m_rank<<" number of set bits in the Bloom filter: ";
 		cout<<"[ "<<setBits<<" / "<<bits<<" ] ("<<ratio<<"%)";
 
-		if(ratio >= 0.5)
+		if(ratio >= 50.0)
 			cout<<" Warning: the oracle is half full."<<endl;
 
 		cout<<endl;
