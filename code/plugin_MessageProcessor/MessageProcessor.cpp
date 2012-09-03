@@ -983,6 +983,8 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
 
+	uint64_t kmersInBloomFilter=0;
+
 	if(m_bloomBits>0){
 		uint64_t setBits=m_bloomFilter.getNumberOfSetBits();
 		uint64_t bits=m_bloomFilter.getNumberOfBits();
@@ -1002,6 +1004,9 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 
 		cout<<endl;
 
+		kmersInBloomFilter=m_bloomFilter.getNumberOfInsertions();
+		kmersInBloomFilter*=2; // pairs of k-mers
+
 		m_bloomFilter.destructor();
 		cout<<"Rank "<<m_rank<<" destroyed its Bloom filter"<<endl;
 	
@@ -1010,13 +1015,26 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	// complete incremental resizing, if any
 	m_subgraph->completeResizing();
 
+	uint64_t kmersInGraph=m_subgraph->size();
+	cout<<"Rank "<<m_rank<<" has "<<kmersInGraph<<" k-mers (completed)"<<endl;
 
-	printf("Rank %i has %i k-mers (completed)\n",m_rank,(int)m_subgraph->size());
-	fflush(stdout);
-
-	#if 0
-	m_subgraph->printStatistics();
-	#endif
+/*
+ * The number of k-mers in the Bloom filter will be greater than
+ * the number of k-mers in the graph only if the Bloom filter is
+ * enabled (its number of bits is greater than 0) and if its false
+ * positive rate is acceptable.
+ * Otherwise, the counts are meaningless.
+ * For instance, if -bloom-filter-bits is set to 30, then the false
+ * positive rate will be ridiculous.
+ */
+	if(kmersInBloomFilter >= kmersInGraph){
+		uint64_t filteredKmers=kmersInBloomFilter-kmersInGraph;
+		cout<<"[BloomFilter] Rank "<<m_rank<<": k-mers sampled -> "<<kmersInBloomFilter;
+		cout<<", k-mers dropped -> "<<filteredKmers<<" ("<<100.0*filteredKmers/kmersInBloomFilter<<"%)";
+		cout<<", k-mers accepted -> "<<kmersInGraph;
+		cout<<" ("<<100.0*kmersInGraph/kmersInBloomFilter<<"%)";
+		cout<<endl;
+	}
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_rank);

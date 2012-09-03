@@ -29,6 +29,7 @@ using namespace std;
 
 void BloomFilter::constructor(uint64_t numberOfBits){
 	m_numberOfSetBits=0;
+	m_numberOfInsertions=0;
 
 /*
 http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
@@ -188,6 +189,8 @@ void BloomFilter::insertValue(Kmer*kmer){
 	#ifdef ASSERT
 	assert(hasValue(kmer));
 	#endif
+
+	m_numberOfInsertions++;
 }
 
 void BloomFilter::destructor(){
@@ -214,4 +217,8 @@ uint64_t BloomFilter::getNumberOfBits(){
 
 uint64_t BloomFilter::getNumberOfSetBits(){
 	return m_numberOfSetBits;
+}
+
+uint64_t BloomFilter::getNumberOfInsertions(){
+	return m_numberOfInsertions;
 }
