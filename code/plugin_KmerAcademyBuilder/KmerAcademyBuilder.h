@@ -50,12 +50,11 @@ using namespace std;
  */
 class KmerAcademyBuilder : public CorePlugin{
 
-	MessageTag RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY;
-	MessageTag RAY_MPI_TAG_KMER_ACADEMY_DATA;
 	MessageTag RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED;
+	MessageTag RAY_MPI_TAG_VERTICES_DATA_REPLY;
+	MessageTag RAY_MPI_TAG_VERTICES_DATA;
 
 	SlaveMode RAY_SLAVE_MODE_BUILD_KMER_ACADEMY;
-
 
 	Profiler*m_profiler;
 

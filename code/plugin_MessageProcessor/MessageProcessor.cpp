@@ -57,7 +57,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS_FROM_LIST); 
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_INDEXING_SEQUENCES); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEQUENCES_READY); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA_REPLY); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PURGE_NULL_EDGES); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DISTRIBUTED); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY); /**/
@@ -143,7 +142,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DATA); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE); /**/
@@ -721,6 +719,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		int pos=i;
 		kmerObject.unpack(incoming,&pos);
 		//bool isTheLowerKmer=false;
+		Kmer lowerKmer=kmerObject;
 
 /* 
  * TODO: remove call to reverseComplement, this if should never be 
@@ -741,11 +740,25 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		assert(reverseComplement!=kmerObject);
 		#endif
 
-		#if 0
-		if(kmerObject < reverseComplement)
-			isTheLowerKmer=true;
-		#endif
-		
+		if(reverseComplement < lowerKmer)
+			lowerKmer=reverseComplement;
+/*
+ * If the Bloom filter has exactly 0 bits,
+ * this means that it is disabled.
+ * The Bloom filter only contain the lower k-mers.
+ */
+		if(m_bloomBits>0 && !m_bloomFilter.hasValue(&lowerKmer)){
+/*
+			cout<<"inserting in Bloom filter: "<<endl;
+			kmerObject.print();
+*/
+
+			m_bloomFilter.insertValue(&lowerKmer);
+
+			continue;
+		}
+
+
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",m_rank,(int)m_subgraph->size());
@@ -756,29 +769,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 			}
 		}
 		
-		KmerCandidate*candidate=m_subgraph->getKmerAcademy()->find(&kmerObject);
-
-/* 
- * The candidate remained in the Bloom filter. This is good 
- * because we save memory.
- */
-
-		if(candidate == NULL)
-			continue;
-
-		#ifdef ASSERT
-		assert(candidate!=NULL);
-		#endif
-
-		CoverageDepth value=candidate->getCoverage(&kmerObject);
-
-/*
- * To go in the actual distributed de Bruijn graph,
- * we require the k-mer to occur at least a certain
- * number of times in the data.
- */
-		if(value<m_parameters->getMinimumCoverageToStore())
-			continue;
 
 /*
  * We have a go. We insert the k-mer in the distributed
@@ -809,17 +799,8 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message){
-	m_verticesExtractor->setReadiness();
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
-	m_subgraph->getKmerAcademy()->destructor();
 
-	if(m_bloomBits>0)
-		m_bloomFilter.destructor();
-
-	m_subgraph->completeResizing();
 
 	#ifdef ASSERT
 	GridTableIterator iterator;
@@ -988,14 +969,19 @@ void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
-	// complete incremental resizing, if any
-	m_subgraph->getKmerAcademy()->completeResizing();
 
-	printf("Rank %i has %i k-mers (completed)\n",m_rank,(int)m_subgraph->getKmerAcademy()->size());
+	if(m_bloomBits>0)
+		m_bloomFilter.destructor();
+
+	// complete incremental resizing, if any
+	m_subgraph->completeResizing();
+
+
+	printf("Rank %i has %i k-mers (completed)\n",m_rank,(int)m_subgraph->size());
 	fflush(stdout);
 
 	#if 0
-	m_subgraph->getKmerAcademy()->printStatistics();
+	m_subgraph->printStatistics();
 	#endif
 
 	if(m_parameters->showMemoryUsage()){
@@ -2329,137 +2315,6 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 	m_outbox->push_back(aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DATA(Message*message){
-	void*buffer=message->getBuffer();
-	int count=message->getCount();
-	MessageUnit*incoming=(MessageUnit*)buffer;
-
-	for(int i=0;i<count;i+=KMER_U64_ARRAY_SIZE){
-
-/*
- * The Kmer kmerObject is a short DNA sequence.
- */
-		Kmer kmerObject;
-		int pos=i;
-		kmerObject.unpack(incoming,&pos);
-
-/*
- * We need the lower k-mer because the sender did not
- * pledge to send the lower k-mer.
- * The storage engine only process the command 
- * setCoverage() if its operand is the lower k-mer 
- * of a pair.
- */
-		Kmer reverseComplement=kmerObject.complementVertex(m_parameters->getWordSize(),
-			m_parameters->getColorSpaceMode());
-
-		#ifdef ASSERT
-		Kmer twin=reverseComplement.complementVertex(m_parameters->getWordSize(),
-			m_parameters->getColorSpaceMode());
-		assert(twin==kmerObject);
-		#endif
-
-		#ifdef ASSERT
-		assert(kmerObject!=reverseComplement);
-		#endif
-
-		Kmer lowerKmer=kmerObject;
-
-		if(reverseComplement<lowerKmer)
-			lowerKmer=reverseComplement;
-
-		#ifdef ASSERT
-		if(reverseComplement<kmerObject)
-			assert(lowerKmer==reverseComplement);
-		else
-			assert(lowerKmer==kmerObject);
-		#endif
-/*
- * This displays some progression
- * on the screen.
- */
-
-		if((*m_last_value)!=(int)m_subgraph->getKmerAcademy()->size() 
-			&& (int)m_subgraph->getKmerAcademy()->size()%100000==0){
-
-			(*m_last_value)=m_subgraph->getKmerAcademy()->size();
-
-			printf("Rank %i has %i k-mers\n",m_rank,(int)m_subgraph->getKmerAcademy()->size());
-			fflush(stdout);
-
-			if(m_parameters->showMemoryUsage()){
-				showMemoryUsage(m_rank);
-			}
-
-			m_subgraph->getKmerAcademy()->printStatistics();
-		}
-
-/*
- * If the Bloom filter has exactly 0 bits,
- * this means that it is disabled.
- * The Bloom filter only contain the lower k-mers.
- */
-		if(m_bloomBits>0 && !m_bloomFilter.hasValue(&lowerKmer)){
-/*
-			cout<<"inserting in Bloom filter: "<<endl;
-			kmerObject.print();
-*/
-
-			m_bloomFilter.insertValue(&lowerKmer);
-
-			continue;
-		}
-
-/*
- * The Kmer object is in the BloomFilter.
- * The storage engine will take care of the k-mer even
- * if it is not the lower k-mer for the insertion.
- */
-
-		KmerCandidate*tmp=m_subgraph->insertInAcademy(&lowerKmer);
-
-		#ifdef ASSERT
-		assert(tmp!=NULL);
-		#endif
-
-/*
- * We start at 1 since this step was avoided by the BloomFilter.
- */
-		if(m_subgraph->insertedInAcademy()){
-			CoverageDepth startingValue=0;
-
-			if(m_bloomBits>0)
-				startingValue++;
-
-			tmp->setCoverage(&lowerKmer,startingValue);
-		}
-
-/*
- * getCoverage works fine even on other k-mer that is not the lower 
- */
-		CoverageDepth oldValue=tmp->getCoverage(&lowerKmer);
-		CoverageDepth newValue=oldValue+1;
-
-		#ifdef ASSERT
-		assert(oldValue < newValue);
-		#endif
-
-/*
- * The class KmerCandidate takes care of discarding method calls
- * if the object is not the selected from any pair.
- */
-		tmp->setCoverage(&lowerKmer,newValue);
-
-		#ifdef ASSERT
-		assert(newValue>0);
-		assert(newValue==tmp->getCoverage(&lowerKmer));
-		#endif
-	}
-
-	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY,m_rank);
-	m_outbox->push_back(aMessage);
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED(Message*message){
 	m_kmerAcademyFinishedRanks++;
 	if(m_kmerAcademyFinishedRanks==m_parameters->getSize()){
@@ -2755,7 +2610,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTICES_DATA,"RAY_MPI_TAG_VERTICES_DATA");
 
 	RAY_MPI_TAG_VERTICES_DATA_REPLY=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_VERTICES_DATA_REPLY, __GetAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA_REPLY));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_VERTICES_DATA_REPLY,"RAY_MPI_TAG_VERTICES_DATA_REPLY");
 
 	RAY_MPI_TAG_PURGE_NULL_EDGES=core->allocateMessageTagHandle(plugin);
@@ -3099,9 +2953,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION, __GetAdapter(MessageProcessor,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,"RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION");
 
-	RAY_MPI_TAG_KMER_ACADEMY_DATA=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA, __GetAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DATA));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_KMER_ACADEMY_DATA,"RAY_MPI_TAG_KMER_ACADEMY_DATA");
 
 	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED, __GetAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED));
@@ -3254,8 +3105,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_IN_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IN_EDGES_DATA");
 	RAY_MPI_TAG_IN_EDGES_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IN_EDGES_DATA_REPLY");
 	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS");
-	RAY_MPI_TAG_KMER_ACADEMY_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA");
-	RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DATA_REPLY");
 	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
 	RAY_MPI_TAG_LIBRARY_DISTANCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LIBRARY_DISTANCE");
 	RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY");

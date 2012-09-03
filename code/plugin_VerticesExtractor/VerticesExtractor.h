@@ -93,7 +93,6 @@ class VerticesExtractor: public CorePlugin{
 	int m_pendingMessages;
 
 	ArrayOfReads*m_myReads;
-	BufferedData m_bufferedData;
 	int m_size;
 	
 /** useless state, legacy code **/

@@ -96,7 +96,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 		if(m_pendingMessages==0){
 			#ifdef ASSERT
-			assert(m_bufferedData.isEmpty());
 			assert(m_bufferedDataForIngoingEdges.isEmpty());
 			assert(m_bufferedDataForOutgoingEdges.isEmpty());
 			#endif
@@ -106,7 +105,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			m_finished=true;
 			printf("Rank %i is computing vertices & edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);
-			m_bufferedData.showStatistics(m_parameters->getRank());
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
 			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
 
@@ -159,8 +157,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 			/* TODO: possibly don't flush k-mer that are not lower. not sure it that would work though. -Seb */
 
-			Rank rankToFlush=m_parameters->_vertexRank(&currentForwardKmer);
-
 /*
  *                   previousForwardKmer   ->   currentForwardKmer
  *                   previousReverseKmer   <-   currentReverseKmer
@@ -170,15 +166,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 /*
  * Push the kmer
  */
-			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,currentForwardKmer.getU64(i));
-			}
 
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,
-				RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
-					m_parameters->getRank(),false)){
-				m_pendingMessages++;
-			}
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -196,12 +184,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,currentForwardKmer.getU64(i));
 				}
 
-				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(outgoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,
-						m_parameters->getRank(),true)){
-						m_pendingMessages++;
-					}
-				}
 
 				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
@@ -217,11 +199,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,currentForwardKmer.getU64(i));
 				}
 
-				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(ingoingRank,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
-						m_pendingMessages++;
-					}
-				}
 
 				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
@@ -235,14 +212,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 			Kmer currentReverseKmer=currentForwardKmer.
 				complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-			rankToFlush=m_parameters->_vertexRank(&currentReverseKmer);
-			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
-				m_bufferedData.addAt(rankToFlush,currentReverseKmer.getU64(i));
-			}
-
-			if(m_bufferedData.flush(rankToFlush,KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
-				m_pendingMessages++;
-			}
 
 			if(m_hasPreviousVertex){
 				MACRO_COLLECT_PROFILING_INFORMATION();
@@ -260,11 +229,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
-				if(m_bufferedDataForOutgoingEdges.needsFlushing(outgoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(outgoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
-						m_pendingMessages++;
-					}
-				}
 
 				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
@@ -284,11 +248,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_EXTRACT_VERTICES(){
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
-				if(m_bufferedDataForIngoingEdges.needsFlushing(ingoingRank,2*KMER_U64_ARRAY_SIZE)){
-					if(m_bufferedData.flush(ingoingRank,1*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),true)){
-						m_pendingMessages++;
-					}
-				}
 
 				if(m_bufferedDataForIngoingEdges.flush(ingoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_IN_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
 					m_pendingMessages++;
@@ -331,7 +290,6 @@ void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*gra
 	m_mode_send_vertices_sequence_id_position=0;
 	m_hasPreviousVertex=false;
 
-	m_bufferedData.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),"RAY_MALLOC_TYPE_VERTEX_EXTRACTOR_BUFFERS",m_parameters->showMemoryAllocations(),KMER_U64_ARRAY_SIZE);
 	m_bufferedDataForOutgoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),"RAY_MALLOC_TYPE_OUTGOING_EDGES_EXTRACTOR_BUFFERS",m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
 	m_bufferedDataForIngoingEdges.constructor(size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),"RAY_MALLOC_TYPE_INGOING_EDGES_EXTRACTOR_BUFFERS",m_parameters->showMemoryAllocations(),2*KMER_U64_ARRAY_SIZE);
 
@@ -355,10 +313,6 @@ void VerticesExtractor::flushAll(RingAllocator*m_outboxAllocator,StaticVector*m_
 	if(m_pendingMessages)
 		return;
 
-	if(!m_bufferedData.isEmpty()){
-		m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_VERTICES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
-		return;
-	}
 	if(!m_bufferedDataForOutgoingEdges.isEmpty()){
 		m_pendingMessages+=m_bufferedDataForOutgoingEdges.flushAll(RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank());
 		return;
@@ -374,7 +328,6 @@ bool VerticesExtractor::finished(){
 }
 
 void VerticesExtractor::assertBuffersAreEmpty(){
-	assert(m_bufferedData.isEmpty());
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	assert(m_bufferedDataForIngoingEdges.isEmpty());
 	assert(m_mode_send_vertices_sequence_id_position==0);
@@ -386,7 +339,6 @@ void VerticesExtractor::incrementPendingMessages(){
 
 void VerticesExtractor::showBuffers(){
 	#ifdef ASSERT
-	assert(m_bufferedData.isEmpty());
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	assert(m_bufferedDataForIngoingEdges.isEmpty());
 	#endif

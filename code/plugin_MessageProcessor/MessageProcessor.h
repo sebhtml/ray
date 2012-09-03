@@ -392,7 +392,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message);
 	void call_RAY_MPI_TAG_SEQUENCES_READY(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DATA(Message*message);
-	void call_RAY_MPI_TAG_VERTICES_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message);
 	void call_RAY_MPI_TAG_VERTICES_DISTRIBUTED(Message*message);
 	void call_RAY_MPI_TAG_OUT_EDGES_DATA_REPLY(Message*message);
