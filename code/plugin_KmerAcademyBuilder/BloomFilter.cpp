@@ -47,18 +47,6 @@ false positive rate = 0.00846 = 0.846%
 	assert(numberOfBits>0);
 	#endif
 
-	while(m_bits%64!=0)
-		m_bits++;
-
-	if(m_bits!=numberOfBits){
-		cout<<"Warning: the number of bits must be a multiple of 64."<<endl;
-		cout<<"Warning: adjusted the number of bits to "<<m_bits<<" in the Bloom filter"<<endl;
-	}
-
-	#ifdef ASSERT
-	assert(m_bits%64==0);
-	#endif
-
 	m_hashFunctions=0;
 
 /**
@@ -93,13 +81,24 @@ ULL means unsigned long long, it is necessary on some architectures
 
 	uint64_t requiredBytes=m_bits/8;
 	uint64_t required8Bytes=requiredBytes/8;
+
+/*
+ * We need more 64-bit integers for storing
+ * these extra bits.
+ */
+
+	if(m_bits%64!=0)
+		required8Bytes++;
+
 	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
 
-	cout<<"[BloomFilter] allocated "<<requiredBytes<<" bytes for table with "<<m_bits<<" bits"<<endl;
+	cout<<"[BloomFilter] allocated "<<required8Bytes*sizeof(uint64_t)<<" bytes for table with "<<m_bits<<" bits"<<endl;
 	cout<<"[BloomFilter] hash numbers:";
+
 	for(int i=0;i<m_hashFunctions;i++){
 		cout<<hex<<" "<<m_hashNumbers[i];
 	}
+
 	cout<<dec<<endl;
 
 	#ifdef ASSERT
@@ -107,6 +106,9 @@ ULL means unsigned long long, it is necessary on some architectures
 	assert(m_bitmap != NULL);
 	#endif
 
+/*
+ * Set all the bits to 0.
+ */
 	for(uint64_t i=0;i<required8Bytes;i++){
 		m_bitmap[i]=0;
 	}
