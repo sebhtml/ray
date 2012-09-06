@@ -8,27 +8,40 @@ Vertices is the number of computer cores to use (mpiexec -n ###)
 
 See also Documentation/Very-Large-Jobs.txt.
 
-## Hypercube
+## Convex regular polytope
 
-Messages can be routed with a hypercube or a polytope using
-the hypercube connection type.
+Messages can be routed with a polytope using
+the polytope connection type. A hypercube is a polytope with alphabetSize
+of 2. The connection types 'polytope' and 'hypercube' use the same code
+path so they are equivalent.
 
-For the hypercube, we have
+The basic relation for edges is that only 1 symbol can be different.
+
+  Example:  <0,1,2> -> <0,2,2>
+
+For the convex regular polytope, we have
 
 vertices:= alphabetSize^wordLength
 degree:= (alphabetSize-1)*wordLength
 
-Vertices: 1024
-Type: Hypercube
-Degree: 62=(32-1)*2
-Diameter: 2 (32^2=1024)
-Options:  -route-messages -connection-type hypercube -routing-graph-degree 62
+Vertices: 512
+Type: Polytope
+Degree: 21=(8-1)*3
+Diameter: 3 (8^3=512)
+Options:  -route-messages -connection-type polytope -routing-graph-degree 21
+
 
 Vertices: 1024
-Type: Hypercube
+Type: Polytope
+Degree: 62=(32-1)*2
+Diameter: 2 (32^2=1024)
+Options:  -route-messages -connection-type polytope -routing-graph-degree 62
+
+Vertices: 1024
+Type: Polytope
 Degree: 10
 Diameter: 10 (2^10=1024)
-Options:  -route-messages -connection-type hypercube -routing-graph-degree 10
+Options:  -route-messages -connection-type polytope -routing-graph-degree 10
 
 
 ## de Bruijn

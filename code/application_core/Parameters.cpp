@@ -1524,9 +1524,10 @@ void Parameters::showUsage(){
 	showOptionDescription("and Routing/Summary.txt");
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
-	showOptionDescription("Accepted values are debruijn, hypercube, group, random, kautz and complete. Default is debruijn.");
+	showOptionDescription("Accepted values are debruijn, hypercube, polytope, group, random, kautz and complete. Default is debruijn.");
 	showOptionDescription(" debruijn: a full de Bruijn graph a given alphabet and diameter");
 	showOptionDescription(" hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2");
+	showOptionDescription(" polytope: a convex regular polytope, alphabet is {0,1,...,B-1} and the vertices is a power of B");
 	showOptionDescription(" group: silly model where one representative per group can communicate with outsiders");
 	showOptionDescription(" random: Erdős–Rényi model");
 	showOptionDescription(" kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph");

@@ -1,5 +1,3 @@
-[RingAllocator] m_chunks: 128 m_max: 4000
-[RingAllocator] m_chunks: 1 m_max: 4000
 NAME
        Ray - assemble genomes in parallel using the message-passing interface
 
@@ -216,9 +214,10 @@ DESCRIPTION:
 
        -connection-type type
               Sets the connection type for routes.
-              Accepted values are debruijn, hypercube, group, random, kautz and complete. Default is debruijn.
+              Accepted values are debruijn, hypercube, polytope, group, random, kautz and complete. Default is debruijn.
                debruijn: a full de Bruijn graph a given alphabet and diameter
                hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2
+               polytope: a convex regular polytope, alphabet is {0,1,...,B-1} and the vertices is a power of B
                group: silly model where one representative per group can communicate with outsiders
                random: Erdős–Rényi model
                kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph
