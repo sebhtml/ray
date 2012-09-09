@@ -239,6 +239,9 @@ DESCRIPTION:
        -write-network-test-raw-data
               Writes one additional file per rank detailing the network test.
 
+       -exchanges NumberOfExchanges
+              Sets the number of exchanges
+
        -disable-network-test
               Skips the network test.
 

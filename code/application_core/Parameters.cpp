@@ -1549,6 +1549,10 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-write-network-test-raw-data","Writes one additional file per rank detailing the network test.");
 	cout<<endl;
+
+	showOption("-exchanges NumberOfExchanges","Sets the number of exchanges");
+	cout<<endl;
+
 	showOption("-disable-network-test","Skips the network test.");
 	cout<<endl;
 

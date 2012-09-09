@@ -79,6 +79,9 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 
 	m_messagesPerRank=1000;
 
+	if(m_parameters->hasConfigurationOption("-exchanges",1))
+		m_messagesPerRank=m_parameters->getConfigurationInteger("-exchanges",0);
+
 	m_numberOfTestMessages=m_messagesPerRank;
 
 	m_writeRawData=m_parameters->hasOption("-write-network-test-raw-data");
