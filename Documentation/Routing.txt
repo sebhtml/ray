@@ -24,6 +24,12 @@ For the convex regular polytope, we have
 vertices:= alphabetSize^wordLength
 degree:= (alphabetSize-1)*wordLength
 
+Vertices: 64
+Type: Polytope
+Degree: 14
+Diameter: 2
+Options: -route-messages -connection-type polytope -routing-graph-degree 14
+
 Vertices: 512
 Type: Polytope
 Degree: 21=(8-1)*3
