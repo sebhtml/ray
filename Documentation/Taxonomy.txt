@@ -1,15 +1,9 @@
-== Input files ==
 
-This files can be obtained from:
 
-	ftp://ftp.ncbi.nih.gov/pub/taxonomy/
-
-The tree file has to be converted from Newick to simplier format (see below).
-
-This script can do the job: https://github.com/sebhtml/NGS-Pipelines/blob/master/Phylogeny/NewickToEdges.py
+Ray Communities is a set of RayPlatform-compatible plugins that adds search
+capabilities to the Ray distributed k-mer storage engine.
 
 == Ray command ==
-
 
 mpiexec -n 4 Ray \
 -p s1.fastq s2.fastq \
@@ -20,41 +14,60 @@ TreeOfLife-Edges.tsv \
 Taxons.tsv
 
 
-NCBI-Bacteria contains one fasta file per strain/species.
+The directory NCBI-Bacteria/ contains one fasta file per strain/species.
 Each header should be like:
 
 >gi|225853611|ref|NC_012466.1| Streptococcus pneumoniae JJA, complete genome                                                                                                                         |
 
 The identifiers (225853611 in this example) are used to place things in the tree of life.
-
-
-
+The mapping from gi numbers to taxonomy numbers is done using the file
+Genome-to-Taxon.tsv. The taxonomy tree edges is contained in
+TreeOfLife-Edges.tsv. Finally, the name of the taxons are provided in
+Taxons.tsv.
 
 == Genome-to-Taxon.tsv ==
 
-each line has 2 columns (tab-separated):
+Each line has 2 columns (tab-separated):
 
 	GenBankIdentifier	taxonIdentifier
 
-both are integers
+Both are integers.
+
+
+For the NCBI taxonomy, you can use gi_taxid_nucl.dmp from ftp://ftp.ncbi.nih.gov/pub/taxonomy/
 
 
 == TreeOfLife-Edges.tsv format ==
 
-each line has 2 columns (tab-separated):
+Each line has 2 columns (tab-separated):
 	
 	parentTaxonIdentifier	childTaxonIdentifier
 
+Both are integers.
 
-both are integers
+
+For the NCBI taxonomy, download
+ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
+
+The tree file (ncbi.tre) has to be converted from Newick to a simplier format.
+
+This script can do the job: https://github.com/sebhtml/NGS-Pipelines/blob/master/Phylogeny/NewickToEdges.py
+
+
 
 == Taxons.tsv ==
 
-each line has 3 columns (tab-separated):
+Each line has 3 columns (tab-separated):
 
-	taxonIdentifier	taxonName
+	taxonIdentifier	taxonName	taxonomicRank
 
 
 taxonIdentifier is an integer
 taxonName is a string
 taxonomicRank is a string
+
+
+For the NCBI taxonomy, download
+ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
+
+And use ncbi.map for this.
