@@ -44,6 +44,7 @@ __CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
 using namespace std;
 
 #define LATENCY_INFORMATION_NOT_AVAILABLE 123123123
+#define __MAXIMUM_LATENCY 4096 // microseconds
 
 /** initialize the NetworkTest */
 void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
@@ -147,7 +148,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			LargeCount startingTimeMicroseconds=getMicroseconds();
 
 			/** send to a random rank */
-			int destination=rand()%m_size;
+			Rank destination=rand()%m_size;
 
 			m_sentMicroseconds.push_back(startingTimeMicroseconds);
 			m_destinations.push_back(destination);
@@ -180,15 +181,21 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 		// we finished gathering data.
 		// now we compute the mode for the latency
-		// TODO: this should probably done after everyone has finished
 
-		int latency=getModeLatency();
+		int modeLatency=getModeLatency();
+		int averageLatency=getAverageLatency();
 
-		cout<<"Rank "<<m_rank<<": mode latency for "<<(*m_name)<<" when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes is "<<latency<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": mode round trip latency when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes is "<<modeLatency<<" microseconds (10^-6 seconds)"<<endl;
+		cout<<"Rank "<<m_rank<<": average round trip latency when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes is "<<averageLatency<<" microseconds (10^-6 seconds)"<<endl;
 
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		message[0]=latency;
-		char*destination=(char*)(message+1);
+
+		int position=0;
+		message[position++]=modeLatency;
+		message[position++]=averageLatency;
+
+		char*destination=(char*)(message+position);
+
 		strcpy(destination,m_name->c_str());
 		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 			MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
@@ -232,6 +239,7 @@ void NetworkTest::writeData(){
 		f<<"# number of bytes for reply messages: 0"<<endl;
 		f<<"# number of test messages: "<<m_numberOfTestMessages<<endl;
 		f<<"# mode latency measured in microseconds: "<<getModeLatency()<<endl;
+		f<<"# average latency measured in microseconds: "<<getAverageLatency()<<endl;
 		f<<"# next line contains column names"<<endl;
 		f<<"# TestMessage SourceRank DestinationRank QueryTimeInMicroseconds ReplyTimeInMicroseconds Latency MessagesSentToDestination"<<endl;
 	
@@ -281,15 +289,25 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 
 		m_initialisedNetworkTest=true;
 	}else if(m_inbox->size()>0&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_TEST_NETWORK_REPLY){
-		int rank=m_inbox->at(0)->getSource();
-		int latency=m_inbox->at(0)->getBuffer()[0];
+
+		Message*message=m_inbox->at(0);
+
+		Rank rank=m_inbox->at(0)->getSource();
+
+		int inputPosition=0;
+
+		int modeLatency=message->getBuffer()[inputPosition++];
+		int averageLatency=message->getBuffer()[inputPosition++];
 
 		MessageUnit*buffer=m_inbox->at(0)->getBuffer();
 
-		char*name=(char*)(buffer+1);
+		char*name=(char*)(buffer+inputPosition);
+
 		string stringName=name;
 		m_names[rank]=stringName;
-		m_latencies[rank]=latency;
+
+		m_modeLatencies[rank]=modeLatency;
+		m_averageLatencies[rank]=averageLatency;
 
 		m_switchMan->sendEmptyMessage(m_outbox,m_rank,rank,RAY_MPI_TAG_TEST_NETWORK_REPLY_REPLY);
 
@@ -300,31 +318,39 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 		file<<m_parameters->getPrefix();
 		file<<"NetworkTest.txt";
 		ofstream f(file.str().c_str());
-		f<<"# average latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes"<<endl;
-		f<<"# MessagePassingInterfaceRank\tName\tModeLatencyInMicroseconds\tNumberOfTestMessages"<<endl;
+		f<<"# average and mode round trip latency in microseconds (10^-6 seconds) when requesting a reply for a message of "<<sizeof(MessageUnit)*m_numberOfWords<<" bytes"<<endl;
+		f<<"# MessagePassingInterfaceRank\tName\tModeLatencyInMicroseconds";
+		f<<"	AverageLatencyInMicroseconds";
+		f<<"	NumberOfExchanges"<<endl;
 
 		vector<int> latencies;
-		for(int i=0;i<m_size;i++){
-			int latency=m_latencies[i];
-			if(latency!=LATENCY_INFORMATION_NOT_AVAILABLE)
+		for(Rank i=0;i<m_size;i++){
+			int latency=m_averageLatencies[i];
+			if(latency!=LATENCY_INFORMATION_NOT_AVAILABLE && latency <= __MAXIMUM_LATENCY)
 				latencies.push_back(latency);
 		}
 
 		f<<"# AverageForAllRanks: "<<getAverage(&latencies)<<endl;
 		f<<"# StandardDeviation: "<<getStandardDeviation(&latencies)<<endl;
 
-		for(int i=0;i<m_size;i++){
-			int latency=m_latencies[i];
-			if(latency==LATENCY_INFORMATION_NOT_AVAILABLE){
+		for(Rank i=0;i<m_size;i++){
+			int modeLatency=m_modeLatencies[i];
+			int averageLatency=m_averageLatencies[i];
+
+			if(modeLatency==LATENCY_INFORMATION_NOT_AVAILABLE){
 				f<<i<<"\t"<<m_names[i]<<"\tLATENCY_INFORMATION_NOT_AVAILABLE";
-				f<<"	"<<m_numberOfTestMessages<<endl;
+				f<<"LATENCY_INFORMATION_NOT_AVAILABLE";
 			}else{
-				f<<i<<"\t"<<m_names[i]<<"\t"<<latency;
-				f<<"	"<<m_numberOfTestMessages<<endl;
+				f<<i<<"\t"<<m_names[i]<<"\t"<<modeLatency;
+				f<<"	"<<averageLatency;
 			}
+
+			f<<"	"<<m_numberOfTestMessages<<endl;
 		}
+
 		f.close();
-		m_latencies.clear();
+		m_modeLatencies.clear();
+		m_averageLatencies.clear();
 
 		m_switchMan->closeMasterMode();
 
@@ -352,12 +378,32 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 	}
 }
 
+int NetworkTest::getAverageLatency(){
+	uint64_t sum=0;
+	int count=0;
+
+	for(int i=0;i<m_numberOfTestMessages;i++){
+		int latency=m_receivedMicroseconds[i]-m_sentMicroseconds[i];
+
+		if(latency<=__MAXIMUM_LATENCY){
+			sum+=latency;
+			count++;
+		}
+	}
+
+	if(count)
+		return sum / count;
+
+	return count;
+}
+
 int NetworkTest::getModeLatency(){
 	map<int,int> data;
-	int maxLatency=-1;
+	int maxLatency=LATENCY_INFORMATION_NOT_AVAILABLE;
 
 	for(int i=0;i<(int)m_receivedMicroseconds.size();i++){
 		int latency=m_receivedMicroseconds[i]-m_sentMicroseconds[i];
+
 		data[latency]++;
 
 		if(data.count(maxLatency)==0 || data[latency] > data[maxLatency])
@@ -432,3 +478,6 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(NetworkTest);
 }
+
+#undef __MAXIMUM_LATENCY  /**/
+

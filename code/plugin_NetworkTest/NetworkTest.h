@@ -127,13 +127,16 @@ class NetworkTest :  public CorePlugin {
 	bool m_started;
 
 	/** latencies */
-	map<int,int> m_latencies;
+	map<int,int> m_modeLatencies;
+	map<int,int> m_averageLatencies;
+
 	map<int,string> m_names;
 
 	/* processor name */
 	string*m_name;
 
 	int getModeLatency();
+	int getAverageLatency();
 public:
 	/** initialize the NetworkTest */
 	void constructor(Rank rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
