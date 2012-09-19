@@ -1,0 +1,58 @@
+Ray can be utilized to classify k-mers in a taxonomy. To do so,
+Ray needs a taxonomy.
+
+See these documents for general documentation about graph coloring and taxonomic profiling 
+features (called Ray Communities):
+
+	- Documentation/Taxonomy.txt
+	- Documentation/BiologicalAbundances.txt
+
+
+To download the NCBI taxonomy and generate required files:
+
+add this to your PATH:
+
+	export PATH=/home/boiseb01/git-clones/ray/scripts/NCBI-Taxonomy/:$PATH
+
+
+Then, run this:
+
+	CreateRayInputStructures.sh NCBI-taxonomy
+
+This will generate a directory with these files:
+
+	- NCBI-taxonomy/NCBI-Finished-Bacterial-Genomes
+	- NCBI-taxonomy/Genome-to-Taxon.tsv
+	- NCBI-taxonomy/TreeOfLife-Edges.tsv
+	- NCBI-taxonomy/Taxon-Names.tsv
+
+
+
+Now, you can run Ray as usual, but with additional options
+to run Ray Communities plugins as well:
+
+
+mpiexec -n 96 \
+Ray \
+-k 31 -o Ray-Communities \
+-p SeqA_1.fastq SeqA_2.fastq \
+-p SeqB_1.fastq SeqB_2.fastq \
+-search NCBI-taxonomy/NCBI-Finished-Bacterial-Genomes \
+-with-taxonomy NCBI-taxonomy/Genome-to-Taxon.tsv \
+NCBI-taxonomy/TreeOfLife-Edges.tsv NCBI-taxonomy/Taxon-Names.tsv 
+
+
+As usual, you can also put all the arguments in a configuration file like this:
+
+mpiexec -n 96 Ray Ray.conf
+
+where Ray.conf contains
+
+-k 31 -o Ray-Communities 
+-p SeqA_1.fastq SeqA_2.fastq 
+-p SeqB_1.fastq SeqB_2.fastq 
+-search NCBI-taxonomy/NCBI-Finished-Bacterial-Genomes 
+-with-taxonomy NCBI-taxonomy/Genome-to-Taxon.tsv 
+NCBI-taxonomy/TreeOfLife-Edges.tsv NCBI-taxonomy/Taxon-Names.tsv 
+
+

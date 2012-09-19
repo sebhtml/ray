@@ -1,6 +1,6 @@
-
 With Ray, you can generate biological abundances.
-
+This is done by providing Ray with a set of reference fasta sequences.
+Ray Communities will use them to color the k-mers in the graph.
 
 
 
@@ -45,75 +45,23 @@ The new files produced by the -search option are:
 
 RayMicrobiomeAnalysis/
 	BiologicalAbundances/
-		DenovoAssembly/
+		_DenovoAssembly/
 			Contigs.tsv
-			Identifications.tsv
-			Contigs/
-				Coverage/
-					contig-0.tsv
-					...
-				CoverageDistribution/
-					contig-0.tsv
-					...
+			*.CoverageData.xml
+
+		_Coloring/
+		_Frequencies/
 
 		NCBI-bacteria-directory/
-			ecoli.tsv
-			ecoli/
-				Coverage/
-					ecoli-seq1.tsv
-					...
-				CoverageDistribution/
-					ecoli-seq1.tsv
-					...
-			spneumo.tsv
-			spneumo/
-				Coverage/
-					ecoli-seq1.tsv
-					...
-				CoverageDistribution/
-					ecoli-seq1.tsv
-					...
-			...
+			ContigIdentifications.tsv
+			_Files.tsv
+			SequenceAbundances.xml
 
 		NCBI-viruses-directory/
-			phix.tsv
-			phix/
-				Coverage/
-					phix-seq1.tsv
-					...
-				CoverageDistribution/
-					phix-seq1.tsv
-					...
-			...
-
-Each of these .tsv files (except Identifications which contains
-identifications for contigs) contains these fields (? fields):
+			ContigIdentifications.tsv
+			_Files.tsv
+			SequenceAbundances.xml
 
 
-
-(Contigs.tsv does not have the column SequenceNumber.)
-
-
-For any category, there is a line with SequenceName set to 'All'. This line summarizes
-the corresponding category.
-
-The Summary.tsv files contain all the summary lines of the corresponding search
-directory.
-
-
-Identifications.tsv contains things that are similar to contigs.
-Each line has these fields:
-
-<headers of Identifications.tsv>
-
-
-== Implementation design ==
-
-All the sequences are counted. Then, a partition is computed.
-Each MPI rank then gives each of its sequences to one of its workers.
-The worker generate detailed files on disk but send summary information
-to MPI rank 0.
-
-MPI rank 0 writes all summary files in the end.
 
 The virtual processor and communicator are heavily utilised here.

@@ -38,7 +38,6 @@ then
 	if test ! -f taxdump.tar.gz
 	then
 		wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
-		cat taxdump.tar.gz|gunzip|tar -x
 	fi
 
 	if test ! -f all.fna.tar.gz
@@ -48,6 +47,22 @@ then
 
 	cd ..
 fi
+
+if test ! -d uncompressed
+then
+	mkdir uncompressed
+	cd uncompressed
+
+	mkdir taxonomy
+	cd taxonomy
+	cat ../../ftp.ncbi.nih.gov/taxdump.tar.gz|gunzip|tar -x
+	cd ..
+
+	mkdir 
+
+	cd ..
+fi
+
 
 if test ! -d for-ray
 then
