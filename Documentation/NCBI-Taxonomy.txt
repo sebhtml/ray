@@ -17,7 +17,8 @@ add this to your PATH:
 
 Then, run this:
 
-	CreateRayInputStructures.sh NCBI-taxonomy
+	CreateRayInputStructures.sh 
+
 
 This will generate a directory with these files:
 
