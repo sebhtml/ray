@@ -41,6 +41,11 @@ then
 		cat taxdump.tar.gz|gunzip|tar -x
 	fi
 
+	if test ! -f all.fna.tar.gz
+	then
+		wget ftp://ftp.ncbi.nih.gov/genomes/Bacteria/all.fna.tar.gz
+	fi
+
 	cd ..
 fi
 
