@@ -122,8 +122,20 @@ fi
 if test ! -d NCBI-Finished-Bacterial-Genomes
 then
 	echo "Creating $OutputDirectory/NCBI-Finished-Bacterial-Genomes, please wait."
-	echo "Done."
 
+	mkdir NCBI-Finished-Bacterial-Genomes
+	cd NCBI-Finished-Bacterial-Genomes
+
+	for i in $(ls ../uncompressed/all.fna)
+	do
+		name=$(echo $i|sed 's/_uid/ /g'|awk '{print $1}')
+	
+		cat ../uncompressed/all.fna/$i/*.fna > $name".fasta"
+	done
+
+	echo "Done."
+	
+	cd ..
 fi
 
 echo ""
