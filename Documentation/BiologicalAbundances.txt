@@ -62,6 +62,33 @@ RayMicrobiomeAnalysis/
 			_Files.tsv
 			SequenceAbundances.xml
 
+Hello,
 
+On 19/09/12 11:45 PM, Habib R wrote:
+> From previous build version of Ray, I found 0.Profile.Bacteria.tsv under the
+> BiologicalAbundances dir. 
+> What is this? How can I related this file to the ContigIdentification.tsv
+> and/or 
+> SequenceAbundances.xml under Bacteria subdir?
+> 
+
+SequenceAbundances.xml contains the primary copy of information for your
+profiled sample. There are XSL files in ray/scripts/xsl-xml/ to convert the XML file to
+tabular format, albeit with less information in it though.
+
+
+With -search, Ray colors the graph after the de novo assembly to assign "what
+is where".
+
+For each contig path in your graph (that is, in your assembly), Ray counts the
+number
+of matches in the contig path.
+
+So a line in ContigIdentification.tsv tells you that a given contig has N
+"Matches in contig" for a given reference sequence, and that the matches cover "Contig length
+ratio" of the contig, and "Sequence length ratio"
+
+
+== Note ==
 
 The virtual processor and communicator are heavily utilised here.
