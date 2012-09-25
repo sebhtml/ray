@@ -160,6 +160,7 @@ class Parameters{
 
 	void __shuffleOperationCodes();
 
+	bool isValidInteger(const char*textMessage);
 public:
 	Parameters();
 	string getReceivedMessagesFile();

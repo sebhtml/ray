@@ -332,16 +332,21 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 	m_timePrinter->printElapsedTime("Counting sequences to assemble");
 	cout<<endl;
 
-	/** this won't write anything if -amos was not provided */
-	bool res=m_sl->writeSequencesToAMOSFile(getRank(),getSize(),
-	m_outbox,
-	m_outboxAllocator,
-	&m_loadSequenceStep,
-	m_bubbleData,
-	m_lastTime,
-	m_parameters,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer()
-);
-	if(!res){
+	bool result=true;
+
+	if(m_parameters->useAmos()){
+/* This won't write anything if -amos was not provided */
+
+		result=m_sl->writeSequencesToAMOSFile(getRank(),getSize(),
+			m_outbox,
+			m_outboxAllocator,
+			&m_loadSequenceStep,
+			m_bubbleData,
+			m_lastTime,
+			m_parameters,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer());
+	}
+
+	if(!result){
 		(*m_aborted)=true;
 		m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 		m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
