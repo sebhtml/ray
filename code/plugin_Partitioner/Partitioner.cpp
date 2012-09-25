@@ -98,8 +98,18 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 			fileName<<"NumberOfSequences.txt";
 			ofstream f2(fileName.str().c_str());
 
+/* Write a sequence partition too,
+ * it contains the number of entries in each file.
+ */
+			ostringstream fileNameForFiles;
+			fileNameForFiles<<m_parameters->getPrefix();
+			fileNameForFiles<<"FilePartition.txt";
+			ofstream partitionStream(fileNameForFiles.str().c_str());
+
 			f2<<"Files: "<<m_parameters->getNumberOfFiles()<<endl;
 			f2<<endl;
+
+			partitionStream<<"#File	Name	FirstSequence	LastSequence	NumberOfSequences"<<endl;
 
 			LargeCount totalSequences=0;
 			for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
@@ -108,15 +118,26 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 
 				LargeCount entries=m_parameters->getNumberOfSequences(i);
 				f2<<" 	NumberOfSequences: "<<entries<<endl;
+
 				if(entries>0){
 					f2<<"	FirstSequence: "<<totalSequences<<endl;
 					f2<<"	LastSequence: "<<totalSequences+entries-1<<endl;
 				}
+
 				f2<<endl;
+
+				if(entries>0){
+					partitionStream<<i<<"	"<<m_parameters->getFile(i);
+					partitionStream<<"	"<<totalSequences;
+					partitionStream<<"	"<<totalSequences+entries-1;
+					partitionStream<<"	"<<entries<<endl;
+				}
 
 				totalSequences+=entries;
 			}
 			
+			partitionStream.close();
+
 			f2<<endl;
 			f2<<"Summary"<<endl;
 			f2<<"	NumberOfSequences: "<<totalSequences<<endl;
