@@ -614,18 +614,40 @@ void Parameters::parseCommands(){
 				cout<<" Right sequences: "<<right<<endl;
 			}
 
+			bool gotValuesFromEndUser=false;
+
+/* try to use what the user provided */
+
 			if(items==4){
-				i++;
-				token=m_commands[i];
-				meanFragmentLength=atoi(token.c_str());
-				i++;
-				token=m_commands[i];
-				standardDeviation=atoi(token.c_str());
-				if(m_rank==MASTER_RANK){
-					cout<<" Average length: "<<meanFragmentLength<<endl;
-					cout<<" Standard deviation: "<<standardDeviation<<endl;
+
+				if(!isValidInteger(m_commands[i+1].c_str())
+					|| !isValidInteger(m_commands[i+2].c_str())){
+					
+					if(m_rank==MASTER_RANK){
+						cout<<"Warning: invalid integer values for distances, you provided: -p ";
+						cout<<left<<" "<<right<<" "<<m_commands[i+1];
+						cout<<" "<<m_commands[i+2];
+						cout<<endl;
+					}
+
+					i+=2; /* consume the data */
+				}else{
+					i++;
+					token=m_commands[i];
+					meanFragmentLength=atoi(token.c_str());
+					i++;
+					token=m_commands[i];
+					standardDeviation=atoi(token.c_str());
+					if(m_rank==MASTER_RANK){
+						cout<<" Average length: "<<meanFragmentLength<<endl;
+						cout<<" Standard deviation: "<<standardDeviation<<endl;
+					}
+
+					gotValuesFromEndUser=true;
 				}
-			}else if(items==2){// automatic detection.
+			}
+
+			if(!gotValuesFromEndUser){// automatic detection.
 				m_automaticLibraries.insert(m_numberOfLibraries);
 				if(m_rank==MASTER_RANK){
 					cout<<" Average length: automatic detection"<<endl;
@@ -2105,4 +2127,21 @@ void Parameters::__shuffleOperationCodes(){
 		cout<<endl;
 	}
 
+}
+
+bool Parameters::isValidInteger(const char*textMessage){
+	int theLength=strlen(textMessage);
+
+	if(!theLength)
+		return false;
+
+	int i=0;
+
+	while(i<theLength){
+		char symbol=textMessage[i++];
+		if(!('0' <= symbol && symbol <= '9'))
+			return false;
+	}
+
+	return true;
 }
