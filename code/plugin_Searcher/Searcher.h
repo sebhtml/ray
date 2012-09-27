@@ -416,6 +416,7 @@ public:
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
 	void call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message);
+	void call_RAY_MPI_TAG_GRAPH_COUNTS(Message*message);
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

@@ -56,6 +56,7 @@ __CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION); /**/
 __CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS); /**/
 __CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS); /**/
 __CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY); /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
  /**/
 
 using namespace std;
@@ -603,6 +604,8 @@ void Searcher::createRootDirectories(){
 
 void Searcher::shareTotalGraphCounts(){
 
+	cout<<"Rank "<<m_parameters->getRank()<<" shares its counts"<<endl;
+
 	MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 	int bufferSize=0;
@@ -716,6 +719,39 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	}
 }
 
+/**
+ * Even if call_RAY_MPI_TAG_GRAPH_COUNTS is called before the first 
+ * call to the call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES -- which
+ * is silly in some way, the code path remains valid as the call to
+ * call_RAY_MPI_TAG_GRAPH_COUNTS touches nothing that the first if() in
+ * call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES touches.
+ */
+void Searcher::call_RAY_MPI_TAG_GRAPH_COUNTS(Message*message){
+
+	#ifdef ASSERT
+	assert(m_pumpedCounts==false);
+	#endif
+
+	MessageUnit*buffer=message->getBuffer();
+	
+	#ifdef ASSERT
+	assert(message->getCount()==6+1);
+	#endif
+
+	int bufferPosition=0;
+
+	m_totalNumberOfAssembledKmerObservations=buffer[bufferPosition++];
+	m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
+	m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
+	m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
+	m_totalNumberOfColoredKmerObservations=buffer[bufferPosition++];
+	m_totalNumberOfColoredKmers=buffer[bufferPosition++];
+	m_totalNumberOfKmerObservations_EMBL_CDS=buffer[bufferPosition++];
+
+	m_pumpedCounts=true;
+}
+
+
 void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	// Process virtual messages
 	m_virtualCommunicator->forceFlush();
@@ -760,32 +796,6 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			shareTotalGraphCounts();
 
 		}
-
-	}else if(m_inbox->hasMessage(RAY_MPI_TAG_GRAPH_COUNTS)){
-
-		#ifdef ASSERT
-		assert(m_pumpedCounts==false);
-		#endif
-
-		Message*message=m_inbox->at(0);
-		MessageUnit*buffer=message->getBuffer();
-		
-		#ifdef ASSERT
-		assert(message->getCount()==6+1);
-		#endif
-
-		int bufferPosition=0;
-
-		m_totalNumberOfAssembledKmerObservations=buffer[bufferPosition++];
-		m_totalNumberOfAssembledColoredKmerObservations=buffer[bufferPosition++];
-		m_totalNumberOfAssembledKmers=buffer[bufferPosition++];
-		m_totalNumberOfAssembledColoredKmers=buffer[bufferPosition++];
-		m_totalNumberOfColoredKmerObservations=buffer[bufferPosition++];
-		m_totalNumberOfColoredKmers=buffer[bufferPosition++];
-		m_totalNumberOfKmerObservations_EMBL_CDS=buffer[bufferPosition++];
-
-
-		m_pumpedCounts=true;
 
 	}else if(!m_pumpedCounts){
 
@@ -3834,6 +3844,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	
 	RAY_MPI_TAG_GRAPH_COUNTS=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GRAPH_COUNTS,"RAY_MPI_TAG_GRAPH_COUNTS");
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GRAPH_COUNTS,
+		__GetAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS));
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,__GetAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY));
