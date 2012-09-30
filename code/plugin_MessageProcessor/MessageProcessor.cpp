@@ -1402,8 +1402,6 @@ void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*mes
 
 void MessageProcessor::call_RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER(Message*message){
 
-	m_router->activateRelayChecker();
-
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY,m_rank);
 	m_outbox->push_back(aMessage);
 }

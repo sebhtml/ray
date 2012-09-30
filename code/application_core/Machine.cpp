@@ -57,8 +57,6 @@ Machine::Machine(int argc,char**argv){
 
 	void constructor(int*argc,char**argv);
 
-	m_computeCore.setMaximumNumberOfOutboxBuffers(MAX_ALLOCATED_OUTPUT_BUFFERS);
-
 	m_computeCore.constructor(&argc,&argv);
 	m_messagesHandler=m_computeCore.getMessagesHandler();
 
@@ -388,7 +386,6 @@ void Machine::start(){
 		vector<int> connections;
 		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
 		m_messagesHandler->setConnections(&connections);
-
 	}
 
 	// set the attributes of the seed extender.
