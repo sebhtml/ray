@@ -231,6 +231,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 
 				if(m_bufferedDataForOutgoingEdges.flush(outgoingRank,2*KMER_U64_ARRAY_SIZE,RAY_MPI_TAG_OUT_EDGES_DATA,m_outboxAllocator,m_outbox,m_parameters->getRank(),false)){
+
 					m_pendingMessages++;
 				}
 

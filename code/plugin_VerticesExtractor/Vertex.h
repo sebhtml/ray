@@ -50,6 +50,15 @@ using namespace std;
  */
 class Vertex{
 	
+/**
+ * This is for the colored graph subsystem.
+ * Right now, this subsystem stores only the origins
+ * of a k-mer, not an array of coverage depths.
+ * Therefore, this attribute is not required
+ * as the number of references is tracked elsewhere
+ * anyway.
+ * TODO: remove m_color because the references are tracked elsewhere too 
+ */
 	VirtualKmerColorHandle m_color;
 
 

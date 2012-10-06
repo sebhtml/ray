@@ -38,26 +38,26 @@
 
 __CreatePlugin(Searcher);
 
- /**/
-__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS); /**/
-__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
-__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
-__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS); /**/
-__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE); /**/
- /**/
-__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS); /**/
-__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES); /**/
-__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES); /**/
-__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS); /**/
-__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE); /**/
- /**/
-__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR); /**/
-__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION); /**/
-__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS); /**/
-__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS); /**/
-__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY); /**/
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS);
+__CreateMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE);
+
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS);
+__CreateSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE);
+
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR);
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION);
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
 __CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
- /**/
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA);
+__CreateMessageTagAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
 
 using namespace std;
 
@@ -72,6 +72,21 @@ using namespace std;
 
 #define CONFIG_SEARCH_THRESHOLD 0.001
 #define CONFIG_FORCE_VALUE_FOR_MAXIMUM_SPEED false
+
+int Searcher::getNamespace(PhysicalKmerColor handle){
+
+	return handle/COLOR_NAMESPACE_MULTIPLIER;
+}
+
+PhysicalKmerColor Searcher::buildGlobalHandle(int theNamespace,PhysicalKmerColor handle){
+
+	return handle+theNamespace*COLOR_NAMESPACE_MULTIPLIER;
+}
+
+PhysicalKmerColor Searcher::getColorInNamespace(PhysicalKmerColor handle){
+
+	return handle%COLOR_NAMESPACE_MULTIPLIER;
+}
 
 void Searcher::constructor(Parameters*parameters,StaticVector*outbox,TimePrinter*timePrinter,SwitchMan*switchMan,
 	VirtualCommunicator*vc,StaticVector*inbox,RingAllocator*outboxAllocator,
@@ -551,7 +566,7 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 
 			PhysicalKmerColor physicalColor=*j;
 	
-			int nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+			int nameSpace=getNamespace(physicalColor);
 		
 			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
 				isGeneForGeneOntologyProfiling=true;
@@ -1302,6 +1317,86 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	cout<<""<<CONFIG_FILE_IO_BUFFER_SIZE<<" bytes"<<endl;
 }
 
+/*
+ * Browse the graph. Here we send coloring summary to 
+ * master. However, we can not send virtual color counts alone
+ * as the color set is not the same across the processes.
+ * Virtual color handles are 32 bits whereas physical color handles are
+ * 64 bits.
+ */
+void Searcher::browseColoredGraph(){
+	if(!m_browsedTheGraphStarted){
+		
+		m_browsedTheGraphStarted=true;
+		m_currentVirtualColor=0;
+
+		#ifdef ASSERT
+		assert(!m_waiting);
+		#endif /* ASSERT */
+
+		m_messageSent=false;
+		m_messageReceived=false;
+
+	}else if(m_currentVirtualColor<m_colorSet.getTotalNumberOfVirtualColors()){
+
+		if(!m_messageSent){
+/*
+ * Send a message with the virtual color
+ */
+	
+			MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			int position=0;
+			messageBuffer[position++]=m_currentVirtualColor;
+			LargeCount references=m_colorSet.getNumberOfReferences(m_currentVirtualColor);
+			messageBuffer[position++]=references;
+			int physicalColors=m_colorSet.getNumberOfPhysicalColors(m_currentVirtualColor);
+
+			int unitsAvailable=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)-position;
+
+/*
+ * Browsing the graph with too many physical colors
+ * is not implemented at the moment.
+ * You should therefore use the option -one-color-per-file
+ * .
+ */
+			if(unitsAvailable<physicalColors){
+				physicalColors=0;
+			}
+			messageBuffer[position++]=physicalColors;
+
+			if(physicalColors!=0){
+				set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(m_currentVirtualColor);
+
+				for(set<PhysicalKmerColor>::iterator i=physicalColors->begin();
+					i!=physicalColors->end();++i){
+
+					PhysicalKmerColor handle=*i;
+					messageBuffer[position++]=handle;
+				}
+			}
+			
+
+			Message aMessage(messageBuffer,position,MASTER_RANK,
+				RAY_MPI_TAG_VIRTUAL_COLOR_DATA,m_rank);
+
+			m_outbox->push_back(aMessage);
+
+			m_messageSent=true;
+			m_messageReceived=false;
+
+		}else if(m_messageReceived){
+
+			m_currentVirtualColor++;
+			m_messageSent=false;
+			m_messageReceived=false;
+		}
+
+	}else{
+
+		m_browsedTheGraphEnded=true;
+	}
+}
+
 /** massively parallel implementation of
  * the biological abundance problem solver.
  * each MPI rankcount things.
@@ -1394,7 +1489,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		int slice=total/m_parameters->getSize();
 	
-		int rank=m_parameters->getRank();
+		Rank rank=m_parameters->getRank();
 		m_firstSequence=rank*slice;
 		m_lastSequence=(rank+1)*slice;
 	
@@ -1571,8 +1666,20 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEQUENCE_ABUNDANCE_YOU_CAN_GO_HOME)){
 
+		m_browseTheGraph=true;
+		m_browsedTheGraphStarted=false;
+		m_browsedTheGraphEnded=false;
+
+	}else if(m_browseTheGraph && !m_browsedTheGraphEnded){
+
+		browseColoredGraph();
+
+	}else if(m_browsedTheGraphEnded){
+
 		// this kills the batman
 		m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
+
+		m_browsedTheGraphEnded=false;
 
 	// all files in a directory were processed
 	}else if(!m_finished && m_fileIterator==(int)m_searchDirectories[m_directoryIterator].getSize()){
@@ -2618,7 +2725,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 				j!=physicalColors->end();j++){
 				PhysicalKmerColor physicalColor=*j;
 		
-				int nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
+				int nameSpace=getNamespace(physicalColor);
 			
 				counts[nameSpace]++;
 				if(counts[nameSpace]>1){
@@ -3126,7 +3233,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		}
 
 		// generate a color that includes the namespace
-		m_color= colorInNamespace + COLOR_NAMESPACE_MULTIPLIER * (m_directoryIterator);
+		m_color=buildGlobalHandle(m_directoryIterator,colorInNamespace);
 
 		/* unique identifiers have their own namespace */
 
@@ -3135,17 +3242,13 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if(m_searchDirectories[m_directoryIterator].hasCurrentSequenceIdentifier()){
 			PhysicalKmerColor theIdentifier=m_searchDirectories[m_directoryIterator].getCurrentSequenceIdentifier();
 
-			PhysicalKmerColor nameSpace=COLOR_NAMESPACE_PHYLOGENY;
-			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
-			m_identifier=theIdentifier + nameSpace;
+			m_identifier=buildGlobalHandle(COLOR_NAMESPACE_PHYLOGENY,theIdentifier);
 
 		}else if(m_searchDirectories[m_directoryIterator].hasIdentifier_EMBL_CDS()){
 
 			PhysicalKmerColor theIdentifier=m_searchDirectories[m_directoryIterator].getIdentifier_EMBL_CDS();
 
-			PhysicalKmerColor nameSpace=COLOR_NAMESPACE_EMBL_CDS;
-			nameSpace*= COLOR_NAMESPACE_MULTIPLIER;
-			m_identifier=theIdentifier+nameSpace;
+			m_identifier=buildGlobalHandle(COLOR_NAMESPACE_EMBL_CDS,theIdentifier);
 
 		}
 
@@ -3714,7 +3817,63 @@ void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force)
 
 }
 
+void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
+	MessageUnit*buffer=(MessageUnit*)message->getBuffer();
+	int count=message->getCount();
+	Rank source=message->getSource();
 
+	int position=0;
+	VirtualKmerColorHandle virtualColor=buffer[position++];
+
+/*
+ * A reference is a pair of k-mers.
+ */
+	LargeCount references=buffer[position++];
+
+	if(references>0){
+		int physicalColors=buffer[position++];
+
+/*
+ * The positions from position up to count-1 are the actual
+ * physical colors.
+ */
+	
+		#define CONFIG_COLORED_GRAPH_DEBUG
+
+		#ifdef CONFIG_COLORED_GRAPH_DEBUG
+		cout<<"[call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA] source: "<<source;
+		cout<<" VirtualColor: "<<virtualColor<<" References: "<<references;
+		cout<<" PhysicalColors: "<<physicalColors;
+
+		set<PhysicalKmerColor> coloredBits;
+	
+		for(int i=0;i<physicalColors;i++){
+			PhysicalKmerColor color=buffer[position+i];
+
+			int theNamespace=getNamespace(color);
+			PhysicalKmerColor directColor=getColorInNamespace(color);
+			cout<<" "<<theNamespace<<":"<<directColor;
+
+			coloredBits.insert(color);
+		}
+	
+		VirtualKmerColorHandle globalColor=m_masterColorSet.findVirtualColor(&coloredBits);
+		for(int i=0;i<references;i++){
+			m_masterColorSet.incrementReferences(globalColor);
+		}
+
+		cout<<endl;
+
+		#endif /* CONFIG_COLORED_GRAPH_DEBUG */
+	}
+
+	m_switchMan->sendEmptyMessage(m_outbox,m_rank,source,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
+}
+
+void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY(Message*message){
+
+	m_messageReceived=true;
+}
 
 void Searcher::flushCoverageXMLBuffer(bool force){
 	
@@ -3852,7 +4011,8 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY");
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY");
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY,
+		"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY_REPLY");
 
 	RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES,"RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCES");
@@ -3864,15 +4024,30 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ADD_KMER_COLOR_REPLY,"RAY_MPI_TAG_ADD_KMER_COLOR_REPLY");
 
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,__GetAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,
+		__GetAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION,"RAY_MPI_TAG_CONTIG_IDENTIFICATION");
 
 	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS=core->allocateMessageTagHandle(m_plugin);
-	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,__GetAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS));
-	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS");
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,
+		__GetAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,
+		"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS");
 	
+	RAY_MPI_TAG_VIRTUAL_COLOR_DATA=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_VIRTUAL_COLOR_DATA,
+		__GetAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_VIRTUAL_COLOR_DATA,"RAY_MPI_TAG_VIRTUAL_COLOR_DATA");
+
+	RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY,
+		__GetAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY,
+		"RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY");
+
 	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY=core->allocateMessageTagHandle(m_plugin);
-	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY,"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY");
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY,
+		"RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY");
 
 	RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY,"RAY_MPI_TAG_CONTIG_IDENTIFICATION_REPLY");
@@ -3883,7 +4058,6 @@ void Searcher::registerPlugin(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,m_timePrinter,"/RayAssembler/ObjectStore/Timer.ray");
 	core->setObjectSymbol(m_plugin,this,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
 	core->setObjectSymbol(m_plugin,&m_contigLengths,"/RayAssembler/ObjectStore/ContigLengths.ray");
-
 
 	m_totalNumberOfColoredKmerObservations=0;
 	m_totalNumberOfColoredKmers=0;
@@ -3994,6 +4168,11 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	m_coverageXMLflushOperations=0;
 	m_contigIdentificationflushOperations=0;
 	m_sequenceXMLflushOperations=0;
+
+	m_browseTheGraph=false;
+	m_browsedTheGraphStarted=false;
+	m_browsedTheGraphEnded=false;
+	m_rank=m_parameters->getRank();
 
 	__BindPlugin(Searcher);
 }

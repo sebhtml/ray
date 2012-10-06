@@ -42,10 +42,14 @@ typedef uint64_t PhysicalKmerColor;
  */
 class VirtualKmerColor{
 
-/** half the number of k-mers using this virtual color **/
+/** 
+ * half the number of k-mers using this virtual color 
+ */
 	LargeCount m_references;
 
-/** the list of physical colors **/
+/**
+ * the list of physical colors 
+ */
 	set<PhysicalKmerColor> m_colors;
 
 	uint64_t m_hash;

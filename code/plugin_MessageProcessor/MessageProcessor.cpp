@@ -718,6 +718,15 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		Kmer kmerObject;
 		int pos=i;
 		kmerObject.unpack(incoming,&pos);
+
+/* make sure that the payload 
+ * is for this process and not another one...
+ */
+		#ifdef ASSERT
+		Rank rankToFlush=kmerObject.hash_function_1()%m_parameters->getSize();
+		assert(rankToFlush==m_rank);
+		#endif
+
 		//bool isTheLowerKmer=false;
 		Kmer lowerKmer=kmerObject;
 
@@ -780,6 +789,11 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		assert(tmp!=NULL);
 		#endif
 
+/*
+ * Initialize the k-mer coverage 
+ * It starts at 0 if the Bloom filter
+ * is disabled, 1 otherwise.
+ */
 		if(m_subgraph->inserted()){
 			tmp->constructor(); 
 		

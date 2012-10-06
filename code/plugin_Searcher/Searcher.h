@@ -65,6 +65,16 @@ class Searcher :  public CorePlugin {
 /* the number of colored k-mers for a contig */
 	int m_coloredKmers;
 
+/* states for browsing the graph */
+	bool m_browseTheGraph;
+	bool m_browsedTheGraphStarted;
+	bool m_browsedTheGraphEnded;
+	VirtualKmerColorHandle m_currentVirtualColor;
+	Rank m_rank;
+	bool m_messageSent;
+	bool m_messageReceived;
+	
+
 	QualityCaller m_caller;
 
 	MessageTag RAY_MPI_TAG_ADD_COLORS;
@@ -103,6 +113,8 @@ class Searcher :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS;
 	MessageTag RAY_MPI_TAG_GET_GRAPH_COUNTS_REPLY;
 	MessageTag RAY_MPI_TAG_GRAPH_COUNTS;
+	MessageTag RAY_MPI_TAG_VIRTUAL_COLOR_DATA;
+	MessageTag RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY;
 
 	MasterMode RAY_MASTER_MODE_KILL_RANKS;
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
@@ -123,6 +135,11 @@ class Searcher :  public CorePlugin {
 
 /** translator for virtual colors **/
 	ColorSet m_colorSet;
+
+/*
+ * The master color object
+ */
+	ColorSet m_masterColorSet;
 
 	int m_finishedColoring;
 	bool m_locallyFinishedColoring;
@@ -387,6 +404,11 @@ class Searcher :  public CorePlugin {
 	// EMBL_CDS namespace
 	LargeCount m_totalNumberOfKmerObservations_EMBL_CDS;
 
+	void browseColoredGraph();
+	PhysicalKmerColor getColorInNamespace(PhysicalKmerColor handle);
+	PhysicalKmerColor buildGlobalHandle(int theNamespace,PhysicalKmerColor handle);
+	int getNamespace(PhysicalKmerColor handle);
+
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();
@@ -425,8 +447,11 @@ public:
 
 	LargeCount getTotalNumberOfColoredKmerObservationsForANameSpace(int namespaceNumber);
 
+	void call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message);
+	void call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY(Message*message);
+
 }; /* Searcher */
 
 
-#endif
+#endif /* _Searcher_h */
 

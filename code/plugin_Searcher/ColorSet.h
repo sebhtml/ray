@@ -59,11 +59,11 @@ class ColorSet{
 	int OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION;
 	int OPERATION_VIRTUAL_COLOR_HAS_COLORS_FETCH;
 	int OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION;
-	int  OPERATION_NEW_FROM_EMPTY;
+	int OPERATION_NEW_FROM_EMPTY;
 	int OPERATION_NEW_FROM_SCRATCH;
-	int  OPERATION_applyHashOperation;
+	int OPERATION_applyHashOperation;
 	int OPERATION_getHash;
-	int  OPERATION_getVirtualColorFrom;
+	int OPERATION_getVirtualColorFrom;
 	int OPERATION_createVirtualColorFrom ;
 	int OPERATION_incrementReferences ;
 	int OPERATION_decrementReferences ;
@@ -96,8 +96,6 @@ class ColorSet{
 
 	VirtualKmerColor*getVirtualColor(VirtualKmerColorHandle handle);
 
-/** get a handle to a virtual color */
-	VirtualKmerColorHandle getVirtualColorHandle(set<PhysicalKmerColor>*colors);
 
 	void purgeVirtualColor(VirtualKmerColorHandle handle);
 
@@ -125,7 +123,7 @@ public:
 /** decrement the references for a virtual color **/
 	void decrementReferences(VirtualKmerColorHandle handle);
 	
-	int getNumberOfReferences(VirtualKmerColorHandle handle);
+	LargeCount getNumberOfReferences(VirtualKmerColorHandle handle);
 
 	int getNumberOfPhysicalColors(VirtualKmerColorHandle handle);
 
@@ -140,6 +138,11 @@ public:
 	set<PhysicalKmerColor>*getPhysicalColors(VirtualKmerColorHandle handle);
 
 	bool virtualColorHasPhysicalColor(VirtualKmerColorHandle handle,PhysicalKmerColor color);
+
+/*
+ * Returns a virtual color with exactly the physical colors provided.
+ */
+	VirtualKmerColorHandle findVirtualColor(set<PhysicalKmerColor>*colors);
 };
 
 #endif
