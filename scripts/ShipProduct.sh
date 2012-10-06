@@ -25,7 +25,6 @@ base=~/git-clones
 
 RayGit=$base/ray
 RayPlatformGit=$base/RayPlatform
-ExampleGit=$base/RayPlatform-example
 productName=Ray-$release
 productDirectory=~/ProductReleases/$productName
 
@@ -58,14 +57,6 @@ echo git://github.com/sebhtml/RayPlatform.git > git.txt
 rm -rf .git
 cd ..
 
-echo "Cloning $ExampleGit"
-git clone $ExampleGit &> /dev/null
-cd RayPlatform-example
-git log|grep ^commit|head -n1|awk '{print $2}' > tag.txt
-echo https://github.com/sebhtml/RayPlatform-example > github.txt
-echo git://github.com/sebhtml/RayPlatform-example.git > git.txt
-rm -rf .git
-cd ..
 
 
 # create archives
@@ -75,12 +66,6 @@ echo "Creating product releases."
 cd ..
 echo ".tar.bz2"
 tar cjf $productName.tar.bz2 $productName &> /dev/null
-echo ".tar.gz"
-tar czf $productName.tar.gz $productName &> /dev/null
-echo ".zip"
-zip -yr $productName.zip $productName &> /dev/null
-echo ".tar.xz"
-tar cJf $productName.tar.xz $productName &> /dev/null
 
 rm -rf $productName
 
