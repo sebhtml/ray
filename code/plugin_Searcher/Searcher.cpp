@@ -1827,7 +1827,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			int coloredMode=getDistributionMode(&m_coloredCoverageDistribution);
 			int assembledMode=getDistributionMode(&m_assembledCoverageDistribution);
 
-
 			int coloredAssembledMode=getDistributionMode(&m_coloredAssembledCoverageDistribution);
 
 			#ifdef CONFIG_SEQUENCE_ABUNDANCES_VERBOSE
@@ -1928,6 +1927,9 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				buffer[bufferPosition++]=m_fileIterator;
 				buffer[bufferPosition++]=m_sequenceIterator;
 
+				buffer[bufferPosition++]=m_color;
+				buffer[bufferPosition++]=m_globalSequenceIterator;
+
 				#ifdef ASSERT
 				assert(m_directoryIterator==(int)buffer[0]);
 				assert(m_fileIterator==(int)buffer[1]);
@@ -1963,7 +1965,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				strcpy(sequenceNameFromMessage,sequenceName.c_str());
 
 				// the rank that can write to this directory.
-				int writer=getAbundanceWriter(m_directoryIterator);
+				Rank writer=getAbundanceWriter(m_directoryIterator);
 
 				Message aMessage(buffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 					writer,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,
@@ -3246,8 +3248,8 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		// in this case, we use one color per file
 		// colors in different directories are independent because of namespaces.
 
-		if(m_parameters->hasOption("-one-color-per-file")){
-			colorInNamespace= m_fileIterator;
+		if(m_useOneColorPerFile){
+			colorInNamespace=m_fileIterator;
 		}
 
 		// generate a color that includes the namespace
@@ -3269,7 +3271,6 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 			m_identifier=buildGlobalHandle(COLOR_NAMESPACE_EMBL_CDS,theIdentifier);
 
 		}
-
 
 		#ifdef DEBUG_PHYLOGENY
 		cout<<"[phylogeny] identifier= "<<m_identifier<<endl;
@@ -3443,11 +3444,11 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 	int bufferPosition=0;
 	MessageUnit*buffer=message->getBuffer();
 
-
-
 	int directoryIterator=buffer[bufferPosition++];
 	int fileIterator=buffer[bufferPosition++];
 	int sequenceIterator=buffer[bufferPosition++];
+	PhysicalKmerColor physicalColor=buffer[bufferPosition++];
+	uint64_t globalSequenceIterator=buffer[bufferPosition++];
 
 	//cout<<"Received sequenceIterator= "<<sequenceIterator<<endl;
 
@@ -3574,7 +3575,13 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		header<<endl;
 
 		
-		content<<"<entry><file>"<<m_fileNames[directoryIterator][fileIterator]<<"</file>"<<endl;
+		content<<"<entry>"<<endl;
+
+		content<<"<namespace>"<<directoryIterator<<"</namespace>";
+		content<<"<physicalColor>"<<physicalColor<<"</physicalColor>";
+		content<<"<globalSequenceIterator>"<<globalSequenceIterator<<"</globalSequenceIterator>"<<endl;
+
+		content<<"<file>"<<m_fileNames[directoryIterator][fileIterator]<<"</file>"<<endl;
 		content<<"<sequence>"<<sequenceIterator<<"</sequence><name>"<<sequenceName<<"</name>"<<endl;
 		content<<"<kmerLength>"<<m_parameters->getWordSize();
 		
@@ -4337,6 +4344,7 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	m_rank=m_parameters->getRank();
 	m_totalKmers=0;
 	m_totalKmerObservations=0;
+	m_useOneColorPerFile=m_parameters->hasOption("-one-color-per-file");
 
 	__BindPlugin(Searcher);
 }

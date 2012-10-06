@@ -74,6 +74,8 @@ class Searcher :  public CorePlugin {
 	bool m_messageSent;
 	bool m_messageReceived;
 	
+	bool m_useOneColorPerFile;
+
 	QualityCaller m_caller;
 
 	MessageTag RAY_MPI_TAG_ADD_COLORS;
@@ -353,7 +355,7 @@ class Searcher :  public CorePlugin {
 
 	/** iteraetor */
 	int m_sequenceIterator;
-	int m_globalSequenceIterator;
+	uint64_t m_globalSequenceIterator;
 	int m_globalFileIterator;
 
 	int m_currentLength;
