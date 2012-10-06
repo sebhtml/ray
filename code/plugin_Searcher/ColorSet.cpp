@@ -29,6 +29,12 @@
 #include <iostream>
 using namespace std;
 
+#ifdef ASSERT_LOW_LEVEL
+#ifndef ASSERT
+#define ASSERT
+#endif /* ASSERT */
+#endif /* ASSERT_LOW_LEVEL */
+
 #ifdef ASSERT
 #include <assert.h>
 #endif /* ASSERT */
@@ -601,7 +607,9 @@ void ColorSet::assertNoVirtualColorDuplicates(VirtualKmerColorHandle handle,Phys
 				printPhysicalColors(getVirtualColor(handle)->getPhysicalColors());
 			}
 
+			#ifdef ASSERT
 			assert(!getVirtualColor(i)->hasPhysicalColors(&desiredColors));
+			#endif /* ASSERT */
 		}
 	}
 		
