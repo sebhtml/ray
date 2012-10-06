@@ -33,8 +33,6 @@ using namespace std;
 #include <assert.h>
 #endif /* ASSERT */
 
-#define NULL_VIRTUAL_COLOR 0
-
 /** Time complexity: constant **/
 ColorSet::ColorSet(){
 	VirtualKmerColorHandle voidColor=createVirtualColorHandleFromScratch();
@@ -618,6 +616,86 @@ void ColorSet::printPhysicalColors(set<PhysicalKmerColor>*colors3){
 }
 
 VirtualKmerColorHandle ColorSet::findVirtualColor(set<PhysicalKmerColor>*colors){
-	return NULL_VIRTUAL_COLOR;
+
+	if(colors->size()==0)
+		return NULL_VIRTUAL_COLOR;
+
+	VirtualKmerColorHandle virtualColorInStore=lookupVirtualColor(colors);
+
+	if(virtualColorInStore!=NULL_VIRTUAL_COLOR)
+		return virtualColorInStore;
+
+	
+/*
+ * At this point, we need to create a virtual color with all the required 
+ * physical colors.
+ */
+
+	return createVirtualColorFromPhysicalColors(colors);
 }
 
+VirtualKmerColorHandle ColorSet::createVirtualColorFromPhysicalColors(set<PhysicalKmerColor>*colors){
+
+	if(colors->size()==0)
+		return NULL_VIRTUAL_COLOR;
+	
+	#ifdef ASSERT
+	assert(colors->size()!=0);
+	#endif /* ASSERT */
+
+	VirtualKmerColorHandle newHandle=allocateVirtualColorHandle();
+
+	#ifdef ASSERT
+	assert(m_availableHandles.count(newHandle)>0);
+	#endif /* ASSERT */
+
+	m_availableHandles.erase(newHandle);
+
+	VirtualKmerColor*newVirtualColor=getVirtualColor(newHandle);
+
+	newVirtualColor->addPhysicalColors(colors);
+
+	uint64_t expectedHash=getHash(colors);
+	newVirtualColor->setHash(expectedHash);
+	addVirtualColorToIndex(newHandle);
+
+	#ifdef ASSERT
+	assert(lookupVirtualColor(colors)!=NULL_VIRTUAL_COLOR);
+	#endif /* ASSERT */
+
+	return newHandle;
+}
+
+VirtualKmerColorHandle ColorSet::lookupVirtualColor(set<PhysicalKmerColor>*colors){
+	uint64_t expectedHash=getHash(colors);
+
+	if(m_index.count(expectedHash)>0){
+		set<VirtualKmerColorHandle>*hits=&(m_index[expectedHash]);
+
+		for(set<VirtualKmerColorHandle>::iterator i=hits->begin();i!=hits->end();i++){
+
+			VirtualKmerColorHandle virtualColorToInvestigate=*i;
+		
+			VirtualKmerColor*toCheck=getVirtualColor(virtualColorToInvestigate);
+
+/*
+ * We need the same number of physical colors.
+ */
+			if((int)colors->size()!=toCheck->getNumberOfPhysicalColors())
+				continue;
+
+/*
+ * Each physical color must match 
+ */
+			if(!toCheck->hasPhysicalColors(colors))
+				continue;
+
+/*
+ * The matching virtual color was found.
+ */
+			return virtualColorToInvestigate;
+		}
+	}
+
+	return NULL_VIRTUAL_COLOR;
+}

@@ -30,6 +30,8 @@
 #include <iostream>
 using namespace std;
 
+#define NULL_VIRTUAL_COLOR 0
+
 // maximum value for a uint64_t:
 // 18446744073709551615
 // xxxxyyyyyyyyyyyyyyyy
@@ -113,6 +115,8 @@ class ColorSet{
 	void assertNoVirtualColorDuplicates(VirtualKmerColorHandle handle,PhysicalKmerColor color,int id);
 
 	void printPhysicalColors(set<PhysicalKmerColor>*colors);
+	VirtualKmerColorHandle lookupVirtualColor(set<PhysicalKmerColor>*colors);
+	VirtualKmerColorHandle createVirtualColorFromPhysicalColors(set<PhysicalKmerColor>*colors);
 public:
 	
 	ColorSet();

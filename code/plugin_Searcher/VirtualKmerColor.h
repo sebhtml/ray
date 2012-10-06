@@ -58,6 +58,7 @@ public:
 	VirtualKmerColor();
 
 	void addPhysicalColor(PhysicalKmerColor color);
+	void addPhysicalColors(set<PhysicalKmerColor>*color);
 
 	void incrementReferences();
 	void decrementReferences();

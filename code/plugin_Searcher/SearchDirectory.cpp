@@ -25,7 +25,15 @@
 
 #include <assert.h>
 #include <string.h>
+
+/* 
+ * I am not sure that dirent.h is available on Microsoft(R) Windows(R).
+ * Anyway, at this point, you are better off installing Cygwin in Windows(R)
+ * to acquire a POSIX compatibility layer on this otherwise not-POSIX 
+ * system
+ */
 #include <dirent.h> /* for opendir, readdir and closedir */
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -58,7 +66,9 @@ string*SearchDirectory::getFileName(int j){
 	return &m_files[j];
 }
 
-// \see http://stackoverflow.com/questions/612097/how-can-i-get-a-list-of-files-in-a-directory-using-c-or-c
+/*
+ * \see http://stackoverflow.com/questions/612097/how-can-i-get-a-list-of-files-in-a-directory-using-c-or-c
+ */
 void SearchDirectory::readDirectory(){
 	struct dirent *ent;
 	DIR*dir = opendir (m_path.c_str());

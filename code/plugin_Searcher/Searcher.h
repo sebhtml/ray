@@ -74,7 +74,6 @@ class Searcher :  public CorePlugin {
 	bool m_messageSent;
 	bool m_messageReceived;
 	
-
 	QualityCaller m_caller;
 
 	MessageTag RAY_MPI_TAG_ADD_COLORS;
@@ -163,6 +162,8 @@ class Searcher :  public CorePlugin {
 	LargeCount m_totalNumberOfAssembledColoredKmerObservations;
 	LargeCount m_totalNumberOfAssembledKmers;
 	LargeCount m_totalNumberOfAssembledColoredKmers;
+	LargeCount m_totalKmerObservations;
+	LargeCount m_totalKmers;
 	
 	PhysicalKmerColor m_color;
 	PhysicalKmerColor m_identifier;
@@ -392,8 +393,8 @@ class Searcher :  public CorePlugin {
 		LargeCount*localAssembledColoredKmerObservations,
 		LargeCount*localAssembledKmers,LargeCount*localAssembledColoredKmers,
 		LargeCount*localColoredKmerObservations,LargeCount*localColoredKmers,
-		LargeCount*geneCdsKmerObservations
-);
+		LargeCount*geneCdsKmerObservations,LargeCount*totalKmers,
+		LargeCount*totalKmerObservations);
 
 	/* I/O optimization */
 	int m_sequenceXMLflushOperations;
@@ -409,6 +410,7 @@ class Searcher :  public CorePlugin {
 	PhysicalKmerColor buildGlobalHandle(int theNamespace,PhysicalKmerColor handle);
 	int getNamespace(PhysicalKmerColor handle);
 
+	void generateSummaryOfColoredDeBruijnGraph();
 public:
 
 	void call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS();

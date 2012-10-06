@@ -481,7 +481,8 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 	LargeCount*localAssembledColoredKmerObservations,
 	LargeCount*localAssembledKmers,LargeCount*localAssembledColoredKmers,
 	LargeCount*localColoredKmerObservations,LargeCount*localColoredKmers,
-	LargeCount*geneCdsKmerObservations){
+	LargeCount*geneCdsKmerObservations,LargeCount*totalKmers,
+	LargeCount*totalKmerObservations){
 
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
@@ -491,6 +492,12 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 	// TODO: maybe each k-mer of any pair of in a twin should
 	// be processed, because maybe each k-mer is actually 
 	// in genome...
+
+/*
+ * For instance, if a genome has N kmers on its forward strand, we don't want
+ * to report 2*N matches in the graph because that would be 200% success rate,
+ * which is silly.
+ */
 
 	int parity=0;
 
@@ -533,7 +540,10 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 
 		// at this point, we have a nicely assembled k-mer
 		
-		int kmerCoverage=node->getCoverage(&key);
+		CoverageDepth kmerCoverage=node->getCoverage(&key);
+
+		(*totalKmers)++;
+		(*totalKmerObservations)+=kmerCoverage;
 
 		if(assembled){
 			(*localAssembledKmerObservations)+=kmerCoverage;
@@ -1229,6 +1239,9 @@ void Searcher::call_RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 	// this step is over
 	}else if(m_switchMan->allRanksAreReady()){
+
+		generateSummaryOfColoredDeBruijnGraph();
+
 		m_switchMan->closeMasterMode();
 
 		m_timePrinter->printElapsedTime("Counting sequence biological abundances");
@@ -1343,7 +1356,6 @@ void Searcher::browseColoredGraph(){
 /*
  * Send a message with the virtual color
  */
-	
 			MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int position=0;
 			messageBuffer[position++]=m_currentVirtualColor;
@@ -1374,7 +1386,6 @@ void Searcher::browseColoredGraph(){
 					messageBuffer[position++]=handle;
 				}
 			}
-			
 
 			Message aMessage(messageBuffer,position,MASTER_RANK,
 				RAY_MPI_TAG_VIRTUAL_COLOR_DATA,m_rank);
@@ -2954,6 +2965,8 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 		LargeCount coloredKmerObservations=buffer[bufferPosition++];
 		LargeCount coloredKmers=buffer[bufferPosition++];
 		LargeCount geneCdsKmerObservations=buffer[bufferPosition++];
+		LargeCount totalKmers=buffer[bufferPosition++];
+		LargeCount totalKmerObservations=buffer[bufferPosition++];
 
 		/* agglomerate the count */
 		m_totalNumberOfAssembledKmerObservations+=assembledKmerObservations;
@@ -2963,6 +2976,8 @@ void Searcher::call_RAY_MASTER_MODE_ADD_COLORS(){
 		m_totalNumberOfColoredKmerObservations+=coloredKmerObservations;
 		m_totalNumberOfColoredKmers+=coloredKmers;
 		m_totalNumberOfKmerObservations_EMBL_CDS+=geneCdsKmerObservations;
+		m_totalKmers+=totalKmers;
+		m_totalKmerObservations+=totalKmerObservations;
 
 
 	}else if(m_switchMan->allRanksAreReady()){
@@ -3095,11 +3110,13 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		LargeCount localColoredKmerObservations=0;
 		LargeCount localColoredKmers=0;
 		LargeCount geneCdsKmerObservations=0;
+		LargeCount totalKmers=0;
+		LargeCount totalKmerObservations=0;
 
 		countKmerObservations(&localAssembledKmerObservations,&localAssembledColoredKmerObservations,
 			&localAssembledKmers,&localAssembledColoredKmers,
 			&localColoredKmerObservations,&localColoredKmers,
-			&geneCdsKmerObservations);
+			&geneCdsKmerObservations,&totalKmers,&totalKmerObservations);
 
 		MessageUnit*buffer2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 		int bufferSize=0;
@@ -3111,7 +3128,8 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		buffer2[bufferSize++]=localColoredKmerObservations;
 		buffer2[bufferSize++]=localColoredKmers;
 		buffer2[bufferSize++]=geneCdsKmerObservations;
-	
+		buffer2[bufferSize++]=totalKmers;
+		buffer2[bufferSize++]=totalKmerObservations;
 
 		// tell root that we are done
 		m_switchMan->sendMessage(buffer2,bufferSize,m_outbox,m_parameters->getRank(),MASTER_RANK,
@@ -3819,7 +3837,12 @@ void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force)
 
 void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 	MessageUnit*buffer=(MessageUnit*)message->getBuffer();
+
+	#ifdef ASSERT
 	int count=message->getCount();
+	assert(count>0);
+	#endif /* ASSERT */
+
 	Rank source=message->getSource();
 
 	int position=0;
@@ -3858,7 +3881,8 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 		}
 	
 		VirtualKmerColorHandle globalColor=m_masterColorSet.findVirtualColor(&coloredBits);
-		for(int i=0;i<references;i++){
+
+		for(uint64_t i=0;i<references;i++){
 			m_masterColorSet.incrementReferences(globalColor);
 		}
 
@@ -3868,6 +3892,144 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 	}
 
 	m_switchMan->sendEmptyMessage(m_outbox,m_rank,source,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
+}
+
+void Searcher::generateSummaryOfColoredDeBruijnGraph(){
+
+/*
+ * The code can not handle empty graphs.
+ */
+	if(m_totalKmers==0)
+		return;
+
+	ostringstream summaryFile;
+	summaryFile<<m_parameters->getPrefix()<<"/BiologicalAbundances/_Coloring/GraphBrowsing.xml";
+	ofstream f1;
+	f1.open(summaryFile.str().c_str(),ios_base::app);
+
+	f1<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"<<endl;
+	f1<<"<root>"<<endl;
+
+	f1<<"<totalKmerPairs>"<<m_totalKmers<<"</totalKmerPairs>";
+	f1<<"<totalKmerPairObservations>"<<m_totalKmerObservations<<"</totalKmerPairObservations>";
+
+	LargeCount kmersWithoutColor=m_totalKmers;
+
+	LargeCount numberOfVirtualColors=m_masterColorSet.getTotalNumberOfVirtualColors();
+
+	// compute the number of references without any color
+	for(VirtualKmerColorHandle currentVirtualColor=NULL_VIRTUAL_COLOR;
+		currentVirtualColor<numberOfVirtualColors;++currentVirtualColor){
+
+		LargeCount references=m_masterColorSet.getNumberOfReferences(currentVirtualColor);
+
+		if(references==0)
+			continue;
+
+		kmersWithoutColor-=references;
+	}
+
+	f1<<"<virtualColors>"<<endl;
+
+	f1<<"<virtualColor>";
+	f1<<"<handle>";
+	f1<<"NULL_VIRTUAL_COLOR";
+	f1<<"</handle>";
+	f1<<"<references>";
+	f1<<kmersWithoutColor;
+	f1<<"</references>";
+	f1<<"<ratio>"<<kmersWithoutColor/(m_totalKmers+0.0)<<"</ratio>";
+	f1<<"<namespaces>";
+	f1<<"</namespaces>";
+	f1<<"</virtualColor>"<<endl;
+
+	for(VirtualKmerColorHandle currentVirtualColor=NULL_VIRTUAL_COLOR;
+		currentVirtualColor<numberOfVirtualColors;++currentVirtualColor){
+
+		LargeCount references=m_masterColorSet.getNumberOfReferences(currentVirtualColor);
+
+/*
+ * Any virtual color with exactly 0 reference is not useful 
+ * for anything here.
+ */
+		if(references==0)
+			continue;
+
+		int numberOfPhysicalColors=m_masterColorSet.getNumberOfPhysicalColors(currentVirtualColor);
+
+		set<PhysicalKmerColor>*colors=m_masterColorSet.getPhysicalColors(currentVirtualColor);
+
+		#ifdef ASSERT
+		assert(numberOfPhysicalColors>0);
+		#endif /* ASSERT */
+
+		f1<<"<virtualColor>";
+		f1<<"<handle>";
+		f1<<currentVirtualColor<<endl;
+		f1<<"</handle>";
+	
+		f1<<"<references>";
+
+/*
+ * Each reference representes exactly two reverse complement k-mers
+ */
+
+		LargeCount numberOfKmers=references;
+		f1<<numberOfKmers;
+		f1<<"</references>"<<endl;
+	
+		f1<<"<ratio>"<<numberOfKmers/(m_totalKmers+0.0)<<"</ratio>";
+
+		map<int,set<PhysicalKmerColor> > classifiedData;
+		for(set<PhysicalKmerColor>::iterator i=colors->begin();
+			i!=colors->end();++i){
+
+			PhysicalKmerColor handle=*i;
+			int aNamespace=getNamespace(handle);
+			PhysicalKmerColor physicalColor=getColorInNamespace(handle);
+			classifiedData[aNamespace].insert(physicalColor);
+
+			#ifdef ASSERT
+			assert(classifiedData.count(aNamespace)>0);
+			#endif /* ASSERT */
+		}
+
+		f1<<"<namespaces>";
+		for(map<int,set<PhysicalKmerColor> >::iterator i=classifiedData.begin();
+			i!=classifiedData.end();++i){
+
+			int theNamespace=i->first;
+			int count=i->second.size();
+
+			f1<<"<namespace>";
+			f1<<"<handle>";
+			f1<<theNamespace;
+			f1<<"</handle>";
+			f1<<"<numberOfPhysicalColors>";
+			f1<<count;
+			f1<<"</numberOfPhysicalColors>";
+
+			f1<<endl;
+			f1<<"<physicalColors>";
+			for(set<PhysicalKmerColor>::iterator j=i->second.begin();
+				j!=i->second.end();++j){
+	
+				PhysicalKmerColor color=*j;
+				f1<<" "<<color;
+			}
+
+			f1<<"</physicalColors>";
+			f1<<"</namespace>"<<endl;
+		}
+
+		f1<<"</namespaces>";
+		f1<<"</virtualColor>"<<endl;
+
+	}
+
+	f1<<"</virtualColors>"<<endl;
+	f1<<"</root>"<<endl;
+	f1.close();
 }
 
 void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY(Message*message){
@@ -4173,8 +4335,8 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	m_browsedTheGraphStarted=false;
 	m_browsedTheGraphEnded=false;
 	m_rank=m_parameters->getRank();
+	m_totalKmers=0;
+	m_totalKmerObservations=0;
 
 	__BindPlugin(Searcher);
 }
-
-

@@ -148,6 +148,11 @@ bool VirtualKmerColor::virtualColorHasAllPhysicalColorsOf(VirtualKmerColor*a,Phy
 void VirtualKmerColor::copyPhysicalColors(VirtualKmerColor*a){
 	set<PhysicalKmerColor>*colors=a->getPhysicalColors();
 
+	addPhysicalColors(colors);
+}
+
+void VirtualKmerColor::addPhysicalColors(set<PhysicalKmerColor>*colors){
+
 	for(set<PhysicalKmerColor>::iterator i=colors->begin();
 		i!=colors->end();i++){
 
