@@ -72,13 +72,30 @@ void Read::constructorWithRawSequence(const char*seq,uint8_t*raw,bool flag){
 }
 
 void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimFlag){
+
+/*
+#define DEBUG_GCC_4_7_2
+#define __READ_VERBOSITY
+*/
+
+	#ifdef DEBUG_GCC_4_7_2
+	cout<<"[Read::constructor] sequence is "<<sequence<<endl;
+	#endif
+
 	m_forwardOffset=0;
 	m_reverseOffset=0;
 	m_type=TYPE_SINGLE_END;
+
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
+
 	if(trimFlag && strlen(sequence)<RAY_MAXIMUM_READ_LENGTH){
-		char buffer[RAY_MAXIMUM_READ_LENGTH];
 		sequence=trim(buffer,sequence);
 	}
+
+	#ifdef DEBUG_GCC_4_7_2
+	cout<<"[DEBUG_GCC_4_7_2] after trim "<<sequence<<endl;
+	#endif
+
 	int length=strlen(sequence);
 	m_length=length;
 
@@ -89,18 +106,30 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 		workingBuffer[i]=0;
 	}
 
+	#ifdef DEBUG_GCC_4_7_2
+	cout<<"[DEBUG_GCC_4_7_2] before loop, sequence= "<<sequence<<endl;
+	#endif
+
 	for(int position=0;position<length;position++){
 		char nucleotide=sequence[position];
 		if(nucleotide!='A'&&nucleotide!='T'&&nucleotide!='C'&&nucleotide!='G'){
+
+			#ifdef DEBUG_GCC_4_7_2
+			cout<<"[DEBUG_GCC_4_7_2] nucleotide "<<nucleotide<<" is not in {A,T,C,G}, position "<<position<<" in "<<sequence<<", length is "<<length<<endl;
+			#endif
+
 			nucleotide='A';
 		}
+
 		uint8_t code=charToCode(nucleotide);
+
 		#ifdef __READ_VERBOSITY
 		if(position%4==0){
 			cout<<"|";
 		}
-		cout<<" "<<(int)code;
+		cout<<" "<<(int)code<<"("<<nucleotide<<")";
 		#endif
+
 		int positionInWorkingBuffer=position/4;
 		int codePositionInWord=position%4;
 		uint8_t wordToUpdate=workingBuffer[positionInWorkingBuffer];
@@ -109,6 +138,7 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 		wordToUpdate=wordToUpdate|code;
 		workingBuffer[positionInWorkingBuffer]=wordToUpdate;
 	}
+
 	#ifdef __READ_VERBOSITY
 	cout<<endl;
 	for(int i=0;i<requiredBytes;i++){

@@ -120,8 +120,14 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 	}else{
 		if(m_mode_send_vertices_sequence_id_position==0){
 			(*m_myReads)[(m_mode_send_vertices_sequence_id)]->getSeq(m_readSequence,m_parameters->getColorSpaceMode(),false);
-		
+
+//#define DEBUG_GCC_4_7_2
+
+			#ifdef DEBUG_GCC_4_7_2
+			cout<<"[DEBUG_GCC_4_7_2] read is "<<m_readSequence<<endl;
+			#endif
 		}
+
 		int len=strlen(m_readSequence);
 
 		if(len<m_parameters->getWordSize()){
