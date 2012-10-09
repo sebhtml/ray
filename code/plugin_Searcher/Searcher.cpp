@@ -3868,12 +3868,13 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
  * physical colors.
  */
 	
-		#define CONFIG_COLORED_GRAPH_DEBUG
+		// #define CONFIG_COLORED_GRAPH_DEBUG
 
 		#ifdef CONFIG_COLORED_GRAPH_DEBUG
 		cout<<"[call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA] source: "<<source;
 		cout<<" VirtualColor: "<<virtualColor<<" References: "<<references;
 		cout<<" PhysicalColors: "<<physicalColors;
+		#endif /* CONFIG_COLORED_GRAPH_DEBUG */
 
 		set<PhysicalKmerColor> coloredBits;
 	
@@ -3882,7 +3883,10 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 
 			int theNamespace=getNamespace(color);
 			PhysicalKmerColor directColor=getColorInNamespace(color);
+
+			#ifdef CONFIG_COLORED_GRAPH_DEBUG
 			cout<<" "<<theNamespace<<":"<<directColor;
+			#endif /* CONFIG_COLORED_GRAPH_DEBUG */
 
 			coloredBits.insert(color);
 		}
@@ -3893,8 +3897,8 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 			m_masterColorSet.incrementReferences(globalColor);
 		}
 
+		#ifdef CONFIG_COLORED_GRAPH_DEBUG
 		cout<<endl;
-
 		#endif /* CONFIG_COLORED_GRAPH_DEBUG */
 	}
 
