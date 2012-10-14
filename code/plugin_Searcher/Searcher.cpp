@@ -1363,18 +1363,24 @@ void Searcher::browseColoredGraph(){
 			messageBuffer[position++]=references;
 			int physicalColors=m_colorSet.getNumberOfPhysicalColors(m_currentVirtualColor);
 
-			int unitsAvailable=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)-position;
+			int positionForPhysicalColors=position++;
+/**
+ * 3 units must be removed, not 2. This is because we need to store
+ * the virtual color, its number of references, and its
+ * number of physical colors.
+ */
+			int unitsAvailable=(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))-position;
 
 /*
  * Browsing the graph with too many physical colors
  * is not implemented at the moment.
- * You should therefore use the option -one-color-per-file
- * .
+ * You should therefore use the option -one-color-per-file.
  */
 			if(unitsAvailable<physicalColors){
 				physicalColors=0;
 			}
-			messageBuffer[position++]=physicalColors;
+
+			messageBuffer[positionForPhysicalColors]=physicalColors;
 
 			if(physicalColors!=0){
 				set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(m_currentVirtualColor);
@@ -1386,6 +1392,10 @@ void Searcher::browseColoredGraph(){
 					messageBuffer[position++]=handle;
 				}
 			}
+
+			#ifdef ASSERT
+			assert(position<=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit));
+			#endif /* ASSERT */
 
 			Message aMessage(messageBuffer,position,MASTER_RANK,
 				RAY_MPI_TAG_VIRTUAL_COLOR_DATA,m_rank);
