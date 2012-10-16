@@ -22,7 +22,11 @@
 
 #define CONFIG_DOUBLE_PRECISION 100000
 
+#ifdef DEBUG_SEARCHER_PLUGIN
 #define DEBUG_GRAPH_COUNTS
+#define DEBUG_GRAPH_BROWSING
+#define CONFIG_COLORED_GRAPH_DEBUG
+#endif /* DEBUG_GRAPH_BROWSING */
 
 #include <plugin_Searcher/Searcher.h>
 #include <plugin_VerticesExtractor/Vertex.h>
@@ -1340,6 +1344,10 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 void Searcher::browseColoredGraph(){
 	if(!m_browsedTheGraphStarted){
 		
+		#ifdef DEBUG_GRAPH_BROWSING
+		cout<<"[browseColoredGraph] start"<<endl;
+		#endif /* DEBUG_GRAPH_BROWSING */
+
 		m_browsedTheGraphStarted=true;
 		m_currentVirtualColor=0;
 
@@ -1353,6 +1361,7 @@ void Searcher::browseColoredGraph(){
 	}else if(m_currentVirtualColor<m_colorSet.getTotalNumberOfVirtualColors()){
 
 		if(!m_messageSent){
+
 /*
  * Send a message with the virtual color
  */
@@ -1383,10 +1392,10 @@ void Searcher::browseColoredGraph(){
 			messageBuffer[positionForPhysicalColors]=physicalColors;
 
 			if(physicalColors!=0){
-				set<PhysicalKmerColor>*physicalColors=m_colorSet.getPhysicalColors(m_currentVirtualColor);
+				set<PhysicalKmerColor>*setOfPhysicalColors=m_colorSet.getPhysicalColors(m_currentVirtualColor);
 
-				for(set<PhysicalKmerColor>::iterator i=physicalColors->begin();
-					i!=physicalColors->end();++i){
+				for(set<PhysicalKmerColor>::iterator i=setOfPhysicalColors->begin();
+					i!=setOfPhysicalColors->end();++i){
 
 					PhysicalKmerColor handle=*i;
 					messageBuffer[position++]=handle;
@@ -1406,16 +1415,28 @@ void Searcher::browseColoredGraph(){
 			m_messageSent=true;
 			m_messageReceived=false;
 
+			#ifdef DEBUG_GRAPH_BROWSING
+			cout<<"[browseColoredGraph] sending"<<endl;
+			#endif /* DEBUG_GRAPH_BROWSING */
+
 		}else if(m_messageReceived){
 
 			m_currentVirtualColor++;
 			m_messageSent=false;
 			m_messageReceived=false;
+
+			#ifdef DEBUG_GRAPH_BROWSING
+			cout<<"[browseColoredGraph] receiving"<<endl;
+			#endif /* DEBUG_GRAPH_BROWSING */
 		}
 
 	}else{
 
 		m_browsedTheGraphEnded=true;
+
+		#ifdef DEBUG_GRAPH_BROWSING
+		cout<<"[browseColoredGraph] done"<<endl;
+		#endif /* DEBUG_GRAPH_BROWSING */
 	}
 }
 
@@ -3854,6 +3875,11 @@ void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force)
 }
 
 void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
+
+	#ifdef DEBUG_GRAPH_BROWSING
+	cout<<"server-side [call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA] debug."<<endl;
+	#endif /* DEBUG_GRAPH_BROWSING */
+
 	MessageUnit*buffer=(MessageUnit*)message->getBuffer();
 
 	#ifdef ASSERT
@@ -3872,15 +3898,20 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
  */
 	LargeCount references=buffer[position++];
 
-	if(references>0){
-		int physicalColors=buffer[position++];
+	int physicalColors=buffer[position++];
+
+/*
+ * Virtual colors with no references or no physical colors
+ * are not relevant.
+ * This code path is only supported when using one color per file.
+ */
+	if(references>0 && physicalColors>0 && m_useOneColorPerFile){
 
 /*
  * The positions from position up to count-1 are the actual
  * physical colors.
  */
 	
-		// #define CONFIG_COLORED_GRAPH_DEBUG
 
 		#ifdef CONFIG_COLORED_GRAPH_DEBUG
 		cout<<"[call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA] source: "<<source;
@@ -3907,6 +3938,10 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 		for(uint64_t i=0;i<references;i++){
 			m_masterColorSet.incrementReferences(globalColor);
 		}
+
+		#ifdef DEBUG_GRAPH_BROWSING
+		cout<<"[m_masterColorSet.count] = "<<m_masterColorSet.getTotalNumberOfVirtualColors()<<endl;
+		#endif /* DEBUG_GRAPH_BROWSING */
 
 		#ifdef CONFIG_COLORED_GRAPH_DEBUG
 		cout<<endl;
