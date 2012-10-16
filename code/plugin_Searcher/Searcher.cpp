@@ -1394,7 +1394,8 @@ void Searcher::browseColoredGraph(){
 			}
 
 			#ifdef ASSERT
-			assert(position<=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit));
+			int maximumPosition=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
+			assert(position<=maximumPosition);
 			#endif /* ASSERT */
 
 			Message aMessage(messageBuffer,position,MASTER_RANK,
@@ -3863,7 +3864,8 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 	Rank source=message->getSource();
 
 	int position=0;
-	VirtualKmerColorHandle virtualColor=buffer[position++];
+	position++; // skip the virtual color
+	//VirtualKmerColorHandle virtualColor=buffer[position++];
 
 /*
  * A reference is a pair of k-mers.
@@ -3891,10 +3893,9 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 		for(int i=0;i<physicalColors;i++){
 			PhysicalKmerColor color=buffer[position+i];
 
+			#ifdef CONFIG_COLORED_GRAPH_DEBUG
 			int theNamespace=getNamespace(color);
 			PhysicalKmerColor directColor=getColorInNamespace(color);
-
-			#ifdef CONFIG_COLORED_GRAPH_DEBUG
 			cout<<" "<<theNamespace<<":"<<directColor;
 			#endif /* CONFIG_COLORED_GRAPH_DEBUG */
 
