@@ -27,6 +27,7 @@
 /** the heart of RayPlatform  **/
 /** ComputeCore is a facade (a design pattern) **/
 #include <core/ComputeCore.h>
+#include "core/MiniRank.h"
 
 /** communication */
 #include <communication/VirtualCommunicator.h> /** virtual stuff */
@@ -122,9 +123,8 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Machine{
+class Machine : public MiniRank{
 
-	ComputeCore m_computeCore;
 	Chooser m_c;
 	MachineHelper m_helper;
 
@@ -317,6 +317,12 @@ public:
 	Machine(int argc,char**argv);
 	void start();
 	~Machine();
+
+	void run();
+	StaticVector*getInbox();
+	StaticVector*getOutbox();
+	RingAllocator*getOutboxAllocator();
+
 };
 
 #endif

@@ -825,3 +825,12 @@ void Machine::registerPlugins(){
 	// otherwise, symbols are resolved when ComputeCore::run() is called.
 	m_computeCore.resolveSymbols();
 }
+
+void Machine::run(){
+
+	start();
+}
+
+
+
+
