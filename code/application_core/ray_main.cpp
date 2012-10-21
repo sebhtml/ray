@@ -37,14 +37,19 @@ int main(int argc,char**argv){
  */
 	for(int i=0;i<argc;i++){
 		if(strcmp(argv[i],"-mini-ranks-per-rank")==match && i+1<argc)
-			miniRanksPerRank=atoi(argv[i]);
+			miniRanksPerRank=atoi(argv[i+1]);
 	}
+
+	if(miniRanksPerRank<1)
+		miniRanksPerRank=1;
 
 	RankProcess rankProcess;
 	rankProcess.constructor(miniRanksPerRank,&argc,&argv);
 	
 	int rank=rankProcess.getMessagesHandler()->getRank();
 	int size=rankProcess.getMessagesHandler()->getSize();
+
+	cout<<"Will use "<<miniRanksPerRank<<" mini-ranks per rank"<<endl;
 
 	int totalMiniranks=size*miniRanksPerRank;
 

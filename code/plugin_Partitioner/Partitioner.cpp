@@ -343,4 +343,6 @@ void Partitioner::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(Partitioner);
 
+	__BindAdapter(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+	__BindAdapter(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 }

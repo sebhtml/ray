@@ -375,4 +375,7 @@ void SequencesLoader::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SEQUENCES_READY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCES_READY");
 
 	__BindPlugin(SequencesLoader);
+
+	__BindAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
+
 }

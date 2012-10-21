@@ -1390,5 +1390,9 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 	m_started=false;
 
 	__BindPlugin(PhylogenyViewer);
-}
 
+	__BindAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+	__BindAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+	__BindAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+	__BindAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+}

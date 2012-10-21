@@ -218,4 +218,7 @@ void JoinerTaskCreator::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
 
 	__BindPlugin(JoinerTaskCreator);
+
+	__BindAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
+
 }

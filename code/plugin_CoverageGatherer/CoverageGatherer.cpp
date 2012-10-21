@@ -248,4 +248,5 @@ void CoverageGatherer::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(CoverageGatherer);
 
+	__BindAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 }

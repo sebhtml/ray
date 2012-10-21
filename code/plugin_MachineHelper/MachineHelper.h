@@ -34,7 +34,6 @@
 #include <plugin_Partitioner/Partitioner.h>
 #include <plugin_SequencesLoader/SequencesLoader.h>
 #include <plugin_SeedingData/SeedingData.h>
-#include <communication/MessagesHandler.h>
 #include <plugin_Scaffolder/Scaffolder.h>
 #include <plugin_SeedExtender/SeedExtender.h>
 #include <profiling/TimePrinter.h>
@@ -308,7 +307,6 @@ class MachineHelper: public CorePlugin{
 	TimePrinter*m_timePrinter;
 	SeedExtender*m_seedExtender;
 	Scaffolder*m_scaffolder;
-	MessagesHandler*m_messagesHandler;
 
 	bool m_coverageInitialised;
 	int m_currentCycleStep;
@@ -359,7 +357,7 @@ public:
 	int*numberOfMachinesDoneSendingCoverage,int*numberOfRanksWithCoverageData,
 bool*reductionOccured,ExtensionData*ed,FusionData*fusionData,
 Profiler*p,NetworkTest*nt,SeedingData*sd,
-TimePrinter*timePrinter,SeedExtender*seedExtender,Scaffolder*scaffolder,MessagesHandler*messagesHandler,
+TimePrinter*timePrinter,SeedExtender*seedExtender,Scaffolder*scaffolder,
 StaticVector*inbox,	OpenAssemblerChooser*oa,	bool*isFinalFusion,	BubbleData*bubbleData, bool*alive,
  int*CLEAR_n,int*DISTRIBUTE_n,int*FINISH_n,Searcher*searcher,
 	int*numberOfRanksDoneSeeding,	int*numberOfRanksDoneDetectingDistances,	int*numberOfRanksDoneSendingDistances,

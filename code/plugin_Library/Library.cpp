@@ -516,6 +516,10 @@ void Library::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_UPDATE_DISTANCES,RAY_MASTER_MODE_TRIGGER_FUSIONS);
 
 	__BindPlugin(Library);
+
+
+	__BindAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES);
+	__BindAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	__BindAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
+
 }
-
-

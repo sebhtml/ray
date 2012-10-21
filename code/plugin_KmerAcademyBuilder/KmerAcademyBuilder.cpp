@@ -310,4 +310,6 @@ void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(KmerAcademyBuilder);
 
+	__BindAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
+
 }

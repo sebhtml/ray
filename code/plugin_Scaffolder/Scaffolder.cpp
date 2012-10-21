@@ -1532,4 +1532,7 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
 
 	__BindPlugin(Scaffolder);
+
+	__BindAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+	__BindAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
 }

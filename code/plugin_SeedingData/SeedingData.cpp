@@ -460,4 +460,8 @@ void SeedingData::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
 
 	__BindPlugin(SeedingData);
+
+	__BindAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
+	__BindAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+
 }

@@ -28,6 +28,10 @@
 #include <map>
 #include <sstream>
 
+#ifdef ASSERT
+#include <assert.h>
+#endif
+
 __CreatePlugin(MachineHelper);
 
 __CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG);
@@ -62,6 +66,10 @@ __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 using namespace std;
 
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
+
+	#ifdef ASSERT
+	assert(this!=NULL);
+	#endif
 
 	if(m_argc==2 && m_argv[1][0]!='-'){
 		ifstream f(m_argv[1]);
@@ -101,7 +109,7 @@ SwitchMan*switchMan,RingAllocator*outboxAllocator,
 	int*numberOfRanksWithCoverageData,bool*reductionOccured,
 	ExtensionData*ed,FusionData*fusionData,
 Profiler*profiler,NetworkTest*networkTest,SeedingData*seedingData,
-TimePrinter*timePrinter,SeedExtender*seedExtender,Scaffolder*scaffolder,MessagesHandler*messagesHandler,
+TimePrinter*timePrinter,SeedExtender*seedExtender,Scaffolder*scaffolder,
 	StaticVector*inbox,
 OpenAssemblerChooser*oa,	bool*isFinalFusion,	BubbleData*bubbleData,bool*alive,
  int*CLEAR_n,int*DISTRIBUTE_n,int*FINISH_n,Searcher*searcher,
@@ -160,7 +168,6 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	m_timePrinter=timePrinter;
 	m_seedExtender=seedExtender;
 	m_scaffolder=scaffolder;
-	m_messagesHandler=messagesHandler;
 	m_profiler=profiler;
 	m_networkTest=networkTest;
 	m_seedingData=seedingData;
@@ -915,14 +922,17 @@ void MachineHelper::call_RAY_SLAVE_MODE_DIE(){
 	file<<m_parameters->getPrefix()<<"MessagePassingInterface.txt";
 
 	string fileInString=file.str();
+
+	#if 0
 	m_messagesHandler->appendStatistics(fileInString.c_str());
+	#endif
 
 	/** actually die */
 	(*m_alive)=false;
 
 	/** tell master that the rank died 
  * 	obviously, this message won't be recorded in the MessagePassingInterface file...
- * 	Because of that, MessagesHandler will do it for us.
+ * 	Because of that, the middleware will do it for us.
  * 	*/
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,m_parameters->getRank());
 	m_outbox->push_back(aMessage);
@@ -1308,4 +1318,34 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_identifiers),"/RayAssembler/ObjectStore/ContigNames.ray");
 
 	__BindPlugin(MachineHelper);
+
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_KILL_RANKS);
+	__BindAdapter(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS);
+	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 }
+
+

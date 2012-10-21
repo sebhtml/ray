@@ -1512,5 +1512,10 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 	m_started=false;
 
 	__BindPlugin(GeneOntology);
-}
 
+	__BindAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
+	__BindAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
+}

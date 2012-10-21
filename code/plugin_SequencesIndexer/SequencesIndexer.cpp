@@ -337,4 +337,7 @@ void SequencesIndexer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_VERTEX_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTEX_READS_REPLY");
 
 	__BindPlugin(SequencesIndexer);
+
+	__BindAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES);
+
 }

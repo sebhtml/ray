@@ -473,6 +473,9 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	m_started=false;
 
 	__BindPlugin(NetworkTest);
+
+	__BindAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+	__BindAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 }
 
 #undef __MAXIMUM_LATENCY  /**/

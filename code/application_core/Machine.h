@@ -33,7 +33,6 @@
 #include <communication/VirtualCommunicator.h> /** virtual stuff */
 #include <communication/Message.h>
 #include <communication/MessageRouter.h>
-#include <communication/MessagesHandler.h> /** MPI wrapper **/
 
 /** scheduling, virtual pools */
 #include <scheduling/VirtualProcessor.h> /** thread pool **/
@@ -164,7 +163,6 @@ class Machine : public MiniRank{
 	Amos m_amos;
 
 	Library m_library;
-	MessagesHandler*m_messagesHandler;
 	MyAllocator m_diskAllocator;
 
 	int m_numberOfRanksWithCoverageData;
@@ -304,7 +302,7 @@ class Machine : public MiniRank{
 
 	int getRank();
 
-	void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
+	void showRayVersion(bool fullReport);
 
 	void showRayVersionShort();
 

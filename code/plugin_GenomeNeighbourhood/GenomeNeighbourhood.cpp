@@ -1129,5 +1129,9 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 		m_pluginIsEnabled=true;
 
 	__BindPlugin(GenomeNeighbourhood);
-}
 
+	__BindAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD);
+	__BindAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD);
+	__BindAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
+}

@@ -252,4 +252,7 @@ void Amos::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
 
 	__BindPlugin(Amos);
+
+	__BindAdapter(Amos,RAY_MASTER_MODE_AMOS);
+	__BindAdapter(Amos,RAY_SLAVE_MODE_AMOS);
 }

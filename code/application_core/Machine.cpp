@@ -55,7 +55,7 @@ using namespace std;
  */
 Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 
-	m_computeCore.constructor(&argc,&argv);
+	m_computeCore.constructor(&argc,&argv,miniRankNumber,numberOfMiniRanks);
 
 	m_alive=m_computeCore.getLife();
 	m_rank=miniRankNumber;
@@ -107,7 +107,11 @@ Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 	if(m_aborted)
 		return;
 
-	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
+
+	#if 0
+	" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
+	#endif
 
 	m_argc=argc;
 	m_argv=argv;
@@ -126,7 +130,7 @@ Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 	m_helper.constructor(argc,argv,&m_parameters,m_switchMan,m_outboxAllocator,m_outbox,&m_aborted,
 		&m_coverageDistribution,&m_numberOfMachinesDoneSendingCoverage,&m_numberOfRanksWithCoverageData,
 	&m_reductionOccured,m_ed,m_fusionData,m_profiler,&m_networkTest,m_seedingData,
-	&m_timePrinter,&m_seedExtender,&m_scaffolder,m_messagesHandler,m_inbox,
+	&m_timePrinter,&m_seedExtender,&m_scaffolder,m_inbox,
 	&m_oa,&m_isFinalFusion,m_bubbleData,m_alive,
 	&m_CLEAR_n,&m_DISTRIBUTE_n,&m_FINISH_n,&m_searcher,
 	&m_numberOfRanksDoneSeeding,&m_numberOfRanksDoneDetectingDistances,&m_numberOfRanksDoneSendingDistances,
@@ -188,7 +192,6 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_messagesHandler->barrier();
 
 	if(isMaster()){
 		cout<<endl<<"**************************************************"<<endl;
@@ -212,7 +215,6 @@ void Machine::start(){
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
 
 	m_parameters.setSize(getSize());
 
@@ -256,7 +258,6 @@ void Machine::start(){
 
 	m_ranksDoneAttachingReads=0;
 
-	m_messagesHandler->barrier();
 
 	// TODO: check if 65536 is really a limit.
 	// the limit is probably in a header somewhere in application_core or in RayPlatform.
@@ -278,7 +279,7 @@ void Machine::start(){
 	}
 
 	if(isMaster()){
-		showRayVersion(m_messagesHandler,fullReport);
+		showRayVersion(fullReport);
 
 		if(!fullReport){
 			cout<<endl;
@@ -302,8 +303,10 @@ void Machine::start(){
 	if(m_parameters.showCommunicationEvents())
 		m_computeCore.showCommunicationEvents();
 	
+	string name="Name";
+
 	// initiate the network test.
-	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,m_messagesHandler->getName(),
+	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,&name,
 		&m_timePrinter);
 
 	m_networkTest.setSwitchMan(m_switchMan);
@@ -328,7 +331,6 @@ void Machine::start(){
 		return;
 	}
 
-	m_messagesHandler->barrier();
 	
 	// create the directory
 	if(m_parameters.getRank() == MASTER_RANK){
@@ -382,7 +384,10 @@ void Machine::start(){
 		// update the connections
 		vector<int> connections;
 		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
+		
+		#if 0
 		m_messagesHandler->setConnections(&connections);
+		#endif
 	}
 
 	// set the attributes of the seed extender.
@@ -441,13 +446,11 @@ void Machine::start(){
 	(*m_alive)=true;
 	m_totalLetters=0;
 
-	m_messagesHandler->barrier();
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	m_messagesHandler->barrier();
 
 	if(isMaster()){
 		cout<<endl;
@@ -518,13 +521,11 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
 
 	if(m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	m_messagesHandler->barrier();
 
 	if(isMaster() && !m_aborted && !m_parameters.hasOption("-test-network-only")){
 		m_scaffolder.printFinalMessage();
@@ -540,7 +541,6 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
 
 
 	// log ticks
@@ -551,7 +551,6 @@ m_seedingData,
 	}
 
 	// wait for master to create the directory.
-	m_messagesHandler->barrier();
 	
 	ostringstream masterTicks;
 	masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
@@ -566,7 +565,6 @@ m_seedingData,
 	f2.close();
 
 
-	m_messagesHandler->freeLeftovers();
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();
 	m_inboxAllocator->clear();
@@ -756,14 +754,14 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#endif
 }
 
-void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
+void Machine::showRayVersion(bool fullReport){
 	showRayVersionShort();
 
 	cout<<endl;
 	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
 	cout<<getOperatingSystem()<<endl;
 
-
+	#if 0
 	cout<<"Message-passing interface"<<endl;
 	cout<<endl;
 	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
@@ -774,6 +772,7 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	messagesHandler->version(&version,&subversion);
 
 	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
+	#endif
 
 
 	cout<<endl;
@@ -781,6 +780,7 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	if(!fullReport)
 		return;
 
+	#if 0
 	cout<<endl;
 
 	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
@@ -789,6 +789,7 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	cout<<endl;
 
 	cout<<endl;
+	#endif
 }
 
 void Machine::registerPlugins(){
