@@ -42,12 +42,8 @@
 
 __CreatePlugin(Scaffolder);
 
- /**/
-__CreateMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS); /**/
- /**/
-__CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER); /**/
- /**/
- /**/
+__CreateMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+__CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
 
 using namespace std;
 

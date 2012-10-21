@@ -53,16 +53,13 @@ using namespace std;
 /**
  * called before Machine::start()
  */
-Machine::Machine(int argc,char**argv){
-
-	void constructor(int*argc,char**argv);
+Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 
 	m_computeCore.constructor(&argc,&argv);
-	m_messagesHandler=m_computeCore.getMessagesHandler();
 
 	m_alive=m_computeCore.getLife();
-	m_rank=m_messagesHandler->getRank();
-	m_size=m_messagesHandler->getSize();
+	m_rank=miniRankNumber;
+	m_size=numberOfMiniRanks;
 
 	m_inbox=m_computeCore.getInbox();
 	m_outbox=m_computeCore.getOutbox();

@@ -22,30 +22,43 @@
 #include <iostream>
 #include "application_core/Machine.h"
 #include <stdlib.h>
-#include "core/VirtualMachine.h"
+#include "core/RankProcess.h"
+#include <string.h>
 
 using namespace std;
 
 int main(int argc,char**argv){
 
-	int miniRanksPerRank=4;
+	int miniRanksPerRank=1;
+	int match=0;
 
-	VirtualMachine virtualMachine;
-	virtualMachine.constructor(miniRanksPerRank);
+/*
+ * Get the number of mini-ranks per rank.
+ */
+	for(int i=0;i<argc;i++){
+		if(strcmp(argv[i],"-mini-ranks-per-rank")==match && i+1<argc)
+			miniRanksPerRank=atoi(argv[i]);
+	}
+
+	RankProcess rankProcess;
+	rankProcess.constructor(miniRanksPerRank,&argc,&argv);
 	
-	int rank=virtualMachine.getRank();
-	int size=virtualMachine.getSize();
+	int rank=rankProcess.getMessagesHandler()->getRank();
+	int size=rankProcess.getMessagesHandler()->getSize();
 
 	int totalMiniranks=size*miniRanksPerRank;
 
+/*
+ * Add the mini-ranks.
+ */
 	for(int i=0;i<miniRanksPerRank;i++){
-		int miniRank=rank*miniRanksPerRank+i;
-		Machine*m=new Machine(argc,argv,miniRank,totalMiniranks);
+		int miniRankNumber=rank*miniRanksPerRank+i;
+		MiniRank*miniRank=new Machine(argc,argv,miniRankNumber,totalMiniranks);
 
-		virtualMachine->addMiniRank(m);
+		rankProcess.addMiniRank(miniRank);
 	}
 
-	virtualMachine->run();
+	rankProcess.run();
 
 	return EXIT_SUCCESS;
 }

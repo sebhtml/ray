@@ -34,7 +34,10 @@
 #include <map>
 using namespace std;
 
+__DeclarePlugin(NetworkTest);
 
+__DeclareMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+__DeclareSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 
 /**
  * This class tests the network
@@ -51,6 +54,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class NetworkTest :  public CorePlugin {
+
+	__AddAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+	__AddAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 
 	MessageTag RAY_MPI_TAG_TEST_NETWORK;
 	MessageTag RAY_MPI_TAG_TEST_NETWORK_MESSAGE;

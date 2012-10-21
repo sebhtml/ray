@@ -55,12 +55,74 @@
 #include <map>
 using namespace std;
 
+__DeclarePlugin(MachineHelper);
 
-/** this file contains __legacy code__
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_RANKS);
+__DeclareMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+
+__DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS);
+__DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+__DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+__DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
+
+
+
+/** 
+ * This file contains __legacy code__
  * Old handlers are here.
  * TODO: move them elsewhere ?
  * \author Sébastien Boisvert */
 class MachineHelper: public CorePlugin{
+
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_KILL_RANKS);
+	__AddAdapter(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+
+	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS);
+	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS;
 	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK;

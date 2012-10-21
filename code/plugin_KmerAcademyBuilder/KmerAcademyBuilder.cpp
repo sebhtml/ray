@@ -31,14 +31,9 @@
 #include <application_core/common_functions.h>
 #include <fstream>
 
-
 __CreatePlugin(KmerAcademyBuilder);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES); /**/
- /**/
- /**/
+__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
 
 using namespace std;
 

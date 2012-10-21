@@ -310,18 +310,20 @@ class Machine : public MiniRank{
 
 	void registerPlugins();
 
+	void start();
+
+	StaticVector*getInbox();
+	StaticVector*getOutbox();
+	RingAllocator*getOutboxAllocator();
+
 public:
 	/*
  * this is the only public bit
  */
-	Machine(int argc,char**argv);
-	void start();
+	Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks);
 	~Machine();
 
 	void run();
-	StaticVector*getInbox();
-	StaticVector*getOutbox();
-	RingAllocator*getOutboxAllocator();
 
 };
 

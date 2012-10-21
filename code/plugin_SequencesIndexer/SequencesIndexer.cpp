@@ -30,12 +30,7 @@
 
 __CreatePlugin(SequencesIndexer);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES); /**/
- /**/
- /**/
-
+__CreateSlaveModeAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 
 void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	if(!m_initiatedIterator){

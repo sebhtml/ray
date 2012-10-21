@@ -25,12 +25,7 @@
 
 __CreatePlugin(FusionTaskCreator);
 
- /**/
- /**/
 __CreateSlaveModeAdapter(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /**/
- /**/
- /**/
-
 
 void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 

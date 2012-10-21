@@ -30,37 +30,34 @@
 
 __CreatePlugin(MachineHelper);
 
- /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_RANKS); /**/
-__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS); /**/
- /**/
-__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS); /**/
-__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES); /**/
-__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA); /**/
-__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE); /**/
- /**/
- /**/
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_CONFIG);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_WRITE_KMERS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_LOAD_SEQUENCES);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PURGE_NULL_EDGES);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_INDEXING);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_PREPARE_SEEDING);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_SEEDING);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_DETECTION);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_DISTANCES);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_EXTENSIONS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FUSIONS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_START_FUSION_CYCLE);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_ASK_EXTENSIONS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_SCAFFOLDER);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_RANKS);
+__CreateMasterModeAdapter(MachineHelper,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+
+__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS);
+__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
+__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
+__CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 using namespace std;
 

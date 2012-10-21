@@ -44,14 +44,10 @@
 
 __CreatePlugin(SeedExtender);
 
- /**/
- /**/
 __CreateSlaveModeAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
- /**/
- /**/
 
 using namespace std;
 

@@ -35,12 +35,19 @@
 #include <map>
 using namespace std;
 
+__DeclarePlugin(Partitioner);
+
+__DeclareMasterModeAdapter(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+__DeclareSlaveModeAdapter(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 
 /**
  * This class counts the number of entries in each input file in parallel 
  * \author Sébastien Boisvert
  */
 class Partitioner :  public CorePlugin{
+
+	__AddAdapter(Partitioner,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
+	__AddAdapter(Partitioner,RAY_SLAVE_MODE_COUNT_FILE_ENTRIES);
 
 	MessageTag RAY_MPI_TAG_COUNT_FILE_ENTRIES;
 	MessageTag RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY;

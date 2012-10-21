@@ -32,12 +32,7 @@
 
 __CreatePlugin(VerticesExtractor);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES); /**/
- /**/
- /**/
-
+__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
 
 void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 

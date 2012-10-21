@@ -25,12 +25,7 @@
 
 __CreatePlugin(JoinerTaskCreator);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS); /**/
- /**/
- /**/
-
+__CreateSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
 
 void JoinerTaskCreator::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 	mainLoop();

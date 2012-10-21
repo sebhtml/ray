@@ -36,6 +36,9 @@
 #include <vector>
 using namespace std;
 
+__DeclarePlugin(SequencesLoader);
+
+__DeclareSlaveModeAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
 /*
  * Computes the partition on reads (MASTER_RANK).
@@ -45,11 +48,12 @@ using namespace std;
  */
 class SequencesLoader : public CorePlugin{
 
+	__AddAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
+
 	MessageTag RAY_MPI_TAG_SEQUENCES_READY;
 
 	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
-
 
 	MyAllocator*m_persistentAllocator;
 	ArrayOfReads*m_myReads;

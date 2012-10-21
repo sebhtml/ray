@@ -29,15 +29,10 @@
 
 __CreatePlugin(PhylogenyViewer);
 
- /**/
-__CreateMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN); /**/
- /**/
-__CreateSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN); /**/
- /**/
-__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON); /**/
-__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS); /**/
- /**/
-
+__CreateMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+__CreateSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 //#define DEBUG_PHYLOGENY
 
@@ -1352,8 +1347,8 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_outboxAllocator=core->getOutboxAllocator();
 	m_inboxAllocator=core->getInboxAllocator();
 
-	m_rank=core->getMessagesHandler()->getRank();
-	m_size=core->getMessagesHandler()->getSize();
+	m_rank=core->getRank();
+	m_size=core->getSize();
 	m_extractedColorsForPhylogeny=false;
 
 	UNKNOWN_TAXON=COLOR_NAMESPACE_MULTIPLIER;

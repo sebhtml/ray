@@ -40,6 +40,13 @@
 #include <vector>
 using namespace std;
 
+__DeclarePlugin(GeneOntology);
+
+__DeclareMasterModeAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
+__DeclareSlaveModeAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+__DeclareMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+__DeclareMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+__DeclareMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
 
 /** 
  * a plugin to know what is present in a sample 
@@ -47,6 +54,12 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class GeneOntology: public CorePlugin{
+
+	__AddAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
+	__AddAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+	__AddAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+	__AddAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+	__AddAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
 
 	string m_ontologyFileName;
 	string m_annotationFileName;

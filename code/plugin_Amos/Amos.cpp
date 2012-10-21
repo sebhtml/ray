@@ -33,13 +33,8 @@
 
 __CreatePlugin(Amos);
 
- /**/
-__CreateMasterModeAdapter(Amos,RAY_MASTER_MODE_AMOS); /**/
- /**/
-__CreateSlaveModeAdapter(Amos,RAY_SLAVE_MODE_AMOS); /**/
- /**/
- /**/
-
+__CreateMasterModeAdapter(Amos,RAY_MASTER_MODE_AMOS);
+__CreateSlaveModeAdapter(Amos,RAY_SLAVE_MODE_AMOS);
 
 void Amos::constructor(Parameters*parameters,RingAllocator*outboxAllocator,StaticVector*outbox,
 	FusionData*fusionData,ExtensionData*extensionData,int*masterMode,int*slaveMode,Scaffolder*scaffolder,

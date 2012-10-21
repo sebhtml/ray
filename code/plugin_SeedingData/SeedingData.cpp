@@ -33,13 +33,8 @@
 
 __CreatePlugin(SeedingData);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING); /**/
-__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS); /**/
- /**/
- /**/
-
+__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
+__CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
 bool myComparator_sort(const AssemblySeed & a,const AssemblySeed & b){
 	return a.size()>b.size();

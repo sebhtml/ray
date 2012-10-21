@@ -36,12 +36,16 @@
 #include <set>
 using namespace std;
 
+__DeclarePlugin(JoinerTaskCreator);
 
+__DeclareSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
 
 /**
  * The class creates and kills workers for the fusion of
  * similar paths */
 class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
+
+	__AddAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;

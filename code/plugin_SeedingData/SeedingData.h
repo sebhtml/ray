@@ -39,7 +39,10 @@ class SeedExtender;
 #include <set>
 using namespace std;
 
+__DeclarePlugin(SeedingData);
 
+__DeclareSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
+__DeclareSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
 /*
  * Computes seeds in the k-mer graph.
@@ -50,6 +53,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SeedingData : public CorePlugin{
+
+	__AddAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
+	__AddAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
 /**
  * the minimum seed coverage allowed

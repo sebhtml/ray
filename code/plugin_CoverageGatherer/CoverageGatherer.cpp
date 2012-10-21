@@ -37,11 +37,7 @@
 
 __CreatePlugin(CoverageGatherer);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
- /**/
- /**/
+__CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 using namespace std;
 

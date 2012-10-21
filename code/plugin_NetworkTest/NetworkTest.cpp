@@ -34,12 +34,8 @@
 
 __CreatePlugin(NetworkTest);
 
- /**/
-__CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
- /**/
-__CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
- /**/
- /**/
+__CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+__CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 
 using namespace std;
 

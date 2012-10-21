@@ -40,6 +40,11 @@
 #include <map>
 using namespace std;
 
+__DeclarePlugin(Library);
+
+__DeclareMasterModeAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES);
+__DeclareSlaveModeAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+__DeclareSlaveModeAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
 
 /*
  * This class computes the average outer distances 
@@ -50,6 +55,10 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Library :  public CorePlugin{
+
+	__AddAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES);
+	__AddAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
+	__AddAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
 
 	MessageTag RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	MessageTag RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;

@@ -52,8 +52,30 @@ using namespace std;
 #include <plugin_Searcher/DistributionWriter.h>
 #include <core/ComputeCore.h>
 
-
 #define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
+
+__DeclarePlugin(Searcher);
+
+__DeclareMasterModeAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+__DeclareMasterModeAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+__DeclareMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+__DeclareMasterModeAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS);
+__DeclareMasterModeAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE);
+
+__DeclareSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+__DeclareSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+__DeclareSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+__DeclareSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS);
+__DeclareSlaveModeAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE);
+
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA);
+__DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
 
 /**
  * This class searches for sequences in the de Bruijn graph
@@ -61,6 +83,27 @@ using namespace std;
  * \author Sébastien Boisvert
  **/
 class Searcher :  public CorePlugin {
+
+	__AddAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+	__AddAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	__AddAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	__AddAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS);
+	__AddAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE);
+
+	__AddAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+	__AddAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	__AddAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	__AddAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS);
+	__AddAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE);
+
+	__AddAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR);
+	__AddAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION);
+	__AddAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+	__AddAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+	__AddAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
+	__AddAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
+	__AddAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA);
+	__AddAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
 
 /* the number of colored k-mers for a contig */
 	int m_coloredKmers;
