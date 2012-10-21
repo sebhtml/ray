@@ -58,6 +58,9 @@ int main(int argc,char**argv){
  */
 	for(int i=0;i<miniRanksPerRank;i++){
 		int miniRankNumber=rank*miniRanksPerRank+i;
+		
+		cout<<"Building MiniRank object"<<endl;
+
 		MiniRank*miniRank=new Machine(argc,argv,miniRankNumber,totalMiniranks);
 
 		rankProcess.addMiniRank(miniRank);

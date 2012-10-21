@@ -567,8 +567,7 @@ m_seedingData,
 
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();
-	m_inboxAllocator->clear();
-	m_outboxAllocator->clear();
+
 
 	m_diskAllocator.clear();
 
