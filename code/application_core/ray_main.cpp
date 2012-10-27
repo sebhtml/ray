@@ -30,13 +30,12 @@ using namespace std;
 int main(int argc,char**argv){
 
 	int miniRanksPerRank=1;
-	int match=0;
 
 /*
  * Get the number of mini-ranks per rank.
  */
 	for(int i=0;i<argc;i++){
-		if(strcmp(argv[i],"-mini-ranks-per-rank")==match && i+1<argc)
+		if(strcmp(argv[i],"-mini-ranks-per-rank")==0 && i+1<argc)
 			miniRanksPerRank=atoi(argv[i+1]);
 	}
 
@@ -45,24 +44,13 @@ int main(int argc,char**argv){
 
 	RankProcess rankProcess;
 	rankProcess.constructor(miniRanksPerRank,&argc,&argv);
-	
-	int rank=rankProcess.getMessagesHandler()->getRank();
-	int size=rankProcess.getMessagesHandler()->getSize();
-
-	cout<<"Will use "<<miniRanksPerRank<<" mini-ranks per rank"<<endl;
-
-	int totalMiniranks=size*miniRanksPerRank;
 
 /*
  * Add the mini-ranks.
  */
 	for(int i=0;i<miniRanksPerRank;i++){
-		int miniRankNumber=rank*miniRanksPerRank+i;
 		
-		cout<<"Building MiniRank object"<<endl;
-
-		MiniRank*miniRank=new Machine(argc,argv,miniRankNumber,totalMiniranks);
-
+		MiniRank*miniRank=new Machine(argc,argv);
 		rankProcess.addMiniRank(miniRank);
 	}
 

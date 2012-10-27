@@ -314,11 +314,13 @@ class Machine : public MiniRank{
 	StaticVector*getOutbox();
 	RingAllocator*getOutboxAllocator();
 
+	void init(int argc,char**argv);
+
 public:
 	/*
  * this is the only public bit
  */
-	Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks);
+	Machine(int argc,char**argv);
 	~Machine();
 
 	void run();

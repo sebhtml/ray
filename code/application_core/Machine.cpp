@@ -53,13 +53,21 @@ using namespace std;
 /**
  * called before Machine::start()
  */
-Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
+Machine::Machine(int argc,char**argv){
 
-	m_computeCore.constructor(&argc,&argv,miniRankNumber,numberOfMiniRanks);
+	m_argc=argc;
+	m_argv=argv;
+
+}
+
+void Machine::init(int argc,char**argv){
+
+	m_rank=m_computeCore.getRank();
+	m_size=m_computeCore.getSize();
+	
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
 
 	m_alive=m_computeCore.getLife();
-	m_rank=miniRankNumber;
-	m_size=numberOfMiniRanks;
 
 	m_inbox=m_computeCore.getInbox();
 	m_outbox=m_computeCore.getOutbox();
@@ -84,21 +92,25 @@ Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 		if(param.find("help")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("usage")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("man")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("-version")!=string::npos){
 			if(isMaster())
 				showRayVersionShort();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}
@@ -106,8 +118,6 @@ Machine::Machine(int argc,char**argv,int miniRankNumber,int numberOfMiniRanks){
 	
 	if(m_aborted)
 		return;
-
-	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
 
 	#if 0
 	" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
@@ -154,6 +164,9 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
  *  4. hit the push-button device to start the computation distributed cores (ComputeCore::run())
  */
 void Machine::start(){
+
+	init(m_argc,m_argv);
+
 
 	if(m_aborted)
 		return;
@@ -327,8 +340,11 @@ void Machine::start(){
 		if(m_parameters.getRank() == MASTER_RANK)
 			cout<<"Error, "<<directory<<" already exists, change the -o parameter to another value."<<endl;
 
-		m_computeCore.destructor();
-		return;
+/*
+ * TODO: don't do anything if the directory exists.
+ */
+		//m_computeCore.destructor();
+		//return;
 	}
 
 	
