@@ -30,17 +30,25 @@ see Documentation/BiologicalAbundances.txt
 
 - http://denovoassembler.sf.net
 
-# Code repository
+# Code repositories
 
-- http://github.com/sebhtml/ray
+- http://github.com/sebhtml/ray  (Ray plugins for genomics)
 
-- http://github.com/sebhtml/RayPlatform
-
+- http://github.com/sebhtml/RayPlatform  (the engine RayPlatform)
 
 If you want to contribute, clone the repository, make changes
 and I (Sébastien Boisvert) will pull from you after reviewing
 the code changes.
 
+# Other related repositories
+
+- http://github.com/sebhtml/Ray-TestSuite  (system tests & unit tests)
+
+- http://github.com/sebhtml/Ray.web  (Ray SourceForge web site)
+
+- http://github.com/sebhtml/ray-logo  (artworks)
+
+- http://github.com/sebhtml/RayKmerSearchDevel  (development scripts)
 
 # Mailing lists
 
