@@ -19,42 +19,16 @@
 
 */
 
-#include <iostream>
 #include "application_core/Machine.h"
-#include <stdlib.h>
 #include "core/RankProcess.h"
-#include <string.h>
 
 using namespace std;
 
 int main(int argc,char**argv){
 
-	int miniRanksPerRank=1;
-
-/*
- * Get the number of mini-ranks per rank.
- */
-	for(int i=0;i<argc;i++){
-		if(strcmp(argv[i],"-mini-ranks-per-rank")==0 && i+1<argc)
-			miniRanksPerRank=atoi(argv[i+1]);
-	}
-
-	if(miniRanksPerRank<1)
-		miniRanksPerRank=1;
-
-	RankProcess rankProcess;
-	rankProcess.constructor(miniRanksPerRank,&argc,&argv);
-
-/*
- * Add the mini-ranks.
- */
-	for(int i=0;i<miniRanksPerRank;i++){
-		
-		MiniRank*miniRank=new Machine(argc,argv);
-		rankProcess.addMiniRank(miniRank);
-	}
-
-	rankProcess.run();
+	RankProcess<Machine> applicationContainer;
+	applicationContainer.constructor(&argc,&argv);
+	applicationContainer.run();
 
 	return EXIT_SUCCESS;
 }
