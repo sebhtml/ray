@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 1
-SUBLEVEL = 0
-EXTRAVERSION =
+SUBLEVEL = 1
+EXTRAVERSION = -devel
 NAME = Ancient Granularity of Epochs
 
 # number of cores to use for compilation

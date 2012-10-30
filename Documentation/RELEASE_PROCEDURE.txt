@@ -1,13 +1,19 @@
 * run regression tests (+backup on colosse)
 * run unit tests
-* check version in Makefile
-* ./Ray -help > MANUAL_PAGE.txt
 * compile with make
 * compile with cmake
+
+* update release list (Ray & RayPlatform)
+* check version in Makefile
+* ./Ray -help > MANUAL_PAGE.txt
 * git tag vx.y.z
 * do a tar.bz2 (ShipProduct), compile it (make + make install) and test it
+
 * upload the tarball on sf
 * update the web site (download + manual)
+
 * post an email on the list including changes (dump-changes)
 * update the seqanswer thread
-* update release list (Ray & RayPlatform)
+* Google+
+* Twitter
+* Facebook
