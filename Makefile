@@ -186,7 +186,7 @@ showOptions:
 	
 # how to make Ray
 Ray: showOptions RayPlatform/libRayPlatform.a code/TheRayGenomeAssembler.a
-	$(MPICXX) $(LDFLAGS)  code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@
+	$(MPICXX) code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
 	@echo $(PREFIX) > PREFIX
 	@echo Ray > TARGETS
 
