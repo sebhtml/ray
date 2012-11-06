@@ -1,22 +1,21 @@
 /*
-Ray
-Copyright (C)  2011  Sébastien Boisvert
+ 	Ray
+    Copyright (C) 2011, 2012 Sébastien Boisvert
 
-http://DeNovoAssembler.SourceForge.Net/
+	http://DeNovoAssembler.SourceForge.Net/
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, version 3 of the License.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 3 of the License.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You have received a copy of the GNU General Public License
-along with this program (gpl-3.0.txt).  
-see <http://www.gnu.org/licenses/>
-
+    You have received a copy of the GNU General Public License
+    along with this program (gpl-3.0.txt).  
+	see <http://www.gnu.org/licenses/>
 */
 
 #ifndef _constants
@@ -30,8 +29,8 @@ see <http://www.gnu.org/licenses/>
  * Define the maximum k-mer length when
  * the compiler/make does not.
  */
-#ifndef MAXKMERLENGTH
-#define MAXKMERLENGTH 32
+#ifndef CONFIG_MAXKMERLENGTH
+#define CONFIG_MAXKMERLENGTH 32
 #endif
 
 // some multipliers
@@ -57,7 +56,7 @@ see <http://www.gnu.org/licenses/>
 #define __func__ __FUNCTION__ 
 #endif
 
-#ifdef FORCE_PACKING
+#ifdef CONFIG_FORCE_PACKING
 /*
  * With gcc, one can pack data structures.
  */

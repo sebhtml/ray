@@ -293,7 +293,7 @@ int*mode,
 	m_parameters=parameters;
 	m_wordSize=m_parameters->getWordSize();
 	#ifdef ASSERT
-	assert(m_wordSize>=15&&m_wordSize<=MAXKMERLENGTH);
+	assert(m_wordSize>=15&&m_wordSize<=CONFIG_MAXKMERLENGTH);
 	#endif
 	m_subgraph=subgraph;
 	m_initiatedIterator=false;

@@ -841,13 +841,13 @@ void Parameters::parseCommands(){
 			if(m_wordSize<15){
 				m_wordSize=15;
 			}
-			if(m_wordSize>MAXKMERLENGTH){
+			if(m_wordSize>CONFIG_MAXKMERLENGTH){
 				if(m_rank==MASTER_RANK){
 					cout<<endl;
-					cout<<"Rank "<<MASTER_RANK<<": Warning, k > MAXKMERLENGTH"<<endl;
-					cout<<"Rank "<<MASTER_RANK<<": Change MAXKMERLENGTH in the Makefile and recompile Ray."<<endl;
+					cout<<"Rank "<<MASTER_RANK<<": Warning, k > CONFIG_MAXKMERLENGTH"<<endl;
+					cout<<"Rank "<<MASTER_RANK<<": Change CONFIG_MAXKMERLENGTH in the Makefile and recompile Ray."<<endl;
 				}
-				m_wordSize=MAXKMERLENGTH;
+				m_wordSize=CONFIG_MAXKMERLENGTH;
 			}
 
 			if(m_wordSize%2==0){
@@ -1352,7 +1352,7 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-k kmerLength","Selects the length of k-mers. The default value is 21. ");
 	showOptionDescription("It must be odd because reverse-complement vertices are stored together.");
-	showOptionDescription("The maximum length is defined at compilation by MAXKMERLENGTH");
+	showOptionDescription("The maximum length is defined at compilation by CONFIG_MAXKMERLENGTH");
 	showOptionDescription("Larger k-mers utilise more memory.");
 	cout<<endl;
 
@@ -1615,10 +1615,10 @@ void Parameters::showUsage(){
 	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
 	cout<<"     .fasta"<<endl;
-	cout<<"     .fasta.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fasta.gz (needs CONFIG_HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .fastq"<<endl;
-	cout<<"     .fastq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fastq.gz (needs CONFIG_HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;

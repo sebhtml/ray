@@ -21,7 +21,7 @@
 
 #ifndef _FastqGzLoader
 #define _FastqGzLoader
-#ifdef HAVE_LIBZ
+#ifdef CONFIG_HAVE_LIBZ
 
 #include <string>
 #include <vector>

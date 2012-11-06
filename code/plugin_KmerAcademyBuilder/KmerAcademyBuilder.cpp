@@ -136,7 +136,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 			return;
 		}
 
-		char memory[MAXKMERLENGTH+1];
+		char memory[CONFIG_MAXKMERLENGTH+1];
 		int maximumPosition=len-m_parameters->getWordSize()+1;
 		
 		#ifdef ASSERT

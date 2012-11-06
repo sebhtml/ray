@@ -4,15 +4,20 @@ SUBLEVEL = 1
 EXTRAVERSION = -devel
 NAME = Ancient Granularity of Epochs
 
-# number of cores to use for compilation
-J=1
-
-RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+# like in Linux, stuff that must be propagated to
+# the source code (C++ here) or other Makefiles
+# are prefixed with CONFIG_
 
 # author: Sébastien Boisvert
 # Makefile for the ray assembler
 # Objects appended to obj-y are compiled and linked.
 # Objects appended to obj-n are not compiled and linked.
+
+# number of cores to use for compilation
+J=1
+
+RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+
 #############################################
 # compilation options
 
@@ -33,13 +38,13 @@ MAXKMERLENGTH = 32
 # needs libz
 # set to no if you don't have libz
 # y/n
-HAVE_LIBZ = n
+HAVE_LIBZ = y
 
 # support for .bz2 files
 # needs libbz2
 # set to no if you don't have libbz2
 # y/n
-HAVE_LIBBZ2 = n
+HAVE_LIBBZ2 = y
 
 # use Intel's compiler
 # the name of the Intel MPI C++ compiler is mpiicpc
@@ -66,11 +71,11 @@ ASSERT = n
 
 # collect profiling information with -run-profiler
 # if set to n, the code is not even compiled in
-CONFIG_PROFILER_COLLECT=n
+PROFILER_COLLECT=n
 
 # use the precision clock
 # needs -l rt too
-CONFIG_CLOCK_GETTIME=n
+CLOCK_GETTIME=n
 
 # OS detection based on git Makefile
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
@@ -116,24 +121,24 @@ endif
 CXXFLAGS-$(GPROF) += -g -pg
 LDFLAGS-$(GPROF) += -pg -g
 
-# if you use Intel's mpiicpc, uncomment the following lines
+# if you use Intel's mpiicpc
 MPICXX-$(INTEL_COMPILER) = mpiicpc 
-CXXFLAGS-$(INTEL_COMPILER) += -DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX
+CXXFLAGS-$(INTEL_COMPILER) += -D MPICH_IGNORE_CXX_SEEK -D MPICH_SKIP_MPICXX  # this should be fixed upstream.
 
 #maximum k-mer length
-CXXFLAGS-y += -D MAXKMERLENGTH=$(MAXKMERLENGTH)
+CXXFLAGS-y += -D CONFIG_MAXKMERLENGTH=$(MAXKMERLENGTH)
 CXXFLAGS-y += $(EXTRA)
 LDFLAGS-y += $(EXTRA)
 
 # compile assertions
-CXXFLAGS-$(ASSERT) += -DASSERT
+CXXFLAGS-$(ASSERT) += -D CONFIG_ASSERT -D ASSERT
 
 #compile with libz
-CXXFLAGS-$(HAVE_LIBZ) += -DHAVE_LIBZ
+CXXFLAGS-$(HAVE_LIBZ) += -D CONFIG_HAVE_LIBZ
 LDFLAGS-$(HAVE_LIBZ) += -lz
 
 #compile with libbz2
-CXXFLAGS-$(HAVE_LIBBZ2) += -DHAVE_LIBBZ2 
+CXXFLAGS-$(HAVE_LIBBZ2) += -D CONFIG_HAVE_LIBBZ2 
 LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
 
 #debug flag
@@ -141,11 +146,11 @@ CXXFLAGS-$(DEBUG) += -g
 LDFLAGS-$(DEBUG)  += -g
 
 # pack data in memory to save space
-CXXFLAGS-$(FORCE_PACKING) += -DFORCE_PACKING
+CXXFLAGS-$(FORCE_PACKING) += -D CONFIG_FORCE_PACKING
 
-CXXFLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
-CXXFLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
-LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt
+CXXFLAGS-$(PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
+CXXFLAGS-$(CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
+LDFLAGS-$(CLOCK_GETTIME) += -l rt
 CXXFLAGS-y += -D RAY_VERSION=\\\"$(RAY_VERSION)\\\"
 
 CXXFLAGS += $(CXXFLAGS-y)
@@ -153,7 +158,10 @@ LDFLAGS += $(LDFLAGS-y)
 
 MPICXX = $(MPICXX-y)
 
-# object files
+# export some configuration for child Makefile files
+
+export CONFIG_HAVE_LIBZ=$(HAVE_LIBZ)
+export CONFIG_HAVE_LIBBZ2=$(HAVE_LIBBZ2)
 
 #################################
 

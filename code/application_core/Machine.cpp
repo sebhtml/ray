@@ -609,8 +609,7 @@ void Machine::showRayVersionShort(){
 	CoverageDepth maximumCoverageDepth=0;
 	maximumCoverageDepth--; // underflow it
 
-	cout<<"MAXKMERLENGTH: "<<MAXKMERLENGTH<<endl;
-	cout<<"KMER_U64_ARRAY_SIZE: "<<KMER_U64_ARRAY_SIZE<<endl;
+	cout<<"MAXKMERLENGTH: "<<CONFIG_MAXKMERLENGTH<<endl;
 	cout<<"Maximum coverage depth stored by CoverageDepth: "<<maximumCoverageDepth<<endl;
 	cout<<"MAXIMUM_MESSAGE_SIZE_IN_BYTES: "<<MAXIMUM_MESSAGE_SIZE_IN_BYTES<<" bytes"<<endl;
 
@@ -627,7 +626,7 @@ content
 list
  FORCE_PACKING 
  ASSERT 
- HAVE_LIBZ 
+ CONFIG_HAVE_LIBZ 
  HAVE_LIBBZ2 
  CONFIG_PROFILER_COLLECT 
  CONFIG_CLOCK_GETTIME 
@@ -643,7 +642,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	/* generated code */
 
 	cout<<"FORCE_PACKING = ";
-	#ifdef FORCE_PACKING
+	#ifdef CONFIG_FORCE_PACKING
 	cout<<"y";
 	#else
 	cout<<"n";
@@ -659,7 +658,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	cout<<endl;
 
 	cout<<"HAVE_LIBZ = ";
-	#ifdef HAVE_LIBZ
+	#ifdef CONFIG_HAVE_LIBZ
 	cout<<"y";
 	#else
 	cout<<"n";
@@ -667,7 +666,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	cout<<endl;
 
 	cout<<"HAVE_LIBBZ2 = ";
-	#ifdef HAVE_LIBBZ2
+	#ifdef CONFIG_HAVE_LIBBZ2
 	cout<<"y";
 	#else
 	cout<<"n";

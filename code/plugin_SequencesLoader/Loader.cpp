@@ -92,7 +92,7 @@ int Loader::load(string file,bool isGenome){
 		return ret;
 	}
 
-	#ifdef HAVE_LIBZ
+	#ifdef CONFIG_HAVE_LIBZ
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
 		m_type=FORMAT_FASTQ_GZ;
 		int ret=m_fastqgz.open(file,4);
@@ -168,7 +168,7 @@ void Loader::loadSequences(){
 	m_reads.reset();
 
 	if(m_type==FORMAT_FASTQ_GZ){
-		#ifdef HAVE_LIBZ
+		#ifdef CONFIG_HAVE_LIBZ
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,4);
 		#endif
 	}else if(m_type==FORMAT_FASTQ){
@@ -188,7 +188,7 @@ void Loader::loadSequences(){
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,2);
 		#endif
 	}else if(m_type==FORMAT_FASTA_GZ){
-		#ifdef HAVE_LIBZ
+		#ifdef CONFIG_HAVE_LIBZ
 		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator,2);
 		#endif
 	}

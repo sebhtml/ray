@@ -51,7 +51,7 @@ all communications (send and receive operations).
 The option -run-profiler will run Ray in slow mode, but the supervisor
 will collect a lot of profiling information. There is also a compile
 time option to add collectors in the code. The option is 
-CONFIG_PROFILER_COLLECT=y (or -D CONFIG_PROFILER_COLLECT).
+PROFILER_COLLECT=y (or -D CONFIG_PROFILER_COLLECT).
 
 ## Running time
 

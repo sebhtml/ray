@@ -30,7 +30,7 @@
 #include <plugin_SequencesLoader/ArrayOfReads.h>
 #include <string>
 
-#ifdef HAVE_LIBZ
+#ifdef CONFIG_HAVE_LIBZ
 #include<plugin_SequencesLoader/FastqGzLoader.h>
 #endif
 
@@ -78,7 +78,7 @@ class Loader{
 	FastqLoader m_fastq;	
 	FastaLoader m_fasta;	
 
-	#ifdef HAVE_LIBZ
+	#ifdef CONFIG_HAVE_LIBZ
 	FastqGzLoader m_fastqgz;
 	#endif
 

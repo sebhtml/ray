@@ -79,7 +79,7 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	#ifdef ASSERT
-	assert(w<=MAXKMERLENGTH);
+	assert(w<=CONFIG_MAXKMERLENGTH);
 	#endif
 	int length=strlen(m_sequence);
 	if(pos>length-w){
@@ -91,13 +91,13 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 		exit(0);
 	}
 	if(strand=='F'){
-		char sequence[MAXKMERLENGTH];
+		char sequence[CONFIG_MAXKMERLENGTH];
 		memcpy(sequence,m_sequence+pos,w);
 		sequence[w]='\0';
 		Kmer v=wordId(sequence);
 		return v;
 	}else if(strand=='R'){
-		char sequence[MAXKMERLENGTH];
+		char sequence[CONFIG_MAXKMERLENGTH];
 		memcpy(sequence,m_sequence+length-pos-w,w);
 		sequence[w]='\0';
 		Kmer v=wordId(sequence);

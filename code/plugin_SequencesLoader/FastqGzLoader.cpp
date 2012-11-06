@@ -19,7 +19,7 @@
 
 */
 
-#ifdef HAVE_LIBZ
+#ifdef CONFIG_HAVE_LIBZ
 
 #include<plugin_SequencesLoader/FastqGzLoader.h>
 #include<fstream>
