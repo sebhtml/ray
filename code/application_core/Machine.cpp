@@ -696,7 +696,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#endif
 	cout<<endl;
 
-	cout<<"CONFIG_PROFILER_COLLECT = ";
+	cout<<"PROFILER_COLLECT = ";
 	#ifdef CONFIG_PROFILER_COLLECT
 	cout<<"y";
 	#else
@@ -704,7 +704,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#endif
 	cout<<endl;
 
-	cout<<"CONFIG_CLOCK_GETTIME = ";
+	cout<<"CLOCK_GETTIME = ";
 	#ifdef CONFIG_CLOCK_GETTIME
 	cout<<"y";
 	#else
