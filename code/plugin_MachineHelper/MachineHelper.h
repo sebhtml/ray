@@ -267,7 +267,7 @@ class MachineHelper: public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
 	SlaveMode RAY_SLAVE_MODE_WRITE_KMERS;
 
-
+	bool m_oldDirectoryExists;
 
 	SequencesLoader*m_sl;
 	time_t*m_lastTime;
@@ -400,6 +400,8 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
 	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
 	void call_RAY_SLAVE_MODE_DIE();
+
+	void notifyThatOldDirectoryExists();
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

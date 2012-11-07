@@ -939,17 +939,10 @@ void Parameters::writeCommandFile(){
 
 	cout<<"k-mer length: "<<m_wordSize<<endl;
 	
-	if(m_reducerIsActivated){
-		cout<<"Memory Consumption Reducer is enabled, threshold="<<m_reducerPeriod<<endl;
-	}
-	cout<<endl;
-	cout<<"Output files will be prefixed with "<<getPrefix()<<endl;
-	cout<<endl;
-
 	ostringstream rayRuntime;
 	rayRuntime<<getPrefix()<<"RayVersion.txt";
 	ofstream f2(rayRuntime.str().c_str());
-	f2<<"Ray version: "<<RAY_VERSION<<endl;
+	f2<<"Ray "<<RAY_VERSION<<endl;
 	f2.close();
 
 	writeConfigurationFile();

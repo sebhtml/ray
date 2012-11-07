@@ -65,6 +65,9 @@ __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 using namespace std;
 
+/*
+ * This is the first upcall.
+ */
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 
 	#ifdef ASSERT
@@ -81,6 +84,9 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 			return;
 		}
+	}else if(m_oldDirectoryExists){
+		m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+		return;
 	}
 
 	if(m_parameters->getError()){
@@ -125,6 +131,9 @@ VirtualCommunicator*virtualCommunicator,KmerAcademyBuilder*kmerAcademyBuilder,
 	int*ranksDoneAttachingReads,
 SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partitioner
 ){
+
+	m_oldDirectoryExists=false;
+
 	m_sl=sl;
 	m_lastTime=lastTime;
 	m_writeKmerInitialised=writeKmerInitialised;
@@ -860,6 +869,11 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 	}
 }
 
+void MachineHelper::notifyThatOldDirectoryExists(){
+
+	m_oldDirectoryExists=true;
+}
+
 void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 	// ask ranks to send their extensions.
@@ -1132,7 +1146,6 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
-
 }
 
 void MachineHelper::resolveSymbols(ComputeCore*core){

@@ -228,12 +228,11 @@ void Machine::start(){
 		cout<<endl;
 	}
 
-
 	m_parameters.setSize(getSize());
 
 	// this peak is attained in VerticesExtractor::deleteVertices
 	// 2012-03-20: which peaks ?
-
+	// 2012-11-06: probably memory usage (Virtual Memory)
 
 	/**
  * 		build the plugins now */
@@ -247,7 +246,6 @@ void Machine::start(){
 	m_coverageGatherer.constructor(&m_parameters,m_inbox,m_outbox,m_switchMan->getSlaveModePointer(),&m_subgraph,
 		m_outboxAllocator);
 
-
 	m_fusionTaskCreator.constructor(m_virtualProcessor,m_outbox,
 		m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
@@ -257,7 +255,6 @@ void Machine::start(){
 		m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
 		m_virtualCommunicator,&(m_fusionData->m_FINISH_newFusions));
-
 
 	m_amos.constructor(&m_parameters,m_outboxAllocator,m_outbox,m_fusionData,m_ed,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer(),&m_scaffolder,
 		m_inbox,m_virtualCommunicator);
@@ -271,14 +268,13 @@ void Machine::start(){
 
 	m_ranksDoneAttachingReads=0;
 
-
 	// TODO: check if 65536 is really a limit.
 	// the limit is probably in a header somewhere in application_core or in RayPlatform.
 	// with routing enabled, the limit is 4096 compute cores.
 	
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
-		cout<<"The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
+		cout<<"Error: The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
 	}
 
 	assert(getSize()<=maximumNumberOfProcesses);
@@ -333,38 +329,43 @@ void Machine::start(){
 	m_directionsAllocator.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
-	/** create the directory for the assembly */
-	
+/*
+ * We need to know if we must abort. All the RayPlatform
+ * engine will start anyway on each core, so we need to stop
+ * them if necessary.
+ */
+	bool oldDirectoryExists=false;
+
 	string directory=m_parameters.getPrefix();
 	if(fileExists(directory.c_str())){
-		if(m_parameters.getRank() == MASTER_RANK)
+		if(m_parameters.getRank() == MASTER_RANK){
 			cout<<"Error, "<<directory<<" already exists, change the -o parameter to another value."<<endl;
+			cout<<endl;
 
 /*
- * TODO: don't do anything if the directory exists.
+ * Tell the first plugin that the job will not run.
  */
-		//m_computeCore.destructor();
-		//return;
-	}
+			m_helper.notifyThatOldDirectoryExists();
+		}
 
+		oldDirectoryExists=true;
+	}
 	
 	// create the directory
-	if(m_parameters.getRank() == MASTER_RANK){
+	/** create the directory for the assembly */
+	if(!oldDirectoryExists && m_parameters.getRank() == MASTER_RANK){
 		createDirectory(directory.c_str());
 		m_parameters.writeCommandFile();
 
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
-	cout<<endl;
-
 	// register the plugins.
 	registerPlugins();
 
-	cout<<endl;
-	
 	// write a report about plugins
-	if(m_parameters.getRank()==MASTER_RANK){
+	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
+
 		ostringstream directory;
 		directory<<m_parameters.getPrefix()<<"/Plugins";
 
@@ -388,7 +389,11 @@ void Machine::start(){
 
 	// options are loaded from here
 	// plus the directory exists now
-	if(m_parameters.hasOption("-route-messages")){
+	if(!oldDirectoryExists && m_parameters.hasOption("-route-messages")){
+/*
+ * If the directory exists, we don't do any routing.
+ * We just stop everything.
+ */
 
 		if(m_parameters.getRank()== MASTER_RANK)
 			createDirectory(routingPrefix.str().c_str());
@@ -422,8 +427,6 @@ void Machine::start(){
 	m_si.constructor(&m_parameters,m_outboxAllocator,m_inbox,m_outbox,m_virtualCommunicator,
 		m_switchMan->getSlaveModePointer(),&m_myReads);
 
-
-
 	m_profiler = m_computeCore.getProfiler();
 	m_profiler->constructor(m_parameters.runProfiler());
 
@@ -455,7 +458,8 @@ void Machine::start(){
 		m_ed,getSize(),&m_timePrinter,m_switchMan->getSlaveModePointer(),m_switchMan->getMasterModePointer(),
 	&m_parameters,m_seedingData,m_inbox,m_virtualCommunicator);
 
-	m_subgraph.constructor(getRank(),&m_parameters);
+	if(!oldDirectoryExists)
+		m_subgraph.constructor(getRank(),&m_parameters);
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),m_outbox,m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&m_wordSize,&m_subgraph,m_inbox,m_virtualCommunicator);
 
@@ -463,15 +467,13 @@ void Machine::start(){
 	m_totalLetters=0;
 
 
-	if(m_parameters.showMemoryUsage()){
+	if(!oldDirectoryExists && m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-
-	if(isMaster()){
-		cout<<endl;
-	}
-
+/*
+ * Build the monstruous object.
+ */
 	m_mp.constructor(
 m_router,
 m_seedingData,
@@ -521,6 +523,17 @@ m_seedingData,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	m_switchMan->getMasterModePointer(),&m_isFinalFusion,&m_si);
 
+/*
+ * Create the Scheduling before calling run().
+ * run() is like a barrier.
+ */
+	// log ticks
+	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
+		ostringstream scheduling;
+		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
+		createDirectory(scheduling.str().c_str());
+	}
+
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			m_aborted=true;
@@ -537,12 +550,13 @@ m_seedingData,
 		cout<<endl;
 	}
 
-
-	if(m_parameters.showMemoryUsage()){
+	if(!oldDirectoryExists && !m_aborted && m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-
+/*
+ * TODO: the code above should go in a plugin, not here.
+ */
 	if(isMaster() && !m_aborted && !m_parameters.hasOption("-test-network-only")){
 		m_scaffolder.printFinalMessage();
 		cout<<endl;
@@ -557,36 +571,31 @@ m_seedingData,
 		cout<<endl;
 	}
 
+	if(!oldDirectoryExists){
 
+		ostringstream masterTicks;
+		masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
+		ofstream f1(masterTicks.str().c_str());
+		m_tickLogger->printMasterTicks(&f1);
+		f1.close();
 
-	// log ticks
-	if(m_parameters.getRank()==MASTER_RANK){
-		ostringstream scheduling;
-		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
-		createDirectory(scheduling.str().c_str());
+		ostringstream slaveTicks;
+		slaveTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".SlaveTicks.txt";
+		ofstream f2(slaveTicks.str().c_str());
+		m_tickLogger->printSlaveTicks(&f2);
+		f2.close();
 	}
-
-	// wait for master to create the directory.
-	
-	ostringstream masterTicks;
-	masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
-	ofstream f1(masterTicks.str().c_str());
-	m_tickLogger->printMasterTicks(&f1);
-	f1.close();
-
-	ostringstream slaveTicks;
-	slaveTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".SlaveTicks.txt";
-	ofstream f2(slaveTicks.str().c_str());
-	m_tickLogger->printSlaveTicks(&f2);
-	f2.close();
-
 
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();
 
-
 	m_diskAllocator.clear();
 
+/*
+ * The app is responsible for destroying the core.
+ * It should work also without this call because it
+ * is RayPlatform that destroys the MessagesHandler.
+ */
 	m_computeCore.destructor();
 }
 
@@ -772,10 +781,6 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 void Machine::showRayVersion(bool fullReport){
 	showRayVersionShort();
 
-	cout<<endl;
-	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
-	cout<<getOperatingSystem()<<endl;
-
 	#if 0
 	cout<<"Message-passing interface"<<endl;
 	cout<<endl;
@@ -788,12 +793,6 @@ void Machine::showRayVersion(bool fullReport){
 
 	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
 	#endif
-
-
-	cout<<endl;
-
-	if(!fullReport)
-		return;
 
 	#if 0
 	cout<<endl;
