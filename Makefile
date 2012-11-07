@@ -28,8 +28,6 @@ MPICXX = mpicxx
 # CXXFLAGS can be changed by the end user with make CXXFLAGS="..."
 CXXFLAGS = -O3 -std=c++98 -Wall
 
-LD = ld
-AR = ar
 RM = rm
 CD = cd
 MAKE = make
