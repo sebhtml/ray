@@ -45,6 +45,7 @@ using namespace std;
 /** initialize the NetworkTest */
 void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 	string*name,TimePrinter*timePrinter){
+
 	m_timePrinter=timePrinter;
 	m_name=name;
 	m_inbox=inbox;

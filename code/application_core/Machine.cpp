@@ -314,10 +314,10 @@ void Machine::start(){
 	if(m_parameters.showCommunicationEvents())
 		m_computeCore.showCommunicationEvents();
 	
-	string name="Name";
+	string*name=m_computeCore.getMessagesHandler()->getName();
 
 	// initiate the network test.
-	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,&name,
+	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,name,
 		&m_timePrinter);
 
 	m_networkTest.setSwitchMan(m_switchMan);
