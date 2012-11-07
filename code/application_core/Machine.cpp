@@ -460,8 +460,10 @@ void Machine::start(){
 		m_ed,getSize(),&m_timePrinter,m_switchMan->getSlaveModePointer(),m_switchMan->getMasterModePointer(),
 	&m_parameters,m_seedingData,m_inbox,m_virtualCommunicator);
 
+	m_subgraph.constructor(getRank(),&m_parameters);
+
 	if(!oldDirectoryExists)
-		m_subgraph.constructor(getRank(),&m_parameters);
+		m_subgraph.printStatus();
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),m_outbox,m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&m_wordSize,&m_subgraph,m_inbox,m_virtualCommunicator);
 

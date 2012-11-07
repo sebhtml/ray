@@ -64,6 +64,8 @@ public:
 	MyHashTable<Kmer,Vertex>*getHashTable();
 	void printStatistics();
 	void completeResizing();
+
+	void printStatus();
 };
 
 #endif

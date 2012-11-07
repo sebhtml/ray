@@ -29,6 +29,11 @@
 #include <stdio.h>
 
 void GridTable::constructor(int rank,Parameters*parameters){
+
+	#ifdef ASSERT
+	assert(parameters!=NULL);
+	#endif
+
 	m_parameters=parameters;
 	m_size=0;
 
@@ -37,9 +42,6 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	uint64_t buckets=m_parameters->getNumberOfBuckets();
 	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
 	double loadFactorThreshold=m_parameters->getLoadFactorThreshold();
-
-	cout<<"[GridTable] buckets="<<buckets<<" bucketsPerGroup="<<bucketsPerGroup;
-	cout<<" loadFactorThreshold="<<loadFactorThreshold<<endl;
 
 	m_hashTable.constructor(buckets,"RAY_MALLOC_TYPE_GRID_TABLE",
 		m_parameters->showMemoryAllocations(),m_parameters->getRank(),
@@ -58,6 +60,16 @@ void GridTable::constructor(int rank,Parameters*parameters){
 	m_findOperations=0;
 
 	m_verbose=false;
+}
+
+void GridTable::printStatus(){
+
+	uint64_t buckets=m_parameters->getNumberOfBuckets();
+	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
+	double loadFactorThreshold=m_parameters->getLoadFactorThreshold();
+
+	cout<<"[GridTable] buckets="<<buckets<<" bucketsPerGroup="<<bucketsPerGroup;
+	cout<<" loadFactorThreshold="<<loadFactorThreshold<<endl;
 }
 
 LargeCount GridTable::size(){
@@ -94,6 +106,10 @@ Vertex*GridTable::find(Kmer*key){
 Vertex*GridTable::insert(Kmer*key){
 	#ifdef ASSERT
 	assert(key!=NULL);
+	#endif
+
+	#ifdef ASSERT
+	assert(m_parameters!=NULL);
 	#endif
 
 	Kmer lowerKey=key->complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
