@@ -25,12 +25,7 @@
 
 __CreatePlugin(FusionTaskCreator);
 
- /**/
- /**/
 __CreateSlaveModeAdapter(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); /**/
- /**/
- /**/
-
 
 void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 
@@ -225,4 +220,7 @@ void FusionTaskCreator::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
 
 	__BindPlugin(FusionTaskCreator);
+
+	__BindAdapter(FusionTaskCreator,RAY_SLAVE_MODE_FUSION); 
+
 }

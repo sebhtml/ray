@@ -36,7 +36,10 @@
 #include <vector>
 using namespace std;
 
+__DeclarePlugin(Amos);
 
+__DeclareMasterModeAdapter(Amos,RAY_MASTER_MODE_AMOS);
+__DeclareSlaveModeAdapter(Amos,RAY_SLAVE_MODE_AMOS);
 
 /**
  * AMOS specification is available : http://sourceforge.net/apps/mediawiki/amos/index.php?title=AMOS
@@ -44,6 +47,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Amos :  public CorePlugin{
+
+	__AddAdapter(Amos,RAY_MASTER_MODE_AMOS);
+	__AddAdapter(Amos,RAY_SLAVE_MODE_AMOS);
 
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS;
 	MessageTag RAY_MPI_TAG_ASK_READ_LENGTH;

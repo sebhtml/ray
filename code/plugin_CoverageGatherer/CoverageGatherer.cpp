@@ -37,11 +37,7 @@
 
 __CreatePlugin(CoverageGatherer);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION); /**/
- /**/
- /**/
+__CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 using namespace std;
 
@@ -252,4 +248,5 @@ void CoverageGatherer::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(CoverageGatherer);
 
+	__BindAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 }

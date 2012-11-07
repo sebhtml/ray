@@ -44,14 +44,10 @@
 
 __CreatePlugin(SeedExtender);
 
- /**/
- /**/
 __CreateSlaveModeAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
 __CreateMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
- /**/
- /**/
 
 using namespace std;
 
@@ -2630,4 +2626,10 @@ void SeedExtender::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
 
 	__BindPlugin(SeedExtender);
+
+	__BindAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
+	__BindAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+	__BindAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
+	__BindAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
+
 }

@@ -41,6 +41,9 @@ class SeedingData;
 #include <set>
 using namespace std;
 
+__DeclarePlugin(FusionData);
+
+__DeclareSlaveModeAdapter(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 
 /*
  * Contains information regarding fusion of extensions.
@@ -50,6 +53,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class FusionData : public CorePlugin {
+
+	__AddAdapter(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS;
 	MessageTag RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED;

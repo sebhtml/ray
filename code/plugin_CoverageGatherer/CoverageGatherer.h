@@ -32,12 +32,16 @@
 #include <map>
 using namespace std;
 
+__DeclarePlugin(CoverageGatherer);
 
+__DeclareSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 /**
  * \author Sébastien Boisvert
  */
 class CoverageGatherer : public CorePlugin{
+
+	__AddAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 	MessageTag RAY_MPI_TAG_COVERAGE_DATA_REPLY;
 	MessageTag RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY;

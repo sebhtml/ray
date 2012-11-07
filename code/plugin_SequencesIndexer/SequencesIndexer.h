@@ -43,12 +43,17 @@
 #include <fstream>
 using namespace std;
 
+__DeclarePlugin(SequencesIndexer);
+
+__DeclareSlaveModeAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 
 /*
  * Computes optimal read markers using workers.
  * \author Sébastien Boisvert
  */
 class SequencesIndexer: public CorePlugin{
+
+	__AddAdapter(SequencesIndexer,RAY_SLAVE_MODE_INDEX_SEQUENCES);
 
 	MessageTag RAY_MPI_TAG_GET_READ_MARKERS_REPLY;
 	MessageTag RAY_MPI_TAG_GET_READ_MATE_REPLY;

@@ -29,15 +29,11 @@
 
 __CreatePlugin(GeneOntology);
 
- /**/
-__CreateMasterModeAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN); /**/
- /**/
-__CreateSlaveModeAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN); /**/
- /**/
-__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS); /**/
-__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY); /**/
-__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE); /**/
- /**/
+__CreateMasterModeAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
+__CreateSlaveModeAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+__CreateMessageTagAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
 
 //#define BUG_DETERMINISM
 //#define DEBUG_ONTOLOGY_SYNC
@@ -338,7 +334,7 @@ void GeneOntology::call_RAY_SLAVE_MODE_ONTOLOGY_MAIN(){
 		if(m_rank==MASTER_RANK){
 
 			// busy wait for other to complete their tasks.
-			if(m_ranksSynchronized<m_core->getMessagesHandler()->getSize()){
+			if(m_ranksSynchronized<m_size){
 				return;
 			}
 
@@ -1149,7 +1145,7 @@ void GeneOntology::synchronize(){
 		return;
 	}
 
-	bool isMaster=m_core->getMessagesHandler()->getRank() == MASTER_RANK;
+	bool isMaster=m_core->getRank() == MASTER_RANK;
 
 	if(!m_synchronizedTotal && !isMaster){
 	
@@ -1480,8 +1476,8 @@ void GeneOntology::registerPlugin(ComputeCore*core){
 	m_outboxAllocator=core->getOutboxAllocator();
 	m_inboxAllocator=core->getInboxAllocator();
 
-	m_rank=core->getMessagesHandler()->getRank();
-	m_size=core->getMessagesHandler()->getSize();
+	m_rank=core->getRank();
+	m_size=core->getSize();
 
 	m_synchronizedTotal=false;
 
@@ -1516,5 +1512,10 @@ void GeneOntology::resolveSymbols(ComputeCore*core){
 	m_started=false;
 
 	__BindPlugin(GeneOntology);
-}
 
+	__BindAdapter(GeneOntology,RAY_MASTER_MODE_ONTOLOGY_MAIN);
+	__BindAdapter(GeneOntology,RAY_SLAVE_MODE_ONTOLOGY_MAIN);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZE_TERMS_REPLY);
+	__BindAdapter(GeneOntology,RAY_MPI_TAG_SYNCHRONIZATION_DONE);
+}

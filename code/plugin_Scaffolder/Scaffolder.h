@@ -39,9 +39,12 @@
 #include <handlers/MasterModeHandler.h>
 #include <plugins/CorePlugin.h>
 
-
 using namespace std;
 
+__DeclarePlugin(Scaffolder);
+
+__DeclareMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+__DeclareSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
 
 /**
  * Scaffolder class, it uses MPI through the virtual communicator.
@@ -49,6 +52,9 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Scaffolder :  public CorePlugin{
+
+	__AddAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+	__AddAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
 
 	ostringstream m_operationBuffer;
 

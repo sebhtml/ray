@@ -34,13 +34,9 @@
 
 __CreatePlugin(GenomeNeighbourhood);
 
- /**/
-__CreateMasterModeAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD); /**/
- /**/
-__CreateSlaveModeAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD); /**/
- /**/
-__CreateMessageTagAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA); /**/
- /**/
+__CreateMasterModeAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD);
+__CreateSlaveModeAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD);
+__CreateMessageTagAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
 
 #define FETCH_PARENTS 	0x00345678
@@ -648,7 +644,7 @@ all other cases are invalid.
 void GenomeNeighbourhood::call_RAY_MASTER_MODE_NEIGHBOURHOOD(){
 
 	if(!m_started){
-		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getRank());
 
 		m_started=true;
 
@@ -805,7 +801,7 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 		cout<<"Rank "<<m_rank<<": the CorePlugin GenomeNeighbourhood is disabled..."<<endl;
 
-		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 
 		return; /* . */
 	}
@@ -912,7 +908,7 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 		m_virtualCommunicator->printStatistics();
 
-		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getMessagesHandler()->getRank());
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 	}
 }
 
@@ -1117,7 +1113,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	m_core=core;
 	m_started=false;
 
-	m_rank=core->getMessagesHandler()->getRank();
+	m_rank=core->getRank();
 	m_outboxAllocator=core->getOutboxAllocator();
 	m_workerId=0;
 
@@ -1133,5 +1129,9 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 		m_pluginIsEnabled=true;
 
 	__BindPlugin(GenomeNeighbourhood);
-}
 
+	__BindAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD);
+	__BindAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD);
+	__BindAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
+
+}

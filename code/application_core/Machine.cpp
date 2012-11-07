@@ -55,14 +55,19 @@ using namespace std;
  */
 Machine::Machine(int argc,char**argv){
 
-	void constructor(int*argc,char**argv);
+	m_argc=argc;
+	m_argv=argv;
 
-	m_computeCore.constructor(&argc,&argv);
-	m_messagesHandler=m_computeCore.getMessagesHandler();
+}
+
+void Machine::init(int argc,char**argv){
+
+	m_rank=m_computeCore.getRank();
+	m_size=m_computeCore.getSize();
+	
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
 
 	m_alive=m_computeCore.getLife();
-	m_rank=m_messagesHandler->getRank();
-	m_size=m_messagesHandler->getSize();
 
 	m_inbox=m_computeCore.getInbox();
 	m_outbox=m_computeCore.getOutbox();
@@ -87,21 +92,25 @@ Machine::Machine(int argc,char**argv){
 		if(param.find("help")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("usage")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("man")!=string::npos){
 			if(isMaster())
 				m_parameters.showUsage();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}else if(param.find("-version")!=string::npos){
 			if(isMaster())
 				showRayVersionShort();
+
 			m_computeCore.destructor();
 			m_aborted=true;
 		}
@@ -110,7 +119,9 @@ Machine::Machine(int argc,char**argv){
 	if(m_aborted)
 		return;
 
-	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
+	#if 0
+	" ProcessorName= "<<*(m_messagesHandler->getName())<<endl;
+	#endif
 
 	m_argc=argc;
 	m_argv=argv;
@@ -129,7 +140,7 @@ Machine::Machine(int argc,char**argv){
 	m_helper.constructor(argc,argv,&m_parameters,m_switchMan,m_outboxAllocator,m_outbox,&m_aborted,
 		&m_coverageDistribution,&m_numberOfMachinesDoneSendingCoverage,&m_numberOfRanksWithCoverageData,
 	&m_reductionOccured,m_ed,m_fusionData,m_profiler,&m_networkTest,m_seedingData,
-	&m_timePrinter,&m_seedExtender,&m_scaffolder,m_messagesHandler,m_inbox,
+	&m_timePrinter,&m_seedExtender,&m_scaffolder,m_inbox,
 	&m_oa,&m_isFinalFusion,m_bubbleData,m_alive,
 	&m_CLEAR_n,&m_DISTRIBUTE_n,&m_FINISH_n,&m_searcher,
 	&m_numberOfRanksDoneSeeding,&m_numberOfRanksDoneDetectingDistances,&m_numberOfRanksDoneSendingDistances,
@@ -153,6 +164,9 @@ m_virtualCommunicator,&m_kmerAcademyBuilder,
  *  4. hit the push-button device to start the computation distributed cores (ComputeCore::run())
  */
 void Machine::start(){
+
+	init(m_argc,m_argv);
+
 
 	if(m_aborted)
 		return;
@@ -191,7 +205,6 @@ void Machine::start(){
 	m_sequence_ready_machines=0;
 	m_isFinalFusion=false;
 
-	m_messagesHandler->barrier();
 
 	if(isMaster()){
 		cout<<endl<<"**************************************************"<<endl;
@@ -215,13 +228,11 @@ void Machine::start(){
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
-
 	m_parameters.setSize(getSize());
 
 	// this peak is attained in VerticesExtractor::deleteVertices
 	// 2012-03-20: which peaks ?
-
+	// 2012-11-06: probably memory usage (Virtual Memory)
 
 	/**
  * 		build the plugins now */
@@ -235,7 +246,6 @@ void Machine::start(){
 	m_coverageGatherer.constructor(&m_parameters,m_inbox,m_outbox,m_switchMan->getSlaveModePointer(),&m_subgraph,
 		m_outboxAllocator);
 
-
 	m_fusionTaskCreator.constructor(m_virtualProcessor,m_outbox,
 		m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
@@ -245,7 +255,6 @@ void Machine::start(){
 		m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&(m_ed->m_EXTENSION_contigs),
 		&(m_ed->m_EXTENSION_identifiers),&(m_fusionData->m_FUSION_eliminated),
 		m_virtualCommunicator,&(m_fusionData->m_FINISH_newFusions));
-
 
 	m_amos.constructor(&m_parameters,m_outboxAllocator,m_outbox,m_fusionData,m_ed,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer(),&m_scaffolder,
 		m_inbox,m_virtualCommunicator);
@@ -259,15 +268,13 @@ void Machine::start(){
 
 	m_ranksDoneAttachingReads=0;
 
-	m_messagesHandler->barrier();
-
 	// TODO: check if 65536 is really a limit.
 	// the limit is probably in a header somewhere in application_core or in RayPlatform.
 	// with routing enabled, the limit is 4096 compute cores.
 	
 	int maximumNumberOfProcesses=65536;
 	if(getSize()>maximumNumberOfProcesses){
-		cout<<"The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
+		cout<<"Error: The maximum number of processes is "<<maximumNumberOfProcesses<<" (this can be changed in the code)"<<endl;
 	}
 
 	assert(getSize()<=maximumNumberOfProcesses);
@@ -281,12 +288,14 @@ void Machine::start(){
 	}
 
 	if(isMaster()){
-		showRayVersion(m_messagesHandler,fullReport);
+		showRayVersion(fullReport);
 
 		if(!fullReport){
 			cout<<endl;
 		}
 	}
+
+	int miniRanksPerRank=m_computeCore.getMiniRanksPerRank();
 
 	/** only show the version. */
 	if(fullReport){
@@ -294,7 +303,7 @@ void Machine::start(){
 		return;
 	}
 
-	m_parameters.constructor(m_argc,m_argv,getRank(),m_size);
+	m_parameters.constructor(m_argc,m_argv,getRank(),m_size,miniRanksPerRank);
 
 	if(m_parameters.runProfiler())
 		m_computeCore.enableProfiler();
@@ -305,8 +314,10 @@ void Machine::start(){
 	if(m_parameters.showCommunicationEvents())
 		m_computeCore.showCommunicationEvents();
 	
+	string*name=m_computeCore.getMessagesHandler()->getName();
+
 	// initiate the network test.
-	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,m_messagesHandler->getName(),
+	m_networkTest.constructor(m_rank,m_size,m_inbox,m_outbox,&m_parameters,m_outboxAllocator,name,
 		&m_timePrinter);
 
 	m_networkTest.setSwitchMan(m_switchMan);
@@ -320,36 +331,43 @@ void Machine::start(){
 	m_directionsAllocator.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
-	/** create the directory for the assembly */
-	
+/*
+ * We need to know if we must abort. All the RayPlatform
+ * engine will start anyway on each core, so we need to stop
+ * them if necessary.
+ */
+	bool oldDirectoryExists=false;
+
 	string directory=m_parameters.getPrefix();
 	if(fileExists(directory.c_str())){
-		if(m_parameters.getRank() == MASTER_RANK)
+		if(m_parameters.getRank() == MASTER_RANK){
 			cout<<"Error, "<<directory<<" already exists, change the -o parameter to another value."<<endl;
+			cout<<endl;
 
-		m_computeCore.destructor();
-		return;
+/*
+ * Tell the first plugin that the job will not run.
+ */
+			m_helper.notifyThatOldDirectoryExists();
+		}
+
+		oldDirectoryExists=true;
 	}
-
-	m_messagesHandler->barrier();
 	
 	// create the directory
-	if(m_parameters.getRank() == MASTER_RANK){
+	/** create the directory for the assembly */
+	if(!oldDirectoryExists && m_parameters.getRank() == MASTER_RANK){
 		createDirectory(directory.c_str());
 		m_parameters.writeCommandFile();
 
 		m_timePrinter.setFile(m_parameters.getPrefix());
 	}
 
-	cout<<endl;
-
 	// register the plugins.
 	registerPlugins();
 
-	cout<<endl;
-	
 	// write a report about plugins
-	if(m_parameters.getRank()==MASTER_RANK){
+	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
+
 		ostringstream directory;
 		directory<<m_parameters.getPrefix()<<"/Plugins";
 
@@ -373,7 +391,11 @@ void Machine::start(){
 
 	// options are loaded from here
 	// plus the directory exists now
-	if(m_parameters.hasOption("-route-messages")){
+	if(!oldDirectoryExists && m_parameters.hasOption("-route-messages")){
+/*
+ * If the directory exists, we don't do any routing.
+ * We just stop everything.
+ */
 
 		if(m_parameters.getRank()== MASTER_RANK)
 			createDirectory(routingPrefix.str().c_str());
@@ -385,7 +407,10 @@ void Machine::start(){
 		// update the connections
 		vector<int> connections;
 		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
+		
+		#if 0
 		m_messagesHandler->setConnections(&connections);
+		#endif
 	}
 
 	// set the attributes of the seed extender.
@@ -403,8 +428,6 @@ void Machine::start(){
 
 	m_si.constructor(&m_parameters,m_outboxAllocator,m_inbox,m_outbox,m_virtualCommunicator,
 		m_switchMan->getSlaveModePointer(),&m_myReads);
-
-
 
 	m_profiler = m_computeCore.getProfiler();
 	m_profiler->constructor(m_parameters.runProfiler());
@@ -438,24 +461,23 @@ void Machine::start(){
 	&m_parameters,m_seedingData,m_inbox,m_virtualCommunicator);
 
 	m_subgraph.constructor(getRank(),&m_parameters);
+
+	if(!oldDirectoryExists)
+		m_subgraph.printStatus();
 	
 	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),m_outbox,m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&m_wordSize,&m_subgraph,m_inbox,m_virtualCommunicator);
 
 	(*m_alive)=true;
 	m_totalLetters=0;
 
-	m_messagesHandler->barrier();
 
-	if(m_parameters.showMemoryUsage()){
+	if(!oldDirectoryExists && m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	m_messagesHandler->barrier();
-
-	if(isMaster()){
-		cout<<endl;
-	}
-
+/*
+ * Build the monstruous object.
+ */
 	m_mp.constructor(
 m_router,
 m_seedingData,
@@ -505,6 +527,17 @@ m_seedingData,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	m_switchMan->getMasterModePointer(),&m_isFinalFusion,&m_si);
 
+/*
+ * Create the Scheduling before calling run().
+ * run() is like a barrier.
+ */
+	// log ticks
+	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
+		ostringstream scheduling;
+		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
+		createDirectory(scheduling.str().c_str());
+	}
+
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
 			m_aborted=true;
@@ -521,14 +554,13 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
-
-	if(m_parameters.showMemoryUsage()){
+	if(!oldDirectoryExists && !m_aborted && m_parameters.showMemoryUsage()){
 		showMemoryUsage(getRank());
 	}
 
-	m_messagesHandler->barrier();
-
+/*
+ * TODO: the code above should go in a plugin, not here.
+ */
 	if(isMaster() && !m_aborted && !m_parameters.hasOption("-test-network-only")){
 		m_scaffolder.printFinalMessage();
 		cout<<endl;
@@ -543,40 +575,31 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	m_messagesHandler->barrier();
+	if(!oldDirectoryExists){
 
+		ostringstream masterTicks;
+		masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
+		ofstream f1(masterTicks.str().c_str());
+		m_tickLogger->printMasterTicks(&f1);
+		f1.close();
 
-	// log ticks
-	if(m_parameters.getRank()==MASTER_RANK){
-		ostringstream scheduling;
-		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
-		createDirectory(scheduling.str().c_str());
+		ostringstream slaveTicks;
+		slaveTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".SlaveTicks.txt";
+		ofstream f2(slaveTicks.str().c_str());
+		m_tickLogger->printSlaveTicks(&f2);
+		f2.close();
 	}
 
-	// wait for master to create the directory.
-	m_messagesHandler->barrier();
-	
-	ostringstream masterTicks;
-	masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
-	ofstream f1(masterTicks.str().c_str());
-	m_tickLogger->printMasterTicks(&f1);
-	f1.close();
-
-	ostringstream slaveTicks;
-	slaveTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".SlaveTicks.txt";
-	ofstream f2(slaveTicks.str().c_str());
-	m_tickLogger->printSlaveTicks(&f2);
-	f2.close();
-
-
-	m_messagesHandler->freeLeftovers();
 	m_persistentAllocator.clear();
 	m_directionsAllocator.clear();
-	m_inboxAllocator->clear();
-	m_outboxAllocator->clear();
 
 	m_diskAllocator.clear();
 
+/*
+ * The app is responsible for destroying the core.
+ * It should work also without this call because it
+ * is RayPlatform that destroys the MessagesHandler.
+ */
 	m_computeCore.destructor();
 }
 
@@ -758,14 +781,10 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#endif
 }
 
-void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
+void Machine::showRayVersion(bool fullReport){
 	showRayVersionShort();
 
-	cout<<endl;
-	cout<<"Rank "<<MASTER_RANK<<": Operating System: ";
-	cout<<getOperatingSystem()<<endl;
-
-
+	#if 0
 	cout<<"Message-passing interface"<<endl;
 	cout<<endl;
 	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
@@ -776,13 +795,9 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	messagesHandler->version(&version,&subversion);
 
 	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
+	#endif
 
-
-	cout<<endl;
-
-	if(!fullReport)
-		return;
-
+	#if 0
 	cout<<endl;
 
 	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
@@ -791,6 +806,7 @@ void Machine::showRayVersion(MessagesHandler*messagesHandler,bool fullReport){
 	cout<<endl;
 
 	cout<<endl;
+	#endif
 }
 
 void Machine::registerPlugins(){
@@ -824,3 +840,12 @@ void Machine::registerPlugins(){
 	// otherwise, symbols are resolved when ComputeCore::run() is called.
 	m_computeCore.resolveSymbols();
 }
+
+void Machine::run(){
+
+	start();
+}
+
+
+
+

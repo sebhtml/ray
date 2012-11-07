@@ -671,4 +671,6 @@ void FusionData::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY");
 
 	__BindPlugin(FusionData);
+
+	__BindAdapter(FusionData,RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS);
 }

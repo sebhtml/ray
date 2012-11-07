@@ -34,12 +34,8 @@
 
 __CreatePlugin(NetworkTest);
 
- /**/
-__CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK); /**/
- /**/
-__CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK); /**/
- /**/
- /**/
+__CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+__CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 
 using namespace std;
 
@@ -49,6 +45,7 @@ using namespace std;
 /** initialize the NetworkTest */
 void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 	string*name,TimePrinter*timePrinter){
+
 	m_timePrinter=timePrinter;
 	m_name=name;
 	m_inbox=inbox;
@@ -477,6 +474,9 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	m_started=false;
 
 	__BindPlugin(NetworkTest);
+
+	__BindAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+	__BindAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 }
 
 #undef __MAXIMUM_LATENCY  /**/

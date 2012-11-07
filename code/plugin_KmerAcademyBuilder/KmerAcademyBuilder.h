@@ -39,6 +39,9 @@
 #include <vector>
 using namespace std;
 
+__DeclarePlugin(KmerAcademyBuilder);
+
+__DeclareSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
 
 /*
  * Any MPI rank has some reads to process.
@@ -49,6 +52,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class KmerAcademyBuilder : public CorePlugin{
+
+	__AddAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
 
 	MessageTag RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED;
 	MessageTag RAY_MPI_TAG_VERTICES_DATA_REPLY;

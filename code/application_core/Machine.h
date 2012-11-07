@@ -27,12 +27,12 @@
 /** the heart of RayPlatform  **/
 /** ComputeCore is a facade (a design pattern) **/
 #include <core/ComputeCore.h>
+#include "core/MiniRank.h"
 
 /** communication */
 #include <communication/VirtualCommunicator.h> /** virtual stuff */
 #include <communication/Message.h>
 #include <communication/MessageRouter.h>
-#include <communication/MessagesHandler.h> /** MPI wrapper **/
 
 /** scheduling, virtual pools */
 #include <scheduling/VirtualProcessor.h> /** thread pool **/
@@ -122,9 +122,8 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Machine{
+class Machine : public MiniRank{
 
-	ComputeCore m_computeCore;
 	Chooser m_c;
 	MachineHelper m_helper;
 
@@ -164,7 +163,6 @@ class Machine{
 	Amos m_amos;
 
 	Library m_library;
-	MessagesHandler*m_messagesHandler;
 	MyAllocator m_diskAllocator;
 
 	int m_numberOfRanksWithCoverageData;
@@ -304,19 +302,29 @@ class Machine{
 
 	int getRank();
 
-	void showRayVersion(MessagesHandler*messagesHandler,bool fullReport);
+	void showRayVersion(bool fullReport);
 
 	void showRayVersionShort();
 
 	void registerPlugins();
+
+	void start();
+
+	StaticVector*getInbox();
+	StaticVector*getOutbox();
+	RingAllocator*getOutboxAllocator();
+
+	void init(int argc,char**argv);
 
 public:
 	/*
  * this is the only public bit
  */
 	Machine(int argc,char**argv);
-	void start();
 	~Machine();
+
+	void run();
+
 };
 
 #endif

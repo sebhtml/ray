@@ -4399,4 +4399,24 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	m_useOneColorPerFile=m_parameters->hasOption("-one-color-per-file");
 
 	__BindPlugin(Searcher);
+
+	__BindAdapter(Searcher,RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+	__BindAdapter(Searcher,RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	__BindAdapter(Searcher,RAY_MASTER_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	__BindAdapter(Searcher,RAY_MASTER_MODE_ADD_COLORS);
+	__BindAdapter(Searcher,RAY_MASTER_MODE_SEARCHER_CLOSE);
+	__BindAdapter(Searcher,RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS);
+	__BindAdapter(Searcher,RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES);
+	__BindAdapter(Searcher,RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES);
+	__BindAdapter(Searcher,RAY_SLAVE_MODE_ADD_COLORS);
+	__BindAdapter(Searcher,RAY_SLAVE_MODE_SEARCHER_CLOSE);
+	__BindAdapter(Searcher,RAY_MPI_TAG_ADD_KMER_COLOR);
+	__BindAdapter(Searcher,RAY_MPI_TAG_CONTIG_IDENTIFICATION);
+	__BindAdapter(Searcher,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
+	__BindAdapter(Searcher,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS);
+	__BindAdapter(Searcher,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY);
+	__BindAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
+	__BindAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA);
+	__BindAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
+
 }

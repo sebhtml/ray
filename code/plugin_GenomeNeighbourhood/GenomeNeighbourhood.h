@@ -40,6 +40,11 @@
 #include <stack>
 using namespace std;
 
+__DeclarePlugin(GenomeNeighbourhood);
+
+__DeclareMasterModeAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD);
+__DeclareSlaveModeAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD);
+__DeclareMessageTagAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
 /**
  * The plugin GenomeNeighbourhood outputs a file file
@@ -49,9 +54,12 @@ using namespace std;
  * amongst other things.
  *
  * \author Sébastien Boisvert
- * \
- * */
+ */
 class GenomeNeighbourhood: public CorePlugin{
+
+	__AddAdapter(GenomeNeighbourhood,RAY_MASTER_MODE_NEIGHBOURHOOD);
+	__AddAdapter(GenomeNeighbourhood,RAY_SLAVE_MODE_NEIGHBOURHOOD);
+	__AddAdapter(GenomeNeighbourhood,RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
 	bool m_pluginIsEnabled;
 	Parameters*m_parameters;

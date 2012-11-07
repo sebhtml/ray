@@ -39,6 +39,9 @@
 #include <vector>
 using namespace std;
 
+__DeclarePlugin(VerticesExtractor);
+
+__DeclareSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
 
 /*
  * Any MPI rank has some reads to process.
@@ -49,6 +52,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class VerticesExtractor: public CorePlugin{
+
+	__AddAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
 
 	MessageTag RAY_MPI_TAG_VERTEX_INFO_REPLY;
 	MessageTag RAY_MPI_TAG_BUILD_GRAPH;

@@ -51,11 +51,23 @@ class DepthFirstSearchData;
 
 using namespace std;
 
+__DeclarePlugin(SeedExtender);
+
+__DeclareSlaveModeAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
+__DeclareMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+__DeclareMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
+__DeclareMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
+
 /*
  * Performs the extension of seeds.
  * \author Sébastien Boisvert
  */
 class SeedExtender: public CorePlugin  {
+
+	__AddAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
+	__AddAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
+	__AddAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
+	__AddAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
 
 /** hot skipping technology (TM) **/
 

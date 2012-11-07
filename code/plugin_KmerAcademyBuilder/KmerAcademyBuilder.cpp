@@ -31,14 +31,9 @@
 #include <application_core/common_functions.h>
 #include <fstream>
 
-
 __CreatePlugin(KmerAcademyBuilder);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES); /**/
- /**/
- /**/
+__CreateSlaveModeAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
 
 using namespace std;
 
@@ -314,5 +309,7 @@ void KmerAcademyBuilder::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_VERTICES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_VERTICES_DATA");
 
 	__BindPlugin(KmerAcademyBuilder);
+
+	__BindAdapter(KmerAcademyBuilder,RAY_SLAVE_MODE_ADD_VERTICES);
 
 }

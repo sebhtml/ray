@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,14 +19,17 @@
 
 */
 
-#include <iostream>
-#include <application_core/Machine.h>
-#include <stdlib.h>
+#include "application_core/Machine.h"
+#include "core/RankProcess.h"
+
 using namespace std;
 
 int main(int argc,char**argv){
-	Machine*m=new Machine(argc,argv);
-	m->start();
+
+	RankProcess<Machine> applicationContainer;
+	applicationContainer.constructor(&argc,&argv);
+	applicationContainer.run();
+
 	return EXIT_SUCCESS;
 }
 

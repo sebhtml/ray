@@ -40,115 +40,111 @@
 
 __CreatePlugin(MessageProcessor);
 
- /**/
- /**/
- /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MATE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_READS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SET_WORD_SIZE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_INFO); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS_FROM_LIST); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_INDEXING_SEQUENCES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEQUENCES_READY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PURGE_NULL_EDGES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DISTRIBUTED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA_REPLY); /**/
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MATE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_READS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SET_WORD_SIZE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_INFO);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS_FROM_LIST);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_INDEXING_SEQUENCES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEQUENCES_READY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PURGE_NULL_EDGES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DISTRIBUTED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_READY_TO_SEED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_SEEDING); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_MARK); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEEDING_IS_OVER); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_SEED_LENGTHS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_SEED_LENGTHS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_FUSION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FUSION_DONE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_START); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ELIMINATE_PATH); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING); /**/
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK); /**/
- /**/
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_READY_TO_SEED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_SEEDING);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_MARK);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEEDING_IS_OVER);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_SEED_LENGTHS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_SEED_LENGTHS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_START_FUSION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FUSION_DONE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_START);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ELIMINATE_PATH);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
+__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 
 
 void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
@@ -3262,6 +3258,111 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) );
 
 	__BindPlugin(MessageProcessor);
-}
 
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MATE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_READS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SET_WORD_SIZE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_INFO);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_VERTEX_READS_FROM_LIST);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_START_INDEXING_SEQUENCES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SEQUENCES_READY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DATA);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PURGE_NULL_EDGES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_VERTICES_DISTRIBUTED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_OUT_EDGES_DATA);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_READY_TO_SEED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_START_SEEDING);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_MARK);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_EDGES_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SEEDING_IS_OVER);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_SEED_LENGTHS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SEND_SEED_LENGTHS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_LENGTH_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASSEMBLE_WAVES_DONE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_START_FUSION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_FUSION_DONE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_LENGTH_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_HAS_PAIRED_READ_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PAIRED_READ_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_START);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ELIMINATE_PATH);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_WRITE_AMOS_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_LIBRARY_DISTANCE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+}
 

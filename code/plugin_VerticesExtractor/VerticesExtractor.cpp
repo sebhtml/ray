@@ -32,12 +32,7 @@
 
 __CreatePlugin(VerticesExtractor);
 
- /**/
- /**/
-__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES); /**/
- /**/
- /**/
-
+__CreateSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
 
 void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
@@ -404,4 +399,6 @@ void VerticesExtractor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_KMERS,   RAY_SLAVE_MODE_WRITE_KMERS);
 
 	__BindPlugin(VerticesExtractor);
+
+	__BindAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
 }

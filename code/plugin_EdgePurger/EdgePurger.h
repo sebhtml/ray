@@ -39,6 +39,9 @@
 #include <stdint.h>
 using namespace std;
 
+__DeclarePlugin(EdgePurger);
+
+__DeclareSlaveModeAdapter(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 
 /**
  * VerticesExtractor.cpp adds k-mers and ingoing and outgoing edges
@@ -49,6 +52,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class EdgePurger : public TaskCreator, public CorePlugin {
+
+	__AddAdapter(EdgePurger,RAY_SLAVE_MODE_PURGE_NULL_EDGES);
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY;
 

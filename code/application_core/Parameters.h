@@ -66,6 +66,7 @@ using namespace std;
  */
 class Parameters{
 	
+	int m_numberOfMiniRanksPerRank;
 
 	string m_configurationContent;
 
@@ -164,7 +165,7 @@ class Parameters{
 public:
 	Parameters();
 	string getReceivedMessagesFile();
-	void constructor(int argc,char**argv,Rank rank,int size);
+	void constructor(int argc,char**argv,Rank rank,int size,int miniRanksPerRank);
 	bool isInitiated();
 	vector<string> getAllFiles();
 	string getDirectory();

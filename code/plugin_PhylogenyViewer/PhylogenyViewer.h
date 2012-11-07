@@ -68,12 +68,23 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 #include <map>
 using namespace std;
 
+__DeclarePlugin(PhylogenyViewer);
+
+__DeclareMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+__DeclareSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+__DeclareMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+__DeclareMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 /** 
  * a plugin to know what is present in a sample 
  * \author Sébastien Boisvert
  */
 class PhylogenyViewer: public CorePlugin{
+
+	__AddAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+	__AddAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+	__AddAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+	__AddAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 /* slave states */
 	bool m_extractedColorsForPhylogeny;
