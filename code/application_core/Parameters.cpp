@@ -1318,9 +1318,11 @@ void Parameters::showUsage(){
 	cout<<"NAME"<<endl<<basicSpaces<<"Ray - assemble genomes in parallel using the message-passing interface"<<endl<<endl;
 
 	cout<<"SYNOPSIS"<<endl;
-	cout<<basicSpaces<<"mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
+	cout<<basicSpaces<<"mpiexec -n 80 Ray -k 31 -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test"<<endl;
 	cout<<endl;
-	cout<<basicSpaces<<"mpiexec -n NUMBER_OF_RANKS Ray Ray.conf # with commands in a file"<<endl;
+	cout<<basicSpaces<<"mpiexec -n 80 Ray Ray.conf # with commands in a file"<<endl;
+	cout<<endl;
+	cout<<basicSpaces<<"mpiexec -n 10 Ray -mini-ranks-per-rank 7 Ray.conf # with mini-ranks"<<endl;
 	cout<<endl;
 
 	cout<<"DESCRIPTION:"<<endl;
@@ -1344,6 +1346,23 @@ void Parameters::showUsage(){
 	showOption("-help","Displays this help page.");
 	cout<<endl;
 	showOption("-version","Displays Ray version and compilation options.");
+	cout<<endl;
+
+	cout<<"  Run Ray in pure MPI mode"<<endl;
+	cout<<endl;
+	cout<<"    mpiexec -n 80 Ray ..."<<endl;
+	cout<<endl;
+
+	cout<<"  Run Ray with mini-ranks on 10 machines, 8 cores / machine (MPI and IEEE POSIX threads)"<<endl;
+	cout<<endl;
+	cout<<"    mpiexec -n 10 Ray -mini-ranks-per-rank 7 ..."<<endl;
+	cout<<endl;
+
+	cout<<"  Run Ray on one core only (still needs MPI)"<<endl;
+	cout<<endl;
+	cout<<"    Ray ..."<<endl;
+	cout<<endl;
+
 	cout<<endl;
 
 	cout<<"  Using a configuration file"<<endl;

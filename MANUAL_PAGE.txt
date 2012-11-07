@@ -1,10 +1,13 @@
+Rank 0: Rank= 0 Size= 1 ProcessIdentifier= 27353
 NAME
        Ray - assemble genomes in parallel using the message-passing interface
 
 SYNOPSIS
-       mpiexec -n NUMBER_OF_RANKS Ray -k KMERLENGTH -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
+       mpiexec -n 80 Ray -k 31 -p l1_1.fastq l1_2.fastq -p l2_1.fastq l2_2.fastq -o test
 
-       mpiexec -n NUMBER_OF_RANKS Ray Ray.conf # with commands in a file
+       mpiexec -n 80 Ray Ray.conf # with commands in a file
+
+       mpiexec -n 10 Ray -mini-ranks-per-rank 7 Ray.conf # with mini-ranks
 
 DESCRIPTION:
 
@@ -29,6 +32,19 @@ DESCRIPTION:
        -version
               Displays Ray version and compilation options.
 
+  Run Ray in pure MPI mode
+
+    mpiexec -n 80 Ray ...
+
+  Run Ray with mini-ranks on 10 machines, 8 cores / machine (MPI and IEEE POSIX threads)
+
+    mpiexec -n 10 Ray -mini-ranks-per-rank 7 ...
+
+  Run Ray on one core only (still needs MPI)
+
+    Ray ...
+
+
   Using a configuration file
 
     Ray can be launched with
@@ -40,7 +56,7 @@ DESCRIPTION:
        -k kmerLength
               Selects the length of k-mers. The default value is 21. 
               It must be odd because reverse-complement vertices are stored together.
-              The maximum length is defined at compilation by MAXKMERLENGTH
+              The maximum length is defined at compilation by CONFIG_MAXKMERLENGTH
               Larger k-mers utilise more memory.
 
   Inputs
@@ -286,10 +302,10 @@ FILES
      Note: file format is determined with file extension.
 
      .fasta
-     .fasta.gz (needs HAVE_LIBZ=y at compilation)
+     .fasta.gz (needs CONFIG_HAVE_LIBZ=y at compilation)
      .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)
      .fastq
-     .fastq.gz (needs HAVE_LIBZ=y at compilation)
+     .fastq.gz (needs CONFIG_HAVE_LIBZ=y at compilation)
      .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)
      .sff (paired reads must be extracted manually)
      .csfasta (color-space reads)
@@ -408,4 +424,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.1.0
+Ray 2.1.1-devel
