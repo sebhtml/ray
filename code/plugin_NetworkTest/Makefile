@@ -1,7 +1,3 @@
-
-NetworkTest-y += plugin_NetworkTest/NetworkTest.o
+NetworkTest-y += code/plugin_NetworkTest/NetworkTest.o
 
 obj-y += $(NetworkTest-y)
-
-
-

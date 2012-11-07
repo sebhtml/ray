@@ -4,7 +4,7 @@ SUBLEVEL = 1
 EXTRAVERSION = -devel
 NAME = Ancient Granularity of Epochs
 
-# like in Linux, stuff that must be propagated to
+# Like in Linux, stuff that must be propagated to
 # the source code (C++ here) or other Makefiles
 # are prefixed with CONFIG_
 
@@ -12,14 +12,36 @@ NAME = Ancient Granularity of Epochs
 # Makefile for the ray assembler
 # Objects appended to obj-y are compiled and linked.
 # Objects appended to obj-n are not compiled and linked.
+#
+# Based on http://www.ravnborg.org/kbuild/makefiles.html
+#
+# The code is distributed in a small Ray core that is built on top
+# of the RayPlatform.
+#
+# Then, plugins (interface CorePlugin in the RayPlatform)
+# are simply added onto the core (class ComputeCore in the
+# RayPlatform).
 
-# number of cores to use for compilation
-J=1
+# this can be changed with make MPICXX=...
+MPICXX = mpicxx
 
-RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+# CXXFLAGS can be changed by the end user with make CXXFLAGS="..."
+CXXFLAGS = -O3 -std=c++98 -Wall
 
-#############################################
-# compilation options
+LD = ld
+AR = ar
+RM = rm
+CD = cd
+MAKE = make
+ECHO = echo
+MKDIR = mkdir
+CP = cp
+
+CONFIG_RAY_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+
+#######################################################################
+# Compilation options
+#######################################################################
 
 # installation prefix with make install
 PREFIX=install-prefix
@@ -38,19 +60,13 @@ MAXKMERLENGTH = 32
 # needs libz
 # set to no if you don't have libz
 # y/n
-HAVE_LIBZ = y
+HAVE_LIBZ = n
 
 # support for .bz2 files
 # needs libbz2
 # set to no if you don't have libbz2
 # y/n
-HAVE_LIBBZ2 = y
-
-# use Intel's compiler
-# the name of the Intel MPI C++ compiler is mpiicpc
-# Open-MPI and MPICH2 utilise mpic++ for the name.
-# y/n
-INTEL_COMPILER = n
+HAVE_LIBBZ2 = n
 
 # pack structures to reduce memory usage
 # will work on x86 and x86_64
@@ -77,140 +93,125 @@ PROFILER_COLLECT=n
 # needs -l rt too
 CLOCK_GETTIME=n
 
-# OS detection based on git Makefile
-uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+#######################################################################
+# Don't edit below this this point ---> .
+#######################################################################
 
-# optimize
-OPTIMIZE = y
+# Build configuration options correctly for the source code
 
-# add -g to gcc
-# see "Is there a downside to leaving in debug symbols in release builds?"
-# http://stackoverflow.com/questions/5569644/is-there-a-downside-to-leaving-in-debug-symbols-in-release-builds
-# in short: the executable is larger, but symbols are in a different section (thus the code is not slower)
-DEBUG = n
+CONFIG_ASSERT=$(ASSERT)
+CONFIG_HAVE_LIBZ=$(HAVE_LIBZ)
+CONFIG_HAVE_LIBBZ2=$(HAVE_LIBBZ2)
+CONFIG_FORCE_PACKING=$(FORCE_PACKING)
+CONFIG_PROFILER_COLLECT=$(PROFILER_COLLECT)
+CONFIG_CLOCK_GETTIME=$(CLOCK_GETTIME)
 
-# profiling
-GPROF = n
+# These 2 are used by an other Makefile
+export CONFIG_HAVE_LIBZ
+export CONFIG_HAVE_LIBBZ2
 
-ifeq ($(GPROF),y)
-	OPTIMIZE = n
-	FORCE_PACKING = n
-endif
+#######################################################################
 
-PEDANTIC = n
-
-MPICXX-y = mpicxx
-
-# mpic++ from an MPI implementation must be reachable with the PATH
-# tested implementations of MPI include Open-MPI and MPICH2
-CXXFLAGS = 
-
-# optimization
-CXXFLAGS-$(OPTIMIZE) += -O3
-
-ifeq ($(INTEL_COMPILER),n)
-# g++ options
-ifeq ($(uname_S),Linux)
-	#-std=c++98
-	CXXFLAGS += -Wall -std=c++98
-	CXXFLAGS-$(PEDANTIC) += -pedantic -Wextra 
-endif
-endif
-
-# profiling
-CXXFLAGS-$(GPROF) += -g -pg
-LDFLAGS-$(GPROF) += -pg -g
-
-# if you use Intel's mpiicpc
-MPICXX-$(INTEL_COMPILER) = mpiicpc 
-CXXFLAGS-$(INTEL_COMPILER) += -D MPICH_IGNORE_CXX_SEEK -D MPICH_SKIP_MPICXX  # this should be fixed upstream.
+# Build the CONFIG_FLAGS
+# This could be stored in a config.h too.
+CONFIG_FLAGS-y=
 
 #maximum k-mer length
-CXXFLAGS-y += -D CONFIG_MAXKMERLENGTH=$(MAXKMERLENGTH)
-CXXFLAGS-y += $(EXTRA)
-LDFLAGS-y += $(EXTRA)
+CONFIG_FLAGS-y += -D CONFIG_MAXKMERLENGTH=$(MAXKMERLENGTH)
 
 # compile assertions
-CXXFLAGS-$(ASSERT) += -D CONFIG_ASSERT -D ASSERT
+CONFIG_FLAGS-$(CONFIG_ASSERT) += -D CONFIG_ASSERT -D ASSERT
 
-#compile with libz
-CXXFLAGS-$(HAVE_LIBZ) += -D CONFIG_HAVE_LIBZ
-LDFLAGS-$(HAVE_LIBZ) += -lz
+#compile with zlib
+CONFIG_FLAGS-$(CONFIG_HAVE_LIBZ) += -D CONFIG_HAVE_LIBZ
+LDFLAGS-$(CONFIG_HAVE_LIBZ) += -lz
 
 #compile with libbz2
-CXXFLAGS-$(HAVE_LIBBZ2) += -D CONFIG_HAVE_LIBBZ2 
-LDFLAGS-$(HAVE_LIBBZ2) += -lbz2
-
-#debug flag
-CXXFLAGS-$(DEBUG) += -g
-LDFLAGS-$(DEBUG)  += -g
+CONFIG_FLAGS-$(CONFIG_HAVE_LIBBZ2) += -D CONFIG_HAVE_LIBBZ2 
+LDFLAGS-$(CONFIG_HAVE_LIBBZ2) += -lbz2
 
 # pack data in memory to save space
-CXXFLAGS-$(FORCE_PACKING) += -D CONFIG_FORCE_PACKING
+CONFIG_FLAGS-$(CONFIG_FORCE_PACKING) += -D CONFIG_FORCE_PACKING
 
-CXXFLAGS-$(PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
-CXXFLAGS-$(CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
-LDFLAGS-$(CLOCK_GETTIME) += -l rt
-CXXFLAGS-y += -D RAY_VERSION=\\\"$(RAY_VERSION)\\\"
+CONFIG_FLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
+CONFIG_FLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
+LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt
+CONFIG_FLAGS-y += -D CONFIG_RAY_VERSION=\"$(CONFIG_RAY_VERSION)\"
 
-CXXFLAGS += $(CXXFLAGS-y)
-LDFLAGS += $(LDFLAGS-y)
+# CONFIG_FLAGS is separate from CXXFLAGS
+# This eases building the package in distributions
+LDFLAGS = $(LDFLAGS-y)
+CONFIG_FLAGS=$(CONFIG_FLAGS-y)
 
-MPICXX = $(MPICXX-y)
-
-# export some configuration for child Makefile files
-
-export CONFIG_HAVE_LIBZ=$(HAVE_LIBZ)
-export CONFIG_HAVE_LIBBZ2=$(HAVE_LIBBZ2)
-
-#################################
-
-
+#######################################################################
+# Build rules.
 # the target is Ray
 all: Ray
+
+# inference rule
+%.o: %.cpp
+	@$(ECHO) "  CXX $@"
+	@$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I RayPlatform -I code -c -o $@ $<
+
+include code/application_core/Makefile
+include code/plugin_*/Makefile
 
 showOptions: 
 	@echo ""
 	@echo "Compilation options (you can change them of course)"
 	@echo ""
 	@echo PREFIX = $(PREFIX)
+	@echo MPICXX = $(MPICXX)
 	@echo MAXKMERLENGTH = $(MAXKMERLENGTH)
 	@echo FORCE_PACKING = $(FORCE_PACKING)
 	@echo ASSERT = $(ASSERT)
 	@echo HAVE_LIBZ = $(HAVE_LIBZ)
 	@echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
-	@echo INTEL_COMPILER = $(INTEL_COMPILER)
-	@echo MPICXX = $(MPICXX)
-	@echo GPROF = $(GPROF)
-	@echo OPTIMIZE = $(OPTIMIZE)
-	@echo DEBUG = $(DEBUG)
 	@echo ""
 	@echo "Compilation and linking flags (generated automatically)"
 	@echo ""
 	@echo CXXFLAGS = $(CXXFLAGS)
+	@echo CONFIG_FLAGS = $(CONFIG_FLAGS)
 	@echo LDFLAGS = $(LDFLAGS)
 	@echo ""
 	@touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a code/TheRayGenomeAssembler.a
-	$(MPICXX) code/TheRayGenomeAssembler.a RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
-	@echo $(PREFIX) > PREFIX
-	@echo Ray > TARGETS
-
-code/TheRayGenomeAssembler.a:
-	@cd code; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) all ; cd ..
+Ray: showOptions RayPlatform/libRayPlatform.a $(obj-y)
+	@$(ECHO) "  LD $@"
+	@$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
+	@$(ECHO) $(PREFIX) > PREFIX
 
 RayPlatform/libRayPlatform.a:
-	@cd RayPlatform; make MPICXX="$(MPICXX)" CXXFLAGS="$(CXXFLAGS)" -j $(J) ; cd ..
+	@$(CD) RayPlatform; $(MAKE) $(MFLAGS) ; $(CD) ..
 
 clean:
-	@rm -f Ray showOptions PREFIX TARGETS
-	@echo "Cleaning Ray Application"
-	@(cd code; make clean; cd ..)
-	@echo "Cleaning Ray Platform"
-	@cd RayPlatform;make clean; cd ..
-	@echo CLEAN
+	@$(CD) RayPlatform; $(MAKE) clean; $(CD) ..
+	@$(ECHO) CLEAN Ray plugins
+	@$(RM) -f Ray showOptions PREFIX $(obj-y)
 
 install: 
-	@scripts/install.sh
+	$(eval PREFIX=$(shell cat PREFIX))
+
+	@$(MKDIR) -p $(PREFIX)
+
+	@$(ECHO) ""
+	@$(ECHO) "Installing Ray to $(PREFIX)"
+	@$(ECHO) ""
+
+	@cp LICENSE.txt $(PREFIX)
+	@cp gpl-3.0.txt $(PREFIX)
+	@cp RayPlatform/lgpl-3.0.txt $(PREFIX)
+
+	@cp Ray $(PREFIX)
+	@cp -r Documentation $(PREFIX)
+	@cp README.md $(PREFIX)
+	@cp MANUAL_PAGE.txt $(PREFIX)
+	@cp AUTHORS $(PREFIX)
+	@cp -r scripts $PREFIX
+
+	@mkdir $(PREFIX)/RayPlatform
+	@cp RayPlatform/AUTHORS $(PREFIX)/RayPlatform
+	@cp RayPlatform/README $(PREFIX)/RayPlatform
+	@cp -r RayPlatform/Documentation $(PREFIX)/RayPlatform
+

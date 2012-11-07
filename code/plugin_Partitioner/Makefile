@@ -1,6 +1,3 @@
-
-Partitioner-y += plugin_Partitioner/Partitioner.o
+Partitioner-y += code/plugin_Partitioner/Partitioner.o
 
 obj-y += $(Partitioner-y)
-
-

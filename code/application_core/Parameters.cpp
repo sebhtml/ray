@@ -949,7 +949,7 @@ void Parameters::writeCommandFile(){
 	ostringstream rayRuntime;
 	rayRuntime<<getPrefix()<<"RayVersion.txt";
 	ofstream f2(rayRuntime.str().c_str());
-	f2<<"Ray version: "<<RAY_VERSION<<endl;
+	f2<<"Ray version: "<<CONFIG_RAY_VERSION<<endl;
 	f2.close();
 
 	writeConfigurationFile();
@@ -1755,7 +1755,7 @@ void Parameters::showUsage(){
 	cout<<basicSpaces<<"along with this program (see LICENSE)."<<endl;
 
 	cout<<endl;
-	cout<<"Ray "<<RAY_VERSION<<endl;
+	cout<<"Ray "<<CONFIG_RAY_VERSION<<endl;
 }
 
 /* get the prefix for mmap'ed files 

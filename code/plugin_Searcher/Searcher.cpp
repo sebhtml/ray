@@ -4012,7 +4012,9 @@ void Searcher::generateSummaryOfColoredDeBruijnGraph(){
 		if(references==0)
 			continue;
 
+		#ifdef ASSERT
 		int numberOfPhysicalColors=m_masterColorSet.getNumberOfPhysicalColors(currentVirtualColor);
+		#endif
 
 		set<PhysicalKmerColor>*colors=m_masterColorSet.getPhysicalColors(currentVirtualColor);
 

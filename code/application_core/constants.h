@@ -21,8 +21,8 @@
 #ifndef _constants
 #define _constants
 
-#ifndef RAY_VERSION
-#define RAY_VERSION "Unknown"
+#ifndef CONFIG_RAY_VERSION
+#define CONFIG_RAY_VERSION "Unknown"
 #endif
 
 /* 

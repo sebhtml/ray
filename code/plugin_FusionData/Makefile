@@ -1,5 +1,3 @@
-
-FusionData-y += plugin_FusionData/FusionData.o 
+FusionData-y += code/plugin_FusionData/FusionData.o 
 
 obj-y += $(FusionData-y)
-

@@ -599,7 +599,7 @@ Machine::~Machine(){
 
 
 void Machine::showRayVersionShort(){
-	cout<<"Ray version "<<RAY_VERSION<<endl;
+	cout<<"Ray version "<<CONFIG_RAY_VERSION<<endl;
 	cout<<"License for Ray: GNU General Public License version 3"<<endl;
 
 	cout<<"RayPlatform version: "<<m_computeCore.getRayPlatformVersion()<<endl;

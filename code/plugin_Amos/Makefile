@@ -1,7 +1,3 @@
-
-Amos-y += plugin_Amos/Amos.o
+Amos-y += code/plugin_Amos/Amos.o
 
 obj-y += $(Amos-y)
-
-
-
