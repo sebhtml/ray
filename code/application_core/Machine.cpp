@@ -295,13 +295,15 @@ void Machine::start(){
 		}
 	}
 
+	int miniRanksPerRank=m_computeCore.getMiniRanksPerRank();
+
 	/** only show the version. */
 	if(fullReport){
 		m_computeCore.destructor();
 		return;
 	}
 
-	m_parameters.constructor(m_argc,m_argv,getRank(),m_size);
+	m_parameters.constructor(m_argc,m_argv,getRank(),m_size,miniRanksPerRank);
 
 	if(m_parameters.runProfiler())
 		m_computeCore.enableProfiler();

@@ -919,8 +919,16 @@ void Parameters::writeCommandFile(){
 	commandFile<<getPrefix()<<"RayCommand.txt";
 	ofstream f(commandFile.str().c_str());
 
-	f<<"mpiexec -n "<<getSize()<<" Ray \\"<<endl;
-	cout<<"mpiexec -n "<<getSize()<<" Ray \\"<<endl;
+	int numberOfRays=getSize();
+
+	#ifdef ASSERT
+	assert(numberOfRays%m_numberOfMiniRanksPerRank==0);
+	#endif
+
+	numberOfRays/=m_numberOfMiniRanksPerRank;
+
+	f<<"mpiexec -n "<<numberOfRays<<" Ray \\"<<endl;
+	cout<<"mpiexec -n "<<numberOfRays<<" Ray \\"<<endl;
 
 	for(int i=0;i<(int)m_originalCommands.size();i++){
 		if(i!=(int)m_originalCommands.size()-1){
@@ -959,7 +967,11 @@ void Parameters::writeConfigurationFile(){
 	f.close();
 }
 
-void Parameters::constructor(int argc,char**argv,int rank,int size){
+void Parameters::constructor(int argc,char**argv,int rank,int size,
+	int miniRanksPerRank){
+
+	m_numberOfMiniRanksPerRank=miniRanksPerRank;
+
 	m_maximumDistance=0;
 	m_totalNumberOfSequences=0;
 
