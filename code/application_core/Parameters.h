@@ -182,7 +182,7 @@ public:
 	string getAmosFile();
 	string getParametersFile();
 	string getCoverageDistributionFile();
-	vector<string> getCommands();
+	vector<string>*getCommands();
 	bool getError();
 	void addDistance(int library,int distance,int count);
 	void computeAverageDistances();

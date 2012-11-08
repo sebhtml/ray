@@ -1094,8 +1094,8 @@ string Parameters::getAmosFile(){
 	return getPrefix()+"AMOS.afg";
 }
 
-vector<string> Parameters::getCommands(){
-	return m_commands;
+vector<string>*Parameters::getCommands(){
+	return &m_commands;
 }
 
 bool Parameters::getError(){
