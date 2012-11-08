@@ -27,7 +27,7 @@
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <memory/RingAllocator.h>
 #include <plugin_VerticesExtractor/GridTable.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <structures/StaticVector.h>
 #include <scheduling/Worker.h>
 #include <communication/VirtualCommunicator.h>

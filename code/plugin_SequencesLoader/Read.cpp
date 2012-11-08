@@ -19,7 +19,7 @@
 */
 
 #include<assert.h>
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 #include<plugin_SequencesLoader/Read.h>
 #include<cstdlib>
 #include<iostream>

@@ -24,12 +24,12 @@
 
 #include <communication/BufferedData.h>
 #include <plugin_SeedExtender/ExtensionData.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <structures/StaticVector.h>
 #include <profiling/TimePrinter.h>
 #include <plugin_SeedExtender/ReadFetcher.h>
 #include <communication/VirtualCommunicator.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_SeedingData/SeedingData.h>
 #include <memory/RingAllocator.h>
 #include <plugin_Library/LibraryWorker.h>

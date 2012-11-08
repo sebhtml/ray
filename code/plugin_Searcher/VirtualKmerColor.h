@@ -23,7 +23,7 @@
 #ifndef _VirtualKmerColor_h
 #define _VirtualKmerColor_h
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <stdint.h>
 #include <vector>
 #include <set>

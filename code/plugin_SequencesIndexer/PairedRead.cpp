@@ -20,7 +20,7 @@
 */
 
 #include<plugin_SequencesIndexer/PairedRead.h>
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 #include<assert.h>
 
 void PairedRead::constructor(int rank,int id,int library){

@@ -19,14 +19,14 @@
 
 */
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <plugin_SeedingData/SeedWorker.h>
 #include <assert.h>
 #include <communication/Message.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <communication/mpi_tags.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <stdint.h>
 #include <iostream>
 using namespace std;

@@ -26,8 +26,8 @@
 #include <communication/Message.h>
 #include <communication/BufferedData.h>
 #include <communication/VirtualCommunicator.h>
-#include <application_core/Parameters.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/Parameters.h>
+#include <plugin_Mock/common_functions.h>
 #include <memory/MyAllocator.h>
 #include <memory/RingAllocator.h>
 #include <structures/SplayTree.h>

@@ -26,7 +26,7 @@
 #include <plugin_SequencesLoader/BzReader.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 
 void BzReader::open(const char*file){
 	m_file=fopen(file,"r");

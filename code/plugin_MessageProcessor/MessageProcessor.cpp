@@ -21,21 +21,21 @@
 
 //#define GUILLIMIN_BUG
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <string.h>
 #include <core/OperatingSystem.h>
 #include <assert.h>
 #include <plugin_SequencesLoader/Read.h>
 #include <plugin_MessageProcessor/MessageProcessor.h>
 #include <structures/StaticVector.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <plugin_SequencesIndexer/ReadAnnotation.h>
 #include <structures/SplayTree.h>
 #include <plugin_SeedExtender/Direction.h>
 #include <structures/SplayNode.h>
 #include <structures/SplayTreeIterator.h>
 #include <plugin_FusionData/FusionData.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <core/ComputeCore.h>
 
 __CreatePlugin(MessageProcessor);

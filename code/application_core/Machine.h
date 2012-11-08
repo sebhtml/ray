@@ -65,8 +65,8 @@
 
 /** stuff specific to the Ray assembler that don't fit elsewhere */
 
-#include <application_core/common_functions.h> /* common code for all plugins */
-#include <application_core/Parameters.h> /* command-line parsing */
+#include <plugin_Mock/common_functions.h> /* common code for all plugins */
+#include <plugin_Mock/Parameters.h> /* command-line parsing */
 
 // also in this category is application_core/Machine.h 
 
@@ -103,6 +103,7 @@
 #include <plugin_PhylogenyViewer/PhylogenyViewer.h>
 #include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 #include <plugin_GeneOntology/GeneOntology.h>
+#include <plugin_Mock/Mock.h>
 
 /** C++ bits **/
 #include <map>
@@ -123,6 +124,11 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Machine : public MiniRank{
+
+/*
+ * Useless placeholder.
+ */
+	Mock m_mock;
 
 	Chooser m_c;
 	MachineHelper m_helper;

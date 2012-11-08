@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -18,37 +18,18 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _GenomeToTaxonLoader_h
-#define _GenomeToTaxonLoader_h
+#include <plugin_Mock/Mock.h>
 
+void Mock::registerPlugin(ComputeCore*core){
+	m_plugin=core->allocatePluginHandle();
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
-#include <plugin_PhylogenyViewer/types.h>
+	core->setPluginName(m_plugin,"Mock");
+	core->setPluginDescription(m_plugin,"This plugin does nothing at all.");
+	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
+	core->setPluginLicense(m_plugin,"GNU General Public License version 3");
+}
 
-#include <string>
-#include <stdint.h>
-#include <fstream>
-using namespace std;
+void Mock::resolveSymbols(ComputeCore*core){
+	/* nothing to resolve... */
+}
 
-/**
- * A loader for genome-to-taxon entries.
- *
- * \author Sébastien Boisvert
- */
-class GenomeToTaxonLoader{
-	
-	ifstream m_stream;
-
-	int STEPPING;
-
-	LargeCount m_size;
-	LargeIndex m_current;
-
-public:
-	void load(string file);
-	bool hasNext();
-	void getNext(GenomeIdentifier*genome,TaxonIdentifier*taxon);
-};
-
-#endif

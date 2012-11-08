@@ -22,8 +22,8 @@
 #ifndef _GridTableIterator
 #define _GridTableIterator
 
-#include <application_core/Parameters.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/Parameters.h>
+#include <plugin_Mock/common_functions.h>
 #include <structures/MyHashTableIterator.h>
 #include <plugin_VerticesExtractor/GridTable.h>
 

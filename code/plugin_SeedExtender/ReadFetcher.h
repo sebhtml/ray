@@ -25,7 +25,7 @@
 #include <vector>
 #include <plugin_SequencesIndexer/ReadAnnotation.h>
 #include <structures/StaticVector.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <stdint.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>

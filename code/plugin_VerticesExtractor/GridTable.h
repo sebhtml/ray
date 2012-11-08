@@ -25,7 +25,7 @@
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <structures/MyHashTable.h>
 #include <memory/MyAllocator.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_VerticesExtractor/Vertex.h>
 
 /**

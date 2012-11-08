@@ -32,7 +32,7 @@ class SeedExtender;
 #include <plugin_VerticesExtractor/Vertex.h>
 #include <plugin_SeedingData/AssemblySeed.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <plugin_SeedingData/SeedWorker.h>
 #include <core/ComputeCore.h>
 

@@ -26,8 +26,8 @@
 #include <communication/BufferedData.h>
 #include <plugin_VerticesExtractor/GridTable.h>
 #include <profiling/Derivative.h>
-#include <application_core/Parameters.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/Parameters.h>
+#include <plugin_Mock/common_functions.h>
 #include <plugin_SequencesLoader/ArrayOfReads.h>
 #include <communication/Message.h>
 #include <profiling/Profiler.h>

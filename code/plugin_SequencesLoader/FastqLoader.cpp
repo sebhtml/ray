@@ -21,7 +21,7 @@
 
 #include<plugin_SequencesLoader/FastqLoader.h>
 #include <stdlib.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include<fstream>
 
 int FastqLoader::open(string file,int period){

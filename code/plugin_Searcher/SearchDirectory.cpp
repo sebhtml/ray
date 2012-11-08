@@ -37,7 +37,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <application_core/common_functions.h> /* for wordId */
+#include <plugin_Mock/common_functions.h> /* for wordId */
 using namespace std;
 
 

@@ -27,7 +27,7 @@
 #include <plugin_Searcher/ColorSet.h>
 #include <handlers/MasterModeHandler.h>
 #include <handlers/MessageTagHandler.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_VerticesExtractor/GridTable.h>
 #include <profiling/TimePrinter.h>
 

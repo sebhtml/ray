@@ -20,7 +20,7 @@
 */
 
 #include <plugin_SeedExtender/Chooser.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	double __PAIRED_MULTIPLIER,

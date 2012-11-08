@@ -20,7 +20,7 @@
 */
 
 #include <plugin_GenomeNeighbourhood/NeighbourPair.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 
 NeighbourPair::NeighbourPair(PathHandle contig1,Strand strand1,int progression1,PathHandle contig2,Strand strand2,int progression2,
 		int depth){

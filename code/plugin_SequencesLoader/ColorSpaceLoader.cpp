@@ -22,7 +22,7 @@
 #include<stdlib.h>
 #include<plugin_SequencesLoader/ColorSpaceLoader.h>
 #include<fstream>
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 #include<iostream>
 #include<string.h>
 #include <assert.h>

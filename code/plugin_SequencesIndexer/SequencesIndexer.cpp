@@ -23,9 +23,9 @@
 #include <core/OperatingSystem.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_SequencesLoader/Loader.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <communication/Message.h>
 
 __CreatePlugin(SequencesIndexer);

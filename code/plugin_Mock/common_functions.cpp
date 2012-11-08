@@ -22,11 +22,11 @@
 #include <cryptography/crypto.h>
 #include <assert.h>
 #include <stdio.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>

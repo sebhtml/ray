@@ -25,7 +25,7 @@ see <http://www.gnu.org/licenses/>
 #include <memory/allocator.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <string>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <core/slave_modes.h>
 #include <iostream>
 #include <core/master_modes.h>

@@ -22,11 +22,11 @@
 #ifndef _Scaffolder
 #define _Scaffolder
 
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <structures/StaticVector.h>
 #include <vector>
 #include <memory/RingAllocator.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <communication/VirtualCommunicator.h>
 #include <plugin_SeedExtender/ReadFetcher.h>
 #include <sstream>

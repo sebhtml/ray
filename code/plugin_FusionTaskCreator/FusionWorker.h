@@ -25,7 +25,7 @@
 #include <communication/VirtualCommunicator.h>
 #include <scheduling/Worker.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 #include <stdint.h>
 #include <map>

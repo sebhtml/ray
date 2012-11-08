@@ -21,7 +21,7 @@
 #ifndef _DistributionWriter_h
 #define _DistributionWriter_h
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <core/types.h> /* for Rank */
 
 #include <map>

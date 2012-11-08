@@ -24,12 +24,12 @@
 
 #include <plugin_SequencesIndexer/PairedRead.h>
 #include <plugin_SequencesLoader/Read.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_SeedExtender/ExtensionElement.h>
 #include <plugin_SeedingData/AssemblySeed.h>
 #include <profiling/Profiler.h>
 #include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <structures/SplayTree.h>
 #include <map>
 #include <set>

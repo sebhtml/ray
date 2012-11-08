@@ -29,7 +29,7 @@
 #include <core/slave_modes.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <plugin_VerticesExtractor/GridTableIterator.h>
 #include <plugin_VerticesExtractor/Vertex.h>

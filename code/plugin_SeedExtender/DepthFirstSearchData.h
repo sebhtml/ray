@@ -27,10 +27,10 @@
 #include <map>
 #include <plugin_SeedingData/SeedingData.h>
 #include <set>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 using namespace std;
 
 /*

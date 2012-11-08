@@ -23,7 +23,7 @@
 #define _Partitioner_H
 
 #include <structures/StaticVector.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <plugin_SequencesLoader/Loader.h>
 #include <scheduling/SwitchMan.h>

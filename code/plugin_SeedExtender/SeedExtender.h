@@ -28,12 +28,12 @@ class DepthFirstSearchData;
 #include <vector>
 #include <fstream>
 
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <communication/Message.h>
 #include <profiling/Profiler.h>
 #include <plugin_SeedExtender/VertexMessenger.h>
 #include <plugin_SeedExtender/ExtensionData.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_SeedingData/AssemblySeed.h>
 #include <memory/RingAllocator.h>
 #include <memory/MyAllocator.h>

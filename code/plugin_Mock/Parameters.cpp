@@ -24,8 +24,8 @@
  */
 
 #include <core/OperatingSystem.h>
-#include<application_core/common_functions.h>
-#include<application_core/Parameters.h>
+#include<plugin_Mock/common_functions.h>
+#include<plugin_Mock/Parameters.h>
 #include <plugin_Library/LibraryPeakFinder.h>
 #include<plugin_SequencesLoader/Read.h>
 #include<plugin_SequencesLoader/Loader.h>

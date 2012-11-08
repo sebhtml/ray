@@ -34,7 +34,7 @@
 #include <plugin_SeedExtender/TipWatchdog.h>
 #include <plugin_SeedExtender/BubbleTool.h>
 #include <assert.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <iostream>
 #include <fstream>
 #include <plugin_CoverageGatherer/CoverageDistribution.h>
@@ -43,7 +43,7 @@
 #include <plugin_SequencesLoader/Read.h>
 #include <plugin_SequencesLoader/Loader.h>
 #include <memory/MyAllocator.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <algorithm>
 
 using namespace std;
@@ -833,6 +833,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_phylogeny);
 	m_computeCore.registerPlugin(&m_genomeNeighbourhood);
 	m_computeCore.registerPlugin(&m_ontologyPlugin);
+	m_computeCore.registerPlugin(&m_mock);
 
 	// resolve the symbols
 	// this is done here because we want to write a summary for

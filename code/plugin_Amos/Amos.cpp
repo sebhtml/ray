@@ -26,10 +26,10 @@
 #include <stdio.h>
 #include <communication/mpi_tags.h>
 #include <communication/Message.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <core/master_modes.h>
 #include <core/slave_modes.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 __CreatePlugin(Amos);
 

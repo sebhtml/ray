@@ -26,7 +26,7 @@
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <vector>
 #include <set>
 using namespace std;

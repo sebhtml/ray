@@ -22,7 +22,7 @@
 #ifndef _Kmer
 #define _Kmer
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <stdint.h>
 #include <core/types.h>
 

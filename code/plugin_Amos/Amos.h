@@ -21,7 +21,7 @@
 #ifndef _Amos
 #define _Amos
 
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <structures/StaticVector.h>
 #include <memory/RingAllocator.h>
 #include <plugin_FusionData/FusionData.h>

@@ -22,7 +22,7 @@
 #ifndef _PairedRead
 #define _PairedRead
 
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 #include <fstream>
 using namespace std;
 

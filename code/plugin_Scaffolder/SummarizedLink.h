@@ -23,7 +23,7 @@
 #define _SummarizedLink
 
 #include <stdint.h>
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <core/types.h>
 
 class SummarizedLink{

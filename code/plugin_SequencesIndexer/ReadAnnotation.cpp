@@ -22,7 +22,7 @@
 #include<assert.h>
 #include<plugin_SequencesIndexer/ReadAnnotation.h>
 #include<stdlib.h>
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 
 void ReadAnnotation::constructor(int rank,int readIndex,int positionOnStrand,char c,bool lower){
 	m_lower=lower;

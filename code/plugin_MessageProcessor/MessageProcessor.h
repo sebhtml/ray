@@ -46,7 +46,7 @@ using namespace std;
 #include <plugin_VerticesExtractor/VerticesExtractor.h>
 
 #include <plugin_VerticesExtractor/GridTable.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <plugin_Scaffolder/Scaffolder.h>
 
 #include <communication/Message.h>

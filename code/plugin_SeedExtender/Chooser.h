@@ -23,7 +23,7 @@
 #define _Chooser
 
 #include <plugin_SeedExtender/ExtensionData.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 #define IMPOSSIBLE_CHOICE -1
 

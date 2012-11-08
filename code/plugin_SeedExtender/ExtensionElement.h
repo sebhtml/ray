@@ -24,7 +24,7 @@
 
 #include <plugin_SequencesIndexer/PairedRead.h>
 #include <memory/MyAllocator.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 /*
  * An extension element is a read mapped on an

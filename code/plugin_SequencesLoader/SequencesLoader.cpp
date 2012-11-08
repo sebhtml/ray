@@ -26,7 +26,7 @@ Ray
 #include<plugin_SeedExtender/BubbleData.h>
 #include<assert.h>
 #include<vector>
-#include<application_core/common_functions.h>
+#include<plugin_Mock/common_functions.h>
 #include<plugin_SequencesLoader/Loader.h>
 #include<plugin_SequencesLoader/Read.h>
 #include<iostream>

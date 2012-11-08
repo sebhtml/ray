@@ -19,7 +19,7 @@
 
 */
 
-#include <application_core/constants.h>
+#include <plugin_Mock/constants.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 #include <communication/Message.h>
 #include <time.h>
 #include <structures/StaticVector.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 
 __CreatePlugin(VerticesExtractor);
 

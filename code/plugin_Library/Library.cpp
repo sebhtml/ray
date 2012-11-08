@@ -26,9 +26,9 @@
 #include <communication/mpi_tags.h>
 #include <sstream>
 #include <core/OperatingSystem.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <assert.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 
 __CreatePlugin(Library);

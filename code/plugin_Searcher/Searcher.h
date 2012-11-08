@@ -32,7 +32,7 @@
 #include <plugin_VerticesExtractor/GridTable.h>
 using namespace std;
 
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <scheduling/SwitchMan.h>
 #include <communication/VirtualCommunicator.h>
 #include <communication/BufferedData.h>

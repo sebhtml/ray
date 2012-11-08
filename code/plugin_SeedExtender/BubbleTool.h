@@ -23,10 +23,10 @@
 #define _BubbleTool
 
 #include <vector>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <map>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 using namespace std;
 
 /*

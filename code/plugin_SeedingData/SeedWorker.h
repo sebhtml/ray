@@ -23,7 +23,7 @@
 #define _SeedWorker
 
 #include <stdint.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <communication/VirtualCommunicator.h>
 #include <scheduling/Worker.h>

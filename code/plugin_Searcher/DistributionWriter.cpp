@@ -19,8 +19,8 @@
 */
 
 #include <plugin_Searcher/DistributionWriter.h>
-#include <application_core/constants.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/constants.h>
+#include <plugin_Mock/common_functions.h>
 
 #include <sstream>
 #include <iostream>

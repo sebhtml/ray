@@ -32,7 +32,7 @@
 #include <plugin_GenomeNeighbourhood/NeighbourPair.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
 #include <communication/VirtualCommunicator.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 
 #include <vector>
 #include <string>

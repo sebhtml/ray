@@ -25,7 +25,7 @@
 #include <plugin_SequencesIndexer/ReadAnnotation.h>
 #include <plugin_SeedExtender/Direction.h>
 #include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <application_core/common_functions.h>
+#include <plugin_Mock/common_functions.h>
 #include <plugin_Searcher/ColorSet.h>
 
 #include <fstream>

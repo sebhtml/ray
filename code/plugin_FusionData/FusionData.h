@@ -25,7 +25,7 @@
 class SeedingData;
 
 #include <plugin_SeedExtender/Direction.h>
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <structures/StaticVector.h>
 #include <plugin_SeedingData/SeedingData.h>
 #include <plugin_SeedExtender/ExtensionData.h>

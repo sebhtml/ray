@@ -22,7 +22,7 @@
 #ifndef _EdgePurger_H
 #define _EdgePurger_H
 
-#include <application_core/Parameters.h>
+#include <plugin_Mock/Parameters.h>
 #include <memory/RingAllocator.h>
 #include <structures/StaticVector.h>
 #include <communication/VirtualCommunicator.h>
