@@ -19,7 +19,7 @@
 
 */
 
-#ifdef HAVE_LIBBZ2
+#ifdef CONFIG_HAVE_LIBBZ2
 
 #define __BzReader_MAXIMUM_LENGTH 2*4096
 

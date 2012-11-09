@@ -22,7 +22,7 @@
 #ifndef _BzReader 
 #define _BzReader
 
-#ifdef HAVE_LIBBZ2
+#ifdef CONFIG_HAVE_LIBBZ2
 
 #include <bzlib.h>
 #include <stdint.h>
@@ -51,6 +51,6 @@ public:
 	void close();
 };
 
-#endif /* HAVE_LIBBZ2 */
+#endif
 
 #endif /* _BzReader */

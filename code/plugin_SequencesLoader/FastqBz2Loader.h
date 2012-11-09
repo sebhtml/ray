@@ -21,7 +21,8 @@
 
 #ifndef _FastqBz2Loader
 #define _FastqBz2Loader
-#ifdef HAVE_LIBBZ2
+
+#ifdef CONFIG_HAVE_LIBBZ2
 
 #include<string>
 #include<vector>

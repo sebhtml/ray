@@ -34,7 +34,7 @@
 #include<plugin_SequencesLoader/FastqGzLoader.h>
 #endif
 
-#ifdef HAVE_LIBBZ2
+#ifdef CONFIG_HAVE_LIBBZ2
 #include<plugin_SequencesLoader/FastqBz2Loader.h>
 #endif
 
@@ -82,7 +82,7 @@ class Loader{
 	FastqGzLoader m_fastqgz;
 	#endif
 
-	#ifdef HAVE_LIBBZ2
+	#ifdef CONFIG_HAVE_LIBBZ2
 	FastqBz2Loader m_fastqbz2;
 	#endif
 

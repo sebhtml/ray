@@ -1639,10 +1639,10 @@ void Parameters::showUsage(){
 	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
 	cout<<"     .fasta"<<endl;
-	cout<<"     .fasta.gz (needs CONFIG_HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fasta.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .fastq"<<endl;
-	cout<<"     .fastq.gz (needs CONFIG_HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fastq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;

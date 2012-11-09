@@ -19,7 +19,7 @@
 
 */
 
-#ifdef HAVE_LIBBZ2
+#ifdef CONFIG_HAVE_LIBBZ2
 
 #include<plugin_SequencesLoader/FastqBz2Loader.h>
 #include <stdlib.h>
