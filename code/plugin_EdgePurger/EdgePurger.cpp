@@ -70,7 +70,7 @@ void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_done=true;
 			return;
 		}
@@ -91,7 +91,7 @@ void EdgePurger::finalizeMethod(){
 	m_done=true;
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
 	m_parameters->getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 
 	m_derivative.writeFile(&cout);
 

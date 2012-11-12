@@ -221,7 +221,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 		}
 
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,m_rank);
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 		cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<count<<" sequences from checkpoint Sequences"<<endl;
@@ -313,7 +313,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	
 	m_loader.clear();
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,m_rank);
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 	LargeCount amount=m_myReads->size();

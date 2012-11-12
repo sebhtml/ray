@@ -91,7 +91,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
 		fflush(stdout);
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		m_buffers.showStatistics(m_parameters->getRank());
 		m_buffers.clear();
@@ -223,7 +223,7 @@ void FusionData::finishFusions(){
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_FINISH_fusionOccured;
 		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 
 		m_cacheForRepeatedVertices.clear();
@@ -495,7 +495,7 @@ void FusionData::finishFusions(){
 				#endif
 	
 				Message aMessage(message,1,rankId,RAY_MPI_TAG_GET_PATH_LENGTH,getRank());
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 				m_FUSION_pathLengthRequested=true;
 				m_FUSION_pathLengthReceived=false;
 			}else if(m_FUSION_pathLengthReceived){
@@ -516,7 +516,7 @@ void FusionData::finishFusions(){
 					message[0]=pathId;
 					message[1]=nextPosition;
 					Message aMessage(message,2,rankId,RAY_MPI_TAG_GET_PATH_VERTEX,getRank());
-					m_outbox->push_back(aMessage);
+					m_outbox->push_back(&aMessage);
 					m_FINISH_vertex_requested=true;
 					m_FINISH_vertex_received=false;
 
@@ -597,7 +597,7 @@ void FusionData::getPaths(Kmer vertex){
 		message[bufferPosition++]=0;
 		Message aMessage(message,bufferPosition,
 			m_parameters->_vertexRank(&vertex),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;
 		m_FUSION_receivedPaths.clear();

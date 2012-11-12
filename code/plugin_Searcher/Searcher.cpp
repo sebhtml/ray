@@ -173,7 +173,7 @@ void Searcher::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS(Message*messa
 	Rank rank=m_parameters->getRank();
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS_REPLY,rank);
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 }
 
 
@@ -466,7 +466,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 			Message aMessage(buffer2,bufferSize,MASTER_RANK,
 				RAY_MPI_TAG_SEARCH_ELEMENTS,m_parameters->getRank());
 
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 
 			m_waiting=true;
 
@@ -705,7 +705,7 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			message->getSource(),
 			RAY_MPI_TAG_CONTIG_ABUNDANCE_REPLY,m_parameters->getRank());
 
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 	}else if(m_switchMan->allRanksAreReady()){
 
 		// write the contig file
@@ -1410,7 +1410,7 @@ void Searcher::browseColoredGraph(){
 			Message aMessage(messageBuffer,position,MASTER_RANK,
 				RAY_MPI_TAG_VIRTUAL_COLOR_DATA,m_rank);
 
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 
 			m_messageSent=true;
 			m_messageReceived=false;
@@ -1676,7 +1676,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			Message aMessage(messageBuffer,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 				getWriter(m_directoryIterator),RAY_MPI_TAG_CONTIG_IDENTIFICATION,m_parameters->getRank());
 
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 		
 			m_pendingMessages++;
 
@@ -2003,7 +2003,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					writer,RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY,
 					m_parameters->getRank());
 
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 
 				#ifdef ASSERT
 				assert(m_directoryIterator==(int)buffer[0]);
@@ -2378,7 +2378,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				/*
 				Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
 					m_parameters->getRank());
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 				*/
 
 			}else{
@@ -2888,7 +2888,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 	Message aMessage(message2,count,source,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,
 		m_parameters->getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 }
 
 void Searcher::call_RAY_MPI_TAG_ADD_KMER_COLOR(Message*message){

@@ -407,7 +407,7 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 		}
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,
 			m_parameters->getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 
 		m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	}

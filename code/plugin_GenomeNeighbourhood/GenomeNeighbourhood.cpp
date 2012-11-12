@@ -100,7 +100,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 	Message aMessage(buffer,period,message->getSource(),RAY_MPI_TAG_NEIGHBOURHOOD_DATA_REPLY,
 		m_parameters->getRank());
 
-	m_core->getOutbox()->push_back(aMessage);
+	m_core->getOutbox()->push_back(&aMessage);
 }
 
 void GenomeNeighbourhood::fetchPaths(int mode){

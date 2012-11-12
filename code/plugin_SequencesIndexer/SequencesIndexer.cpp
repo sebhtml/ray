@@ -49,7 +49,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint OptimalMarkers exists, not selecting markers."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			return;
 		}
 		m_checkedCheckpoint=true;
@@ -146,7 +146,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 		fflush(stdout);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY,m_rank);
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 
 		m_derivative.writeFile(&cout);
 

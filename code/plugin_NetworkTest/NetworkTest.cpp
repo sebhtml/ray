@@ -152,7 +152,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 			MessageUnit *message=(MessageUnit*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(MessageUnit));
 			Message aMessage(message,m_numberOfWords,destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_sentCurrentTestMessage=true;
 			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
@@ -196,7 +196,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 		strcpy(destination,m_name->c_str());
 		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 			MASTER_RANK,RAY_MPI_TAG_TEST_NETWORK_REPLY,m_rank);
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 
 		m_sentData=true;
 

@@ -72,7 +72,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			int dest=parameters->_vertexRank(&vertexToVisit);
 			
 			Message aMessage(message,j,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
-			(*outbox).push_back(aMessage);
+			(*outbox).push_back(&aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
@@ -89,7 +89,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 				vertexToVisit.pack(message,&bufferPosition);
 				int destination=parameters->_vertexRank(&vertexToVisit);
 				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
-				(*outbox).push_back(aMessage);
+				(*outbox).push_back(&aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
 			}else if((*edgesReceived)){
@@ -196,7 +196,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			vertexToVisit.pack(message,&bufferPosition);
 			int dest=parameters->_vertexRank(&vertexToVisit);
 			Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
-			(*outbox).push_back(aMessage);
+			(*outbox).push_back(&aMessage);
 		}else if((*vertexCoverageReceived)){
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
@@ -235,7 +235,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				int destination=parameters->_vertexRank(&vertexToVisit);
 				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
 
-				(*outbox).push_back(aMessage);
+				(*outbox).push_back(&aMessage);
 				(*edgesRequested)=true;
 				(*edgesReceived)=false;
 			}else if((*edgesReceived)){

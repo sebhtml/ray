@@ -96,7 +96,7 @@ void JoinerTaskCreator::finalizeMethod(){
 	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
 	message[0]=removedPaths;
 	Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_FINISH_FUSIONS_FINISHED,m_parameters->getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 
 	/* set the mode */
 	(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;

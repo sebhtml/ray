@@ -57,7 +57,7 @@ void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 
 			for(int i=0;i<m_size;i++){
 				Message aMessage(message,outputPosition,i,RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION,m_rank);
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 			}
 
 			m_informationSent=true;
@@ -380,7 +380,7 @@ void Library::call_RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES(){
 			return;
 		}
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		m_bufferedData.showStatistics(m_parameters->getRank());
 	}else if(!m_libraryIndexInitiated){
@@ -450,7 +450,7 @@ void Library::updateStates(){
 void Library::completeSlaveMode(){
 
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE,getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	m_allocator.clear();
 

@@ -64,7 +64,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint Seeds exists, not computing seeds."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 
 			loadCheckpoint();
 
@@ -233,7 +233,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
@@ -367,7 +367,7 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 	if(m_iterator==m_slaveSeedLengths.end()){
 		Message aMessage(NULL,0,MASTER_RANK,
 			RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		return;
 	}
@@ -386,7 +386,7 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 
 	Message aMessage(messageBuffer,2*i,MASTER_RANK,
 		RAY_MPI_TAG_SEND_SEED_LENGTHS,getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 }
 
 void SeedingData::writeSeedStatistics(){

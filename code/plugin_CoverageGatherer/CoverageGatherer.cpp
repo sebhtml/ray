@@ -50,7 +50,7 @@ void CoverageGatherer::writeKmers(){
 		(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 			m_parameters->getRank());
-		(*m_outbox).push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		return;
 	}
 	GridTableIterator iterator;
@@ -139,7 +139,7 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
-			(*m_outbox).push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			return;
 		}
 		GridTableIterator iterator;
@@ -184,14 +184,14 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			Message aMessage(messageContent,count,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,
 				m_parameters->getRank());
 			
-			(*m_outbox).push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_waiting=true;
 		}else{
 			m_distributionOfCoverage.clear();
 			(*m_slaveMode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COVERAGE_END,
 				m_parameters->getRank());
-			(*m_outbox).push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 		}
 	}
 }

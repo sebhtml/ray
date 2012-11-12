@@ -57,7 +57,7 @@ void Amos::call_RAY_MASTER_MODE_AMOS(){
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_WRITE_AMOS,m_parameters->getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		m_ed->m_EXTENSION_rank++;
 		m_ed->m_EXTENSION_currentRankIsDone=false;
 		m_ed->m_EXTENSION_currentRankIsStarted=true;
@@ -98,7 +98,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 		message[0]=m_ed->m_EXTENSION_currentPosition;
 		Message aMessage(message,1,MASTER_RANK,RAY_MPI_TAG_WRITE_AMOS_REPLY,m_parameters->getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		fclose(m_amosFile);
 		*m_slave_mode=RAY_SLAVE_MODE_DO_NOTHING;
 	// iterate over the next one

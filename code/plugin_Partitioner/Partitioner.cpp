@@ -50,7 +50,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 		m_ranksDoneSending=0;
 		for(int destination=0;destination<m_parameters->getSize();destination++){
 			Message aMessage(NULL,0,destination,RAY_MPI_TAG_COUNT_FILE_ENTRIES,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 		}
 	/** a peer rank finished counting the entries in its files */
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()== RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY){
@@ -59,7 +59,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 		if(m_ranksDoneCounting==m_parameters->getSize()){
 			for(int destination=0;destination<m_parameters->getSize();destination++){
 				Message aMessage(NULL,0,destination,RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS,m_parameters->getRank());
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 			}
 		}
 	/** a peer send the count for one file */
@@ -73,7 +73,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 			cout<<"Rank "<<m_parameters->getRank()<<" received from "<<m_inbox->at(0)->getSource()<<" File "<<file<<" Entries "<<count<<endl;
 		/** reply to the peer */
 		Message aMessage(NULL,0,m_inbox->at(0)->getSource(),RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY,m_parameters->getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 	/** a peer finished sending file counts */
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()== RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY){
 		m_ranksDoneSending++;
@@ -208,7 +208,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 	/* all files were processed, tell control peer that we are done */
 	}else if(m_currentFileToCount==m_parameters->getNumberOfFiles()){
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_COUNT_FILE_ENTRIES_REPLY,m_parameters->getRank());
-		m_outbox->push_back(aMessage);
+		m_outbox->push_back(&aMessage);
 		/* increment it so we don't go here again. */
 		m_currentFileToCount++;
 
@@ -265,7 +265,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 				message[0]=m_currentFileToSend;
 				message[1]=m_slaveCounts[m_currentFileToSend];
 				Message aMessage(message,2,MASTER_RANK,RAY_MPI_TAG_FILE_ENTRY_COUNT,m_parameters->getRank());
-				m_outbox->push_back(aMessage);
+				m_outbox->push_back(&aMessage);
 				m_sentCount=true;
 			/** we got a reply, let's continue */
 			}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag() == RAY_MPI_TAG_FILE_ENTRY_COUNT_REPLY){
@@ -275,7 +275,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 		/** all counts were processed, report this to the control peer */
 		}else{
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_slaveCounts.clear();
 
 			m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);

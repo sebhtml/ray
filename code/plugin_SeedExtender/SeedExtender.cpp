@@ -75,7 +75,7 @@ void SeedExtender::call_RAY_SLAVE_MODE_EXTENSION(){
 	
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 	
 			return;
 		}
@@ -222,7 +222,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 
 
 				Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
-				(*outbox).push_back(aMessage);
+				(*outbox).push_back(&aMessage);
 
 				(*vertexCoverageRequested)=true;
 				(*vertexCoverageReceived)=false;
@@ -1164,7 +1164,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 			Rank destination=m_parameters->_vertexRank(currentVertex);
 			Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
-			(*outbox).push_back(aMessage);
+			(*outbox).push_back(&aMessage);
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1555,7 +1555,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				message[0]=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getReadIndex();
 				Message aMessage(message,1,sequenceRank,RAY_MPI_TAG_REQUEST_READ_SEQUENCE,theRank);
-				outbox->push_back(aMessage);
+				outbox->push_back(&aMessage);
 
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -2410,7 +2410,7 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_IS_DONE,m_parameters->getRank());
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 
 	m_derivative.writeFile(&cout);
 
@@ -2491,7 +2491,7 @@ void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 	message2[outputPosition++]=m_subgraph->isAssembledByGreaterRank(&vertex,origin);
 
 	Message aMessage(message2,outputPosition,source,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,m_rank);
-	m_outbox->push_back(aMessage);
+	m_outbox->push_back(&aMessage);
 }
 
 void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){

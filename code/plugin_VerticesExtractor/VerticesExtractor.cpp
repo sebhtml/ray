@@ -54,7 +54,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint GenomeGraph exists, not extracting vertices."<<endl;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_VERTICES_DISTRIBUTED,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_finished=true;
 			return;
 		}
@@ -96,7 +96,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 			#endif
 
 			Message aMessage(NULL,0, MASTER_RANK, RAY_MPI_TAG_VERTICES_DISTRIBUTED,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_finished=true;
 			printf("Rank %i is adding edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
 			fflush(stdout);

@@ -54,7 +54,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
 			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint GenomeGraph exists, not counting k-mers."<<endl;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_finished=true;
 			return;
 		}
@@ -100,7 +100,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 			#endif
 
 			Message aMessage(NULL,0, MASTER_RANK,RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED,m_parameters->getRank());
-			m_outbox->push_back(aMessage);
+			m_outbox->push_back(&aMessage);
 			m_finished=true;
 			printf("Rank %i is counting k-mers in sequence reads [%i/%i] (completed)\n",
 				m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
