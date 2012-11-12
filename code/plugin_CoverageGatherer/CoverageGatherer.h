@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011, 2012  Sébastien Boisvert
+    Copyright (C) 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 

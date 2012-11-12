@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012  Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -215,7 +215,7 @@ void Machine::start(){
     		cout<<"under certain conditions; see \"LICENSE\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
-		cout<<"Ray Copyright (C) 2010, 2011, 2012  Sébastien Boisvert"<<endl;
+		cout<<"Ray Copyright (C) 2010, 2011, 2012 Sébastien Boisvert"<<endl;
 		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
 		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
