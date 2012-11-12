@@ -22,15 +22,17 @@
 #ifndef _EdgePurgerWorker_H
 #define _EdgePurgerWorker_H
 
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_VerticesExtractor/Vertex.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/scheduling/Worker.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+
 #include <stdint.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <memory/RingAllocator.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <plugin_Mock/Parameters.h>
-#include <structures/StaticVector.h>
-#include <scheduling/Worker.h>
-#include <communication/VirtualCommunicator.h>
 
 /**
  * An EdgePurgerWorker actually does the job.

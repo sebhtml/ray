@@ -22,8 +22,8 @@
 #ifndef _OpenAssemblerChooser
 #define _OpenAssemblerChooser
 
-#include <plugin_SeedExtender/Chooser.h> // for IMPOSSIBLE_CHOICE
-#include <plugin_SeedExtender/NovaEngine.h>
+#include "Chooser.h" // for IMPOSSIBLE_CHOICE
+#include "NovaEngine.h"
 
 /**
  * de Bruijn heuristic to choose extension direction in a graph, described in paper 

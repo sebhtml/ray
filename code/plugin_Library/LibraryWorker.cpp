@@ -19,13 +19,16 @@
 
 */
 
-#include <plugin_Mock/constants.h>
-#include <plugin_Library/LibraryWorker.h>
-#include <communication/Message.h>
-#include <plugin_SeedingData/SeedingData.h>
+#include "LibraryWorker.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/Message.h>
+
 #include <map>
 #include <assert.h>
-#include <communication/VirtualCommunicator.h>
 using namespace std;
 
 bool LibraryWorker::isDone(){

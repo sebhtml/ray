@@ -18,7 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Scaffolder/ScaffoldingAlgorithm.h>
+#include "ScaffoldingAlgorithm.h"
+
 #include <queue>
 #include <iostream>
 #include <set>

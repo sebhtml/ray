@@ -20,32 +20,34 @@
 
 // TODO -- there should not be any plugin construction in this file
 
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <cryptography/crypto.h>
-#include <core/OperatingSystem.h>
-#include <structures/SplayNode.h>
-#include <application_core/Machine.h>
-#include <core/statistics.h>
-#include <plugin_VerticesExtractor/VerticesExtractor.h>
-#include <profiling/Profiler.h>
-#include <sstream>
-#include <communication/Message.h>
-#include <time.h>
-#include <plugin_SeedExtender/TipWatchdog.h>
-#include <plugin_SeedExtender/BubbleTool.h>
-#include <assert.h>
-#include <plugin_Mock/common_functions.h>
+#include "Machine.h"
+
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+#include <code/plugin_VerticesExtractor/VerticesExtractor.h>
+#include <code/plugin_SeedExtender/TipWatchdog.h>
+#include <code/plugin_SeedExtender/BubbleTool.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_CoverageGatherer/CoverageDistribution.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_SequencesLoader/Loader.h>
+
+#include <RayPlatform/profiling/Profiler.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/structures/SplayTreeIterator.h>
+#include <RayPlatform/structures/SplayNode.h>
+#include <RayPlatform/core/statistics.h>
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <iostream>
 #include <fstream>
-#include <plugin_CoverageGatherer/CoverageDistribution.h>
 #include <string.h>
-#include <structures/SplayTreeIterator.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_SequencesLoader/Loader.h>
-#include <memory/MyAllocator.h>
-#include <plugin_Mock/constants.h>
+#include <assert.h>
+#include <time.h>
 #include <algorithm>
-
+#include <sstream>
 using namespace std;
 
 /* Pick-up the option -show-communication-events */

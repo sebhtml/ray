@@ -19,9 +19,11 @@
 
 */
 
-#include<plugin_SequencesLoader/FastaLoader.h>
-#include<fstream>
+#include "FastaLoader.h"
+
+#include <fstream>
 #include <stdlib.h>
+using namespace std;
 
 /** load sequences */
 int FastaLoader::load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator){

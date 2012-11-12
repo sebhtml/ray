@@ -19,8 +19,10 @@
 
 */
 
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_SeedExtender/ExtensionElement.h>
+#include "ExtensionElement.h"
+
+#include <code/plugin_SequencesLoader/Read.h>
+
 #include <string.h>
 
 /** set the sequence */

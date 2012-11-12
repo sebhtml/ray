@@ -21,8 +21,9 @@
 #ifndef _BloomFilter_H
 #define _BloomFilter_H
 
+#include "Kmer.h"
+
 #include <stdint.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
 
 /**
  * Bloom filter implementation

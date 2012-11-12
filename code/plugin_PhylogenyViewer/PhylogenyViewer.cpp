@@ -20,12 +20,14 @@
 
 //#define DEBUG_RECURSION
 
-#include <plugin_PhylogenyViewer/PhylogenyViewer.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
-#include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
-#include <plugin_PhylogenyViewer/TaxonNameLoader.h>
-#include <core/OperatingSystem.h>
+#include "PhylogenyViewer.h"
+#include "GenomeToTaxonLoader.h"
+#include "PhylogeneticTreeLoader.h"
+#include "TaxonNameLoader.h"
+
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 __CreatePlugin(PhylogenyViewer);
 

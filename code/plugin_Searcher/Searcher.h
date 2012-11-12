@@ -21,6 +21,8 @@
 #ifndef _Searcher_h
 #define _Searcher_h
 
+#include <code/plugin_VerticesExtractor/GridTable.h>
+
 #include <stdint.h>
 #include <fstream>
 #include <stdint.h> /* for uint64_t */
@@ -29,28 +31,27 @@
 #include <string>
 #include <map>
 #include <sstream>
-#include <plugin_VerticesExtractor/GridTable.h>
 using namespace std;
 
-#include <plugin_Mock/Parameters.h>
-#include <scheduling/SwitchMan.h>
-#include <communication/VirtualCommunicator.h>
-#include <communication/BufferedData.h>
-#include <memory/RingAllocator.h>
-#include <plugin_Searcher/SearchDirectory.h>
-#include <plugin_Searcher/ContigSearchEntry.h>
-#include <structures/StaticVector.h>
-#include <profiling/TimePrinter.h>
-#include <profiling/Derivative.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MasterModeHandler.h>
-#include <handlers/MessageTagHandler.h>
-#include <plugin_Searcher/ContigHit.h>
-#include <plugin_Searcher/ColorSet.h>
-#include <plugins/CorePlugin.h>
-#include <plugin_Searcher/QualityCaller.h>
-#include <plugin_Searcher/DistributionWriter.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <RayPlatform/scheduling/SwitchMan.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <code/plugin_Searcher/SearchDirectory.h>
+#include <code/plugin_Searcher/ContigSearchEntry.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/profiling/Derivative.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/handlers/MessageTagHandler.h>
+#include <code/plugin_Searcher/ContigHit.h>
+#include <code/plugin_Searcher/ColorSet.h>
+#include <RayPlatform/plugins/CorePlugin.h>
+#include <code/plugin_Searcher/QualityCaller.h>
+#include <code/plugin_Searcher/DistributionWriter.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #define CONFIG_NICELY_ASSEMBLED_KMER_POSITION 0
 

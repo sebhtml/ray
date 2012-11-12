@@ -21,22 +21,25 @@
 
 //#define GUILLIMIN_BUG
 
-#include <plugin_Mock/constants.h>
-#include <string.h>
-#include <core/OperatingSystem.h>
+#include "MessageProcessor.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_FusionData/FusionData.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_SeedExtender/Direction.h>
+
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/structures/SplayTree.h>
+#include <RayPlatform/structures/SplayNode.h>
+#include <RayPlatform/structures/SplayTreeIterator.h>
+
 #include <assert.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_MessageProcessor/MessageProcessor.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/common_functions.h>
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <structures/SplayTree.h>
-#include <plugin_SeedExtender/Direction.h>
-#include <structures/SplayNode.h>
-#include <structures/SplayTreeIterator.h>
-#include <plugin_FusionData/FusionData.h>
-#include <plugin_Mock/Parameters.h>
-#include <core/ComputeCore.h>
+#include <string.h>
 
 __CreatePlugin(MessageProcessor);
 

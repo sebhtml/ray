@@ -23,4 +23,11 @@
 
 * Message-passing interface tags are prefixed with 'RAY_MPI_TAG_'.
 
+== Headers ==
 
+Include the headers in this order:
+
+* plugin headers
+* other plugin headers
+* RayPlatform
+* system libraries

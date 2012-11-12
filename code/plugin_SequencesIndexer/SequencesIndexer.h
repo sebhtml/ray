@@ -22,21 +22,23 @@
 #ifndef _SequencesIndexer
 #define _SequencesIndexer
 
-#include <plugin_SequencesIndexer/IndexerWorker.h>
-#include <communication/Message.h>
-#include <communication/BufferedData.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_Mock/common_functions.h>
-#include <memory/MyAllocator.h>
-#include <memory/RingAllocator.h>
-#include <structures/SplayTree.h>
-#include <structures/SplayTreeIterator.h>
-#include <structures/StaticVector.h>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <profiling/Derivative.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <core/ComputeCore.h>
+#include "IndexerWorker.h"
+
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_SequencesLoader/ArrayOfReads.h>
+#include <code/plugin_SequencesLoader/Read.h>
+
+#include <RayPlatform/profiling/Derivative.h>
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/structures/SplayTree.h>
+#include <RayPlatform/structures/SplayTreeIterator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
 
 #include <map>
 #include <vector>

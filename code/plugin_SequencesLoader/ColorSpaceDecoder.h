@@ -22,7 +22,7 @@
 #ifndef _ColorSpaceDecoder
 #define _ColorSpaceDecoder
 
-#include<string>
+#include <string>
 using namespace std;
 
 /**

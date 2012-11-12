@@ -22,8 +22,9 @@
 #ifndef _Direction
 #define _Direction
 
+#include <code/plugin_Mock/common_functions.h>
+
 #include <stdint.h>
-#include <plugin_Mock/common_functions.h>
 
 /*
  * a direction is a wave and a progression.

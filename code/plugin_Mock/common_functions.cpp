@@ -19,19 +19,21 @@
 
 */
 
-#include <cryptography/crypto.h>
+#include "common_functions.h"
+#include "constants.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <assert.h>
 #include <stdio.h>
-#include <plugin_Mock/constants.h>
 #include <time.h>
 #include <vector>
 #include <fstream>
-#include <plugin_Mock/common_functions.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <core/OperatingSystem.h>
 #include <sstream>
 
 using namespace std;

@@ -22,9 +22,10 @@
 #ifndef _SearchDirectory_h
 #define _SearchDirectory_h
 
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_GeneOntology/KeyEncoder.h>
-#include <plugin_Searcher/VirtualKmerColor.h>
+#include "VirtualKmerColor.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_GeneOntology/KeyEncoder.h>
 
 #include <set>
 #include <string>

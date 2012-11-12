@@ -22,8 +22,9 @@
 #ifndef _Chooser
 #define _Chooser
 
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <plugin_Mock/Parameters.h>
+#include "ExtensionData.h"
+
+#include <code/plugin_Mock/Parameters.h>
 
 #define IMPOSSIBLE_CHOICE -1
 

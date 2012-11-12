@@ -19,33 +19,33 @@
 
 */
 
-#include <core/OperatingSystem.h>
-#include <plugin_SeedExtender/ReadFetcher.h>
-#include <plugin_Scaffolder/Scaffolder.h>
-#include <communication/Message.h>
-#include <core/ComputeCore.h>
-#include <plugin_Scaffolder/ScaffoldingVertex.h>
-#include <plugin_Scaffolder/ScaffoldingEdge.h>
-#include <plugin_Scaffolder/ScaffoldingAlgorithm.h>
-#include <core/statistics.h>
+#include "Scaffolder.h"
+#include "ScaffoldingVertex.h"
+#include "ScaffoldingEdge.h"
+#include "ScaffoldingAlgorithm.h"
+
+#include <code/plugin_SeedExtender/ReadFetcher.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/core/statistics.h>
+#include <RayPlatform/communication/Message.h>
 
 /* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
 #include <stdio.h> 
 #include <algorithm> /* for sort */
 #include <iostream>
 #include <vector>
-
 #include <fstream>
 #include <sstream>
 #include <assert.h>
 #include <math.h> /* for sqrt */
+using namespace std;
 
 __CreatePlugin(Scaffolder);
 
 __CreateMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 __CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
-
-using namespace std;
 
 void Scaffolder::addMasterLink(SummarizedLink*a){
 	m_masterLinks.push_back(*a);

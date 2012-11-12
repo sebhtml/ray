@@ -22,14 +22,17 @@
 #ifndef _IndexerWorker
 #define _IndexerWorker
 
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <communication/VirtualCommunicator.h>
+#include "DynamicVector.h"
+
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SequencesLoader/ArrayOfReads.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/scheduling/Worker.h>
+
 #include <stdint.h>
-#include <memory/MyAllocator.h>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <plugin_SequencesIndexer/DynamicVector.h>
-#include <scheduling/Worker.h>
 #include <fstream>
 using namespace std;
 

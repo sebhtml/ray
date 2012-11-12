@@ -23,22 +23,24 @@
  * TODO: add option -minimumScaffoldLength
  */
 
-#include <core/OperatingSystem.h>
-#include<plugin_Mock/common_functions.h>
-#include<plugin_Mock/Parameters.h>
-#include <plugin_Library/LibraryPeakFinder.h>
-#include<plugin_SequencesLoader/Read.h>
-#include<plugin_SequencesLoader/Loader.h>
-#include <memory/MyAllocator.h>
+#include "Parameters.h"
+#include "common_functions.h"
 
-#include<string>
-#include<sstream>
-#include<iostream>
-#include<vector>
-#include<cstdlib>
-#include<fstream>
-#include<assert.h>
-#include<math.h>
+#include <code/plugin_Library/LibraryPeakFinder.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_SequencesLoader/Loader.h>
+
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/core/OperatingSystem.h>
+
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <fstream>
+#include <assert.h>
+#include <math.h>
 using namespace std;
 
 void Parameters::getIndexes(int count,vector<int>*out){

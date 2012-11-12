@@ -19,7 +19,7 @@
 
 */
 
-#include <plugin_Scaffolder/ScaffoldingLink.h>
+#include "ScaffoldingLink.h"
 
 ScaffoldingLink::ScaffoldingLink(){
 }

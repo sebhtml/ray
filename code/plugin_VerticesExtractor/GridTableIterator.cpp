@@ -19,8 +19,10 @@
 
 */
 
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <structures/MyHashTableIterator.h>
+#include "GridTableIterator.h"
+
+#include <RayPlatform/structures/MyHashTableIterator.h>
+
 #include <assert.h>
 #include <iostream>
 using namespace std;

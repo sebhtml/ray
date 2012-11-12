@@ -22,13 +22,14 @@
 #ifndef _Kmer
 #define _Kmer
 
-#include <plugin_Mock/constants.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <stdint.h>
-#include <core/types.h>
 
 /* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
 #include <fstream> 
-
 #include <vector>
 #ifdef ASSERT
 #include <assert.h>

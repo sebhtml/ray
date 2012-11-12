@@ -149,7 +149,7 @@ all: Ray
 # inference rule
 %.o: %.cpp
 	@$(ECHO) "  CXX $@"
-	@$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I RayPlatform -I code -c -o $@ $<
+	@$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -c -o $@ $<
 
 include code/application_core/Makefile
 include code/plugin_*/Makefile

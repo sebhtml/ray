@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_PhylogenyViewer/TaxonNameLoader.h>
-#include <plugin_PhylogenyViewer/types.h>
+#include "TaxonNameLoader.h"
+#include "types.h"
 
 #include <assert.h>
 #include <string.h>

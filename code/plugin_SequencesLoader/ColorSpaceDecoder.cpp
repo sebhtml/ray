@@ -19,10 +19,11 @@
 
 */
 
-#include<iostream>
-#include<string.h>
-#include<plugin_SequencesLoader/ColorSpaceDecoder.h>
-#include<stdlib.h>
+#include "ColorSpaceDecoder.h"
+
+#include <iostream>
+#include <string.h>
+#include <stdlib.h>
 using namespace std;
 
 #define _COLOR_SPACE_DECODER_CODE_A 0

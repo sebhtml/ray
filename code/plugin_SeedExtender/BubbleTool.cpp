@@ -19,8 +19,10 @@
 
 */
 
-#include <plugin_SeedExtender/BubbleTool.h>
-#include <plugin_Mock/common_functions.h>
+#include "BubbleTool.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
 #include <assert.h>
 #include <map>
 #include <set>

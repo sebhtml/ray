@@ -19,9 +19,10 @@
 
 */
 
-#include <plugin_FusionTaskCreator/FusionTaskCreator.h>
-#include <plugin_FusionTaskCreator/FusionWorker.h>
-#include <core/OperatingSystem.h>
+#include "FusionTaskCreator.h"
+#include "FusionWorker.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 __CreatePlugin(FusionTaskCreator);
 

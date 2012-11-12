@@ -19,8 +19,9 @@
 
 */
 
+#include "NovaEngine.h"
+
 #include <math.h>
-#include <plugin_SeedExtender/NovaEngine.h>
 #include <assert.h>
 
 /**

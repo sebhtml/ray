@@ -19,17 +19,20 @@
 
 */
 
-#include <plugin_Mock/constants.h>
-#include <communication/VirtualCommunicator.h>
-#include <core/OperatingSystem.h>
+#include "SeedingData.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_SeedingData/SeedWorker.h>
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/mpi_tags.h>
+#include <RayPlatform/core/OperatingSystem.h>
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <assert.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <communication/Message.h>
-#include <communication/mpi_tags.h>
-#include <plugin_SeedingData/SeedWorker.h>
 
 __CreatePlugin(SeedingData);
 

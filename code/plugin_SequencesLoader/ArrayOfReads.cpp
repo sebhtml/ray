@@ -19,7 +19,8 @@
 
 */
 
-#include <plugin_SequencesLoader/ArrayOfReads.h>
+#include "ArrayOfReads.h"
+
 #include <stdlib.h>
 #include <assert.h>
 #include <iostream>

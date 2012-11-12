@@ -22,10 +22,12 @@
 #ifndef _GridTableIterator
 #define _GridTableIterator
 
-#include <plugin_Mock/Parameters.h>
-#include <plugin_Mock/common_functions.h>
-#include <structures/MyHashTableIterator.h>
-#include <plugin_VerticesExtractor/GridTable.h>
+#include "GridTable.h"
+
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/structures/MyHashTableIterator.h>
 
 /**
  * \author Sébastien Boisvert

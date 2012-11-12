@@ -19,12 +19,14 @@
 
 */
 
-#include <plugin_Mock/common_functions.h>
+#include "SffLoader.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
 #include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
-#include <plugin_SequencesLoader/SffLoader.h>
 #include <iostream>
 #include <stdint.h>
 #include <stdio.h>

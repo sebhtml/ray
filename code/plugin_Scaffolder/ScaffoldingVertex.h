@@ -21,8 +21,10 @@
 #ifndef _ScaffoldingVertex_h
 #define _ScaffoldingVertex_h
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <stdint.h>
 #include <fstream>
 using namespace std;

@@ -19,15 +19,18 @@
 
 */
 
-#include <plugin_Mock/constants.h>
-#include <plugin_SeedingData/SeedWorker.h>
-#include <assert.h>
-#include <communication/Message.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <communication/mpi_tags.h>
-#include <plugin_Mock/common_functions.h>
+#include "SeedWorker.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/mpi_tags.h>
+
 #include <stdint.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
 #include <iostream>
 using namespace std;
 

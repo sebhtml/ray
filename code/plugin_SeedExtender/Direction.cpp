@@ -19,7 +19,8 @@
 
 */
 
-#include <plugin_SeedExtender/Direction.h>
+#include "Direction.h"
+
 #include <stdlib.h>
 
 void Direction::constructor(PathHandle wave,int progression,bool lower){

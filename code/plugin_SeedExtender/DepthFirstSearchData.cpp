@@ -19,8 +19,10 @@
 
 */
 
-#include <plugin_Mock/constants.h>
-#include <plugin_SeedExtender/DepthFirstSearchData.h>
+#include "DepthFirstSearchData.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_SeedingData/SeedingData.h>
 
 /*
  * do a depth first search with max depth of maxDepth;

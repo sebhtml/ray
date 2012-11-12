@@ -22,8 +22,9 @@
 #ifndef _NovaEngine_H
 #define _NovaEngine_H
 
+#include "Chooser.h"
+
 #include <vector>
-#include <plugin_SeedExtender/Chooser.h>
 #include <map>
 #include <set>
 using namespace std;

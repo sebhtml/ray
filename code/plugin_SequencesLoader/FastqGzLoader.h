@@ -21,14 +21,17 @@
 
 #ifndef _FastqGzLoader
 #define _FastqGzLoader
+
 #ifdef CONFIG_HAVE_LIBZ
 
+#include "Read.h"
+#include "ArrayOfReads.h"
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <zlib.h>
 #include <string>
 #include <vector>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <zlib.h>
-#include <memory/MyAllocator.h>
 using namespace std;
 
 /**

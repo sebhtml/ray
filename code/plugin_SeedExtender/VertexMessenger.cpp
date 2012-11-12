@@ -18,9 +18,10 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_SeedExtender/VertexMessenger.h>
-#include <communication/Message.h>
-#include <core/OperatingSystem.h>
+#include "VertexMessenger.h"
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/core/OperatingSystem.h>
 
 #include <stdint.h>
 #include <assert.h>

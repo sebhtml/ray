@@ -19,7 +19,8 @@
 
 */
 
-#include <plugin_Searcher/VirtualKmerColor.h>
+#include "VirtualKmerColor.h"
+
 #include <iostream>
 using namespace std;
 #ifdef ASSERT

@@ -19,10 +19,12 @@
 
 */
 
-#include <plugin_EdgePurger/EdgePurger.h>
+#include "EdgePurger.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <core/OperatingSystem.h>
 
 __CreatePlugin(EdgePurger);
 

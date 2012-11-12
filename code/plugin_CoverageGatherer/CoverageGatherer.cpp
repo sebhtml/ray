@@ -19,27 +19,30 @@
 
 */
 
-#include <plugin_CoverageGatherer/CoverageGatherer.h>
-#include <core/OperatingSystem.h>
+#include "CoverageGatherer.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+#include <code/plugin_VerticesExtractor/Vertex.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/slave_modes.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/mpi_tags.h>
+
+#include <sstream>
+#include <stdio.h>
+#include <stdint.h>
+using namespace std;
+
 #ifdef ASSERT
 #include <assert.h>
 #endif
-#include <communication/Message.h>
-#include <communication/mpi_tags.h>
-#include <core/slave_modes.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <plugin_Mock/constants.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <sstream>
 
 __CreatePlugin(CoverageGatherer);
 
 __CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
-
-using namespace std;
 
 void CoverageGatherer::writeKmers(){
 	#ifdef ASSERT

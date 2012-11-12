@@ -19,11 +19,13 @@
 
 */
 
-#include <assert.h>
-#include <plugin_FusionData/FusionData.h>
-#include <core/OperatingSystem.h>
+#include "FusionData.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/communication/Message.h>
+
 #include <sstream>
-#include <communication/Message.h>
+#include <assert.h>
 
 __CreatePlugin(FusionData);
 

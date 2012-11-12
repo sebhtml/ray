@@ -19,12 +19,15 @@
 
 */
 
-#include <plugin_KmerAcademyBuilder/Kmer.h>
+#include "GridTable.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <assert.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <core/OperatingSystem.h>
-#include <plugin_Mock/common_functions.h>
-#include <cryptography/crypto.h>
 #include <stdlib.h>
 #include <stdio.h>
 

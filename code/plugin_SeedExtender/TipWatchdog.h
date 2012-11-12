@@ -22,9 +22,9 @@
 #ifndef _TipWatchdog
 #define _TipWatchdog
 
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <plugin_SeedExtender/DepthFirstSearchData.h>
-#include <plugin_SeedExtender/BubbleData.h>
+#include "ExtensionData.h"
+#include "DepthFirstSearchData.h"
+#include "BubbleData.h"
 
 /*
  * Watch for unwanted things.

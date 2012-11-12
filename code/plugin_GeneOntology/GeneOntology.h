@@ -21,18 +21,19 @@
 #ifndef _GeneOntology_h
 #define _GeneOntology_h
 
-#include <core/ComputeCore.h>
-#include <plugins/CorePlugin.h>
-#include <handlers/SlaveModeHandler.h>
-#include <plugin_Searcher/ColorSet.h>
-#include <handlers/MasterModeHandler.h>
-#include <handlers/MessageTagHandler.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <profiling/TimePrinter.h>
+#include "types.h"
 
-#include <plugin_Searcher/Searcher.h>
-#include <plugin_GeneOntology/types.h>
+#include <code/plugin_Searcher/Searcher.h>
+#include <code/plugin_Searcher/ColorSet.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/plugins/CorePlugin.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/handlers/MessageTagHandler.h>
+#include <RayPlatform/profiling/TimePrinter.h>
 
 #include <set>
 #include <stdint.h>

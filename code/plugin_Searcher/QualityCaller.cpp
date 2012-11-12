@@ -18,8 +18,9 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Searcher/QualityCaller.h>
-#include <core/statistics.h>
+#include "QualityCaller.h"
+
+#include <RayPlatform/core/statistics.h>
 
 #include <iostream>
 #include <assert.h>

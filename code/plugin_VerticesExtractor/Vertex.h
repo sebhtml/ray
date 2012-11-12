@@ -22,11 +22,11 @@
 #ifndef _Vertex
 #define _Vertex
 
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <plugin_SeedExtender/Direction.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_Mock/common_functions.h>
-#include <plugin_Searcher/ColorSet.h>
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_SeedExtender/Direction.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Searcher/ColorSet.h>
 
 #include <fstream>
 #include <stdint.h>

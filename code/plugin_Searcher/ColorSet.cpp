@@ -22,8 +22,9 @@
 //#define CONFIG_DEBUG_VIRTUAL_COLORS
 //#define ASSERT_LOW_LEVEL
 
-#include <plugin_Searcher/ColorSet.h>
-#include <cryptography/crypto.h>
+#include "ColorSet.h"
+
+#include <RayPlatform/cryptography/crypto.h>
 
 #include <stdint.h>
 #include <iostream>

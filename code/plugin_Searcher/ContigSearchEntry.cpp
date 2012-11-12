@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Searcher/ContigSearchEntry.h>
+#include "ContigSearchEntry.h"
 
 
 ContigSearchEntry::ContigSearchEntry(PathHandle name,int length,int mode,double mean,int coloredKmers){

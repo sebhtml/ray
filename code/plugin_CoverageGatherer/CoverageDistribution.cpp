@@ -19,7 +19,8 @@
 
 */
 
-#include <plugin_CoverageGatherer/CoverageDistribution.h>
+#include "CoverageDistribution.h"
+
 #include <iostream>
 #include <fstream>
 #include <map>

@@ -22,17 +22,18 @@
 #ifndef _FusionTaskCreator_H
 #define _FusionTaskCreator_H
 
-#include <scheduling/Worker.h>
-#include <scheduling/TaskCreator.h>
-#include <scheduling/VirtualProcessor.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/Parameters.h>
-#include <communication/VirtualCommunicator.h>
-#include <memory/RingAllocator.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <handlers/MasterModeHandler.h>
-#include <handlers/SlaveModeHandler.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+
+#include <RayPlatform/scheduling/Worker.h>
+#include <RayPlatform/scheduling/TaskCreator.h>
+#include <RayPlatform/scheduling/VirtualProcessor.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <vector>
 #include <set>

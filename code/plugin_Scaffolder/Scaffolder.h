@@ -22,23 +22,24 @@
 #ifndef _Scaffolder
 #define _Scaffolder
 
-#include <plugin_Mock/Parameters.h>
-#include <structures/StaticVector.h>
+#include "ScaffoldingLink.h"
+#include "SummarizedLink.h"
+
+#include <code/plugin_SeedExtender/ReadFetcher.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/scheduling/SwitchMan.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/plugins/CorePlugin.h>
+
 #include <vector>
-#include <memory/RingAllocator.h>
-#include <plugin_Mock/constants.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_SeedExtender/ReadFetcher.h>
 #include <sstream>
-#include <plugin_Scaffolder/ScaffoldingLink.h>
-#include <plugin_Scaffolder/SummarizedLink.h>
-#include <scheduling/SwitchMan.h>
-#include <profiling/TimePrinter.h>
-
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MasterModeHandler.h>
-#include <plugins/CorePlugin.h>
-
 using namespace std;
 
 __DeclarePlugin(Scaffolder);

@@ -22,11 +22,12 @@
 #ifndef _BubbleTool
 #define _BubbleTool
 
-#include <vector>
-#include <plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+
 #include <map>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_Mock/Parameters.h>
+#include <vector>
 using namespace std;
 
 /*

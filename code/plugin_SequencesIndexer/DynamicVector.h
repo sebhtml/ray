@@ -22,7 +22,10 @@
 #ifndef _DynamicVector_H
 #define _DynamicVector_H
 
-#include <memory/MyAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * a dynamic vector, this is a template

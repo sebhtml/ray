@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_PhylogenyViewer/PhylogeneticTreeLoader.h>
-#include <plugin_PhylogenyViewer/types.h>
+#include "PhylogeneticTreeLoader.h"
+#include "types.h"
 
 #include <assert.h>
 #include <iostream>

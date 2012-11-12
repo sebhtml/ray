@@ -22,10 +22,11 @@
 #ifndef _FusionWorker_H
 #define _FusionWorker_H
 
-#include <communication/VirtualCommunicator.h>
-#include <scheduling/Worker.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <plugin_Mock/Parameters.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/scheduling/Worker.h>
 
 #include <stdint.h>
 #include <map>

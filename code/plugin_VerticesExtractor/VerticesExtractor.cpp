@@ -19,16 +19,19 @@
 
 */
 
-#include <plugin_Mock/constants.h>
+#include "VerticesExtractor.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/Message.h>
+
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <plugin_VerticesExtractor/VerticesExtractor.h>
-#include <assert.h>
-#include <communication/Message.h>
 #include <time.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/common_functions.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
 
 __CreatePlugin(VerticesExtractor);
 

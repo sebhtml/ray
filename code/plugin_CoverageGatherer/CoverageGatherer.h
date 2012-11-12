@@ -22,11 +22,12 @@
 #ifndef _CoverageGatherer_H
 #define _CoverageGatherer_H
 
-#include <plugin_Mock/Parameters.h>
-#include <structures/StaticVector.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <memory/RingAllocator.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <stdint.h>
 #include <map>

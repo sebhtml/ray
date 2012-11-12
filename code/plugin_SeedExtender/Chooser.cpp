@@ -19,8 +19,9 @@
 
 */
 
-#include <plugin_SeedExtender/Chooser.h>
-#include <plugin_Mock/common_functions.h>
+#include "Chooser.h"
+
+#include <code/plugin_Mock/common_functions.h>
 
 void Chooser::chooseWithPairedReads(ExtensionData*m_ed,
 	double __PAIRED_MULTIPLIER,

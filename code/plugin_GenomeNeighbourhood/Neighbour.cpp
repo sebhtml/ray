@@ -19,7 +19,7 @@
 
 */
 
-#include <plugin_GenomeNeighbourhood/Neighbour.h>
+#include "Neighbour.h"
 
 Neighbour::Neighbour(Strand dnaStrand,int depth,PathHandle contig,int progression){
 	m_strand=dnaStrand;

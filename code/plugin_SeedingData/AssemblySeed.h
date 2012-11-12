@@ -21,8 +21,9 @@
 #ifndef _AssemblySeed_h
 #define _AssemblySeed_h
 
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+
 #include <vector>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
 using namespace std;
 
 /**

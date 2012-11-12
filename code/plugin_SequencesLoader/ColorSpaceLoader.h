@@ -22,14 +22,16 @@
 #ifndef _ColorSpaceLoader
 #define _ColorSpaceLoader
 
+#include "ArrayOfReads.h"
+#include "ColorSpaceDecoder.h"
+#include "Read.h"
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <stdio.h>
+#include <fstream>
 #include <string>
 #include <vector>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <fstream>
-#include <memory/MyAllocator.h>
-#include <stdio.h>
-#include <plugin_SequencesLoader/ColorSpaceDecoder.h>
-#include <plugin_SequencesLoader/Read.h>
 using namespace std;
 
 /**

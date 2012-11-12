@@ -22,15 +22,15 @@
 #ifndef _Partitioner_H
 #define _Partitioner_H
 
-#include <structures/StaticVector.h>
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <plugin_SequencesLoader/Loader.h>
-#include <scheduling/SwitchMan.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MasterModeHandler.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SequencesLoader/Loader.h>
 
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/scheduling/SwitchMan.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <map>
 using namespace std;

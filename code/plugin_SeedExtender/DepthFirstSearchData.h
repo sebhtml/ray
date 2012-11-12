@@ -22,16 +22,20 @@
 #ifndef _DepthFirstSearchData
 #define _DepthFirstSearchData
 
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/structures/MyStack.h>
+
 #include <vector>
-#include <structures/MyStack.h>
 #include <map>
-#include <plugin_SeedingData/SeedingData.h>
 #include <set>
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/common_functions.h>
 using namespace std;
+
+class SeedingData;
 
 /*
  * Data for depth first search.

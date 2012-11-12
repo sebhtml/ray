@@ -19,7 +19,7 @@
 
 */
 
-#include <plugin_EdgePurger/EdgePurgerWorker.h>
+#include "EdgePurgerWorker.h"
 
 bool EdgePurgerWorker::isDone(){
 	return m_isDone;

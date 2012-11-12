@@ -21,8 +21,9 @@
 #ifndef _DistributionWriter_h
 #define _DistributionWriter_h
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h> /* for Rank */
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h> /* for Rank */
 
 #include <map>
 #include <stdint.h>

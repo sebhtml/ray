@@ -21,14 +21,15 @@
 #ifndef _NetworkTest_H
 #define _NetworkTest_H
 
-#include <structures/StaticVector.h>
-#include <plugin_Mock/Parameters.h>
-#include <profiling/TimePrinter.h>
-#include <memory/RingAllocator.h>
-#include <scheduling/SwitchMan.h>
-#include <handlers/MasterModeHandler.h>
-#include <handlers/SlaveModeHandler.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/scheduling/SwitchMan.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <string>
 #include <map>

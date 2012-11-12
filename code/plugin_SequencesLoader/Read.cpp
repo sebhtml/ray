@@ -18,12 +18,14 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include<assert.h>
-#include<plugin_Mock/common_functions.h>
-#include<plugin_SequencesLoader/Read.h>
-#include<cstdlib>
-#include<iostream>
-#include<cstring>
+#include "Read.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
+#include <assert.h>
+#include <cstdlib>
+#include <iostream>
+#include <cstring>
 using namespace  std;
 
 char*Read::trim(char*buffer,const char*sequence){

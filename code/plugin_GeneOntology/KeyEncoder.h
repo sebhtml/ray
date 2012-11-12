@@ -23,10 +23,12 @@
 
 #define _KeyEncoder
 
+#include "types.h"
+
+#include <code/plugin_Searcher/VirtualKmerColor.h>
+
 #include <map>
 #include <stdint.h>
-#include <plugin_GeneOntology/types.h>
-#include <plugin_Searcher/VirtualKmerColor.h>
 using namespace std;
 
 class KeyEncoder{

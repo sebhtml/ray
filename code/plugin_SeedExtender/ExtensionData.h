@@ -22,15 +22,18 @@
 #ifndef _ExtensionData
 #define _ExtensionData
 
-#include <plugin_SequencesIndexer/PairedRead.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_SeedExtender/ExtensionElement.h>
-#include <plugin_SeedingData/AssemblySeed.h>
-#include <profiling/Profiler.h>
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <plugin_Mock/common_functions.h>
-#include <structures/SplayTree.h>
+#include "ExtensionElement.h"
+
+#include <code/plugin_SequencesIndexer/PairedRead.h>
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_SeedingData/AssemblySeed.h>
+
+#include <RayPlatform/structures/SplayTree.h>
+#include <RayPlatform/profiling/Profiler.h>
+
 #include <map>
 #include <set>
 #include <vector>

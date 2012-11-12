@@ -25,14 +25,16 @@
 #ifndef _GenomeNeighbourhood_h
 #define _GenomeNeighbourhood_h
 
-#include <profiling/TimePrinter.h>
-#include <core/ComputeCore.h>
-#include <plugins/CorePlugin.h>
-#include <plugin_GenomeNeighbourhood/Neighbour.h>
-#include <plugin_GenomeNeighbourhood/NeighbourPair.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_Mock/Parameters.h>
+#include "Neighbour.h"
+#include "NeighbourPair.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/plugins/CorePlugin.h>
 
 #include <vector>
 #include <string>

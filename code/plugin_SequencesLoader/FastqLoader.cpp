@@ -19,10 +19,13 @@
 
 */
 
-#include<plugin_SequencesLoader/FastqLoader.h>
+#include "FastqLoader.h"
+
+#include <code/plugin_Mock/constants.h>
+
+#include <fstream>
 #include <stdlib.h>
-#include <plugin_Mock/constants.h>
-#include<fstream>
+using namespace std;
 
 int FastqLoader::open(string file,int period){
 	m_f=fopen(file.c_str(),"r");

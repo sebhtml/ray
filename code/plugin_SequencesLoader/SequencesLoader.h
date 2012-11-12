@@ -22,15 +22,17 @@
 #ifndef _SequencesLoader
 #define _SequencesLoader
 
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <plugin_SequencesLoader/Loader.h>
-#include <memory/MyAllocator.h>
-#include <structures/StaticVector.h>
-#include <communication/Message.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_SeedExtender/BubbleData.h>
-#include <core/ComputeCore.h>
+#include "Read.h"
+
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SequencesLoader/Loader.h>
+#include <code/plugin_SeedExtender/BubbleData.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <time.h>
 #include <vector>

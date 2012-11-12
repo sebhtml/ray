@@ -22,34 +22,36 @@
 #ifndef _SeedExtender
 #define _SeedExtender
 
-class FusionData;
-class DepthFirstSearchData;
+#include "ReadFetcher.h"
+#include "BubbleData.h"
+#include "DepthFirstSearchData.h"
+#include "BubbleTool.h"
+#include "OpenAssemblerChooser.h"
+#include "VertexMessenger.h"
+#include "ExtensionData.h"
+
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SeedingData/AssemblySeed.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+#include <code/plugin_FusionData/FusionData.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/profiling/Derivative.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/profiling/Profiler.h>
 
 #include <vector>
 #include <fstream>
-
-#include <plugin_Mock/common_functions.h>
-#include <communication/Message.h>
-#include <profiling/Profiler.h>
-#include <plugin_SeedExtender/VertexMessenger.h>
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_SeedingData/AssemblySeed.h>
-#include <memory/RingAllocator.h>
-#include <memory/MyAllocator.h>
-#include <profiling/Derivative.h>
-#include <plugin_SeedExtender/ReadFetcher.h>
-#include <plugin_FusionData/FusionData.h>
-#include <plugin_SeedExtender/BubbleData.h>
-#include <plugin_SeedExtender/DepthFirstSearchData.h>
-#include <plugin_SeedExtender/BubbleTool.h>
-#include <plugin_SeedExtender/OpenAssemblerChooser.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <handlers/SlaveModeHandler.h>
-#include <core/ComputeCore.h>
-
 using namespace std;
+
+class FusionData;
+class DepthFirstSearchData;
+class SeedingData;
 
 __DeclarePlugin(SeedExtender);
 

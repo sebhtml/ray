@@ -21,8 +21,10 @@
 #ifndef _QualityCaller_h
 #define _QualityCaller_h
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <stdint.h>
 #include <vector>
 #include <map>

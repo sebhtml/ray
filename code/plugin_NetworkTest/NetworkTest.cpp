@@ -18,26 +18,29 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_NetworkTest/NetworkTest.h>
-#include <communication/Message.h>
-#include <communication/mpi_tags.h>
-#include <core/slave_modes.h>
-#include <core/master_modes.h>
-#include <sstream>
-#include <core/OperatingSystem.h>
-#include <fstream>
-#include <stdlib.h>
-#include <core/statistics.h>
-#include <plugin_Mock/constants.h>
+#include "NetworkTest.h"
+
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/mpi_tags.h>
+#include <RayPlatform/core/slave_modes.h>
+#include <RayPlatform/core/master_modes.h>
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/statistics.h>
+#include <RayPlatform/core/ComputeCore.h>
+
 #include <iostream>
-#include <core/ComputeCore.h>
+#include <fstream>
+#include <sstream>
+#include <stdlib.h>
+using namespace std;
 
 __CreatePlugin(NetworkTest);
 
 __CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
 __CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 
-using namespace std;
 
 #define LATENCY_INFORMATION_NOT_AVAILABLE 123123123
 #define __MAXIMUM_LATENCY 4096 // microseconds

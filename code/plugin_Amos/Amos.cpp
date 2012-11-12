@@ -19,17 +19,20 @@
 
 */
 
-#include <plugin_Amos/Amos.h>
+#include "Amos.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/communication/mpi_tags.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/core/master_modes.h>
+#include <RayPlatform/core/slave_modes.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <communication/mpi_tags.h>
-#include <communication/Message.h>
-#include <plugin_Mock/constants.h>
-#include <core/master_modes.h>
-#include <core/slave_modes.h>
-#include <plugin_Mock/Parameters.h>
 
 __CreatePlugin(Amos);
 

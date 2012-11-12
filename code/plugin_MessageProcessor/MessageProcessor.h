@@ -22,43 +22,36 @@
 #ifndef _MessageProcessor
 #define _MessageProcessor
 
+#include <code/plugin_SeedExtender/OpenAssemblerChooser.h>
+#include <code/plugin_SeedExtender/SeedExtender.h>
+#include <code/plugin_SequencesLoader/ArrayOfReads.h>
+#include <code/plugin_SequencesLoader/SequencesLoader.h>
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_SequencesIndexer/SequencesIndexer.h>
+#include <code/plugin_KmerAcademyBuilder/BloomFilter.h>
+#include <code/plugin_Library/Library.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+#include <code/plugin_FusionData/FusionData.h>
+#include <code/plugin_VerticesExtractor/VerticesExtractor.h>
+#include <code/plugin_VerticesExtractor/Vertex.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Scaffolder/Scaffolder.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+#include <RayPlatform/structures/SplayTree.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/MessageRouter.h>
+#include <RayPlatform/scheduling/SwitchMan.h>
+#include <RayPlatform/plugins/CorePlugin.h>
+#include <RayPlatform/core/ComputeCore.h>
+
 #include <vector>
 using namespace std;
-
-#include <memory/RingAllocator.h>
-#include <memory/MyAllocator.h>
-
-#include <plugin_SeedExtender/OpenAssemblerChooser.h>
-
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <structures/SplayTree.h>
-#include <structures/StaticVector.h>
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <plugin_KmerAcademyBuilder/BloomFilter.h>
-
-#include <plugin_Library/Library.h>
-#include <plugin_SequencesIndexer/SequencesIndexer.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <plugin_SeedExtender/SeedExtender.h>
-#include <plugin_SequencesLoader/SequencesLoader.h>
-#include <plugin_FusionData/FusionData.h>
-#include <plugin_VerticesExtractor/VerticesExtractor.h>
-
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_Scaffolder/Scaffolder.h>
-
-#include <communication/Message.h>
-#include <communication/BufferedData.h>
-#include <communication/VirtualCommunicator.h>
-#include <communication/MessageRouter.h>
-
-#include <scheduling/SwitchMan.h>
-#include <plugins/CorePlugin.h>
-
-
-#include <core/ComputeCore.h>
 
 __DeclarePlugin(MessageProcessor);
 

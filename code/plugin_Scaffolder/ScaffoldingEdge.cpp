@@ -19,7 +19,8 @@
 
 */
 
-#include <plugin_Scaffolder/ScaffoldingEdge.h>
+#include "ScaffoldingEdge.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>

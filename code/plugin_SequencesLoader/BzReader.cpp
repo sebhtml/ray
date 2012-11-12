@@ -23,10 +23,12 @@
 
 #define __BzReader_MAXIMUM_LENGTH 2*4096
 
-#include <plugin_SequencesLoader/BzReader.h>
+#include "BzReader.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
 #include <stdlib.h>
 #include <assert.h>
-#include <plugin_Mock/common_functions.h>
 
 void BzReader::open(const char*file){
 	m_file=fopen(file,"r");

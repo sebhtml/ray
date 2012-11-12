@@ -18,9 +18,10 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Searcher/DistributionWriter.h>
-#include <plugin_Mock/constants.h>
-#include <plugin_Mock/common_functions.h>
+#include "DistributionWriter.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
 
 #include <sstream>
 #include <iostream>

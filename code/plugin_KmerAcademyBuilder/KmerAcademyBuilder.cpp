@@ -19,17 +19,20 @@
 
 */
 
-#include <plugin_Mock/constants.h>
+#include "KmerAcademyBuilder.h"
+
+#include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/structures/StaticVector.h>
+
+#include <assert.h>
+#include <time.h>
+#include <fstream>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <plugin_KmerAcademyBuilder/KmerAcademyBuilder.h>
-#include <assert.h>
-#include <communication/Message.h>
-#include <time.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/common_functions.h>
-#include <fstream>
 
 __CreatePlugin(KmerAcademyBuilder);
 

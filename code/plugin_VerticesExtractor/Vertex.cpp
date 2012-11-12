@@ -19,12 +19,13 @@
 
 */
 
-#include<assert.h>
-#include<vector>
-#include<plugin_VerticesExtractor/Vertex.h>
-#include<cstdlib>
-#include<plugin_Mock/common_functions.h>
-#include<iostream>
+#include "Vertex.h"
+#include <code/plugin_Mock/common_functions.h>
+
+#include <assert.h>
+#include <vector>
+#include <cstdlib>
+#include <iostream>
 using namespace std;
 
 #define __NO_ORIGIN -999

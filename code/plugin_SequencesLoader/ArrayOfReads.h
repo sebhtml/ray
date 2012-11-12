@@ -22,7 +22,7 @@
 #ifndef _ArrayOfReads
 #define _ArrayOfReads
 
-#include<plugin_SequencesLoader/Read.h>
+#include "Read.h"
 
 /**
  * This class holds reads. These are stored in chunks, which are utterly linked in chains.

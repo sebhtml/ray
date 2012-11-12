@@ -19,12 +19,14 @@
 
 */
 
-#include<stdlib.h>
-#include<plugin_SequencesLoader/ColorSpaceLoader.h>
-#include<fstream>
-#include<plugin_Mock/common_functions.h>
-#include<iostream>
-#include<string.h>
+#include "ColorSpaceLoader.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <string.h>
 #include <assert.h>
 using namespace std;
 

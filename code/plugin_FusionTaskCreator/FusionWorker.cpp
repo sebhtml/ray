@@ -19,8 +19,8 @@
 
 */
 
+#include "FusionWorker.h"
 
-#include <plugin_FusionTaskCreator/FusionWorker.h>
 #include <iostream>
 using namespace std;
 

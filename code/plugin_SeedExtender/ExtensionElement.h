@@ -22,9 +22,11 @@
 #ifndef _ExtensionElement
 #define _ExtensionElement
 
-#include <plugin_SequencesIndexer/PairedRead.h>
-#include <memory/MyAllocator.h>
-#include <plugin_Mock/Parameters.h>
+#include <code/plugin_SequencesIndexer/PairedRead.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/memory/MyAllocator.h>
 
 /*
  * An extension element is a read mapped on an

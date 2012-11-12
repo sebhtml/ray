@@ -22,9 +22,11 @@
 #ifndef _SummarizedLink
 #define _SummarizedLink
 
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <stdint.h>
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
 
 class SummarizedLink{
 	int m_count;

@@ -22,95 +22,93 @@
 #ifndef _Machine
 #define _Machine
 
-/** Chapter I. stuff pulled from RayPlatform, called The Platform hereafter */
-
-/** the heart of RayPlatform  **/
-/** ComputeCore is a facade (a design pattern) **/
-#include <core/ComputeCore.h>
-#include "core/MiniRank.h"
-
-/** communication */
-#include <communication/VirtualCommunicator.h> /** virtual stuff */
-#include <communication/Message.h>
-#include <communication/MessageRouter.h>
-
-/** scheduling, virtual pools */
-#include <scheduling/VirtualProcessor.h> /** thread pool **/
-
-/** distributed scheduler, this is a state machine */
-/* design pattern: state */
-#include <scheduling/SwitchMan.h>  
-
-/** memory stuff */
-#include <memory/RingAllocator.h>
-#include <memory/MyAllocator.h>
-
-/** data structure */
-#include <structures/StaticVector.h>
-#include <structures/SplayTree.h>
-#include <structures/SplayTreeIterator.h>
-
-/** run-time code profiling */
-#include <profiling/TimePrinter.h>
-#include <profiling/Profiler.h>
-#include <profiling/TickLogger.h>
-
-/** interfaces to define adapters compatible with RayPlatform **/
-#include <handlers/MessageTagHandler.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MessageTagHandler.h>
-
-
 /** Chapter II.  stuff related to the Ray Genome Assembler **/
-
 /** stuff specific to the Ray assembler that don't fit elsewhere */
 
-#include <plugin_Mock/common_functions.h> /* common code for all plugins */
-#include <plugin_Mock/Parameters.h> /* command-line parsing */
+#include <code/plugin_Mock/common_functions.h> /* common code for all plugins */
+#include <code/plugin_Mock/Parameters.h> /* command-line parsing */
 
 // also in this category is application_core/Machine.h 
-
 
 /** list of RayPlatform CorePlugin objects for the Ray genome software suite. */
 /* (in no particular order) */
 
-#include <plugin_SeedExtender/DepthFirstSearchData.h>
-#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
-#include <plugin_Scaffolder/Scaffolder.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <plugin_Partitioner/Partitioner.h>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <plugin_SequencesIndexer/SequencesIndexer.h>
-#include <plugin_SeedExtender/SeedExtender.h>
-#include <plugin_SequencesLoader/SequencesLoader.h>
-#include <plugin_Library/Library.h>
-#include <plugin_CoverageGatherer/CoverageGatherer.h>
-#include <plugin_MessageProcessor/MessageProcessor.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <plugin_SeedExtender/OpenAssemblerChooser.h>
-#include <plugin_SeedExtender/BubbleData.h>
-#include <plugin_VerticesExtractor/VerticesExtractor.h>
-#include <plugin_Amos/Amos.h>
-#include <plugin_KmerAcademyBuilder/KmerAcademyBuilder.h>
-#include <plugin_EdgePurger/EdgePurger.h>
-#include <plugin_NetworkTest/NetworkTest.h>
-#include <plugin_FusionTaskCreator/FusionTaskCreator.h>
-#include <plugin_JoinerTaskCreator/JoinerTaskCreator.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <plugin_Searcher/Searcher.h>
-#include <plugin_MachineHelper/MachineHelper.h>
-#include <plugin_PhylogenyViewer/PhylogenyViewer.h>
-#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
-#include <plugin_GeneOntology/GeneOntology.h>
-#include <plugin_Mock/Mock.h>
+#include <code/plugin_SeedExtender/DepthFirstSearchData.h>
+#include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <code/plugin_Scaffolder/Scaffolder.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_Partitioner/Partitioner.h>
+#include <code/plugin_SequencesLoader/ArrayOfReads.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+#include <code/plugin_SequencesIndexer/SequencesIndexer.h>
+#include <code/plugin_SeedExtender/SeedExtender.h>
+#include <code/plugin_SequencesLoader/SequencesLoader.h>
+#include <code/plugin_Library/Library.h>
+#include <code/plugin_CoverageGatherer/CoverageGatherer.h>
+#include <code/plugin_MessageProcessor/MessageProcessor.h>
+#include <code/plugin_VerticesExtractor/Vertex.h>
+#include <code/plugin_SeedExtender/OpenAssemblerChooser.h>
+#include <code/plugin_SeedExtender/BubbleData.h>
+#include <code/plugin_VerticesExtractor/VerticesExtractor.h>
+#include <code/plugin_Amos/Amos.h>
+#include <code/plugin_KmerAcademyBuilder/KmerAcademyBuilder.h>
+#include <code/plugin_EdgePurger/EdgePurger.h>
+#include <code/plugin_NetworkTest/NetworkTest.h>
+#include <code/plugin_FusionTaskCreator/FusionTaskCreator.h>
+#include <code/plugin_JoinerTaskCreator/JoinerTaskCreator.h>
+#include <code/plugin_SequencesLoader/Read.h>
+#include <code/plugin_Searcher/Searcher.h>
+#include <code/plugin_MachineHelper/MachineHelper.h>
+#include <code/plugin_PhylogenyViewer/PhylogenyViewer.h>
+#include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <code/plugin_GeneOntology/GeneOntology.h>
+#include <code/plugin_Mock/Mock.h>
+
+
+
+/** Chapter I. stuff pulled from RayPlatform, called The Platform hereafter */
+
+/** the heart of RayPlatform  **/
+/** ComputeCore is a facade (a design pattern) **/
+#include <RayPlatform/core/ComputeCore.h>
+#include "RayPlatform/core/MiniRank.h"
+
+/** communication */
+#include <RayPlatform/communication/VirtualCommunicator.h> /** virtual stuff */
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/MessageRouter.h>
+
+/** scheduling, virtual pools */
+#include <RayPlatform/scheduling/VirtualProcessor.h> /** thread pool **/
+
+/** distributed scheduler, this is a state machine */
+/* design pattern: state */
+#include <RayPlatform/scheduling/SwitchMan.h>  
+
+/** memory stuff */
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/memory/MyAllocator.h>
+
+/** data structure */
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/structures/SplayTree.h>
+#include <RayPlatform/structures/SplayTreeIterator.h>
+
+/** run-time code profiling */
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/profiling/Profiler.h>
+#include <RayPlatform/profiling/TickLogger.h>
+
+/** interfaces to define adapters compatible with RayPlatform **/
+#include <RayPlatform/handlers/MessageTagHandler.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MessageTagHandler.h>
 
 /** C++ bits **/
 #include <map>
 #include <vector>
 #include <set>
 #include <time.h>
-
 using namespace std;
 
 /**

@@ -22,13 +22,15 @@
 #ifndef _ReadFetcher
 #define _ReadFetcher
 
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+
 #include <vector>
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <structures/StaticVector.h>
-#include <plugin_Mock/Parameters.h>
 #include <stdint.h>
-#include <memory/RingAllocator.h>
-#include <communication/VirtualCommunicator.h>
 using namespace std;
 
 /**

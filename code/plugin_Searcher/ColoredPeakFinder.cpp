@@ -18,8 +18,10 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Searcher/ColoredPeakFinder.h>
-#include <core/statistics.h>
+#include "ColoredPeakFinder.h"
+
+#include <RayPlatform/core/statistics.h>
+
 #include <math.h>
 #include <iostream>
 #include <stdint.h>

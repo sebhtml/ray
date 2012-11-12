@@ -22,7 +22,7 @@
 #ifndef _ColorSet_h
 #define _ColorSet_h
 
-#include <plugin_Searcher/VirtualKmerColor.h>
+#include "VirtualKmerColor.h"
 
 #include <stdint.h>
 #include <vector>

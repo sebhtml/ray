@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Searcher/ContigHit.h>
+#include "ContigHit.h"
 
 
 ContigHit::ContigHit(int sequence,PathHandle contig,char strand,int matches){

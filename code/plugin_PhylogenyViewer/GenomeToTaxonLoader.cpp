@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_PhylogenyViewer/GenomeToTaxonLoader.h>
-#include <plugin_PhylogenyViewer/types.h>
+#include "GenomeToTaxonLoader.h"
+#include "types.h"
 
 #include <assert.h>
 #include <iostream>

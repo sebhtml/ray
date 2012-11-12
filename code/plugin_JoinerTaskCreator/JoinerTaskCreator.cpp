@@ -19,9 +19,10 @@
 
 */
 
-#include <plugin_JoinerTaskCreator/JoinerTaskCreator.h>
-#include <plugin_JoinerTaskCreator/JoinerWorker.h>
-#include <core/OperatingSystem.h>
+#include "JoinerTaskCreator.h"
+#include "JoinerWorker.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 __CreatePlugin(JoinerTaskCreator);
 

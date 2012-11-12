@@ -18,15 +18,18 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_SequencesIndexer/SequencesIndexer.h>
-#include <string.h>
-#include <core/OperatingSystem.h>
+#include "SequencesIndexer.h"
+
+#include <code/plugin_SequencesLoader/Loader.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/communication/Message.h>
+
 #include <stdlib.h>
 #include <assert.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_SequencesLoader/Loader.h>
-#include <plugin_Mock/common_functions.h>
-#include <communication/Message.h>
+#include <string.h>
 
 __CreatePlugin(SequencesIndexer);
 

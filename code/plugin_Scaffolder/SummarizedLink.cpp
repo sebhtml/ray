@@ -19,7 +19,7 @@
 
 */
 
-#include <plugin_Scaffolder/SummarizedLink.h>
+#include "SummarizedLink.h"
 
 SummarizedLink::SummarizedLink(PathHandle leftContig,Strand leftStrand,PathHandle rightContig,
 	Strand rightStrand,int average,int count,

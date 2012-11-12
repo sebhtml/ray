@@ -25,9 +25,9 @@
 //#define DEBUG_SIDE
 //#define DEBUG_LEFT_PATHS
 
-#include <plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
-#include <sstream>
+#include "GenomeNeighbourhood.h"
 
+#include <sstream>
 #ifdef ASSERT
 #include <assert.h>
 #endif

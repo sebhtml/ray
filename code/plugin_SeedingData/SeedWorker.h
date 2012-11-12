@@ -22,11 +22,13 @@
 #ifndef _SeedWorker
 #define _SeedWorker
 
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/scheduling/Worker.h>
+
 #include <stdint.h>
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <communication/VirtualCommunicator.h>
-#include <scheduling/Worker.h>
 #include <vector>
 using namespace std;
 

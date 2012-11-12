@@ -20,14 +20,15 @@
 
 */
 
+#include "Loader.h"
+#include "Read.h"
+
 #include <sstream>
 #include <iostream>
 #include <assert.h>
 #include <string>
 #include <vector>
-#include <plugin_SequencesLoader/Loader.h>
 #include <stdlib.h>
-#include <plugin_SequencesLoader/Read.h>
 using namespace std;
 
 void Loader::constructor(const char*prefix,bool show){

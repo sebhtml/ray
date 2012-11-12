@@ -19,8 +19,9 @@
 
 */
 
-#include "application_core/Machine.h"
-#include "core/RankProcess.h"
+#include "Machine.h"
+
+#include <RayPlatform/core/RankProcess.h>
 
 using namespace std;
 

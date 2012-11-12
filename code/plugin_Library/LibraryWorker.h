@@ -22,11 +22,13 @@
 #ifndef _LibraryWorker
 #define _LibraryWorker
 
-#include <plugin_SeedingData/SeedingData.h>
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <communication/VirtualCommunicator.h>
-#include <memory/RingAllocator.h>
-#include <scheduling/Worker.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+#include <code/plugin_SeedExtender/ExtensionData.h>
+
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/scheduling/Worker.h>
+
 #include <map>
 #include <stdint.h>
 using namespace std;

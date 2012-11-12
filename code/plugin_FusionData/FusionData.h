@@ -22,24 +22,24 @@
 #ifndef _FusionData
 #define _FusionData
 
-class SeedingData;
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+#include <code/plugin_SeedExtender/Direction.h>
+#include <code/plugin_SeedExtender/ExtensionData.h>
 
-#include <plugin_SeedExtender/Direction.h>
-#include <plugin_Mock/Parameters.h>
-#include <structures/StaticVector.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <memory/RingAllocator.h>
-#include <communication/BufferedData.h>
-#include <profiling/TimePrinter.h>
-#include <handlers/SlaveModeHandler.h>
-
-#include <core/ComputeCore.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <vector>
 #include <map>
 #include <set>
 using namespace std;
+
+class SeedingData;
 
 __DeclarePlugin(FusionData);
 

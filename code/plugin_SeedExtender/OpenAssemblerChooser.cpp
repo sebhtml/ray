@@ -19,8 +19,8 @@
 
 */
 
-#include<plugin_SeedExtender/OpenAssemblerChooser.h>
-#include<plugin_SeedExtender/Chooser.h>
+#include "OpenAssemblerChooser.h"
+#include "Chooser.h"
 
 void OpenAssemblerChooser::updateMultiplicators(){
 	m_singleEndMultiplicator=2.0;

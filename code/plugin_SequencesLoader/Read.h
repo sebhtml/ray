@@ -22,12 +22,14 @@
 #ifndef _Read
 #define _Read
 
+#include <code/plugin_SequencesIndexer/PairedRead.h>
+
+#include <RayPlatform/memory/MyAllocator.h>
+
 #include <string>
 #include <stdint.h>
 #include <vector>
 #include <fstream>
-#include <memory/MyAllocator.h>
-#include <plugin_SequencesIndexer/PairedRead.h>
 using namespace std;
 
 #define TYPE_SINGLE_END 0

@@ -19,10 +19,12 @@
 
 */
 
-#include<assert.h>
-#include<plugin_SequencesIndexer/ReadAnnotation.h>
-#include<stdlib.h>
-#include<plugin_Mock/common_functions.h>
+#include "ReadAnnotation.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
+#include <assert.h>
+#include <stdlib.h>
 
 void ReadAnnotation::constructor(int rank,int readIndex,int positionOnStrand,char c,bool lower){
 	m_lower=lower;

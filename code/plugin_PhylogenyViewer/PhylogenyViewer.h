@@ -18,6 +18,28 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#ifndef _PhylogenyViewer_h
+#define _PhylogenyViewer_h
+
+#include "types.h"
+
+#include <code/plugin_Searcher/ColorSet.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_Searcher/Searcher.h>
+
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/plugins/CorePlugin.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/handlers/MessageTagHandler.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
+
+#include <set>
+#include <stdint.h>
+#include <map>
+using namespace std;
+
 /*
 
 [sboisver12@colosse1 2012-01-25]$ ls
@@ -47,26 +69,7 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 */
 
-#ifndef _PhylogenyViewer_h
-#define _PhylogenyViewer_h
 
-#include <core/ComputeCore.h>
-#include <plugins/CorePlugin.h>
-#include <handlers/SlaveModeHandler.h>
-#include <plugin_Searcher/ColorSet.h>
-#include <handlers/MasterModeHandler.h>
-#include <handlers/MessageTagHandler.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <profiling/TimePrinter.h>
-
-#include <plugin_Searcher/Searcher.h>
-#include <plugin_PhylogenyViewer/types.h>
-
-#include <set>
-#include <stdint.h>
-#include <map>
-using namespace std;
 
 __DeclarePlugin(PhylogenyViewer);
 

@@ -22,11 +22,13 @@
 #ifndef _GridTable
 #define _GridTable
 
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <structures/MyHashTable.h>
-#include <memory/MyAllocator.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_VerticesExtractor/Vertex.h>
+#include "Vertex.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/structures/MyHashTable.h>
+#include <RayPlatform/memory/MyAllocator.h>
 
 /**
  * The GridTable  stores  all the k-mers for the graph.

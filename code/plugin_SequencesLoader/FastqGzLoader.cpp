@@ -21,10 +21,12 @@
 
 #ifdef CONFIG_HAVE_LIBZ
 
-#include<plugin_SequencesLoader/FastqGzLoader.h>
-#include<fstream>
-#include<zlib.h>
+#include "FastqGzLoader.h"
+
+#include <fstream>
+#include <zlib.h>
 #include <stdlib.h>
+using namespace std;
 
 int FastqGzLoader::open(string file,int period){
 	m_f=gzopen(file.c_str(),"r");

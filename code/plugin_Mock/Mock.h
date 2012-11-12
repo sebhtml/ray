@@ -21,7 +21,7 @@
 #ifndef _Mock_h
 #define _Mock_h
 
-#include <core/ComputeCore.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 /**
  * This plugin is a mock, it does nothing.

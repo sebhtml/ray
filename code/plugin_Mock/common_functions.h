@@ -22,16 +22,19 @@ see <http://www.gnu.org/licenses/>
 #ifndef _common_functions
 #define _common_functions
 
-#include <memory/allocator.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <string>
-#include <plugin_Mock/constants.h>
-#include <core/slave_modes.h>
-#include <iostream>
-#include <core/master_modes.h>
-#include <vector>
-#include <communication/mpi_tags.h>
+#include "constants.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+
+#include <RayPlatform/memory/allocator.h>
+#include <RayPlatform/core/slave_modes.h>
+#include <RayPlatform/core/master_modes.h>
+#include <RayPlatform/communication/mpi_tags.h>
+
 #include <string.h>
+#include <string>
+#include <iostream>
+#include <vector>
 #ifdef ASSERT
 #include <assert.h>
 #endif

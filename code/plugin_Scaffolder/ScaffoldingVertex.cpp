@@ -18,7 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Scaffolder/ScaffoldingVertex.h>
+#include "ScaffoldingVertex.h"
+
 #include <sstream>
 #include <string>
 #include <iostream>

@@ -21,8 +21,10 @@
 #ifndef _ContigHit_h
 #define _ContigHit_h
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <stdint.h>
 
 class ContigHit{

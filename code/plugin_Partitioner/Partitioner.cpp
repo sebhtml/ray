@@ -19,8 +19,9 @@
 
 */
 
-#include <plugin_Partitioner/Partitioner.h>
-#include <core/OperatingSystem.h>
+#include "Partitioner.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 #include <stdlib.h>
 

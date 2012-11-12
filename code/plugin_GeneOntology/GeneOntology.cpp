@@ -22,10 +22,12 @@
 
 #define SENTINEL_VALUE_FOR_TOTAL 123456789
 
-#include <plugin_GeneOntology/GeneOntology.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <core/OperatingSystem.h>
-#include <plugin_GeneOntology/KeyEncoder.h>
+#include "GeneOntology.h"
+#include "KeyEncoder.h"
+
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 __CreatePlugin(GeneOntology);
 

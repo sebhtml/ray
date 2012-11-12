@@ -19,9 +19,11 @@
 
 */
 
-#include<plugin_SequencesIndexer/PairedRead.h>
-#include<plugin_Mock/common_functions.h>
-#include<assert.h>
+#include "PairedRead.h"
+
+#include <code/plugin_Mock/common_functions.h>
+
+#include <assert.h>
 
 void PairedRead::constructor(int rank,int id,int library){
 	m_rank=rank;

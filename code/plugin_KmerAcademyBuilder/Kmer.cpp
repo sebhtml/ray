@@ -19,12 +19,14 @@
 
 */
 
-#include <plugin_KmerAcademyBuilder/Kmer.h>
+#include "Kmer.h"
+
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <stdio.h>
 #include <assert.h>
 #include <string>
 #include <fstream>
-#include <cryptography/crypto.h>
 using namespace std;
 
 bool Kmer::operator<(const Kmer&b)const{

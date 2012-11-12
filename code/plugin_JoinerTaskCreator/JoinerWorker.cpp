@@ -19,8 +19,8 @@
 
 */
 
+#include "JoinerWorker.h"
 
-#include <plugin_JoinerTaskCreator/JoinerWorker.h>
 #include <iostream>
 using namespace std;
 

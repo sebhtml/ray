@@ -21,15 +21,16 @@
 #ifndef _Amos
 #define _Amos
 
-#include <plugin_Mock/Parameters.h>
-#include <structures/StaticVector.h>
-#include <memory/RingAllocator.h>
-#include <plugin_FusionData/FusionData.h>
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <plugin_Scaffolder/Scaffolder.h>
-#include <plugin_SeedExtender/ReadFetcher.h>
-#include <communication/VirtualCommunicator.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_FusionData/FusionData.h>
+#include <code/plugin_Scaffolder/Scaffolder.h>
+#include <code/plugin_SeedExtender/ExtensionData.h>
+#include <code/plugin_SeedExtender/ReadFetcher.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <stdio.h>
 #include <stdint.h>

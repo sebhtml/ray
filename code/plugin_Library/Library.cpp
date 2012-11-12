@@ -21,23 +21,24 @@
 
 //#define GUILLIMIN_BUG
 
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <plugin_Library/Library.h>
-#include <communication/mpi_tags.h>
-#include <sstream>
-#include <core/OperatingSystem.h>
-#include <plugin_Mock/common_functions.h>
-#include <assert.h>
-#include <plugin_Mock/Parameters.h>
+#include "Library.h"
 
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/communication/mpi_tags.h>
+#include <RayPlatform/core/OperatingSystem.h>
+
+#include <sstream>
+#include <assert.h>
+using namespace std;
 
 __CreatePlugin(Library);
 
 __CreateMasterModeAdapter(Library,RAY_MASTER_MODE_UPDATE_DISTANCES);
 __CreateSlaveModeAdapter(Library,RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 __CreateSlaveModeAdapter(Library,RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
-
-using namespace std;
 
 /* send the information to all ranks */
 void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){

@@ -22,8 +22,10 @@
 #ifndef _CoverageDistribution
 #define _CoverageDistribution
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
+
 #include <map>
 #include <string>
 #include <vector>

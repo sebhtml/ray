@@ -22,26 +22,28 @@
 #ifndef _Loader
 #define _Loader
 
-#include <plugin_Mock/common_functions.h>
-#include <vector>
-#include <memory/MyAllocator.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <fstream>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <string>
+#include "Read.h"
+#include "ArrayOfReads.h"
+#include "FastaLoader.h"
+#include "FastqLoader.h"
+#include "ColorSpaceLoader.h"
+#include "SffLoader.h"
 
 #ifdef CONFIG_HAVE_LIBZ
-#include<plugin_SequencesLoader/FastqGzLoader.h>
+#include "FastqGzLoader.h"
 #endif
 
 #ifdef CONFIG_HAVE_LIBBZ2
-#include<plugin_SequencesLoader/FastqBz2Loader.h>
+#include "FastqBz2Loader.h"
 #endif
 
-#include<plugin_SequencesLoader/FastaLoader.h>
-#include<plugin_SequencesLoader/FastqLoader.h>
-#include<plugin_SequencesLoader/ColorSpaceLoader.h>
-#include<plugin_SequencesLoader/SffLoader.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <string>
+#include <fstream>
+#include <vector>
 
 using namespace std;
 

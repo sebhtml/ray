@@ -18,12 +18,14 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_MachineHelper/MachineHelper.h>
-#include <communication/mpi_tags.h>
-#include <communication/Message.h>
-#include <plugin_CoverageGatherer/CoverageDistribution.h>
-#include <profiling/Profiler.h>
-#include <plugin_SeedExtender/Chooser.h>
+#include "MachineHelper.h"
+
+#include <code/plugin_CoverageGatherer/CoverageDistribution.h>
+#include <code/plugin_SeedExtender/Chooser.h>
+
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/communication/mpi_tags.h>
+#include <RayPlatform/profiling/Profiler.h>
 
 #include <map>
 #include <sstream>

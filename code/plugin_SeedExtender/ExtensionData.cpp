@@ -19,11 +19,13 @@
 
 */
 
-#include <structures/SplayTreeIterator.h>
-#include <plugin_SeedExtender/ExtensionData.h>
+#include "ExtensionData.h"
+
+#include <RayPlatform/structures/SplayTreeIterator.h>
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <string.h>
 #include <sstream>
-#include <cryptography/crypto.h>
 using namespace std;
 
 void ExtensionData::constructor(Parameters*parameters){

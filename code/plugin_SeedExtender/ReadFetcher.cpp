@@ -19,8 +19,9 @@
 
 */
 
-#include <plugin_SeedExtender/ReadFetcher.h>
-#include <core/OperatingSystem.h>
+#include "ReadFetcher.h"
+
+#include <RayPlatform/core/OperatingSystem.h>
 
 //#define GUILLIMIN_BUG
 

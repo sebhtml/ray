@@ -24,12 +24,14 @@
 
 #ifdef CONFIG_HAVE_LIBBZ2
 
-#include<string>
-#include<vector>
-#include<plugin_SequencesLoader/ArrayOfReads.h>
-#include<plugin_SequencesLoader/Read.h>
-#include<plugin_SequencesLoader/BzReader.h>
-#include<memory/MyAllocator.h>
+#include "ArrayOfReads.h"
+#include "Read.h"
+#include "BzReader.h"
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <string>
+#include <vector>
 using namespace std;
 
 /**

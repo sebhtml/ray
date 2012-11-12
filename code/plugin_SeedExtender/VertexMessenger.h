@@ -21,12 +21,14 @@
 #ifndef _VertexMessenger
 #define _VertexMessenger
 
+#include <code/plugin_SequencesIndexer/ReadAnnotation.h>
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_Mock/Parameters.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/memory/RingAllocator.h>
+
 #include <stdint.h>
-#include <plugin_SequencesIndexer/ReadAnnotation.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <structures/StaticVector.h>
-#include <memory/RingAllocator.h>
-#include <plugin_Mock/Parameters.h>
 #include <vector>
 #include <set>
 using namespace std;

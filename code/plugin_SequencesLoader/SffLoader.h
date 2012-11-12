@@ -22,13 +22,15 @@
 #ifndef _SffLoader
 #define _SffLoader
 
-#include<string>
-#include<vector>
-#include<plugin_SequencesLoader/Read.h>
-#include<stdio.h>
-#include<fstream>
-#include<plugin_SequencesLoader/ArrayOfReads.h>
-#include<memory/MyAllocator.h>
+#include "Read.h"
+#include "ArrayOfReads.h"
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <string>
+#include <stdio.h>
+#include <fstream>
+#include <vector>
 using namespace std;
 
 /**

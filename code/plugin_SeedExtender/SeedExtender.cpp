@@ -19,28 +19,32 @@
 
 */
 
+
+#include "BubbleTool.h"
+#include "TipWatchdog.h"
+#include "SeedExtender.h"
+#include "Chooser.h"
+
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/cryptography/crypto.h>
+
+#include <fstream>
+#include <math.h> /* sqrt */
+#include <string.h>
+#include <sstream>
+#include <assert.h>
+
 // This option disables metagenome and transcriptome assembly
 // #define CONFIG_USE_COVERAGE_DISTRIBUTION
 
 //#define CONFIG_DEBUG_SEED_EXTENSION
 	
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
-
 #define __PROGRESSION_PERIOD 1000
 
-#include <plugin_Mock/constants.h>
-#include <string.h>
-#include <structures/StaticVector.h>
-#include <plugin_SeedExtender/TipWatchdog.h>
-#include <plugin_SeedExtender/SeedExtender.h>
-#include <core/OperatingSystem.h>
-#include <fstream>
-#include <plugin_SeedExtender/Chooser.h>
-#include <sstream>
-#include <assert.h>
-#include <plugin_SeedExtender/BubbleTool.h>
-#include <cryptography/crypto.h>
-#include <math.h> /* sqrt */
 
 __CreatePlugin(SeedExtender);
 

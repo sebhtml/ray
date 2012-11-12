@@ -21,10 +21,12 @@
 
 #ifdef CONFIG_HAVE_LIBBZ2
 
-#include<plugin_SequencesLoader/FastqBz2Loader.h>
+#include "FastqBz2Loader.h"
+#include "BzReader.h"
+
 #include <stdlib.h>
-#include<fstream>
-#include<plugin_SequencesLoader/BzReader.h>
+#include <fstream>
+using namespace std;
 
 int FastqBz2Loader::getSize(){
 	return m_size;

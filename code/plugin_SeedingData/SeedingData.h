@@ -24,17 +24,19 @@
 
 class SeedExtender;
 
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_SeedExtender/SeedExtender.h>
-#include <structures/SplayTreeIterator.h>
-#include <structures/SplayNode.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <plugin_SeedingData/AssemblySeed.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <plugin_Mock/common_functions.h>
-#include <plugin_SeedingData/SeedWorker.h>
-#include <core/ComputeCore.h>
+#include "SeedWorker.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_SeedExtender/SeedExtender.h>
+#include <code/plugin_SeedingData/AssemblySeed.h>
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+#include <code/plugin_VerticesExtractor/Vertex.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/structures/SplayTreeIterator.h>
+#include <RayPlatform/structures/SplayNode.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <set>
 using namespace std;

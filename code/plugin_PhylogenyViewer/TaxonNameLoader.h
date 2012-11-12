@@ -21,10 +21,11 @@
 #ifndef _TaxonNameLoader_h
 #define _TaxonNameLoader_h
 
-#include <plugin_Mock/constants.h>
-#include <core/types.h>
+#include "types.h"
 
-#include <plugin_PhylogenyViewer/types.h>
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/types.h>
 
 #include <string>
 #include <stdint.h>

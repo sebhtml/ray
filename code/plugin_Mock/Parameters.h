@@ -22,11 +22,12 @@
 #ifndef _Parameters
 #define _Parameters
 
-#include<map>
-#include<plugin_Mock/common_functions.h>
-#include<set>
-#include<string>
-#include<vector>
+#include "common_functions.h"
+
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 using namespace std;
 
 /**

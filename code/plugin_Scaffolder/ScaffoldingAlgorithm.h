@@ -21,11 +21,12 @@
 #ifndef _ScaffoldingAlgorithm_h
 #define _ScaffoldingAlgorithm_h
 
+#include "ScaffoldingEdge.h"
+#include "ScaffoldingVertex.h"
+
 #include <vector>
 #include <set>
-#include <plugin_Scaffolder/ScaffoldingEdge.h>
 #include <map>
-#include <plugin_Scaffolder/ScaffoldingVertex.h>
 using namespace std;
 
 class ScaffoldingAlgorithm{

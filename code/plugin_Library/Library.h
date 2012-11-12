@@ -22,20 +22,22 @@
 #ifndef _Library
 #define _Library
 
-#include <communication/BufferedData.h>
-#include <plugin_SeedExtender/ExtensionData.h>
-#include <plugin_Mock/common_functions.h>
-#include <structures/StaticVector.h>
-#include <profiling/TimePrinter.h>
-#include <plugin_SeedExtender/ReadFetcher.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_SeedingData/SeedingData.h>
-#include <memory/RingAllocator.h>
-#include <plugin_Library/LibraryWorker.h>
-#include <handlers/SlaveModeHandler.h>
-#include <handlers/MasterModeHandler.h>
-#include <core/ComputeCore.h>
+#include "LibraryWorker.h"
+
+#include <code/plugin_SeedExtender/ExtensionData.h>
+#include <code/plugin_SeedExtender/ReadFetcher.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SeedingData/SeedingData.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/profiling/TimePrinter.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/handlers/SlaveModeHandler.h>
+#include <RayPlatform/handlers/MasterModeHandler.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <map>
 using namespace std;

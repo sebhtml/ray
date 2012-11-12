@@ -19,12 +19,11 @@
 
 */
 
-#include <plugin_GeneOntology/KeyEncoder.h>
-#include <string.h>
+#include "KeyEncoder.h"
 
+#include <string.h>
 #include <iostream>
 using namespace std;
-
 
 #ifdef ASSERT
 #include <assert.h>

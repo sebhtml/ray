@@ -18,9 +18,12 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_SeedingData/AssemblySeed.h>
-#include <plugin_Mock/constants.h>
-#include <core/statistics.h>
+#include "AssemblySeed.h"
+
+#include <code/plugin_Mock/constants.h>
+
+#include <RayPlatform/core/statistics.h>
+
 #include <iostream>
 #include <map>
 using namespace std;

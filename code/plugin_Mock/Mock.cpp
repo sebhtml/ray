@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Mock/Mock.h>
+#include "Mock.h"
 
 void Mock::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();

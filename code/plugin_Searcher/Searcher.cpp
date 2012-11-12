@@ -28,12 +28,14 @@
 #define CONFIG_COLORED_GRAPH_DEBUG
 #endif /* DEBUG_GRAPH_BROWSING */
 
-#include <plugin_Searcher/Searcher.h>
-#include <plugin_VerticesExtractor/Vertex.h>
-#include <core/OperatingSystem.h>
-#include <core/ComputeCore.h>
-#include <plugin_Searcher/ColoredPeakFinder.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
+#include "Searcher.h"
+#include "ColoredPeakFinder.h"
+
+#include <code/plugin_VerticesExtractor/Vertex.h>
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <stdio.h> /* for fopen, fprintf and fclose */
 #include <fstream>

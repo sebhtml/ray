@@ -19,9 +19,11 @@
 
 */
 
-#include <plugin_SequencesIndexer/IndexerWorker.h>
+#include "IndexerWorker.h"
+
+#include <RayPlatform/core/statistics.h>
+
 #include <string.h>
-#include <core/statistics.h>
 
 void IndexerWorker::constructor(int sequenceId,Parameters*parameters,RingAllocator*outboxAllocator,
 	VirtualCommunicator*vc,WorkerHandle workerId,ArrayOfReads*a,MyAllocator*allocator,

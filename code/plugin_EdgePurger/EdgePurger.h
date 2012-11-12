@@ -22,17 +22,19 @@
 #ifndef _EdgePurger_H
 #define _EdgePurger_H
 
-#include <plugin_Mock/Parameters.h>
-#include <memory/RingAllocator.h>
-#include <structures/StaticVector.h>
-#include <communication/VirtualCommunicator.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <plugin_VerticesExtractor/GridTableIterator.h>
-#include <profiling/Profiler.h>
-#include <profiling/Derivative.h>
-#include <plugin_EdgePurger/EdgePurgerWorker.h>
-#include <scheduling/TaskCreator.h>
-#include <core/ComputeCore.h>
+#include "EdgePurgerWorker.h"
+
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/profiling/Profiler.h>
+#include <RayPlatform/profiling/Derivative.h>
+#include <RayPlatform/scheduling/TaskCreator.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <map>
 #include <set>

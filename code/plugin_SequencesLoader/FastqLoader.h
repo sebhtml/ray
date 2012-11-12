@@ -22,14 +22,16 @@
 #ifndef _FastqLoader
 #define _FastqLoader
 
-#include<stdio.h>
-#include<string>
-#include<memory/MyAllocator.h>
-#include<fstream>
-#include<plugin_SequencesLoader/ArrayOfReads.h>
-#include<vector>
-#include<sstream>
-#include<plugin_SequencesLoader/Read.h>
+#include "ArrayOfReads.h"
+#include "Read.h"
+
+#include <RayPlatform/memory/MyAllocator.h>
+
+#include <fstream>
+#include <vector>
+#include <sstream>
+#include <stdio.h>
+#include <string>
 using namespace std;
 
 /**

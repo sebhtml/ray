@@ -22,9 +22,9 @@
 #ifndef _NeighbourPair_h
 #define _NeighbourPair_h
 
-#include <stdint.h> /** for uint64_t **/
-#include <plugin_Mock/constants.h>
+#include <code/plugin_Mock/constants.h>
 
+#include <stdint.h> /** for uint64_t **/
 
 /**
  * A folk in the genome neighbourhood.

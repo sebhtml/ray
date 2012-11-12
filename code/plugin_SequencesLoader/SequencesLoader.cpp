@@ -19,17 +19,20 @@ Ray
 
 */
 
-#include<string.h>
-#include<plugin_SequencesLoader/SequencesLoader.h>
-#include <core/OperatingSystem.h>
-#include<communication/Message.h>
-#include<plugin_SeedExtender/BubbleData.h>
-#include<assert.h>
-#include<vector>
-#include<plugin_Mock/common_functions.h>
-#include<plugin_SequencesLoader/Loader.h>
-#include<plugin_SequencesLoader/Read.h>
-#include<iostream>
+#include "SequencesLoader.h"
+#include "Loader.h"
+#include "Read.h"
+
+#include <code/plugin_SeedExtender/BubbleData.h>
+#include <code/plugin_Mock/common_functions.h>
+
+#include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/communication/Message.h>
+
+#include <iostream>
+#include <string.h>
+#include <assert.h>
+#include <vector>
 
 __CreatePlugin(SequencesLoader);
 

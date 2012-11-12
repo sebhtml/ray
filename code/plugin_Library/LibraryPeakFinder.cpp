@@ -18,8 +18,10 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_Library/LibraryPeakFinder.h>
-#include <core/statistics.h>
+#include "LibraryPeakFinder.h"
+
+#include <RayPlatform/core/statistics.h>
+
 #include <math.h>
 #include <iostream>
 #include <stdint.h>

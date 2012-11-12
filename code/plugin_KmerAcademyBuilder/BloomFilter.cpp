@@ -18,9 +18,12 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include <plugin_KmerAcademyBuilder/BloomFilter.h>
-#include <plugin_KmerAcademyBuilder/Kmer.h>
-#include <memory/allocator.h>
+#include "BloomFilter.h"
+
+#include <code/plugin_KmerAcademyBuilder/Kmer.h>
+
+#include <RayPlatform/memory/allocator.h>
+
 #include <iostream>
 #ifdef ASSERT
 #include <assert.h>

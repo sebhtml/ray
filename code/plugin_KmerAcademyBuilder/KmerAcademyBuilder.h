@@ -22,18 +22,19 @@
 #ifndef _KmerAcademyBuilder
 #define _KmerAcademyBuilder
 
-#include <structures/StaticVector.h>
-#include <communication/BufferedData.h>
-#include <plugin_VerticesExtractor/GridTable.h>
-#include <profiling/Derivative.h>
-#include <plugin_Mock/Parameters.h>
-#include <plugin_Mock/common_functions.h>
-#include <plugin_SequencesLoader/ArrayOfReads.h>
-#include <communication/Message.h>
-#include <profiling/Profiler.h>
-#include <memory/RingAllocator.h>
-#include <plugin_SequencesLoader/Read.h>
-#include <core/ComputeCore.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_Mock/common_functions.h>
+#include <code/plugin_SequencesLoader/ArrayOfReads.h>
+#include <code/plugin_SequencesLoader/Read.h>
+
+#include <RayPlatform/structures/StaticVector.h>
+#include <RayPlatform/communication/BufferedData.h>
+#include <RayPlatform/communication/Message.h>
+#include <RayPlatform/profiling/Derivative.h>
+#include <RayPlatform/profiling/Profiler.h>
+#include <RayPlatform/memory/RingAllocator.h>
+#include <RayPlatform/core/ComputeCore.h>
 
 #include <set>
 #include <vector>
