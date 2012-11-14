@@ -135,7 +135,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				Kmer lastVertex=seed[seed.size()-1];
 				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
 
-				if(firstVertex<firstReverse){
+				if(true || firstVertex<firstReverse){
 					printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed.size());
 					fflush(stdout);
 

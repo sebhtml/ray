@@ -48,8 +48,6 @@ the code changes.
 
 - http://github.com/sebhtml/ray-logo  (artworks)
 
-- http://github.com/sebhtml/RayKmerSearchDevel  (development scripts)
-
 # Mailing lists
 
 - Users: denovoassembler-users AT lists.sourceforge.net
