@@ -1423,13 +1423,20 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 					outputBuffer<<nucleotide;
 					contigPosition++;
 					m_positionOnScaffold++;
-					if(m_positionOnScaffold%columns==0){
+
+/*
+ * Only add a new line if there is something more to add.
+ */
+					if(m_positionOnScaffold%columns==0 && contigPosition < length){
 						outputBuffer<<"\n";
 					}
 				}
 				
 				m_operationBuffer<<outputBuffer.str().c_str();
 
+/*
+ * Add the gap.
+ */
 				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
 					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];
 					int i=0;
@@ -1439,6 +1446,11 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 						outputBuffer2<<"N";
 						i++;
 						m_positionOnScaffold++;
+
+/*
+ * We always add the new line because a gap is always followed by 
+ * a sequence.
+ */
 						if(m_positionOnScaffold%columns==0){
 							outputBuffer2<<"\n";
 						}
