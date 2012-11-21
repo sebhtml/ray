@@ -237,6 +237,17 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 			if(ratio < 0.7)
 				continue;
 
+/*
+ * We want to make sure that no sequence path is lost.
+ * They should be merged since it is not totally included.
+ */
+			int biologicalObjectsWithoutMatch=selfLength-matches;
+
+			int maximumAllowedLost=1024;
+
+			if(biologicalObjectsWithoutMatch>maximumAllowedLost)
+				continue;
+
 			/* the other is longer anyway */
 			if(hitLength > selfLength){
 				m_eliminated=true;

@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -45,7 +45,11 @@ __DeclareSlaveModeAdapter(FusionTaskCreator,RAY_SLAVE_MODE_FUSION);
 
 /**
  * The class creates and kills workers for the fusion of
- * similar paths
+ * similar paths.
+ *
+ * If path is self-contained in another, it is eliminated.
+ *
+ * \author Sébastien Boisvert
  */
 class FusionTaskCreator: public TaskCreator, public CorePlugin {
 

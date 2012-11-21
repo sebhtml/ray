@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -206,7 +206,7 @@ void FusionTaskCreator::registerPlugin(ComputeCore*core){
 
 	m_finishedInPreviousCycle=false;
 
-	// TODO: this is buggy
+	// TODO: this is buggy, don't turn this on !
 	m_fastRun=false;
 }
 
