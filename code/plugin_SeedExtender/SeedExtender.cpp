@@ -2423,7 +2423,7 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 	/** write extensions for debugging purposes */
 	if(m_parameters->hasOption("-write-extensions")){
 		ostringstream fileName;
-		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<"RayExtensions.fasta";
+		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".RayExtensions.fasta";
 		ofstream f(fileName.str().c_str());
 
 		for(int i=0;i<(int)m_ed->m_EXTENSION_identifiers.size();i++){
