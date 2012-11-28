@@ -67,8 +67,6 @@ void Machine::init(int argc,char**argv){
 	m_rank=m_computeCore.getRank();
 	m_size=m_computeCore.getSize();
 	
-	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
-
 	m_alive=m_computeCore.getLife();
 
 	m_inbox=m_computeCore.getInbox();
@@ -539,6 +537,8 @@ m_seedingData,
 		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
 		createDirectory(scheduling.str().c_str());
 	}
+
+	cout<<"Rank "<<m_rank<<": Rank= "<<m_rank<<" Size= "<<m_size<<" ProcessIdentifier= "<<portableProcessId()<<endl;
 
 	if(m_argc==1||((string)m_argv[1])=="--help"){
 		if(isMaster()){
