@@ -38,6 +38,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 #include <stdint.h>
 using namespace std;
 
@@ -65,8 +66,6 @@ class EdgePurger : public TaskCreator, public CorePlugin {
 	MasterMode RAY_MASTER_MODE_WRITE_KMERS;
 	SlaveMode RAY_SLAVE_MODE_PURGE_NULL_EDGES;
 
-
-
 	Profiler*m_profiler;
 
 	/** checkpointing */
@@ -88,6 +87,9 @@ class EdgePurger : public TaskCreator, public CorePlugin {
 	MyAllocator m_workerAllocator;
 	int*m_masterMode;
 	bool m_done;
+	vector<LargeCount> m_graphSizes;
+	
+	void writeGraphPartition();
 
 public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,

@@ -25,6 +25,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
+#include <fstream>
+using namespace std;
 
 __CreatePlugin(EdgePurger);
 
@@ -50,6 +53,11 @@ void EdgePurger::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	/* for TaskCreator */
 	m_initialized=false;
 	m_virtualProcessor=virtualProcessor;
+
+/*
+ * Reserve the number of slots for number of vertices.
+ */
+	m_graphSizes.resize(m_parameters->getSize());
 }
 
 void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
@@ -58,20 +66,42 @@ void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 
 	/* master control */
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY){
+
+		Message*message=m_inbox->at(0);
+		Rank source=message->getSource();
+		MessageUnit*buffer=message->getBuffer();
+		LargeCount numberOfVertices=buffer[0];
+
+		#ifdef ASSERT
+		assert(source>=0);
+		assert(source<(int)m_graphSizes.size());
+		#endif
+
+		m_graphSizes[source]=numberOfVertices;
+
 		m_masterCountFinished++;
 		//cout<<"Receiving RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY"<<endl;
 		if(m_masterCountFinished==m_parameters->getSize()){
+
+			writeGraphPartition();
+
 			(*m_masterMode)=RAY_MASTER_MODE_WRITE_KMERS;
 		}
 	}
+
 	if(m_done){
 		return;
 	}
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
+
 	if(!m_checkedCheckpoint){
 		if(m_parameters->hasCheckpoint("GenomeGraph")){
-			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
+			
+			MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
+			int bufferSize=0;
+			messageBuffer[bufferSize++]=m_subgraph->size();
+			Message aMessage(messageBuffer,bufferSize,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,m_parameters->getRank());
 			m_outbox->push_back(&aMessage);
 			m_done=true;
 			return;
@@ -91,8 +121,13 @@ void EdgePurger::finalizeMethod(){
 	fflush(stdout);
 	
 	m_done=true;
-	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
-	m_parameters->getRank());
+
+	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
+	int bufferSize=0;
+	messageBuffer[bufferSize++]=m_subgraph->size();
+
+	Message aMessage(messageBuffer,bufferSize,MASTER_RANK,RAY_MPI_TAG_PURGE_NULL_EDGES_REPLY,
+		m_parameters->getRank());
 	m_outbox->push_back(&aMessage);
 
 	m_derivative.writeFile(&cout);
@@ -133,6 +168,53 @@ Worker* EdgePurger::assignNextTask(){
 	#endif
 
 	return worker;
+}
+
+void EdgePurger::writeGraphPartition(){
+	ostringstream fileName;
+	fileName<<m_parameters->getPrefix()<<"GraphPartition.txt";
+
+	string theFileName=fileName.str();
+	ofstream fileStream(theFileName.c_str());
+
+	
+	LargeCount total=0;
+
+	for(int i=0;i<(int)m_graphSizes.size();i++){
+		total+=m_graphSizes[i];
+	}
+
+	LargeCount best=total/m_graphSizes.size();
+
+	fileStream<<"#Rank	NumberOfKmers	IdealNumberOfKmers	Difference	RelativeDifference"<<endl;
+	fileStream<<"#TotalKmers: "<<total<<endl;
+	fileStream<<"#Ranks: "<<m_graphSizes.size()<<endl;
+	fileStream<<"#IdealNumberOfKmers: "<<best<<endl;
+
+	for(int i=0;i<(int)m_graphSizes.size();i++){
+		LargeCount actual=m_graphSizes[i];
+
+		int difference=0;
+
+		if(actual<best){
+			difference=best-actual;
+			difference=-difference;
+		}else{
+			difference=actual-best;
+		}
+
+		double relativeDifference=difference*100;
+
+		if(best!=0)
+			relativeDifference/=best;
+
+		fileStream<<i<<"	"<<actual<<"	"<<best<<"	"<<difference;
+		fileStream<<"	"<<relativeDifference<<"%"<<endl;
+	}
+
+	fileStream.close();
+
+	m_graphSizes.clear();
 }
 
 void EdgePurger::processWorkerResult(Worker*){
