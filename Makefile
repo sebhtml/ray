@@ -141,6 +141,8 @@ CONFIG_FLAGS-y += -D CONFIG_RAY_VERSION=\"$(CONFIG_RAY_VERSION)\"
 LDFLAGS = $(LDFLAGS-y)
 CONFIG_FLAGS=$(CONFIG_FLAGS-y)
 
+Q=@
+
 #######################################################################
 # Build rules.
 # the target is Ray
@@ -148,68 +150,68 @@ all: Ray
 
 # inference rule
 %.o: %.cpp
-	@$(ECHO) "  CXX $@"
-	@$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -c -o $@ $<
+	$(Q)$(ECHO) "  CXX $@"
+	$(Q)$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -c $< -o $@
 
 include code/application_core/Makefile
 include code/plugin_*/Makefile
 
 showOptions: 
-	@echo ""
-	@echo "Compilation options (you can change them of course)"
-	@echo ""
-	@echo PREFIX = $(PREFIX)
-	@echo MPICXX = $(MPICXX)
-	@echo MAXKMERLENGTH = $(MAXKMERLENGTH)
-	@echo FORCE_PACKING = $(FORCE_PACKING)
-	@echo ASSERT = $(ASSERT)
-	@echo HAVE_LIBZ = $(HAVE_LIBZ)
-	@echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
-	@echo ""
-	@echo "Compilation and linking flags (generated automatically)"
-	@echo ""
-	@echo CXXFLAGS = $(CXXFLAGS)
-	@echo CONFIG_FLAGS = $(CONFIG_FLAGS)
-	@echo LDFLAGS = $(LDFLAGS)
-	@echo ""
-	@touch showOptions
+	$(Q)echo ""
+	$(Q)echo "Compilation options (you can change them of course)"
+	$(Q)echo ""
+	$(Q)echo PREFIX = $(PREFIX)
+	$(Q)echo MPICXX = $(MPICXX)
+	$(Q)echo MAXKMERLENGTH = $(MAXKMERLENGTH)
+	$(Q)echo FORCE_PACKING = $(FORCE_PACKING)
+	$(Q)echo ASSERT = $(ASSERT)
+	$(Q)echo HAVE_LIBZ = $(HAVE_LIBZ)
+	$(Q)echo HAVE_LIBBZ2 = $(HAVE_LIBBZ2)
+	$(Q)echo ""
+	$(Q)echo "Compilation and linking flags (generated automatically)"
+	$(Q)echo ""
+	$(Q)echo CXXFLAGS = $(CXXFLAGS)
+	$(Q)echo CONFIG_FLAGS = $(CONFIG_FLAGS)
+	$(Q)echo LDFLAGS = $(LDFLAGS)
+	$(Q)echo ""
+	$(Q)touch showOptions
 	
 # how to make Ray
 Ray: showOptions RayPlatform/libRayPlatform.a $(obj-y)
-	@$(ECHO) "  LD $@"
-	@$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
-	@$(ECHO) $(PREFIX) > PREFIX
+	$(Q)$(ECHO) "  LD $@"
+	$(Q)$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
+	$(Q)$(ECHO) $(PREFIX) > PREFIX
 
 RayPlatform/libRayPlatform.a:
-	@$(CD) RayPlatform; $(MAKE) $(MFLAGS) ; $(CD) ..
+	$(Q)$(MAKE) $(MFLAGS) -C RayPlatform
 
 clean:
-	@$(CD) RayPlatform; $(MAKE) clean; $(CD) ..
-	@$(ECHO) CLEAN Ray plugins
-	@$(RM) -f Ray showOptions PREFIX $(obj-y)
+	$(Q)$(MAKE) $(MFLAGS) -C RayPlatform clean
+	$(Q)$(ECHO) CLEAN Ray plugins
+	$(Q)$(RM) -f Ray showOptions PREFIX $(obj-y)
 
 install: 
 	$(eval PREFIX=$(shell cat PREFIX))
 
-	@$(MKDIR) -p $(PREFIX)
+	$(Q)$(MKDIR) -p $(PREFIX)
 
-	@$(ECHO) ""
-	@$(ECHO) "Installing Ray to $(PREFIX)"
-	@$(ECHO) ""
+	$(Q)$(ECHO) ""
+	$(Q)$(ECHO) "Installing Ray to $(PREFIX)"
+	$(Q)$(ECHO) ""
 
-	@cp LICENSE.txt $(PREFIX)
-	@cp gpl-3.0.txt $(PREFIX)
-	@cp RayPlatform/lgpl-3.0.txt $(PREFIX)
+	$(Q)cp LICENSE.txt $(PREFIX)
+	$(Q)cp gpl-3.0.txt $(PREFIX)
+	$(Q)cp RayPlatform/lgpl-3.0.txt $(PREFIX)
 
-	@cp Ray $(PREFIX)
-	@cp -r Documentation $(PREFIX)
-	@cp README.md $(PREFIX)
-	@cp MANUAL_PAGE.txt $(PREFIX)
-	@cp AUTHORS $(PREFIX)
-	@cp -r scripts $PREFIX
+	$(Q)cp Ray $(PREFIX)
+	$(Q)cp -r Documentation $(PREFIX)
+	$(Q)cp README.md $(PREFIX)
+	$(Q)cp MANUAL_PAGE.txt $(PREFIX)
+	$(Q)cp AUTHORS $(PREFIX)
+	$(Q)cp -r scripts $PREFIX
 
-	@mkdir $(PREFIX)/RayPlatform
-	@cp RayPlatform/AUTHORS $(PREFIX)/RayPlatform
-	@cp RayPlatform/README $(PREFIX)/RayPlatform
-	@cp -r RayPlatform/Documentation $(PREFIX)/RayPlatform
+	$(Q)mkdir $(PREFIX)/RayPlatform
+	$(Q)cp RayPlatform/AUTHORS $(PREFIX)/RayPlatform
+	$(Q)cp RayPlatform/README $(PREFIX)/RayPlatform
+	$(Q)cp -r RayPlatform/Documentation $(PREFIX)/RayPlatform
 
