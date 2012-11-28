@@ -182,8 +182,9 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
  * only one of them.
  */
 
-			Rank rankToFlush=kmerToSend.hash_function_1()%m_parameters->getSize();
-			
+			Rank rankToFlush=kmerToSend.vertexRank(m_parameters->getSize(),m_parameters->getWordSize(),
+				m_parameters->getColorSpaceMode());
+
 			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 				m_bufferedData.addAt(rankToFlush,kmerToSend.getU64(i));
 			}

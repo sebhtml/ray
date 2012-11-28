@@ -722,7 +722,9 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
  * is for this process and not another one...
  */
 		#ifdef ASSERT
-		Rank rankToFlush=kmerObject.hash_function_1()%m_parameters->getSize();
+		Rank rankToFlush=kmerObject.vertexRank(m_parameters->getSize(),m_parameters->getWordSize(),
+			m_parameters->getColorSpaceMode());
+
 		assert(rankToFlush==m_rank);
 		#endif
 
