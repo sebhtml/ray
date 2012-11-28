@@ -65,6 +65,9 @@ class CoverageGatherer : public CorePlugin{
 	int*m_slaveMode;
 	GridTable*m_subgraph;
 	RingAllocator*m_outboxAllocator;
+
+	void writeHeader(FILE*kmerFile);
+
 public:
 	void constructor(Parameters*parameters,StaticVector*inbox,StaticVector*outbox,int*slaveMode,
 		GridTable*subgraph,RingAllocator*outboxAllocator);
