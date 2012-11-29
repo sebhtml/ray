@@ -171,8 +171,6 @@ void Machine::start(){
 	if(m_aborted)
 		return;
 
-	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
-
 	// TODO: move this in plugin Searcher 
 	m_searcher.constructor(&m_parameters,m_outbox,&m_timePrinter,m_switchMan,m_virtualCommunicator,m_inbox,
 		m_outboxAllocator,&m_subgraph);
@@ -304,6 +302,8 @@ void Machine::start(){
 	}
 
 	m_parameters.constructor(m_argc,m_argv,getRank(),m_size,miniRanksPerRank);
+
+	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
 
 	if(m_parameters.runProfiler())
 		m_computeCore.enableProfiler();
