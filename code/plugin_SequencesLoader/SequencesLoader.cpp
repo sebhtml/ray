@@ -159,7 +159,9 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	}
 	m_distribution_sequence_id=0;
 	vector<string> allFiles=(*m_parameters).getAllFiles();
-	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations(),
+		m_rank);
+
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
@@ -257,7 +259,8 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	cout<<";"<<endingSequenceId<<"], "<<sequences<<" sequence reads"<<endl;
 
 	m_distribution_currentSequenceId=0;
-	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations(),
+		m_rank);
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 

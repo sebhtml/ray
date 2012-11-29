@@ -31,7 +31,10 @@
 #include <stdlib.h>
 using namespace std;
 
-void Loader::constructor(const char*prefix,bool show){
+void Loader::constructor(const char*prefix,bool show,Rank rank){
+
+	m_rank=rank;
+
 	m_maxToLoad=500000;
 	m_currentOffset=0;
 	m_type=FORMAT_NULL;
@@ -62,7 +65,7 @@ int Loader::load(string file,bool isGenome){
 		return EXIT_SUCCESS;
 	}
 
-	cout<<"[Loader::load] File: "<<file<<" (please wait...)"<<endl;
+	cout<<"Rank "<<m_rank<<" is fetching file "<<file<<" with lazy loading (please wait...)"<<endl;
 
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() &&

@@ -40,7 +40,8 @@ void Partitioner::constructor(RingAllocator*outboxAllocator,StaticVector*inbox,S
 	m_parameters=parameters;
 	m_initiatedMaster=false;
 	m_initiatedSlave=false;
-	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations());
+	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations(),
+		m_parameters->getRank());
 }
 
 void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){

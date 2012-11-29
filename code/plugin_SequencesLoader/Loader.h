@@ -65,6 +65,9 @@ FORMAT_FASTQ_BZ2
  * \author Sébastien Boisvert
  */
 class Loader{
+	
+	Rank m_rank;
+
 	bool m_show;
 	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
@@ -91,7 +94,7 @@ class Loader{
 	void loadSequences();
 
 public:
-	void constructor(const char*prefix,bool show);
+	void constructor(const char*prefix,bool show,Rank rank);
 	int load(string file,bool isGenome);
 	LargeCount size();
 	Read*at(LargeIndex i);
