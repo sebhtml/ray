@@ -34,13 +34,31 @@
 #include <vector>
 using namespace std;
 
+
 /**
+ * This class is responsible for reading .fasta.gz and .fastq.gz files.
  * \author Sébastien Boisvert
  */
 class FastqGzLoader{
+
+	bool m_completed;
+	bool m_noMoreBytes;
+	bool m_debug;
+
+/* stuff for readahead */
+
+	int m_bufferedBytes;
+	int m_currentStart;
+	int m_firstNewLine;
+	char*m_readaheadBuffer;
+
 	gzFile m_f;
 	int m_size;
 	int m_loaded;
+
+	bool readOneSingleLine(char*buffer,int maximumLength);
+	bool pullLineWithReadaheadTechnology(char*buffer,int maximumLength);
+
 public:
 	int open(string file,int period);
 	int getSize();
