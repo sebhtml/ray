@@ -40,7 +40,7 @@ __CreatePlugin(NetworkTest);
 
 __CreateMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
 __CreateSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
-
+__CreateMessageTagAdapter(NetworkTest,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 
 #define LATENCY_INFORMATION_NOT_AVAILABLE 123123123
 #define __MAXIMUM_LATENCY 4096 // microseconds
@@ -154,13 +154,25 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			m_destinations.push_back(destination);
 
 			MessageUnit *message=(MessageUnit*)m_outboxAllocator->allocate(m_numberOfWords*sizeof(MessageUnit));
+			message[0]=destination;
+
 			Message aMessage(message,m_numberOfWords,destination,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,m_rank);
 			m_outbox->push_back(&aMessage);
 			m_sentCurrentTestMessage=true;
-			//cout<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
+
+			#ifdef CONFIG_DEBUG_NETWORK_TEST_PLUGIN
+			cout<<"[NetworkTest.plugin] Rank "<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE to "<<destination<<endl;
+			#endif
+
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
 			LargeCount endingMicroSeconds=getMicroseconds();
 			
+			#ifdef CONFIG_DEBUG_NETWORK_TEST_PLUGIN
+			Message*message=m_inbox->at(0);
+			Rank source=message->getSource();
+			cout<<"[NetworkTest.plugin] Rank "<<m_rank<<" receives RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY from "<<source<<endl;
+			#endif
+
 			m_receivedMicroseconds.push_back(endingMicroSeconds);
 
 			m_sentCurrentTestMessage=false;
@@ -417,6 +429,23 @@ void NetworkTest::setSwitchMan(SwitchMan*a){
 	m_switchMan=a;
 }
 
+/* we reply with an empty message */
+void NetworkTest::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
+
+	Rank source=message->getSource();
+
+	#ifdef CONFIG_DEBUG_NETWORK_TEST_PLUGIN
+	cout<<"[NetworkTest.plugin] Rank "<<m_rank<<" receives RAY_MPI_TAG_TEST_NETWORK_MESSAGE from "<<source<<endl;
+	#endif
+
+	Message aMessage(NULL,0,source,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,m_rank);
+	m_outbox->push_back(&aMessage);
+
+	#ifdef CONFIG_DEBUG_NETWORK_TEST_PLUGIN
+	cout<<"[NetworkTest.plugin] Rank "<<m_rank<<" sends RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY to "<<source<<endl;
+	#endif
+}
+
 void NetworkTest::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin = core->allocatePluginHandle();
@@ -434,6 +463,10 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	RAY_MASTER_MODE_TEST_NETWORK=core->allocateMasterModeHandle(plugin);
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_TEST_NETWORK, __GetAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_TEST_NETWORK,"RAY_MASTER_MODE_TEST_NETWORK");
+
+	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE, __GetAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE");
 
 	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK,"RAY_MPI_TAG_TEST_NETWORK");
@@ -471,6 +504,7 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_TEST_NETWORK,                 RAY_SLAVE_MODE_TEST_NETWORK);
 
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_TEST_NETWORK_MESSAGE,RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY );
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TEST_NETWORK,RAY_MASTER_MODE_COUNT_FILE_ENTRIES);
 
@@ -479,6 +513,7 @@ void NetworkTest::resolveSymbols(ComputeCore*core){
 	__BindPlugin(NetworkTest);
 
 	__BindAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
+	__BindAdapter(NetworkTest,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 	__BindAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
 }
 

@@ -331,6 +331,28 @@ void Machine::start(){
 	m_directionsAllocator.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
+	// options are loaded from here
+	// plus the directory exists now
+	if(m_parameters.hasOption("-route-messages")){
+ 
+		ostringstream routingPrefix;
+		routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
+
+		m_router->enable(m_inbox,m_outbox,m_outboxAllocator,m_parameters.getRank(),
+			routingPrefix.str(),m_parameters.getSize(),
+			m_parameters.getConnectionType(),m_parameters.getRoutingDegree());
+
+		// update the connections
+		vector<int> connections;
+		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
+		
+// TODO: the 3 lines below are for the MessagePassingInterface.txt file
+		#if 0
+		m_messagesHandler->setConnections(&connections);
+		#endif
+	}
+
+
 /*
  * We need to know if we must abort. All the RayPlatform
  * engine will start anyway on each core, so we need to stop
@@ -351,6 +373,7 @@ void Machine::start(){
 		}
 
 		oldDirectoryExists=true;
+
 	}
 	
 	// create the directory
@@ -360,6 +383,13 @@ void Machine::start(){
 		m_parameters.writeCommandFile();
 
 		m_timePrinter.setFile(m_parameters.getPrefix());
+
+/*
+ * Write routing information only if the directory is sane.
+ */
+		if(m_router->isEnabled())
+			m_router->writeFiles();
+
 	}
 
 	// register the plugins.
@@ -386,32 +416,6 @@ void Machine::start(){
 		f7.close();
 	}
 
-	ostringstream routingPrefix;
-	routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
-
-	// options are loaded from here
-	// plus the directory exists now
-	if(!oldDirectoryExists && m_parameters.hasOption("-route-messages")){
-/*
- * If the directory exists, we don't do any routing.
- * We just stop everything.
- */
-
-		if(m_parameters.getRank()== MASTER_RANK)
-			createDirectory(routingPrefix.str().c_str());
-
-		m_router->enable(m_inbox,m_outbox,m_outboxAllocator,m_parameters.getRank(),
-			routingPrefix.str(),m_parameters.getSize(),
-			m_parameters.getConnectionType(),m_parameters.getRoutingDegree());
-
-		// update the connections
-		vector<int> connections;
-		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
-		
-		#if 0
-		m_messagesHandler->setConnections(&connections);
-		#endif
-	}
 
 	// set the attributes of the seed extender.
 	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,m_inbox,m_profiler,

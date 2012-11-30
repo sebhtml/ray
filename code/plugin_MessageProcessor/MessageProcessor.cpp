@@ -66,7 +66,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);
@@ -988,12 +987,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Mes
 	if((*m_numberOfMachinesReadyToSendDistribution)==m_size){
 		m_switchMan->closeMasterMode();
 	}
-}
-
-/* we reply with an empty message */
-void MessageProcessor::call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message){
-	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY,m_rank);
-	m_outbox->push_back(&aMessage);
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message){
@@ -2713,10 +2706,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER, __GetAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER");
 
-	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE, __GetAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE");
-
 	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION, __GetAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION");
@@ -3243,7 +3232,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_VERTEX_INFO,                  RAY_MPI_TAG_VERTEX_INFO_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_READ_SEQUENCE,                RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,        RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY );
-	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_TEST_NETWORK_MESSAGE,                 RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY );
 
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit) );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_READS,                 max(5,KMER_U64_ARRAY_SIZE+1) );
@@ -3287,7 +3275,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);

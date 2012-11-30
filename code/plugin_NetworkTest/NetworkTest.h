@@ -39,6 +39,7 @@ __DeclarePlugin(NetworkTest);
 
 __DeclareMasterModeAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
 __DeclareSlaveModeAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
+__DeclareMessageTagAdapter(NetworkTest,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 
 /**
  * This class tests the network
@@ -58,6 +59,7 @@ class NetworkTest :  public CorePlugin {
 
 	__AddAdapter(NetworkTest,RAY_MASTER_MODE_TEST_NETWORK);
 	__AddAdapter(NetworkTest,RAY_SLAVE_MODE_TEST_NETWORK);
+	__AddAdapter(NetworkTest,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 
 	MessageTag RAY_MPI_TAG_TEST_NETWORK;
 	MessageTag RAY_MPI_TAG_TEST_NETWORK_MESSAGE;
@@ -67,11 +69,10 @@ class NetworkTest :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA;
 
 	MasterMode RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
-	MasterMode  RAY_MASTER_MODE_TEST_NETWORK;
+	MasterMode RAY_MASTER_MODE_TEST_NETWORK;
 	MasterMode RAY_MASTER_MODE_COUNT_FILE_ENTRIES;
 
 	SlaveMode RAY_SLAVE_MODE_TEST_NETWORK;
-
 
 	SwitchMan*m_switchMan;
 	
@@ -148,8 +149,11 @@ public:
 	/** initialize the NetworkTest */
 	void constructor(Rank rank,int size,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,RingAllocator*outboxAllocator,
 		string*name,TimePrinter*timePrinter);
+
 	/** work method for the master mode */
 	void call_RAY_MASTER_MODE_TEST_NETWORK ();
+
+	void call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message);
 
 	/** work method for the slave mode */
 	void call_RAY_SLAVE_MODE_TEST_NETWORK();

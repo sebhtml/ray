@@ -78,7 +78,6 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
-__DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);
@@ -193,7 +192,6 @@ class MessageProcessor :  public CorePlugin {
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_IN_EDGES_DATA); /**/
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER);
-	__AddAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_DATA);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_COVERAGE_END);
@@ -605,7 +603,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message);
 	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_QUESTION(Message*message);
 	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER(Message*message);
-	void call_RAY_MPI_TAG_TEST_NETWORK_MESSAGE(Message*message);
 	void call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*message);
 	void call_RAY_MPI_TAG_COVERAGE_DATA(Message*message);
 	void call_RAY_MPI_TAG_COVERAGE_END(Message*message);
