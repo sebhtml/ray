@@ -31,9 +31,14 @@ using namespace std;
 
 
 CoverageDistribution::CoverageDistribution(map<CoverageDepth,LargeCount>*distributionOfCoverage,string*file){
+
 	if(file!=NULL){
 		ofstream f;
 		f.open(file->c_str());
+
+		f<<"# KmerCoverage	Frequency"<<endl;
+		f<<"# Any frequency is a even number because of odd k-mer length"<<endl;
+
 		for(map<CoverageDepth,LargeCount>::iterator i=distributionOfCoverage->begin();i!=distributionOfCoverage->end();i++){
 			f<<""<<i->first<<" "<<i->second<<endl;
 		}

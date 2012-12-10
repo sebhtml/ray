@@ -122,6 +122,7 @@ void SeedWorker::work(){
 }
 
 bool SeedWorker::isDone(){
+
 	return m_finished;
 }
 
@@ -148,6 +149,8 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	m_SEEDING_seed.clear();
 	m_wordSize=parameters->getWordSize();
 	m_parameters=parameters;
+
+	m_hasDeadEnd=false;
 }
 
 /*
@@ -359,6 +362,14 @@ void SeedWorker::do_1_1_test(){
 		if(m_mainVertexCoverage<minimumCoverageToStore)
 			m_SEEDING_1_1_test_result=false;
 
+/*
+ * Check if it's a dead end. We don't want dead ends because they consume too
+ * much time.
+ */
+
+		if(m_ingoingCoverages.size()==0 || m_outgoingCoverages.size()==0){
+			m_hasDeadEnd=true;
+		}
 	}
 }
 
@@ -380,4 +391,8 @@ vector<int>*SeedWorker::getCoverageVector(){
 
 WorkerHandle SeedWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
+}
+
+bool SeedWorker::hasDeadEnd(){
+	return m_hasDeadEnd;
 }

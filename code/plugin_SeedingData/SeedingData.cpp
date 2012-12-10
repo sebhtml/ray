@@ -121,8 +121,14 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			assert(nucleotides==0 || nucleotides>=m_wordSize);
 			#endif
 
+			bool skipBecauseOfDeadEnd=m_aliveWorkers[workerId].hasDeadEnd();
+
+			if(skipBecauseOfDeadEnd){
+			
+				m_skippedObjectsWithDeadEnd++;
+
 			// only consider the long ones.
-			if(nucleotides>=m_parameters->getMinimumContigLength()){
+			}else if(nucleotides>=m_parameters->getMinimumContigLength()){
 				#ifdef SHOW_DISCOVERIES
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				#endif
@@ -161,11 +167,18 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 
 						cout<<", adding seed."<<endl;
 						m_SEEDING_seeds.push_back(theSeed);
-
+		
+						m_eligiblePaths++;
 					}else{
 						cout<<", ignoring seed."<<endl;
+			
+						m_skippedNotEnoughCoverage++;
 					}
+				}else{
+					m_skippedNotMine++;
 				}
+			}else{
+				m_skippedTooShort++;
 			}
 		}
 		m_activeWorkerIterator++;
@@ -226,6 +239,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 	#endif
 
 	if((int)m_subgraph->size()==m_completedJobs){
+
 		printf("Rank %i has %i seeds\n",m_rank,(int)m_SEEDING_seeds.size());
 		fflush(stdout);
 		printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
@@ -233,6 +247,17 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
 		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
+
+		cout<<"Rank "<<m_rank<<" runtime statistics for seeding algorithm: "<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of dead ends: "<<m_skippedObjectsWithDeadEnd<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of short length: "<<m_skippedTooShort<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of bad ownership: "<<m_skippedNotMine<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of low coverage: "<<m_skippedNotEnoughCoverage<<endl;
+		cout<<"Rank "<<m_rank<<" Eligible paths: "<<m_eligiblePaths<<endl;
+
+		#ifdef ASSERT
+		assert(m_eligiblePaths==(int)m_SEEDING_seeds.size());
+		#endif
 
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
@@ -275,6 +300,13 @@ void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,Static
 int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
+
+
+	m_skippedObjectsWithDeadEnd=0;
+	m_skippedTooShort=0;
+	m_skippedNotMine=0;
+	m_skippedNotEnoughCoverage=0;
+	m_eligiblePaths=0;
 
 	m_checkedCheckpoint=false;
 	m_virtualCommunicator=vc;
@@ -397,6 +429,9 @@ void SeedingData::writeSeedStatistics(){
 	file<<m_parameters->getPrefix();
 	file<<"SeedLengthDistribution.txt";
 	ofstream f(file.str().c_str());
+
+	f<<"# SeedLengthInNucleotides	Frequency"<<endl;
+
 	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
 		int length=i->first;
 		int count=i->second;
