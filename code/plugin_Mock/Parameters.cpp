@@ -1804,6 +1804,11 @@ Rank Parameters::getRankFromGlobalId(ReadHandle a){
 
 	#ifdef ASSERT
 
+	if(rank<0){
+		cout<<"Error: rank is < 0, rank: "<<rank<<" ReadHandle: "<<a<<" elementsPerRank: "<<elementsPerRank;
+		cout<<"self.rank is "<<m_rank<<endl;
+	}
+
 	assert(rank>=0);
 
 	if(rank>=m_size){

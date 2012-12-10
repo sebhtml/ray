@@ -61,6 +61,7 @@ class SequencesLoader : public CorePlugin{
 	ArrayOfReads*m_myReads;
 	Parameters*m_parameters;
 	LargeIndex m_distribution_currentSequenceId;
+	LargeCount m_totalNumberOfSequences;
 	int m_distribution_file_id;
 	LargeIndex m_distribution_sequence_id;
 	bool m_LOADER_isLeftFile;

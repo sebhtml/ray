@@ -78,6 +78,10 @@ void SequencesLoader::registerSequence(){
 
 		#ifdef ASSERT
 		assert(leftSequenceGlobalId<rightSequenceGlobalId);
+		assert(leftSequenceGlobalId>=0);
+		assert(leftSequenceGlobalId<m_totalNumberOfSequences);
+		assert(rightSequenceGlobalId>=0);
+		assert(rightSequenceGlobalId<m_totalNumberOfSequences);
 		#endif
 
 		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
@@ -105,6 +109,24 @@ void SequencesLoader::registerSequence(){
 		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
 		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
 
+		#ifdef ASSERT
+		assert(leftSequenceGlobalId>=0);
+
+		if(leftSequenceGlobalId>=m_totalNumberOfSequences){
+			cout<<"Error: invalid ReadHandle object, leftSequenceGlobalId: "<<leftSequenceGlobalId;
+			cout<<" m_totalNumberOfSequences: "<<m_totalNumberOfSequences;
+			cout<<" rightSequenceGlobalId: "<<rightSequenceGlobalId<<endl;
+			cout<<" m_distribution_currentSequenceId "<<m_distribution_currentSequenceId;
+			cout<<" m_loader.size: "<<m_loader.size();
+			cout<<" rightSequenceIdOnRank: "<<rightSequenceIdOnRank<<" m_myReads->size: "<<m_myReads->size();
+			cout<<endl;
+		}
+
+		assert(leftSequenceGlobalId<m_totalNumberOfSequences);
+		assert(rightSequenceGlobalId>=0);
+		assert(rightSequenceGlobalId<m_totalNumberOfSequences);
+		#endif
+
 		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		#ifdef ASSERT
 		if(leftSequenceRank>=m_size){
@@ -120,6 +142,12 @@ void SequencesLoader::registerSequence(){
 	// left sequence in interleaved file
 	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
 		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
+
+		#ifdef ASSERT
+		assert(rightSequenceGlobalId>=0);
+		assert(rightSequenceGlobalId<m_totalNumberOfSequences);
+		#endif
+
 		Rank rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
 		LargeIndex rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
@@ -135,6 +163,14 @@ void SequencesLoader::registerSequence(){
 		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId);
 		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
 		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-1;
+
+		#ifdef ASSERT
+		assert(leftSequenceGlobalId>=0);
+		assert(leftSequenceGlobalId<m_totalNumberOfSequences);
+		assert(rightSequenceGlobalId>=0);
+		assert(rightSequenceGlobalId<m_totalNumberOfSequences);
+		#endif
+
 		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		LargeIndex leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
@@ -238,19 +274,19 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	// count the number of sequences in all files.
 	vector<string> allFiles=(*m_parameters).getAllFiles();
 	
-	LargeCount totalNumberOfSequences=0;
+	m_totalNumberOfSequences=0;
 	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
-		totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
+		m_totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
 	}
 
-	LargeCount sequencesPerRank=totalNumberOfSequences/m_size;
+	LargeCount sequencesPerRank=m_totalNumberOfSequences/m_size;
 	LargeIndex sequencesOnRanksBeforeThisOne=m_rank*sequencesPerRank;
 	
 	LargeIndex startingSequenceId=sequencesOnRanksBeforeThisOne;
 	LargeIndex endingSequenceId=startingSequenceId+sequencesPerRank-1;
 
 	if(m_rank==m_size-1){
-		endingSequenceId=totalNumberOfSequences-1;
+		endingSequenceId=m_totalNumberOfSequences-1;
 	}
 
 	LargeCount sequences=endingSequenceId-startingSequenceId+1;
