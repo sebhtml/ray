@@ -429,6 +429,9 @@ void SeedingData::writeSeedStatistics(){
 	file<<m_parameters->getPrefix();
 	file<<"SeedLengthDistribution.txt";
 	ofstream f(file.str().c_str());
+
+	f<<"# SeedLengthInNucleotides	Frequency"<<endl;
+
 	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
 		int length=i->first;
 		int count=i->second;
