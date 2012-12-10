@@ -77,7 +77,11 @@ class SeedingData : public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_START_SEEDING;
 	SlaveMode RAY_SLAVE_MODE_SEND_SEED_LENGTHS;
 
-
+	int m_skippedObjectsWithDeadEnd;
+	int m_skippedNotMine;
+	int m_skippedTooShort;
+	int m_skippedNotEnoughCoverage;
+	int m_eligiblePaths;
 
 	/** checkpointing */
 	bool m_checkedCheckpoint;

@@ -44,6 +44,8 @@ class SeedWorker : public Worker {
 
 	int m_mainVertexCoverage;
 
+	bool m_hasDeadEnd;
+
 	map<Kmer,int> m_cache;
 	WorkerHandle m_workerIdentifier;
 	bool m_finished;
@@ -115,6 +117,7 @@ public:
 	/** get the worker number */
 	WorkerHandle getWorkerIdentifier();
 
+	bool hasDeadEnd();
 };
 
 #endif
