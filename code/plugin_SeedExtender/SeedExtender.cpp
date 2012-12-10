@@ -934,6 +934,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 	int length=getNumberOfNucleotides(ed->m_EXTENSION_extension.size(),m_parameters->getWordSize());
 
+
 	if(length>=m_parameters->getMinimumContigLength()){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
@@ -967,6 +968,18 @@ Kmer *currentVertex,BubbleData*bubbleData){
 			MACRO_COLLECT_PROFILING_INFORMATION();
 			return;
 		}
+
+/*
+ * The time-slice job has finished at this point.
+ */
+		m_nucleotidesAssembled+=length;
+		if(m_nucleotidesAssembled>= m_lastNucleotideAssembled+m_nucleotidePeriod){
+
+			cout<<"Rank "<<m_rank<<" traversed "<<m_nucleotidesAssembled<<" nucleotide symbols"<<endl;
+
+			m_lastNucleotideAssembled=m_nucleotidesAssembled;
+		}
+
 
 		// reuse the state later
 		m_slicedComputationStarted = false;
@@ -2447,6 +2460,10 @@ void SeedExtender::initializeExtensions(vector<AssemblySeed>*seeds){
 	m_ed->m_EXTENSION_initiated=true;
 	m_ed->m_EXTENSION_currentSeedIndex=0;
 	m_ed->m_EXTENSION_currentPosition=0;
+
+	m_nucleotidesAssembled=0;
+	m_lastNucleotideAssembled=0;
+	m_nucleotidePeriod=1000;
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 

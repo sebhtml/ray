@@ -66,6 +66,10 @@ __DeclareMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**
  */
 class SeedExtender: public CorePlugin  {
 
+	uint64_t m_nucleotidesAssembled;
+	uint64_t m_lastNucleotideAssembled;
+	int m_nucleotidePeriod;
+
 	__AddAdapter(SeedExtender,RAY_SLAVE_MODE_EXTENSION); /**/
 	__AddAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
 	__AddAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
