@@ -1129,9 +1129,16 @@ void Parameters::computeAverageDistances(){
 		vector<int> x;
 		vector<int> y;
 		string fileName=getLibraryFile(library);
+
 		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		ofstream f(fileName.c_str());
+
+		f<<"# OuterDistanceInNucleotides	Frequency"<<endl;
+		f<<"# OuterDistanceInNucleotides includes the gap length and lengths of left and right reads"<<endl;
+
 		#endif
+
+
 		for(map<int,int>::iterator j=m_observedDistances[library].begin();
 			j!=m_observedDistances[library].end();j++){
 			int d=j->first;
@@ -1186,6 +1193,8 @@ void Parameters::computeAverageDistances(){
 			f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[1]]<<endl;
 		}
 		f2<<" Distribution: "<<getLibraryFile(library)<<endl;
+
+
 		for(int j=0;j<getLibraryPeaks(library);j++){
 			int average=getLibraryAverageLength(library,j);
 			int standardDeviation=getLibraryStandardDeviation(library,j);
