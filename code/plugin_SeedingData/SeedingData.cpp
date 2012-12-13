@@ -455,7 +455,15 @@ void SeedingData::loadCheckpoint(){
 			Kmer kmer;
 			kmer.read(&f);
 			seed.push_back(&kmer);
+
+			CoverageDepth coverageValue=0;
+
+			f.read((char*)&coverageValue,sizeof(CoverageDepth));
+			seed.addCoverageValue(coverageValue);
 		}
+
+		seed.computePeakCoverage();
+
 		m_SEEDING_seeds.push_back(seed);
 	}
 	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint Seeds"<<endl;

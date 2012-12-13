@@ -29,6 +29,7 @@
 using namespace std;
 
 AssemblySeed::AssemblySeed(){
+	m_hasPeakCoverage=false;
 }
 
 int AssemblySeed::size()const{
@@ -85,9 +86,16 @@ void AssemblySeed::computePeakCoverage(){
 	}else if(useMean){
 		computePeakCoverageUsingMean();
 	}
+
+	m_hasPeakCoverage=true;
 }
 
 CoverageDepth AssemblySeed::getPeakCoverage(){
+
+	#ifdef ASSERT
+	assert(m_hasPeakCoverage == true);
+	#endif
+	
 	return m_peakCoverage;
 }
 

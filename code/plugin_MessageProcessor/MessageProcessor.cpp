@@ -2292,17 +2292,25 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+
 	/* write the Seeds checkpoint */
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Seeds")){
+
 		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Seeds"<<endl;
 		int count=m_seedingData->m_SEEDING_seeds.size();
 		f.write((char*)&count,sizeof(int));
+
 		for(int i=0;i<(int)m_seedingData->m_SEEDING_seeds.size();i++){
 			int length=m_seedingData->m_SEEDING_seeds[i].size();
 			f.write((char*)&length,sizeof(int));
+
 			for(int j=0;j<(int)m_seedingData->m_SEEDING_seeds[i].size();j++){
 				m_seedingData->m_SEEDING_seeds[i].at(j)->write(&f);
+				
+				CoverageDepth coverageValue=0;
+				coverageValue=m_seedingData->m_SEEDING_seeds[i].getCoverageAt(j);
+				f.write((char*)&coverageValue,sizeof(CoverageDepth));
 			}
 		}
 		f.close();

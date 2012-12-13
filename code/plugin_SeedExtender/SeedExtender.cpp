@@ -1318,6 +1318,10 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				m_currentPeakCoverage=m_ed->m_EXTENSION_currentSeed.getPeakCoverage();
 
+				#ifdef ASSERT
+				assert(m_currentPeakCoverage>=2);
+				#endif
+
 				// Ray v1.7 and earlier have CONFIG_USE_COVERAGE_DISTRIBUTION=y behavior
 				#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 				m_currentPeakCoverage=m_parameters->getPeakCoverage();

@@ -46,6 +46,8 @@ class AssemblySeed{
 /** computes locality with a mode (locality object is peak coverage) **/
 	void computePeakCoverageUsingMode();
 
+	bool m_hasPeakCoverage;
+
 public:
 	AssemblySeed();
 
