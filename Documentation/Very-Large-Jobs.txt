@@ -1,7 +1,8 @@
 
-For very large jobs, routing should be enabled.
-Message routing reduces the latency.
+For very large jobs, routing should be enabled unless you are using a good
+interconnect.
 
+Message routing reduces the latency for bad interconnects.
 
 
 mpiexec -n 512 Ray \

@@ -1582,12 +1582,13 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-connection-type type","Sets the connection type for routes.");
 	showOptionDescription("Accepted values are debruijn, hypercube, polytope, group, random, kautz and complete. Default is debruijn.");
-	showOptionDescription(" debruijn: a full de Bruijn graph a given alphabet and diameter");
-	showOptionDescription(" hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2");
+	showOptionDescription(" torus: a k-ary n-cube, radix: k, dimension: n, degree: 2*dimension, vertices: radix^dimension");
 	showOptionDescription(" polytope: a convex regular polytope, alphabet is {0,1,...,B-1} and the vertices is a power of B");
+	showOptionDescription(" hypercube: a hypercube, alphabet is {0,1} and the vertices is a power of 2");
+	showOptionDescription(" debruijn: a full de Bruijn graph a given alphabet and diameter");
+	showOptionDescription(" kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph");
 	showOptionDescription(" group: silly model where one representative per group can communicate with outsiders");
 	showOptionDescription(" random: Erdős–Rényi model");
-	showOptionDescription(" kautz: a full de Kautz graph, which is a subgraph of a de Bruijn graph");
 	showOptionDescription(" complete: a full graph with all the possible connections");
 
 	showOptionDescription("With the type debruijn, the number of ranks must be a power of something.");

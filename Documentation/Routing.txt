@@ -8,7 +8,17 @@ Vertices is the number of computer cores to use (mpiexec -n ###)
 
 See also Documentation/Very-Large-Jobs.txt.
 
-## Convex regular polytope (the best so far)
+## Torus
+
+Type: torus
+Radix: 8
+Dimension: 3
+Vertices: Radix^Dimension = 512
+Degree: 2*Dimension = 6
+Options:  -route-messages -connection-type torus -routing-graph-degree 6
+
+
+## Convex regular polytope
 
 Messages can be routed with a polytope using
 the polytope connection type. A hypercube is a polytope with alphabetSize
