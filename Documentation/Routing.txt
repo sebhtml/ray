@@ -17,6 +17,14 @@ Vertices: Radix^Dimension = 512
 Degree: 2*Dimension = 6
 Options:  -route-messages -connection-type torus -routing-graph-degree 6
 
+Type: torus
+Radix: 4
+Dimension: 5
+Vertices: Radix^Dimension = 1024
+Degree: 2*Dimension = 10
+Options:  -route-messages -connection-type torus -routing-graph-degree 10
+
+
 
 ## Convex regular polytope
 
