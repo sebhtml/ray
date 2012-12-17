@@ -65,7 +65,7 @@ Vertices: 4225 = 65*65
 Type: Polytope
 Degree: 128 = (65-1)*2
 Diameter: 2 (65^2=1024)
-Options:  -route-messages -connection-type polytope -routing-graph-degree 4225
+Options:  -route-messages -connection-type polytope -routing-graph-degree 128
 
 Vertices: 1024
 Type: Polytope
