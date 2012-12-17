@@ -82,6 +82,8 @@ class Scaffolder :  public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 	SlaveMode RAY_SLAVE_MODE_SCAFFOLDER;
 
+	bool m_coverageWasComputedWithJustice;
+	int m_skippedRepeatedObjects;
 
 	SwitchMan*m_switchMan;
 	
@@ -206,6 +208,9 @@ class Scaffolder :  public CorePlugin{
 	void computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream);
 	void printInStream(ostream*outputStream);
 
+	void getCoverageOfBlockOfLife();
+	
+	Rank m_rank;
 public:
 
 	bool m_initialised;

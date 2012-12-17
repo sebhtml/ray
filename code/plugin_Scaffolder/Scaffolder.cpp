@@ -32,15 +32,17 @@
 #include <RayPlatform/communication/Message.h>
 
 /* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
-#include <stdio.h> 
 #include <algorithm> /* for sort */
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include <assert.h>
-#include <math.h> /* for sqrt */
+#include <iomanip> /* for setprecision */
 using namespace std;
+
+#include <math.h> /* for sqrt */
+#include <assert.h>
+#include <stdio.h> 
 
 __CreatePlugin(Scaffolder);
 
@@ -55,8 +57,6 @@ void Scaffolder::addMasterContig(PathHandle name,int length){
 	m_masterContigs.push_back(name);
 	m_masterLengths.push_back(length);
 }
-
-
 
 void Scaffolder::solve(){
 
@@ -360,6 +360,12 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_parameters=parameters;
 	m_initialised=false;
 	m_workerId=0;
+
+	#ifdef ASSERT
+	assert(m_parameters!=NULL);
+	#endif
+
+	m_rank=m_parameters->getRank();
 }
 
 void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
@@ -370,6 +376,15 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 		m_positionOnContig=0;
 		m_forwardDone=false;
 		m_coverageRequested=false;
+
+/*
+ * We compute the peak coverage since we want to dodge any
+ * repeats like plague otherwise too many messages will be
+ * sent.
+ */
+		m_coverageWasComputedWithJustice=false;
+		m_skippedRepeatedObjects=0;
+
 		bool hasPairedReads=m_parameters->hasPairedReads();
 
 		bool disableScaffolder=false;
@@ -418,6 +433,66 @@ void Scaffolder::setContigPaths(vector<PathHandle>*names,vector<GraphPath>*paths
 	m_contigs=paths;
 }
 
+void Scaffolder::getCoverageOfBlockOfLife(){
+	if(m_positionOnContig<(int)(*m_contigs)[m_contigId].size()){
+
+// ask for the coverage value
+		if(!m_coverageRequested){
+
+			Kmer*vertex=m_contigs->at(m_contigId).at(m_positionOnContig);
+
+			MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
+			int bufferPosition=0;
+			vertex->pack(buffer,&bufferPosition);
+			Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
+				m_parameters->_vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+			m_coverageRequested=true;
+			m_coverageReceived=false;
+
+			if(m_positionOnContig==0){
+				m_contigs->at(m_contigId).resetCoverageValues();
+			}
+
+		}else if(!m_coverageReceived
+			&&m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+			vector<MessageUnit> elements;
+			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
+
+			#ifdef ASSERT
+			assert(elements.size() > 0);
+			#endif
+
+			uint8_t edges=elements[0];
+			CoverageDepth coverage=elements[1];
+
+			m_contigs->at(m_contigId).addCoverageValue(coverage);
+
+			m_coverageReceived=true;
+		
+/*
+ * Reset the fancy state
+ */
+			m_positionOnContig++;
+			m_coverageRequested=false;
+		}
+	}else{
+
+		m_coverageRequested=false;
+		m_positionOnContig=0; // move the head 
+	
+		m_contigs->at(m_contigId).computePeakCoverage();
+
+		CoverageDepth peak=m_contigs->at(m_contigId).getPeakCoverage();
+
+		cout<<"Rank "<<m_rank<<" objectName: "<<m_contigNames->at(m_contigId)<<" => peakCoverage: "<<peak<<" blockSize: ";
+		cout<<m_contigs->at(m_contigId).size()<<endl;
+
+		m_coverageWasComputedWithJustice=true;
+	}
+}
+
 void Scaffolder::processContig(){
 
 	/** skip the time-consuming parts **/
@@ -432,9 +507,12 @@ void Scaffolder::processContig(){
 		// but send the contig meta information
 		m_sentContigMeta=false;
 		m_sentContigInfo=false;
+
 	}
 
-	if(m_positionOnContig<(int)(*m_contigs)[m_contigId].size()){
+	if(!m_coverageWasComputedWithJustice){
+		getCoverageOfBlockOfLife();
+	}else if(m_positionOnContig<(int)(*m_contigs)[m_contigId].size()){
 		processContigPosition();
 	}else if(!m_summaryPerformed){
 		performSummary();
@@ -445,6 +523,8 @@ void Scaffolder::processContig(){
 	}else{
 		m_contigId++;
 		m_positionOnContig=0;
+		m_coverageWasComputedWithJustice=false;
+		m_skippedRepeatedObjects=0;
 	}
 }
 
@@ -715,6 +795,11 @@ void Scaffolder::processVertex(Kmer*vertex){
 				m_contigId+1,(int)(*m_contigs).size(),
 				m_positionOnContig+1,(int)(*m_contigs)[m_contigId].size());
 
+			cout<<"Rank "<<m_rank<<" ineligibleObjects: "<<m_skippedRepeatedObjects<<"/";
+			cout<<(*m_contigs)[m_contigId].size()<<" (";
+			cout<<fixed<<setprecision(2)<<100.0*m_skippedRepeatedObjects/(*m_contigs)[m_contigId].size();
+			cout<<"%)"<<endl;
+
 			if(m_parameters->showMemoryUsage()){
 				showMemoryUsage(m_parameters->getRank());
 			}
@@ -778,7 +863,11 @@ void Scaffolder::processVertex(Kmer*vertex){
  * anything that sequences moving around in the genome (like Alu in the human genome).
  *
  */
-		if(1 /*m_receivedCoverage<m_parameters->getRepeatCoverage()*/){
+
+		CoverageDepth theLocalPeakCoverage=m_contigs->at(m_contigId).getPeakCoverage();
+		CoverageDepth limitForMessagingLayer=REPEAT_MULTIPLIER*theLocalPeakCoverage;
+
+		if(m_receivedCoverage < limitForMessagingLayer){
 			if(!m_initialisedFetcher){
 				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,
 				m_outbox,m_parameters,m_virtualCommunicator,m_workerId,
@@ -793,6 +882,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 				processAnnotations();
 			}
 		}else{
+			m_skippedRepeatedObjects++;
 			m_forwardDone=true;
 			m_reverseDone=false;
 		}
