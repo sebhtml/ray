@@ -89,6 +89,10 @@ void VertexMessenger::work(){
 			m_annotations.clear();
 			m_isDone=true;
 
+/*
+ * We fetch all the reads for nice objects. For repeated objects,
+ * we only want those for which we have a matching pair.
+ */
 		}else if(m_coverageValue>= 3* m_peakCoverage){
 			getReadsForRepeatedVertex();
 		}else{

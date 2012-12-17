@@ -19,7 +19,6 @@
 
 */
 
-
 #include "BubbleTool.h"
 #include "TipWatchdog.h"
 #include "SeedExtender.h"
