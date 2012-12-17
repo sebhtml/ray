@@ -878,12 +878,12 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		if(m_writeDetailedFiles){ /* now we write coverage frequencies */
 
 			#ifdef ASSERT
-			assert(m_coverageValues.size() == (*m_contigs)[m_contig].size());
+			assert((int)m_coverageValues.size() == (*m_contigs)[m_contig].size());
 			#endif
 
 			for(int i=0;i<(int)m_coverageValues.size();i++){
 				int position=i+1;
-				int coverage=m_coverageValues[i];
+				CoverageDepth coverage=m_coverageValues[i];
 				int colors=m_colorValues[i];
 
 				//*************
@@ -894,7 +894,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 				// anyway the code path for getColorSpaceMode=true is not tested very well
 				bool coloredMode=m_parameters->getColorSpaceMode();
 
-				Kmer*kmer=&((*m_contigs)[m_contig][i]);
+				Kmer*kmer=(*m_contigs)[m_contig].at(i);
 				double gcRatio=kmer->getGuanineCytosineProportion(kmerLength,coloredMode);
 
 				#ifdef ASSERT
@@ -1053,7 +1053,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			#endif
 
 			// get the kmer
-			Kmer*kmer=&((*m_contigs)[m_contig][m_contigPosition]);
+			Kmer*kmer=(*m_contigs)[m_contig].at(m_contigPosition);
 
 			int rankToFlush=m_parameters->_vertexRank(kmer);
 
@@ -1194,7 +1194,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 	}
 }
 
-void Searcher::setContigs(vector<vector<Kmer> >*paths,vector<PathHandle>*names){
+void Searcher::setContigs(vector<GraphPath>*paths,vector<PathHandle>*names){
 	m_contigs=paths;
 	m_contigNames=names;
 }

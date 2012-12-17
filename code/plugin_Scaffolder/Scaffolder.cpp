@@ -413,7 +413,7 @@ void Scaffolder::call_RAY_SLAVE_MODE_SCAFFOLDER(){
 	}
 }
 
-void Scaffolder::setContigPaths(vector<PathHandle>*names,vector<vector<Kmer> >*paths){
+void Scaffolder::setContigPaths(vector<PathHandle>*names,vector<GraphPath>*paths){
 	m_contigNames=names;
 	m_contigs=paths;
 }
@@ -494,7 +494,7 @@ void Scaffolder::performSummary(){
 
 	#ifdef ASSERT
 	assert(m_contigId < (int)m_contigs->size());
-	assert(m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
+	assert((int)m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
 	#endif
 
 	LargeCount sum=0;
@@ -579,9 +579,11 @@ void Scaffolder::performSummary(){
 		fp<<"contig-"<<contigName<<endl;
 		fp<<vertices<<" vertices"<<endl;
 		fp<<"#Index	Vertex	Coverage"<<endl;
+
 		for(int i=0;i<vertices;i++){
-			Kmer kmer=(*m_contigs)[m_contigId][i];
-			int coverage=m_vertexCoverageValues[i];
+
+			Kmer kmer=*((*m_contigs)[m_contigId].at(i));
+			CoverageDepth coverage=m_vertexCoverageValues[i];
 
 			fp<<i<<"	"<<kmer.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<"	"<<coverage<<endl;
 		}
@@ -609,8 +611,8 @@ void Scaffolder::performSummary(){
 
 					for(vector<ScaffoldingLink>::iterator m=l->second.begin();m!=l->second.end();m++){
 						int distance=(*m).getDistance();
-						int coverage1=(*m).getCoverage1();
-						int coverage2=(*m).getCoverage2();
+						CoverageDepth coverage1=(*m).getCoverage1();
+						CoverageDepth coverage2=(*m).getCoverage2();
 
 						int numberOfStandardDeviations=1;
 
@@ -653,7 +655,8 @@ void Scaffolder::processContigPosition(){
 	assert(m_positionOnContig<(int)(*m_contigs)[m_contigId].size());
 	#endif
 
-	Kmer vertex=(*m_contigs)[m_contigId][m_positionOnContig];
+	Kmer vertex=*((*m_contigs)[m_contigId].at(m_positionOnContig));
+
 	#ifdef ASSERT
 	assert(m_parameters!=NULL);
 	#endif
@@ -737,7 +740,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 		#endif
 
 		uint8_t edges=elements[0];
-		int coverage=elements[1];
+		CoverageDepth coverage=elements[1];
 
 		m_receivedCoverage=coverage;
 		m_coverageReceived=true;
@@ -1361,7 +1364,8 @@ void Scaffolder::getContigSequence(PathHandle id){
 			while(kmerIterator<count){
 				Kmer a;
 				a.unpack(&data,&pos);
-				m_contigPath.push_back(a);
+				m_contigPath.push_back(&a);
+
 				kmerIterator++;
 			}
 			m_position+=count;

@@ -959,7 +959,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
  * Make sure that the edge was added.
  */
 		#ifdef ASSERT
-		vector<Kmer>inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
+		vector<Kmer> inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
 		bool found=false;
 		for(int j=0;j<(int)inEdges.size();j++){
 			if(inEdges[j]==prefix){
@@ -2114,7 +2114,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	m_fusionData->m_FINISH_newFusions.clear();
 
-	vector<vector<Kmer> > fusions;
+	vector<GraphPath> fusions;
 	for(int i=0;i<(int)(m_ed->m_EXTENSION_contigs).size();i++){
 		bool eliminated=false;
 
@@ -2133,10 +2133,12 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 				continue;
 			}
 
-			vector<Kmer> rc;
+			GraphPath rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
-				rc.push_back(m_ed->m_EXTENSION_contigs[i][j].complementVertex(*m_wordSize,
-					m_parameters->getColorSpaceMode()));
+
+				Kmer kmer=m_ed->m_EXTENSION_contigs[i][j]->complementVertex(*m_wordSize,
+					m_parameters->getColorSpaceMode());
+				rc.push_back(&kmer);
 			}
 			fusions.push_back(rc);
 		}
@@ -2264,9 +2266,9 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 		assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
 		#endif
 
-		Kmer a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
+		Kmer*a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
 		int pos=i;
-		a.pack(messageBytes,&pos);
+		a->pack(messageBytes,&pos);
 	}
 
 	Message aMessage(messageBytes,count,source,RAY_MPI_TAG_GET_PATH_VERTEX_REPLY,m_rank);
@@ -2471,7 +2473,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 
 	while(position<length
 	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
-		m_ed->m_EXTENSION_contigs[index][position++].pack(messageContent,&outputPosition);
+		m_ed->m_EXTENSION_contigs[index][position++]->pack(messageContent,&outputPosition);
 		count++;
 	}
 	messageContent[origin]=count;

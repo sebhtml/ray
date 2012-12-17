@@ -58,7 +58,7 @@ string addLineBreaks(string dna,int columns){
 	return output.str();
 }
 
-string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
+string convertToString(GraphPath*b,int m_wordSize,bool color){
 	ostringstream a;
 	#ifdef USE_DISTANT_SEGMENTS_GRAPH
 	//
@@ -70,12 +70,14 @@ string convertToString(vector<Kmer>*b,int m_wordSize,bool color){
 		a<<codeToChar(b->at(p).getFirstSegmentFirstCode(m_wordSize));
 	}
 	#else
-	a<<b->at(0).idToWord(m_wordSize,color);
+	a<<b->at(0)->idToWord(m_wordSize,color);
 	#endif
+
 	for(int j=1;j<(int)(*b).size();j++){
-		a<<b->at(j).getLastSymbol(m_wordSize,color);
+		a<<b->at(j)->getLastSymbol(m_wordSize,color);
 	}
 	string contig=a.str();
+
 	return contig;
 }
 

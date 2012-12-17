@@ -28,15 +28,18 @@ __CreatePlugin(JoinerTaskCreator);
 
 __CreateSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
 
+/**
+ * mainLoop() is provided by TaskCreator
+ */
 void JoinerTaskCreator::call_RAY_SLAVE_MODE_FINISH_FUSIONS(){
 	mainLoop();
 }
 
 void JoinerTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,
-		vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		vector<GraphPath>*paths,vector<PathHandle>*pathIdentifiers,
 		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator,
-		vector<vector<Kmer> >*newPaths){
+		vector<GraphPath>*newPaths){
 	m_newPaths=newPaths;
 
 	m_virtualCommunicator=virtualCommunicator;

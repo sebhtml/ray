@@ -25,6 +25,7 @@ see <http://www.gnu.org/licenses/>
 #include "constants.h"
 
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/memory/allocator.h>
 #include <RayPlatform/core/slave_modes.h>
@@ -60,7 +61,10 @@ Kmer wordId(const char*a);
  */
 string addLineBreaks(string sequence,int a);
 
-string convertToString(vector<Kmer>*b,int m_wordSize,bool color);
+/*
+ * TODO: move this in GraphPath
+ */
+string convertToString(GraphPath*b,int m_wordSize,bool color);
 
 Kmer kmerAtPosition(const char*string,int pos,int w,char strand,bool color);
 

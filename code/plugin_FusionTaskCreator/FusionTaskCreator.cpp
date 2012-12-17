@@ -35,7 +35,7 @@ void FusionTaskCreator::call_RAY_SLAVE_MODE_FUSION(){
 
 void FusionTaskCreator::constructor(VirtualProcessor*virtualProcessor,StaticVector*outbox,
 		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,
-		vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		vector<GraphPath>*paths,vector<PathHandle>*pathIdentifiers,
 		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator){
 	m_virtualCommunicator=virtualCommunicator;
 

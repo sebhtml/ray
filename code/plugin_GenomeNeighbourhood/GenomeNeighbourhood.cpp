@@ -478,11 +478,11 @@ void GenomeNeighbourhood::processSide(int mode){
 		Kmer kmer;
 
 		if(mode==FETCH_CHILDREN){
-			kmer=m_contigs->at(m_contigIndex).at(contigLength-1);
+			kmer=*(m_contigs->at(m_contigIndex).at(contigLength-1));
 
 		}else if(mode==FETCH_PARENTS){
 
-			kmer=m_contigs->at(m_contigIndex).at(0);
+			kmer=*(m_contigs->at(m_contigIndex).at(0));
 		}
 
 		createStacks(kmer);
@@ -1102,7 +1102,7 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 
 	// fetch parallel shared objects
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
-	m_contigs=(vector<vector<Kmer> >*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
+	m_contigs=(vector<GraphPath>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
 	m_contigNames=(vector<PathHandle>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 	m_contigLengths=(map<PathHandle,int>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigLengths.ray");

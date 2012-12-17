@@ -24,6 +24,7 @@
 
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/scheduling/Worker.h>
 #include <RayPlatform/scheduling/TaskCreator.h>
@@ -69,7 +70,7 @@ class FusionTaskCreator: public TaskCreator, public CorePlugin {
 	Parameters*m_parameters;
 	StaticVector*m_outbox;
 	int*m_slaveMode;
-	vector<vector<Kmer> >*m_paths;
+	vector<GraphPath>*m_paths;
 	vector<PathHandle>*m_pathIdentifiers;
 
 	set<PathHandle>*m_eliminated;
@@ -86,7 +87,7 @@ class FusionTaskCreator: public TaskCreator, public CorePlugin {
 
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
-		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<PathHandle >*pathIdentifiers,
+		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<GraphPath>*paths,vector<PathHandle >*pathIdentifiers,
 		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator);
 
 	void call_RAY_SLAVE_MODE_FUSION();

@@ -62,11 +62,11 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 				int vertices=0;
 				f.read((char*)&name,sizeof(PathHandle));
 				f.read((char*)&vertices,sizeof(int));
-				vector<Kmer> path;
+				GraphPath path;
 				for(int j=0;j<vertices;j++){
 					Kmer kmer;
 					kmer.read(&f);
-					path.push_back(kmer);
+					path.push_back(&kmer);
 				}
 	
 				#ifdef ASSERT
@@ -127,7 +127,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	assert(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 0);
 	#endif
 
-	Kmer vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
+	Kmer vertex=*(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(m_ed->m_EXTENSION_currentPosition));
 	int destination=m_parameters->_vertexRank(&vertex);
 
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
@@ -299,7 +299,11 @@ void FusionData::finishFusions(){
 				m_Machine_getPaths_DONE=true;
 				m_Machine_getPaths_result.clear();// avoids major leak... LOL
 			}else{
-				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
+				int position=m_ed->m_EXTENSION_currentPosition;
+				GraphPath*path=&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]);
+				Kmer kmerObjectAtPosition=*(path->at(position));
+
+				getPaths(kmerObjectAtPosition);
 			}
 		}else{
 			// at this point, we have the paths that has the said vertex in them.
@@ -328,17 +332,23 @@ void FusionData::finishFusions(){
 						showDate();
 					}
 				}
-				vector<Kmer> a;
-				m_FINISH_newFusions.push_back(a);
-				vector<int> b;
+				GraphPath aPath;
+				m_FINISH_newFusions.push_back(aPath);
+
+// TODO: GraphPath provides a way to store coverage too !
+				vector<CoverageDepth> b;
 				m_FINISH_coverages.clear();
 				m_FINISH_vertex_requested=false;
 				m_FUSION_eliminated.insert(currentId);
 				m_FUSION_pathLengthRequested=false;
 				m_checkedValidity=false;
 			}
-			Kmer vertex=m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition];
-			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(vertex);
+
+			int position=m_ed->m_EXTENSION_currentPosition;
+			Kmer vertex=*(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(position));
+
+			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(&vertex);
+
 			m_Machine_getPaths_DONE=false;
 			m_Machine_getPaths_INITIALIZED=false;
 			m_Machine_getPaths_result.clear();
@@ -443,7 +453,12 @@ void FusionData::finishFusions(){
 				assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
 				assert(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 				#endif
-				getPaths(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i][m_ed->m_EXTENSION_currentPosition]);
+
+				int position=m_ed->m_EXTENSION_currentPosition;
+				GraphPath*path=&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]);
+				Kmer kmerObject=*(path->at(position));
+
+				getPaths(kmerObject);
 			}else{
 
 				bool found=false;
@@ -523,7 +538,7 @@ void FusionData::finishFusions(){
 					m_FINISH_vertex_received=false;
 
 				}else if(m_FINISH_vertex_received){
-					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(m_FINISH_received_vertex);
+					m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(&m_FINISH_received_vertex);
 					m_FINISH_vertex_requested=false;
 					m_selectedPosition++;
 					m_FINISH_fusionOccured=true;

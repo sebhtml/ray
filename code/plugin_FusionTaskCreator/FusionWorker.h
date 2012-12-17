@@ -24,6 +24,7 @@
 
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
 #include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/communication/VirtualCommunicator.h>
 #include <RayPlatform/scheduling/Worker.h>
@@ -45,7 +46,11 @@ class FusionWorker: public Worker{
 	bool m_requestedNumberOfPaths;
 	WorkerHandle m_workerIdentifier;
 	bool m_isDone;
-	vector<Kmer>*m_path;
+
+/*
+ * TODO: in the future, a PathHandle object will be included in any GraphPath object.
+ */
+	GraphPath*m_path;
 	PathHandle m_identifier;
 	bool m_reverseStrand;
 	bool m_eliminated;
@@ -66,7 +71,7 @@ class FusionWorker: public Worker{
 	bool m_receivedPath;
 	bool m_requestedPath;
 public:
-	void constructor(WorkerHandle i,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
+	void constructor(WorkerHandle i,GraphPath*path,PathHandle identifier,bool reverseStrand,
 VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,

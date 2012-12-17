@@ -24,6 +24,7 @@
 
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/scheduling/Worker.h>
 #include <RayPlatform/scheduling/TaskCreator.h>
@@ -43,7 +44,10 @@ __DeclareSlaveModeAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
 
 /**
  * The class creates and kills workers for the fusion of
- * similar paths */
+ * similar paths 
+ *
+ * \author Sébastien Boisvert
+ * */
 class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
 	__AddAdapter(JoinerTaskCreator,RAY_SLAVE_MODE_FINISH_FUSIONS);
@@ -63,7 +67,7 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 	Parameters*m_parameters;
 	StaticVector*m_outbox;
 	int*m_slaveMode;
-	vector<vector<Kmer> >*m_paths;
+	vector<GraphPath>*m_paths;
 	vector<PathHandle>*m_pathIdentifiers;
 
 	set<PathHandle>*m_eliminated;
@@ -72,7 +76,7 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 	WorkerHandle m_currentWorkerIdentifier;
 	bool m_reverseStrand;
 
-	vector<vector<Kmer> >*m_newPaths;
+	vector<GraphPath>*m_newPaths;
 
 	// fast run parameters
 	bool m_previouslyDone;
@@ -80,9 +84,9 @@ class JoinerTaskCreator: public TaskCreator,  public CorePlugin{
 
 public:
 	void constructor( VirtualProcessor*virtualProcessor,StaticVector*outbox,
-		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<vector<Kmer> >*paths,vector<PathHandle>*pathIdentifiers,
+		RingAllocator*outboxAllocator,int*mode,Parameters*parameters,vector<GraphPath>*paths,vector<PathHandle>*pathIdentifiers,
 		set<PathHandle>*eliminated,VirtualCommunicator*virtualCommunicator,
-		vector<vector<Kmer> >*newPaths
+		vector<GraphPath>*newPaths
 );
 
 	void call_RAY_SLAVE_MODE_FINISH_FUSIONS();

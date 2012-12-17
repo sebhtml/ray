@@ -804,7 +804,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			// this code must be run in many slices...
 			for(int i= m_slicedProgression;i>=0;i--){
-				Kmer newKmer=ed->m_EXTENSION_extension.at(i).complementVertex(wordSize,
+				Kmer newKmer=ed->m_EXTENSION_extension.at(i)->complementVertex(wordSize,
 					m_parameters->getColorSpaceMode());
 				m_complementedSeed.push_back(&newKmer);
 
@@ -943,7 +943,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		if(!m_slicedComputationStarted){
 			m_slicedComputationStarted = true;
 			m_slicedProgression = 0;
-			vector<Kmer> emptyOne;
+			GraphPath emptyOne;
 			ed->m_EXTENSION_contigs.push_back(emptyOne);
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
@@ -956,7 +956,9 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 		// this hunk needs to be time-sliced...
 		if(m_slicedProgression < (int) ed->m_EXTENSION_extension.size()){
-			ed->m_EXTENSION_contigs[ed->m_EXTENSION_contigs.size()-1].push_back(ed->m_EXTENSION_extension[m_slicedProgression]);
+
+			Kmer*kmer=ed->m_EXTENSION_extension[m_slicedProgression];
+			ed->m_EXTENSION_contigs[ed->m_EXTENSION_contigs.size()-1].push_back(kmer);
 			m_slicedProgression++;
 			return;
 		}
@@ -1427,7 +1429,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		ed->m_EXTENSION_extension.push_back((*currentVertex));
+		ed->m_EXTENSION_extension.push_back((currentVertex));
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
 
 		#ifdef ASSERT
@@ -2052,7 +2054,7 @@ void SeedExtender::writeCheckpoint(){
 		int length=m_ed->m_EXTENSION_contigs[i].size();
 		f.write((char*)&length,sizeof(int));
 		for(int j=0;j<length;j++){
-			m_ed->m_EXTENSION_contigs[i][j].write(&f);
+			m_ed->m_EXTENSION_contigs[i].at(j)->write(&f);
 		}
 	}
 	f.close();
@@ -2075,11 +2077,11 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 		#ifdef ASSERT
 		assert(length>0);
 		#endif
-		vector<Kmer> extension;
+		GraphPath extension;
 		for(int j=0;j<length;j++){
 			Kmer kmer;
 			kmer.read(&f);
-			extension.push_back(kmer);
+			extension.push_back(&kmer);
 		}
 		m_ed->m_EXTENSION_contigs.push_back(extension);
 
@@ -2120,7 +2122,7 @@ void SeedExtender::showSequences(){
 	}
 
 	// print the contig
-	vector<Kmer> lastBits;
+	GraphPath lastBits;
 
 	for(int i=firstPosition;i<(int)m_ed->m_EXTENSION_extension.size();i++){
 		lastBits.push_back(m_ed->m_EXTENSION_extension[i]);
@@ -2356,7 +2358,7 @@ int SeedExtender::chooseWithSeed(){
 		cout<<" Position Kmer Coverage"<<endl;
 
 		while(position>=0){
-			Kmer*kmer=&(m_ed->m_EXTENSION_extension[position]);
+			Kmer*kmer=(m_ed->m_EXTENSION_extension[position]);
 			CoverageDepth depth=m_ed->m_extensionCoverageValues[position];
 
 			cout<<" "<<position<<" "<<kmer->idToWord(wordSize,colored)<<" ";

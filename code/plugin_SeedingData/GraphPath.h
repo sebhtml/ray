@@ -30,9 +30,12 @@ using namespace std;
  * This class describes objects representing assembly seeds.
  * An assembly seed is a path in the de Bruijn graph.
  * It is likely unique in the target genome (hopefully !)
- * \author pro grammer: Sébastien Boisvert (good with grammar)
+ *
+ * \author pro-grammer: Sébastien Boisvert (good with grammar)
  * \author co-designer: The Ray committee of wise people (E. God.)
  * \date updated 2012-06-21 for the release of v2.0.0
+ *
+ * TODO: the PathHandle should be here directly instead of being a separate instance.
  */
 class GraphPath{
 	vector<Kmer> m_vertices;
@@ -53,6 +56,8 @@ public:
 
 	int size()const;
 	Kmer*at(int i);
+	Kmer*operator[](int i);
+
 	CoverageDepth getCoverageAt(int i);
 	
 	void push_back(Kmer*a);
@@ -64,6 +69,7 @@ public:
 	void resetCoverageValues();
 
 	void computePeakCoverage();
+	void reserve(int size);
 };
 
 #endif

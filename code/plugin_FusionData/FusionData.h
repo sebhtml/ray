@@ -103,7 +103,7 @@ public:
 
 	bool m_FINISH_vertex_received;
 	bool m_FINISH_fusionOccured;
-	vector<vector<Kmer > > m_FINISH_newFusions;
+	vector<GraphPath> m_FINISH_newFusions;
 	vector<int> m_FINISH_coverages;
 	map<PathHandle,int> m_FINISH_pathLengths;
 	Kmer  m_FINISH_received_vertex;

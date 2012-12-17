@@ -22,6 +22,7 @@
 #define _Searcher_h
 
 #include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <stdint.h>
 #include <fstream>
@@ -299,7 +300,7 @@ class Searcher :  public CorePlugin {
 	bool m_writeDetailedFiles;
 
 	/** contig paths */
-	vector<vector<Kmer> >*m_contigs;
+	vector<GraphPath>*m_contigs;
 	vector<PathHandle>*m_contigNames;
 
 	// synchronization
@@ -482,7 +483,7 @@ public:
 	VirtualCommunicator*m_vc,StaticVector*inbox,RingAllocator*outboxAllocator,
 		GridTable*graph);
 
-	void setContigs(vector<vector<Kmer> >*paths,vector<PathHandle>*names);
+	void setContigs(vector<GraphPath>*paths,vector<PathHandle>*names);
 
 	void call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message);
 	void call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message);

@@ -40,6 +40,10 @@ Kmer*GraphPath::at(int i){
 	return &(m_vertices.at(i));
 }
 
+Kmer*GraphPath::operator[](int i){
+	return at(i);
+}
+
 CoverageDepth GraphPath::getCoverageAt(int position){
 
 	if(m_coverageValues.size()==0)
@@ -168,4 +172,10 @@ void GraphPath::computePeakCoverageUsingMean(){
 	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<endl;
 
 	m_peakCoverage=mean;
+}
+
+void GraphPath::reserve(int size){
+	m_vertices.reserve(size);
+	m_coverageValues.reserve(size);
+
 }

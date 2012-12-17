@@ -28,6 +28,7 @@
 #include <code/plugin_SeedExtender/ReadFetcher.h>
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_Mock/constants.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/structures/StaticVector.h>
 #include <RayPlatform/memory/RingAllocator.h>
@@ -99,7 +100,7 @@ class Scaffolder :  public CorePlugin{
 	map<PathHandle,int> m_contigLengths;
 	int m_position;
 	int m_theLength;
-	vector<Kmer> m_contigPath;
+	GraphPath m_contigPath;
 	bool m_requestedContigChunk;
 
 	vector<int> m_allScaffoldLengths;
@@ -176,7 +177,7 @@ class Scaffolder :  public CorePlugin{
 	bool m_forwardDone;
 	int m_contigId;
 	int m_positionOnContig;
-	vector<vector<Kmer> >*m_contigs;
+	vector<GraphPath>*m_contigs;
 	vector<PathHandle>*m_contigNames;
 
 	Parameters*m_parameters;
@@ -220,7 +221,7 @@ public:
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc,SwitchMan*switchMan);
 	void call_RAY_SLAVE_MODE_SCAFFOLDER();
-	void setContigPaths(vector<PathHandle>*names,vector<vector<Kmer> >*paths);
+	void setContigPaths(vector<PathHandle>*names,vector<GraphPath>*paths);
 	void addMasterLink(SummarizedLink*link);
 	void solve();
 	void addMasterContig(PathHandle name,int length);

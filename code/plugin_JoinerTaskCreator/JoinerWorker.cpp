@@ -64,7 +64,7 @@ void JoinerWorker::work(){
 			assert(m_position < (int)m_path->size());
 			#endif
 
-			Kmer kmer=m_path->at(m_position);
+			Kmer kmer=*(m_path->at(m_position));
 
 			if(m_reverseStrand)
 				kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -117,7 +117,8 @@ void JoinerWorker::work(){
 		}else if(m_receivedNumberOfPaths && m_pathIndex < m_numberOfPaths){
 			/* request a path */
 			if(!m_requestedPath){
-				Kmer kmer=m_path->at(m_position);
+				Kmer kmer=*(m_path->at(m_position));
+
 				if(m_reverseStrand){
 					kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				}
@@ -126,6 +127,7 @@ void JoinerWorker::work(){
 					m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery);
+
 				int outputPosition=0;
 				kmer.pack(message,&outputPosition);
 				message[outputPosition++]=m_pathIndex;
@@ -553,7 +555,8 @@ Also, don't do it if the matching ratios are below 10%.
 				int position=0;
 				Kmer kmer;
 				kmer.unpack(&response,&position);
-				m_hitVertices.push_back(kmer);
+
+				m_hitVertices.push_back(&kmer);
 				
 				m_hitPosition++;
 				m_requestedHitVertex=false;
@@ -612,24 +615,28 @@ Also, don't do it if the matching ratios are below 10%.
 			if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
 				cout<<"VALID"<<endl;
 				
-				vector<Kmer> newPath;
+				GraphPath newPath;
 
 				/* we take directly the path */
 				if(!m_reverseStrand){
 					newPath=(*m_path);
 				}else{
 					/* we need the reverse complement path */
-					vector<Kmer> rc;
+					GraphPath rc;
 					for(int j=(*m_path).size()-1;j>=0;j--){
-						rc.push_back((*m_path)[j].complementVertex(m_parameters->getWordSize(),
-							m_parameters->getColorSpaceMode()));
+	
+						Kmer newKmer=(*m_path).at(j)->complementVertex(m_parameters->getWordSize(),
+							m_parameters->getColorSpaceMode());
+
+						rc.push_back(&newKmer);
 					}
 					newPath=rc;
 				}
 
 				/* other path is always forward strand */
 				for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
-					newPath.push_back(m_hitVertices.at(i));
+					Kmer otherKmer=*(m_hitVertices.at(i));
+					newPath.push_back(&otherKmer);
 				}
 
 				m_newPaths->push_back(newPath);
@@ -662,7 +669,7 @@ Also, don't do it if the matching ratios are below 10%.
 				cout<<"VALID"<<endl;
 
 				/* other path is always forward strand */
-				vector<Kmer> newPath=m_hitVertices;
+				GraphPath newPath=m_hitVertices;
 
 				/* we push the forward path */
 				if(!m_reverseStrand){
@@ -672,10 +679,12 @@ Also, don't do it if the matching ratios are below 10%.
 
 				/* we push the reverse path */
 				}else{
-					vector<Kmer> rc;
+					GraphPath rc;
 					for(int j=(*m_path).size()-1;j>=0;j--){
-						rc.push_back((*m_path)[j].complementVertex(m_parameters->getWordSize(),
-							m_parameters->getColorSpaceMode()));
+
+						Kmer aKmer=(*m_path).at(j)->complementVertex(m_parameters->getWordSize(),
+							m_parameters->getColorSpaceMode());
+						rc.push_back(&aKmer);
 					}
 
 					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
@@ -718,9 +727,9 @@ WorkerHandle JoinerWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }
 
-void JoinerWorker::constructor(WorkerHandle number,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
+void JoinerWorker::constructor(WorkerHandle number,GraphPath*path,PathHandle identifier,bool reverseStrand,
 	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
-vector<vector<Kmer> >*newPaths,
+vector<GraphPath>*newPaths,
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,

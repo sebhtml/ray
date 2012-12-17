@@ -46,7 +46,7 @@ class JoinerWorker: public Worker{
 	bool m_requestedNumberOfPaths;
 	WorkerHandle m_workerIdentifier;
 	bool m_isDone;
-	vector<Kmer>*m_path;
+	GraphPath*m_path;
 	PathHandle m_identifier;
 	bool m_reverseStrand;
 	bool m_eliminated;
@@ -63,7 +63,7 @@ class JoinerWorker: public Worker{
 	map<PathHandle,int> m_hitLengths;
 	int m_hitIterator;
 
-	vector<vector<Kmer> >*m_newPaths;
+	vector<GraphPath>*m_newPaths;
 
 	bool m_selectedHit;
 	int m_selectedHitIndex;
@@ -77,7 +77,7 @@ class JoinerWorker: public Worker{
 	map<PathHandle,vector<int> > m_selfPositions;
 	map<PathHandle,vector<int> > m_hitPositions;
 
-	vector<Kmer> m_hitVertices;
+	GraphPath m_hitVertices;
 	int m_hitPosition;
 	bool m_requestedHitVertex;
 
@@ -85,9 +85,9 @@ class JoinerWorker: public Worker{
 	bool m_receivedPath;
 	bool m_requestedPath;
 public:
-	void constructor(WorkerHandle i,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
+	void constructor(WorkerHandle i,GraphPath*path,PathHandle identifier,bool reverseStrand,
 VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
-vector<vector<Kmer> >*newPaths,
+vector<GraphPath>*newPaths,
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,

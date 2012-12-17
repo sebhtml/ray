@@ -61,7 +61,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 				cout<<"FusionWorker "<<m_workerIdentifier<<" position: ["<<m_position<<"/"<<m_path->size()<<endl;
 			}
 */
-			Kmer kmer=m_path->at(m_position);
+			Kmer kmer=*(m_path->at(m_position));
 
 			if(m_reverseStrand)
 				kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -107,7 +107,8 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 		}else if(m_receivedNumberOfPaths && m_pathIndex < m_numberOfPaths){
 			/* request a path */
 			if(!m_requestedPath){
-				Kmer kmer=m_path->at(m_position);
+				Kmer kmer=*(m_path->at(m_position));
+
 				if(m_reverseStrand)
 					kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 	
@@ -267,7 +268,7 @@ WorkerHandle FusionWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }
 
-void FusionWorker::constructor(WorkerHandle number,vector<Kmer>*path,PathHandle identifier,bool reverseStrand,
+void FusionWorker::constructor(WorkerHandle number,GraphPath*path,PathHandle identifier,bool reverseStrand,
 	VirtualCommunicator*virtualCommunicator,Parameters*parameters,RingAllocator*outboxAllocator,
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,

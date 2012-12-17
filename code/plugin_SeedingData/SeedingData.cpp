@@ -286,7 +286,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 				PathHandle id=getPathUniqueId(m_parameters->getRank(),i);
 				f<<">RaySeed-"<<id<<endl;
 
-				f<<addLineBreaks(convertToString(m_SEEDING_seeds[i].getVertices(),
+				f<<addLineBreaks(convertToString(&(m_SEEDING_seeds[i]),
 					m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
 					m_parameters->getColumns());
 			}

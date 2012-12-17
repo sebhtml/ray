@@ -22,6 +22,7 @@
 
 #include <code/plugin_CoverageGatherer/CoverageDistribution.h>
 #include <code/plugin_SeedExtender/Chooser.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/communication/Message.h>
 #include <RayPlatform/communication/mpi_tags.h>
@@ -29,6 +30,7 @@
 
 #include <map>
 #include <sstream>
+using namespace std;
 
 #ifdef ASSERT
 #include <assert.h>
@@ -64,8 +66,6 @@ __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_WRITE_KMERS);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
-
-using namespace std;
 
 /*
  * This is the first upcall.
@@ -622,7 +622,7 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	/* clear eliminated paths */
 	vector<PathHandle> newNames;
-	vector<vector<Kmer> > newPaths;
+	vector<GraphPath> newPaths;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
@@ -694,7 +694,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 			f.write((char*)&name,sizeof(PathHandle));
 			f.write((char*)&vertices,sizeof(int));
 			for(int j=0;j<vertices;j++){
-				m_ed->m_EXTENSION_contigs[i][j].write(&f);
+				m_ed->m_EXTENSION_contigs[i].at(j)->write(&f);
 			}
 		}
 		f.close();

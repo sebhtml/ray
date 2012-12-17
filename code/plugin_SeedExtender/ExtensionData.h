@@ -41,6 +41,11 @@ using namespace std;
 
 /*
  * Stores the information for a seed extension.
+ *
+ * This class is really just a helper for SeedExtender.
+ * There are so many things to store to implement the heuristics
+ * correctly.
+ *
  * \author Sébastien Boisvert
  */
 class ExtensionData{
@@ -55,10 +60,11 @@ class ExtensionData{
 public:
 
 	int m_readType;
-	vector<int> m_EXTENSION_coverages;
-	vector<Kmer > m_EXTENSION_extension;
-	vector<int> m_extensionCoverageValues;
+	vector<CoverageDepth> m_EXTENSION_coverages;
+	GraphPath m_EXTENSION_extension;
+	vector<CoverageDepth> m_extensionCoverageValues;
 	vector<int> m_repeatedValues;
+
 	// EXTENSION MODE
 	vector<Kmer> m_enumerateChoices_outgoingEdges;
 	bool m_doChoice_tips_Detected;
@@ -84,7 +90,7 @@ public:
 	GraphPath m_EXTENSION_currentSeed;
 
 	int m_EXTENSION_numberOfRanksDone;
-	vector<vector<Kmer > > m_EXTENSION_contigs;
+	vector<GraphPath> m_EXTENSION_contigs;
 	bool m_EXTENSION_checkedIfCurrentVertexIsAssembled;
 	bool m_EXTENSION_VertexMarkAssembled_requested;
 	bool m_EXTENSION_reverseComplement_requested;
