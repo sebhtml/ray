@@ -1751,8 +1751,6 @@ void Parameters::showUsage(){
 
 	cout<<"  Communication"<<endl;
 	cout<<endl;
-	cout<<"     RayOutput/MessagePassingInterface.txt"<<endl;
-	cout<<"	    	Number of messages sent"<<endl;
 	cout<<"     RayOutput/NetworkTest.txt"<<endl;
 	cout<<"	    	Latencies in microseconds"<<endl;
 	cout<<"     RayOutput/Rank<rank>NetworkTestData.txt"<<endl;

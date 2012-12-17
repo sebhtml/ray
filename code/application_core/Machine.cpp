@@ -346,10 +346,6 @@ void Machine::start(){
 		vector<int> connections;
 		m_router->getGraph()->getIncomingConnections(m_parameters.getRank(),&connections);
 		
-// TODO: the 3 lines below are for the MessagePassingInterface.txt file
-		#if 0
-		m_messagesHandler->setConnections(&connections);
-		#endif
 	}
 
 
@@ -790,29 +786,6 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 void Machine::showRayVersion(bool fullReport){
 	showRayVersionShort();
 
-	#if 0
-	cout<<"Message-passing interface"<<endl;
-	cout<<endl;
-	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface implementation: ";
-	cout<<messagesHandler->getMessagePassingInterfaceImplementation()<<endl;
-
-	int version;
-	int subversion;
-	messagesHandler->version(&version,&subversion);
-
-	cout<<"Rank "<<MASTER_RANK<<": Message-Passing Interface standard version: "<<version<<"."<<subversion<<""<<endl;
-	#endif
-
-	#if 0
-	cout<<endl;
-
-	cout<<"Number of MPI ranks: "<<messagesHandler->getSize()<<endl;
-	cout<<"Ray master MPI rank: "<<MASTER_RANK<<endl;
-	cout<<"Ray slave MPI ranks: 0-"<<messagesHandler->getSize()-1<<endl;
-	cout<<endl;
-
-	cout<<endl;
-	#endif
 }
 
 void Machine::registerPlugins(){

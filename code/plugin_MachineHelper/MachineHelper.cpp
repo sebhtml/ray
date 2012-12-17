@@ -933,16 +933,6 @@ void MachineHelper::call_RAY_SLAVE_MODE_DIE(){
 	/* write the network test data if not already written */
 	m_networkTest->writeData();
 
-	/** write message-passing interface file */
-	ostringstream file;
-	file<<m_parameters->getPrefix()<<"MessagePassingInterface.txt";
-
-	string fileInString=file.str();
-
-	#if 0
-	m_messagesHandler->appendStatistics(fileInString.c_str());
-	#endif
-
 	/** actually die */
 	(*m_alive)=false;
 
@@ -967,17 +957,6 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 	if(!m_initialisedKiller){
 		m_initialisedKiller=true;
 		m_machineRank=m_parameters->getSize()-1;
-
-		/** empty the file if it exists */
-		ostringstream file;
-		file<<m_parameters->getPrefix()<<"MessagePassingInterface.txt";
-		
-		FILE*fp=fopen(file.str().c_str(),"w+");
-		if(fp==NULL){
-			cout<<"Error: cannot create file "<<file<<endl;
-		}
-		fprintf(fp,"# Source\tDestination\tTag\tCount\n");
-		fclose(fp);
 
 		// activate the relay checker
 		m_numberOfRanksDone=0;
