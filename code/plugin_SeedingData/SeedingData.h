@@ -28,7 +28,7 @@ class SeedExtender;
 
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
 #include <code/plugin_SeedExtender/SeedExtender.h>
-#include <code/plugin_SeedingData/AssemblySeed.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 #include <code/plugin_VerticesExtractor/GridTableIterator.h>
 #include <code/plugin_VerticesExtractor/Vertex.h>
 #include <code/plugin_Mock/common_functions.h>
@@ -147,7 +147,7 @@ public:
 	int m_SEEDING_outgoing_index;
 	bool m_SEEDING_outgoing_choice_done;
 	int m_SEEDING_currentRank;
-	vector<AssemblySeed> m_SEEDING_seeds;
+	vector<GraphPath> m_SEEDING_seeds;
 	vector<int> m_SEEDING_outgoingCoverages;
 	vector<uint64_t> m_SEEDING_outgoingKeys;
 	bool m_SEEDING_vertexKeyAndCoverageRequested;

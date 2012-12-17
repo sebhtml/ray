@@ -18,7 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include "AssemblySeed.h"
+#include "GraphPath.h"
 
 #include <code/plugin_Mock/constants.h>
 
@@ -28,19 +28,19 @@
 #include <map>
 using namespace std;
 
-AssemblySeed::AssemblySeed(){
+GraphPath::GraphPath(){
 	m_hasPeakCoverage=false;
 }
 
-int AssemblySeed::size()const{
+int GraphPath::size()const{
 	return m_vertices.size();
 }
 
-Kmer*AssemblySeed::at(int i){
+Kmer*GraphPath::at(int i){
 	return &(m_vertices.at(i));
 }
 
-CoverageDepth AssemblySeed::getCoverageAt(int position){
+CoverageDepth GraphPath::getCoverageAt(int position){
 
 	if(m_coverageValues.size()==0)
 		return 0;
@@ -48,23 +48,23 @@ CoverageDepth AssemblySeed::getCoverageAt(int position){
 	return m_coverageValues[position];
 }
 
-void AssemblySeed::push_back(Kmer*a){
+void GraphPath::push_back(Kmer*a){
 	m_vertices.push_back(*a);
 }
 
-vector<Kmer>*AssemblySeed::getVertices(){
+vector<Kmer>*GraphPath::getVertices(){
 	return &m_vertices;
 }
 
-void AssemblySeed::clear(){
+void GraphPath::clear(){
 	m_vertices.clear();
 }
 
-void AssemblySeed::resetCoverageValues(){
+void GraphPath::resetCoverageValues(){
 	m_coverageValues.clear();
 }
 
-void AssemblySeed::computePeakCoverage(){
+void GraphPath::computePeakCoverage(){
 
 	bool useMode=false;
 	bool useMean=true;
@@ -90,7 +90,7 @@ void AssemblySeed::computePeakCoverage(){
 	m_hasPeakCoverage=true;
 }
 
-CoverageDepth AssemblySeed::getPeakCoverage(){
+CoverageDepth GraphPath::getPeakCoverage(){
 
 	#ifdef ASSERT
 	assert(m_hasPeakCoverage == true);
@@ -99,11 +99,11 @@ CoverageDepth AssemblySeed::getPeakCoverage(){
 	return m_peakCoverage;
 }
 
-void AssemblySeed::addCoverageValue(CoverageDepth value){
+void GraphPath::addCoverageValue(CoverageDepth value){
 	m_coverageValues.push_back(value);
 }
 
-void AssemblySeed::computePeakCoverageUsingMode(){
+void GraphPath::computePeakCoverageUsingMode(){
 
 	map<CoverageDepth,int> frequencies;
 
@@ -131,7 +131,7 @@ void AssemblySeed::computePeakCoverageUsingMode(){
 
 }
 
-void AssemblySeed::computePeakCoverageUsingMean(){
+void GraphPath::computePeakCoverageUsingMean(){
 
 	map<CoverageDepth,int> frequencies;
 

@@ -39,7 +39,7 @@ __CreatePlugin(SeedingData);
 __CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
 __CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
-bool myComparator_sort(const AssemblySeed & a,const AssemblySeed & b){
+bool myComparator_sort(const GraphPath & a,const GraphPath & b){
 	return a.size()>b.size();
 }
 
@@ -149,7 +149,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 						showMemoryUsage(m_rank);
 					}
 
-					AssemblySeed theSeed;
+					GraphPath theSeed;
 					for(int i=0;i<(int)seed.size();i++){
 						theSeed.push_back(&(seed[i]));
 						theSeed.addCoverageValue(coverageValues->at(i));
@@ -448,7 +448,7 @@ void SeedingData::loadCheckpoint(){
 	int n=0;
 	f.read((char*)&n,sizeof(int));
 	for(int i=0;i<n;i++){
-		AssemblySeed seed;
+		GraphPath seed;
 		int vertices=0;
 		f.read((char*)&vertices,sizeof(int));
 		for(int j=0;j<vertices;j++){

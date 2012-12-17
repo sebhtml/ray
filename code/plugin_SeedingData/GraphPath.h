@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _AssemblySeed_h
-#define _AssemblySeed_h
+#ifndef _GraphPath_h
+#define _GraphPath_h
 
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
 
@@ -34,7 +34,7 @@ using namespace std;
  * \author co-designer: The Ray committee of wise people (E. God.)
  * \date updated 2012-06-21 for the release of v2.0.0
  */
-class AssemblySeed{
+class GraphPath{
 	vector<Kmer> m_vertices;
 	vector<CoverageDepth> m_coverageValues;
 
@@ -49,7 +49,7 @@ class AssemblySeed{
 	bool m_hasPeakCoverage;
 
 public:
-	AssemblySeed();
+	GraphPath();
 
 	int size()const;
 	Kmer*at(int i);

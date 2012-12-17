@@ -767,6 +767,14 @@ void Scaffolder::processVertex(Kmer*vertex){
 
 	}else if(m_coverageReceived){
 		/* anyway these entries will be checked after anyway... */
+
+/*
+ * TODO: 
+ * Restore this verification as it is required to ensure good speeds overall.
+ * Without this check, the end user is doomed to obtain very bad speeds on
+ * anything that sequences moving around in the genome (like Alu in the human genome).
+ *
+ */
 		if(1 /*m_receivedCoverage<m_parameters->getRepeatCoverage()*/){
 			if(!m_initialisedFetcher){
 				m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,

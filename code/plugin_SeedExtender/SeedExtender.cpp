@@ -317,7 +317,7 @@ void SeedExtender::doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
 	Kmer*currentVertex,BubbleData*bubbleData,int theRank,
 	int wordSize,
 ExtensionData*ed,int minimumCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
-	vector<AssemblySeed>*seeds,
+	vector<GraphPath>*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 ){
@@ -929,7 +929,7 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 }
 
 /** store the extension and do the next one right now */
-void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,
+void SeedExtender::storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<GraphPath>*seeds,
 Kmer *currentVertex,BubbleData*bubbleData){
 
 	int length=getNumberOfNucleotides(ed->m_EXTENSION_extension.size(),m_parameters->getWordSize());
@@ -1122,7 +1122,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 }
 
 void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
-  int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,int size,vector<AssemblySeed>*seeds){
+  int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,int wordSize,int size,vector<GraphPath>*seeds){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1249,7 +1249,7 @@ void SeedExtender::markCurrentVertexAsAssembled(Kmer*currentVertex,RingAllocator
 StaticVector*outbox,int size,int theRank,ExtensionData*ed,bool*vertexCoverageRequested,bool*vertexCoverageReceived,
 	int*receivedVertexCoverage,bool*edgesRequested,
 vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<GraphPath>*seeds
 ){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1781,7 +1781,7 @@ void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAll
 	SeedingData*seedingData,int*mode,
 bool*vertexCoverageRequested,
 bool*vertexCoverageReceived,RingAllocator*outboxAllocator,FusionData*fusionData,
-vector<AssemblySeed>*seeds,BubbleData*bubbleData,
+vector<GraphPath>*seeds,BubbleData*bubbleData,
 bool*edgesRequested,bool*edgesReceived,
 int*outgoingEdgeIndex,Kmer*currentVertex,int*receivedVertexCoverage,
 vector<Kmer>*receivedOutgoingEdges,
@@ -2377,7 +2377,7 @@ int SeedExtender::chooseWithSeed(){
 	return IMPOSSIBLE_CHOICE;
 }
 
-void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusionData){
+void SeedExtender::finalizeExtensions(vector<GraphPath>*seeds,FusionData*fusionData){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -2458,7 +2458,7 @@ void SeedExtender::finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusi
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
-void SeedExtender::initializeExtensions(vector<AssemblySeed>*seeds){
+void SeedExtender::initializeExtensions(vector<GraphPath>*seeds){
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
 	m_ed->m_EXTENSION_initiated=true;
@@ -2567,7 +2567,7 @@ void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 	m_pathFileBuffer<<source<<"	"<<pathHandle<<"	"<<pathLength<<"	"<<flows<<endl;
 }
 
-void SeedExtender::skipSeed(vector<AssemblySeed>*seeds){
+void SeedExtender::skipSeed(vector<GraphPath>*seeds){
 	cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<m_ed->m_EXTENSION_currentSeedIndex<<"/"<<
 		(*seeds).size()<<"]"<<endl;
 

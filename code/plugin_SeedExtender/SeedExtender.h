@@ -32,7 +32,7 @@
 
 #include <code/plugin_Mock/common_functions.h>
 #include <code/plugin_Mock/Parameters.h>
-#include <code/plugin_SeedingData/AssemblySeed.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 #include <code/plugin_SeedingData/SeedingData.h>
 #include <code/plugin_FusionData/FusionData.h>
 #include <code/plugin_VerticesExtractor/GridTable.h>
@@ -111,7 +111,7 @@ class SeedExtender: public CorePlugin  {
 
 
 // all these parameters are not attributes.
-	vector<AssemblySeed>*m_seeds;
+	vector<GraphPath>*m_seeds;
   	Kmer*m_currentVertex;
 	FusionData*m_fusionData;
 	RingAllocator*m_outboxAllocator;
@@ -142,7 +142,7 @@ class SeedExtender: public CorePlugin  {
 	SeedingData*m_seedingData;
 
 	/* for sliced computation */
-	AssemblySeed m_complementedSeed;
+	GraphPath m_complementedSeed;
 
 	void printSeed();
 
@@ -202,13 +202,13 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited);
 	void processExpiredReads();
 	int chooseWithSeed();
 
-	void initializeExtensions(vector<AssemblySeed>*seeds);
-	void finalizeExtensions(vector<AssemblySeed>*seeds,FusionData*fusionData);
+	void initializeExtensions(vector<GraphPath>*seeds);
+	void finalizeExtensions(vector<GraphPath>*seeds,FusionData*fusionData);
 	void checkedCurrentVertex();
-	void skipSeed(vector<AssemblySeed>*seeds);
+	void skipSeed(vector<GraphPath>*seeds);
 
 /** store the current extension and fetch the next one **/
-	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<AssemblySeed>*seeds,Kmer*currentVertex,
+	void storeExtensionAndGetNextOne(ExtensionData*ed,int theRank,vector<GraphPath>*seeds,Kmer*currentVertex,
 		BubbleData*bubbleData);
 
 /** given the current vertex, enumerate the choices **/
@@ -221,7 +221,7 @@ int wordSize);
 /** check if the current vertex is already assembled **/
 	void checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector*outbox,RingAllocator*outboxAllocator,
 	 int*outgoingEdgeIndex,int*last_value,Kmer*currentVertex,int theRank,bool*vertexCoverageRequested,
-	int wordSize,int size,vector<AssemblySeed>*seeds);
+	int wordSize,int size,vector<GraphPath>*seeds);
 
 /** mark the current vertex as assembled **/
 	void markCurrentVertexAsAssembled(Kmer *currentVertex,RingAllocator*outboxAllocator,int*outgoingEdgeIndex,
@@ -229,13 +229,13 @@ int wordSize);
 		bool*vertexCoverageReceived,int*receivedVertexCoverage,
 	bool*edgesRequested,
 vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
-BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<AssemblySeed>*seeds);
+BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,vector<GraphPath>*seeds);
 
 /** choose where to go next **/
 	void doChoice(RingAllocator*outboxAllocator,int*outgoingEdgeIndex,StaticVector*outbox,Kmer*currentVertex,
 BubbleData*bubbleData,int theRank,int wordSize,
 ExtensionData*ed,int minimumCoverage,OpenAssemblerChooser*oa,Chooser*chooser,
-	vector<AssemblySeed>*seeds,
+	vector<GraphPath>*seeds,
 bool*edgesRequested,bool*vertexCoverageRequested,bool*vertexCoverageReceived,int size,
 int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges);
 
@@ -265,7 +265,7 @@ public:
 	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
 	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode,
 	bool*vertexCoverageRequested,bool*vertexCoverageReceived,RingAllocator*outboxAllocator,
-		FusionData*fusionData,vector<AssemblySeed>*seeds,BubbleData*bubbleData,
+		FusionData*fusionData,vector<GraphPath>*seeds,BubbleData*bubbleData,
 		bool*edgesRequested,bool*edgesReceived,int*outgoingEdgeIndex,Kmer*currentVertex,
 	int*receivedVertexCoverage,vector<Kmer>*receivedOutgoingEdges,Chooser*chooser,
 		OpenAssemblerChooser*oa);

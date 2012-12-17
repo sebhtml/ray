@@ -29,7 +29,7 @@
 #include <code/plugin_SequencesLoader/Read.h>
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_Mock/common_functions.h>
-#include <code/plugin_SeedingData/AssemblySeed.h>
+#include <code/plugin_SeedingData/GraphPath.h>
 
 #include <RayPlatform/structures/SplayTree.h>
 #include <RayPlatform/profiling/Profiler.h>
@@ -81,7 +81,7 @@ public:
 	int m_flowNumber;
 
 	/** TODO could be a pointer to the original thing... */
-	AssemblySeed m_EXTENSION_currentSeed;
+	GraphPath m_EXTENSION_currentSeed;
 
 	int m_EXTENSION_numberOfRanksDone;
 	vector<vector<Kmer > > m_EXTENSION_contigs;
