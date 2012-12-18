@@ -464,7 +464,6 @@ void Scaffolder::getCoverageOfBlockOfLife(){
 			assert(elements.size() > 0);
 			#endif
 
-			uint8_t edges=elements[0];
 			CoverageDepth coverage=elements[1];
 
 			m_contigs->at(m_contigId).addCoverageValue(coverage);
@@ -1074,8 +1073,8 @@ void Scaffolder::processAnnotation(){
 
 		if(m_pairedForwardDirectionLength<range
 		||(int)(*m_contigs)[m_contigId].size()<range
-		|| 2*m_receivedCoverage<m_pairedForwardMarkerCoverage
-		|| 2*m_pairedForwardMarkerCoverage<m_receivedCoverage ){
+		|| REPEAT_MULTIPLIER*m_receivedCoverage<m_pairedForwardMarkerCoverage
+		|| REPEAT_MULTIPLIER*m_pairedForwardMarkerCoverage<m_receivedCoverage ){
 			return;
 		}
 
@@ -1288,8 +1287,8 @@ Case 13. (allowed)
 
 		if(m_pairedReverseDirectionLength<range
 		||(int)(*m_contigs)[m_contigId].size()<range
-		|| 2*m_receivedCoverage<m_pairedReverseMarkerCoverage
-		|| 2*m_pairedReverseMarkerCoverage<m_receivedCoverage){
+		|| REPEAT_MULTIPLIER *m_receivedCoverage<m_pairedReverseMarkerCoverage
+		|| REPEAT_MULTIPLIER*m_pairedReverseMarkerCoverage<m_receivedCoverage){
 			return;
 		}
 	

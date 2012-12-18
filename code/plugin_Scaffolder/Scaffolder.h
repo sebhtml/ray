@@ -134,7 +134,7 @@ class Scaffolder :  public CorePlugin{
 	bool m_reverseDirectionLengthReceived;
 	PathHandle m_pairedReverseDirectionName;
 	int m_pairedReverseDirectionPosition;
-	int m_pairedReverseMarkerCoverage;
+	CoverageDepth m_pairedReverseMarkerCoverage;
 	bool m_pairedReverseHasDirection;
 	bool m_reverseDirectionLengthRequested;
 	int m_pairedReverseDirectionLength;
@@ -144,7 +144,7 @@ class Scaffolder :  public CorePlugin{
 	int m_pairedForwardDirectionLength;
 	bool m_forwardDirectionsRequested;
 	bool m_forwardDirectionsReceived;
-	int m_pairedForwardMarkerCoverage;
+	CoverageDepth m_pairedForwardMarkerCoverage;
 	bool m_pairedForwardHasDirection;
 	PathHandle m_pairedForwardDirectionName;
 	int m_pairedForwardDirectionPosition;
@@ -173,7 +173,7 @@ class Scaffolder :  public CorePlugin{
 	VirtualCommunicator*m_virtualCommunicator;
 	bool m_coverageRequested;
 	bool m_coverageReceived;
-	int m_receivedCoverage;
+	CoverageDepth m_receivedCoverage;
 
 	bool m_reverseDone;
 	bool m_forwardDone;
