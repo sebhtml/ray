@@ -570,7 +570,6 @@ void Scaffolder::sendSummary(){
 
 void Scaffolder::performSummary(){
 
-
 	#ifdef ASSERT
 	assert(m_contigId < (int)m_contigs->size());
 	assert((int)m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
@@ -578,9 +577,9 @@ void Scaffolder::performSummary(){
 
 	LargeCount sum=0;
 
-	int peakCoverage=getMode(&m_vertexCoverageValues);
+	CoverageDepth peakCoverage=m_contigs->at(m_contigId).getPeakCoverage();
 
-	int repeatCoverage=peakCoverage*REPEAT_MULTIPLIER;
+	CoverageDepth repeatCoverage=peakCoverage*REPEAT_MULTIPLIER;
 
 	#ifdef CONFIG_USE_COVERAGE_DISTRIBUTION
 	repeatCoverage=m_parameters->getRepeatCoverage();
@@ -589,7 +588,7 @@ void Scaffolder::performSummary(){
 	map<int,int> distribution;
 	int n=0;
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
-		int coverageValue=m_vertexCoverageValues[i];
+		CoverageDepth coverageValue=m_vertexCoverageValues[i];
 		distribution[coverageValue]++;
 
 		if(coverageValue < repeatCoverage){
@@ -606,7 +605,7 @@ void Scaffolder::performSummary(){
 
 	LargeCount sumOfSquares=0;
 	for(int i=0;i<(int)m_vertexCoverageValues.size();i++){
-		int coverageValue=m_vertexCoverageValues[i];
+		CoverageDepth coverageValue=m_vertexCoverageValues[i];
 		int diff=coverageValue-mean;
 		if(coverageValue < repeatCoverage){
 			sumOfSquares+= diff*diff;
@@ -618,11 +617,6 @@ void Scaffolder::performSummary(){
 	}
 
 	int standardDeviation=(int)sqrt(sumOfSquares);
-
-/*
-	int peakCoverage=getMode(&m_vertexCoverageValues);
-	int repeatCoverage=REPEAT_MULTIPLIER*peakCoverage;
-*/
 
 	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size();
 	cout<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation;
