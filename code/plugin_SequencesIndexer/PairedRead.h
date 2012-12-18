@@ -39,7 +39,7 @@ using namespace std;
 class PairedRead{
 	uint32_t m_readIndex;
 	uint16_t m_rank; // should be Rank
-	uint16_t m_library;
+	LibraryHandle m_library;
 public:
 	void constructor(int rank,int id,int library);
 	Rank getRank();

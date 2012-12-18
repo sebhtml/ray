@@ -903,9 +903,19 @@ void Parameters::parseCommands(){
 		}
 	}
 
-	int maximumNumberOfFiles=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(uint32_t);
+/*
+ * This formula is only valid when using paired reads.
+ * There is not really any limit on the number of files.
+ * The limit is on the number of paired libraries (2^sizeof(uint16_t)).
+ */
+	#ifdef ASSERT
+	LibraryHandle maximumLibraryIndex=0;
+	maximumLibraryIndex--;
+
+	int maximumNumberOfFiles=(maximumLibraryIndex+1)*2;
 	
 	assert((int)m_singleEndReadsFile.size()<=maximumNumberOfFiles);
+	#endif
 
 	LargeCount result=1;
 	for(int p=0;p<m_wordSize;p++){

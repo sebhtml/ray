@@ -179,5 +179,6 @@ typedef uint64_t LargeCount;
 /* a datatype for an index */
 typedef uint64_t LargeIndex;
 
+typedef uint16_t LibraryHandle;
 
 #endif
