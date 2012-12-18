@@ -49,6 +49,8 @@ class GraphPath{
 /** computes locality with a mode (locality object is peak coverage) **/
 	void computePeakCoverageUsingMode();
 
+	void computePeakCoverageUsingStaggeredMean();
+
 	bool m_hasPeakCoverage;
 
 public:

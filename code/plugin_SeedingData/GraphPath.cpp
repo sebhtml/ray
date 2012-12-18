@@ -70,25 +70,24 @@ void GraphPath::resetCoverageValues(){
 
 void GraphPath::computePeakCoverage(){
 
-	bool useMode=false;
-	bool useMean=true;
+	int ALGORITHM_MODE=0;
+	int ALGORITHM_MEAN=1;
+	int ALGORITHM_STAGGERED_MEAN=2;
+
+	int selectedAlgorithm=ALGORITHM_STAGGERED_MEAN;
 
 	#ifdef ASSERT
 	assert(m_coverageValues.size() == m_vertices.size());
-	assert((useMode || useMean) && !(useMode && useMean));
 	#endif
 
 	// the default is to use the weighted mean algorithm 
 
-	#ifdef ASSERT
-	assert(useMean==true);
-	assert(useMode==false);
-	#endif
-
-	if(useMode){
+	if(selectedAlgorithm==ALGORITHM_MODE){
 		computePeakCoverageUsingMode();
-	}else if(useMean){
+	}else if(selectedAlgorithm==ALGORITHM_MEAN){
 		computePeakCoverageUsingMean();
+	}else if(selectedAlgorithm==ALGORITHM_STAGGERED_MEAN){
+		computePeakCoverageUsingStaggeredMean();
 	}
 
 	m_hasPeakCoverage=true;
@@ -178,4 +177,85 @@ void GraphPath::reserve(int size){
 	m_vertices.reserve(size);
 	m_coverageValues.reserve(size);
 
+}
+
+void GraphPath::computePeakCoverageUsingStaggeredMean(){
+
+	map<CoverageDepth,int> frequencies;
+	uint64_t totalCount=0;
+
+	for(int i=0;i<(int)m_coverageValues.size();i++){
+		frequencies[m_coverageValues[i]]++;
+
+		totalCount++;
+	}
+
+	CoverageDepth NO_VALUE=0;
+
+	CoverageDepth mean=NO_VALUE;
+	uint64_t objectsOnRight=0;
+
+/*
+ * 10% is arbitrary, anything between 5% and 45% will be fine.
+ */
+	int thresholdInPercentage=10;
+	uint64_t minimumRequired=thresholdInPercentage*totalCount/100;
+
+	while(1){
+		LargeCount sum=0;
+		LargeCount count=0;
+
+		for(map<CoverageDepth,int>::iterator i=frequencies.begin();
+			i!=frequencies.end();i++){
+
+			CoverageDepth coverage=i->first;
+			LargeCount frequency=i->second;
+
+			#ifdef CONFIG_VERBOSITY_FOR_SEEDS
+			cout<<coverage<<"	"<<frequency<<endl;
+			#endif
+
+/*
+ * Skip the repeats.
+ */
+			if(mean!=NO_VALUE && coverage>=mean)
+				continue;
+
+			sum+=coverage*frequency;
+			count+=frequency;
+		}
+
+		#ifdef ASSERT
+		assert(m_coverageValues.size()>=1);
+		assert(count!=0);
+		assert(count>0);
+		assert(sum > 0);
+		#endif
+
+		mean=( sum / count );
+
+/*
+ * Count the number of objects that are at least the mean.
+ */
+
+		objectsOnRight=0;
+
+		for(map<CoverageDepth,int>::iterator i=frequencies.begin();
+			i!=frequencies.end();i++){
+
+			CoverageDepth coverage=i->first;
+			LargeCount frequency=i->second;
+
+			if(coverage>=mean)
+				objectsOnRight+=frequency;
+		}
+
+		if(objectsOnRight>=minimumRequired){
+			break;
+		}
+	}
+
+	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<" onTheRight= "<<objectsOnRight<<"/"<<totalCount<<endl;
+
+	m_peakCoverage=mean;
 }
