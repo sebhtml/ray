@@ -43,8 +43,6 @@
 
 __CreatePlugin(MessageProcessor);
 
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);
@@ -148,37 +146,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
-
-void MessageProcessor::call_RAY_MPI_TAG_SET_FILE_ENTRIES(Message*message){
-
-	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
-
-	#ifdef ASSERT
-	assert(message->getCount()>=2);
-	assert(message->getCount()%2==0);
-	#endif
-
-	int input=0;
-
-/*
- * The source can multiplex the body.
- */
-	while(input<message->getCount()){
-		int file=incoming[input++];
-		LargeCount count=incoming[input++];
-
-		if(m_parameters->hasOption("-debug-partitioner"))
-			cout<<"Rank "<<m_parameters->getRank()<<" RAY_MPI_TAG_SET_FILE_ENTRIES File "<<file<<" "<<count<<endl;
-
-		m_parameters->setNumberOfSequences(file,count);
-	}
-
-	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY,m_rank);
-	m_outbox->push_back(&aMessage);
-}
-
-void MessageProcessor::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
-}
 
 void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
@@ -2643,17 +2610,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LOAD_SEQUENCES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LOAD_SEQUENCES,"RAY_MPI_TAG_LOAD_SEQUENCES");
-
-	RAY_MPI_TAG_SET_FILE_ENTRIES=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES,"RAY_MPI_TAG_SET_FILE_ENTRIES");
-
-	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
-
 	RAY_MPI_TAG_CONTIG_INFO=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_CONTIG_INFO, __GetAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_CONTIG_INFO,"RAY_MPI_TAG_CONTIG_INFO");
@@ -3201,9 +3157,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_KMER_ACADEMY_DISTRIBUTED");
 	RAY_MPI_TAG_LIBRARY_DISTANCE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LIBRARY_DISTANCE");
 	RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY");
-	RAY_MPI_TAG_LOAD_SEQUENCES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LOAD_SEQUENCES");
-	RAY_MPI_TAG_SET_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES");
-	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
 	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS");
 	RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY");
 	RAY_MPI_TAG_OUT_EDGES_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_OUT_EDGES_DATA");
@@ -3235,7 +3188,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_CLEAR_DIRECTIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CLEAR_DIRECTIONS");
 	RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY");
 
-	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_LOAD_SEQUENCES, RAY_SLAVE_MODE_LOAD_SEQUENCES);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_WRITE_AMOS, RAY_SLAVE_MODE_AMOS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_INDEXING_SEQUENCES, RAY_SLAVE_MODE_INDEX_SEQUENCES );
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION, RAY_SLAVE_MODE_ADD_VERTICES);
@@ -3293,8 +3245,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 
 	__BindPlugin(MessageProcessor);
 
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);

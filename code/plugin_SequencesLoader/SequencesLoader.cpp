@@ -38,6 +38,9 @@ __CreatePlugin(SequencesLoader);
 
 __CreateSlaveModeAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
+__CreateMessageTagAdapter(SequencesLoader,RAY_MPI_TAG_LOAD_SEQUENCES);
+__CreateMessageTagAdapter(SequencesLoader,RAY_MPI_TAG_SET_FILE_ENTRIES);
+
 using namespace std;
 
 #define NUMBER_OF_SEQUENCES_PERIOD 10000
@@ -394,6 +397,39 @@ void SequencesLoader::constructor(int size,MyAllocator*allocator,ArrayOfReads*re
 	m_outbox=outbox;
 }
 
+void SequencesLoader::call_RAY_MPI_TAG_SET_FILE_ENTRIES(Message*message){
+
+	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
+
+	#ifdef ASSERT
+	assert(message->getCount()>=2);
+	assert(message->getCount()%2==0);
+	#endif
+
+	int input=0;
+
+/*
+ * The source can multiplex the body.
+ */
+	while(input<message->getCount()){
+		int file=incoming[input++];
+		LargeCount count=incoming[input++];
+
+		if(m_parameters->hasOption("-debug-partitioner"))
+			cout<<"Rank "<<m_parameters->getRank()<<" RAY_MPI_TAG_SET_FILE_ENTRIES File "<<file<<" "<<count<<endl;
+
+		m_parameters->setNumberOfSequences(file,count);
+	}
+
+	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY,m_rank);
+	m_outbox->push_back(&aMessage);
+}
+
+void SequencesLoader::call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message){
+}
+
+
+
 void SequencesLoader::registerPlugin(ComputeCore*core){
 
 	PluginHandle plugin=core->allocatePluginHandle();
@@ -408,6 +444,19 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 	RAY_SLAVE_MODE_LOAD_SEQUENCES=core->allocateSlaveModeHandle(plugin);
 	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES, __GetAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES));
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
+
+	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LOAD_SEQUENCES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LOAD_SEQUENCES,"RAY_MPI_TAG_LOAD_SEQUENCES");
+
+	RAY_MPI_TAG_SET_FILE_ENTRIES=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES,"RAY_MPI_TAG_SET_FILE_ENTRIES");
+
+	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_LOAD_SEQUENCES, RAY_SLAVE_MODE_LOAD_SEQUENCES);
 }
 
 void SequencesLoader::resolveSymbols(ComputeCore*core){
@@ -416,8 +465,14 @@ void SequencesLoader::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_SEQUENCES_READY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEQUENCES_READY");
 
+	RAY_MPI_TAG_LOAD_SEQUENCES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_LOAD_SEQUENCES");
+	RAY_MPI_TAG_SET_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES");
+	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
+
 	__BindPlugin(SequencesLoader);
 
+	__BindAdapter(SequencesLoader,RAY_MPI_TAG_LOAD_SEQUENCES);
+	__BindAdapter(SequencesLoader,RAY_MPI_TAG_SET_FILE_ENTRIES);
 	__BindAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
 }

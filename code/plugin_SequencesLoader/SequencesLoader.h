@@ -42,6 +42,9 @@ __DeclarePlugin(SequencesLoader);
 
 __DeclareSlaveModeAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 
+__DeclareMessageTagAdapter(SequencesLoader,RAY_MPI_TAG_LOAD_SEQUENCES);
+__DeclareMessageTagAdapter(SequencesLoader,RAY_MPI_TAG_SET_FILE_ENTRIES);
+
 /*
  * Computes the partition on reads (MASTER_RANK).
  * Loads the appropriate slice of reads (all MPI ranks).
@@ -51,8 +54,13 @@ __DeclareSlaveModeAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
 class SequencesLoader : public CorePlugin{
 
 	__AddAdapter(SequencesLoader,RAY_SLAVE_MODE_LOAD_SEQUENCES);
+	__AddAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
+	__AddAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES);
 
 	MessageTag RAY_MPI_TAG_SEQUENCES_READY;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY;
+	MessageTag RAY_MPI_TAG_LOAD_SEQUENCES;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES;
 
 	SlaveMode RAY_SLAVE_MODE_LOAD_SEQUENCES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
@@ -78,6 +86,8 @@ class SequencesLoader : public CorePlugin{
 
 public:
 	bool call_RAY_SLAVE_MODE_LOAD_SEQUENCES();
+	void call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message);
+	void call_RAY_MPI_TAG_SET_FILE_ENTRIES(Message*message);
 
 	bool writeSequencesToAMOSFile(int rank,int size,StaticVector*m_outbox,
 	RingAllocator*m_outboxAllocator,
