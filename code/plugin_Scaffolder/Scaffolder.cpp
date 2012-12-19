@@ -597,7 +597,7 @@ void Scaffolder::performSummary(){
 		}
 	}
 
-	int mean=sum;
+	CoverageDepth mean=sum;
 
 	if(n>0){
 		mean /= n;
@@ -616,7 +616,7 @@ void Scaffolder::performSummary(){
 		sumOfSquares /= n;
 	}
 
-	int standardDeviation=(int)sqrt(sumOfSquares);
+	CoverageDepth standardDeviation=(int)sqrt(sumOfSquares);
 
 	cout<<"contig: "<<(*m_contigNames)[m_contigId]<<" vertices: "<<m_vertexCoverageValues.size();
 	cout<<" averageCoverage: "<<mean<<" standardDeviation: "<<standardDeviation;
