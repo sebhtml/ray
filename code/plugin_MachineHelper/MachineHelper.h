@@ -207,6 +207,17 @@ class MachineHelper: public CorePlugin{
 	MessageTag RAY_MPI_TAG_DISTRIBUTE_FUSIONS;
 	MessageTag RAY_MPI_TAG_EXTENSION_DATA_END;
 
+/*
+ * Stuff for sending entries in files.
+ */
+
+	int m_numberOfRanksThatReplied;
+	bool m_theEntriesForFileWasSent;
+	int m_fileIndex;
+	bool m_startedToSendCounts;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY;
+
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
 	MasterMode RAY_MASTER_MODE_AMOS;
 	MasterMode RAY_MASTER_MODE_ASK_DISTANCES;

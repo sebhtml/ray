@@ -344,45 +344,79 @@ int MachineHelper::getRank(){
  * writes the AMOS file */
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 
-	m_timePrinter->printElapsedTime("Counting sequences to assemble");
-	cout<<endl;
+	if(!m_startedToSendCounts){
 
-	bool result=true;
+		m_timePrinter->printElapsedTime("Counting sequences to assemble");
+		cout<<endl;
 
-	if(m_parameters->useAmos()){
+		bool result=true;
+
+		if(m_parameters->useAmos()){
 /* This won't write anything if -amos was not provided */
 
-		result=m_sl->writeSequencesToAMOSFile(getRank(),getSize(),
-			m_outbox,
-			m_outboxAllocator,
-			&m_loadSequenceStep,
-			m_bubbleData,
-			m_lastTime,
-			m_parameters,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer());
-	}
+			result=m_sl->writeSequencesToAMOSFile(getRank(),getSize(),
+				m_outbox,
+				m_outboxAllocator,
+				&m_loadSequenceStep,
+				m_bubbleData,
+				m_lastTime,
+				m_parameters,m_switchMan->getMasterModePointer(),m_switchMan->getSlaveModePointer());
+		}
 
-	if(!result){
-		(*m_aborted)=true;
-		m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-		m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
-		return;
-	}
+		if(!result){
+			(*m_aborted)=true;
+			m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+			return;
+		}
 
-	MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	uint32_t*messageInInts=(uint32_t*)message;
-	messageInInts[0]=m_parameters->getNumberOfFiles();
+		m_fileIndex=0;
+		m_theEntriesForFileWasSent=false;
 
-	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
-		messageInInts[1+i]=(LargeCount)m_parameters->getNumberOfSequences(i);
-	}
-	
-	for(Rank i=0;i<getSize();i++){
-		Message aMessage(message,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
-			i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
-		m_outbox->push_back(&aMessage);
-	}
+		m_startedToSendCounts=true;
 
-	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
+	}else if(m_fileIndex<(int)m_parameters->getNumberOfFiles()){
+
+		if(!m_theEntriesForFileWasSent){
+
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+			int bufferSize=0;
+			message[bufferSize++]=m_fileIndex;
+			message[bufferSize++]=m_parameters->getNumberOfSequences(m_fileIndex);
+
+			for(Rank i=0;i<getSize();i++){
+				Message aMessage(message,bufferSize,
+					i,RAY_MPI_TAG_SET_FILE_ENTRIES,getRank());
+				m_outbox->push_back(&aMessage);
+			}
+
+			m_theEntriesForFileWasSent=true;
+			m_numberOfRanksThatReplied=0;
+
+		}else if(m_inbox->hasMessage(RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY)){
+
+			m_numberOfRanksThatReplied++;
+
+			if(m_numberOfRanksThatReplied==m_parameters->getSize()){
+				m_fileIndex++;
+				m_theEntriesForFileWasSent=false;
+			}
+		}
+	}else{
+
+/*
+ * RAY_MPI_TAG_LOAD_SEQUENCES is handled by MessageProcessor.plugin.
+ *
+ */
+		for(Rank i=0;i<getSize();i++){
+			Message aMessage(NULL,0,i,RAY_MPI_TAG_LOAD_SEQUENCES,getRank());
+			m_outbox->push_back(&aMessage);
+		}
+
+		m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
+
+	}
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
@@ -1274,6 +1308,9 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS");
 	RAY_MPI_TAG_EXTENSION_DATA_END=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_DATA_END");
 
+	RAY_MPI_TAG_SET_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES");
+	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
+
 	core->setFirstMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG);
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG, RAY_MASTER_MODE_TEST_NETWORK);
@@ -1340,6 +1377,8 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
+
+	m_startedToSendCounts=false;
 }
 
 

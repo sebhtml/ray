@@ -56,6 +56,7 @@ using namespace std;
 __DeclarePlugin(MessageProcessor);
 
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
+__DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);
@@ -170,6 +171,7 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 class MessageProcessor :  public CorePlugin {
 
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES);
+	__AddAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_CONTIG_INFO);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_SCAFFOLDING_LINKS);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_GET_READ_MARKERS);
@@ -374,6 +376,8 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_LIBRARY_DISTANCE;
 	MessageTag RAY_MPI_TAG_LIBRARY_DISTANCE_REPLY;
 	MessageTag RAY_MPI_TAG_LOAD_SEQUENCES;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES;
+	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY;
 	MessageTag RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS;
 	MessageTag RAY_MPI_TAG_MASTER_IS_DONE_ATTACHING_READS_REPLY;
 	MessageTag RAY_MPI_TAG_OUT_EDGES_DATA;
@@ -581,6 +585,7 @@ SequencesIndexer*m_si
 // list of declarations
 
 	void call_RAY_MPI_TAG_LOAD_SEQUENCES(Message*message);
+	void call_RAY_MPI_TAG_SET_FILE_ENTRIES(Message*message);
 	void call_RAY_MPI_TAG_CONTIG_INFO(Message*message);
 	void call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message);
 	void call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message);
