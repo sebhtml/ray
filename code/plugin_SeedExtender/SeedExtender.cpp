@@ -44,6 +44,7 @@
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
 #define __PROGRESSION_PERIOD 1000
 
+#define MINIMUM_UNITS_FOR_VERBOSITY 1024
 
 __CreatePlugin(SeedExtender);
 
@@ -839,7 +840,10 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 
 			printExtensionStatus(currentVertex);
 
-			cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
+			bool verbose=ed->m_EXTENSION_extension.size()>=MINIMUM_UNITS_FOR_VERBOSITY;
+
+			if(verbose)
+				cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
 			
 			#ifdef ASSERT
 			assert(m_complementedSeed.size() == (int)ed->m_EXTENSION_extension.size());
@@ -987,6 +991,8 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 		m_flowedVertices.push_back(ed->m_EXTENSION_extension.size());
 
+		bool verbose=ed->m_EXTENSION_extension.size()>=MINIMUM_UNITS_FOR_VERBOSITY;
+
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
 		if(m_parameters->showEndingContext()){
@@ -1031,18 +1037,21 @@ Kmer *currentVertex,BubbleData*bubbleData){
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
+		if(verbose)
+			cout<<"Rank "<<theRank<<" (extension done) NumberOfFlows: "<<ed->m_flowNumber<<endl;
 
 		m_extended++;
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
-		cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
-		for(int i=0;i<(int)m_flowedVertices.size();i++){
-			cout<<" "<<i<<" "<<m_flowedVertices[i];
-		}
+		if(verbose){
+			cout<<"Rank "<<m_parameters->getRank()<<" FlowedVertices:";
+			for(int i=0;i<(int)m_flowedVertices.size();i++){
+				cout<<" "<<i<<" "<<m_flowedVertices[i];
+			}
 
-		cout<<endl;
+			cout<<endl;
+		}
 	
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -1310,6 +1319,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
 				m_flowedVertices.push_back(ed->m_EXTENSION_currentSeed.size());
 			
+				bool verbose=ed->m_EXTENSION_currentSeed.size()>=MINIMUM_UNITS_FOR_VERBOSITY;
+
 				/* flow #0 is the seed */
 				ed->m_flowNumber++;
 
@@ -1324,7 +1335,8 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				m_currentPeakCoverage=m_parameters->getPeakCoverage();
 				#endif
 
-				cout<<"Current peak coverage -> "<<m_currentPeakCoverage<<endl;
+				if(verbose)
+					cout<<"Current peak coverage -> "<<m_currentPeakCoverage<<endl;
 			}
 			printExtensionStatus(currentVertex);
 		}
@@ -2010,14 +2022,20 @@ void SeedExtender::showReadsInRange(){
 void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	int theRank=m_parameters->getRank();
 
-	printf("Rank %i reached %i vertices from seed %i, flow %i\n",theRank,
-		(int)m_ed->m_EXTENSION_extension.size(),
-		m_ed->m_EXTENSION_currentSeedIndex,m_ed->m_flowNumber);
+	bool verbose=m_ed->m_EXTENSION_extension.size()>=MINIMUM_UNITS_FOR_VERBOSITY;
 
+	if(verbose){
+		printf("Rank %i reached %i vertices from seed %i, flow %i\n",theRank,
+			(int)m_ed->m_EXTENSION_extension.size(),
+			m_ed->m_EXTENSION_currentSeedIndex,m_ed->m_flowNumber);
+	}
 
 	m_derivative.addX(m_ed->m_EXTENSION_extension.size());
-	m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION],
-		RAY_SLAVE_MODE_EXTENSION);
+
+	if(verbose){
+		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION],
+			RAY_SLAVE_MODE_EXTENSION);
+	}
 
 /*
 	cout<<"Expiration.size= "<<(m_ed->m_expirations).size()<<endl;
@@ -2027,7 +2045,7 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 	}
 */
 
-	if(m_parameters->showMemoryUsage()){
+	if(verbose && m_parameters->showMemoryUsage()){
 		showMemoryUsage(theRank);
 	}
 
@@ -2562,8 +2580,14 @@ void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 }
 
 void SeedExtender::skipSeed(vector<GraphPath>*seeds){
-	cout<<"Rank "<<m_parameters->getRank()<<" skips seed ["<<m_ed->m_EXTENSION_currentSeedIndex<<"/"<<
-		(*seeds).size()<<"]"<<endl;
+
+	bool verbose=m_ed->m_EXTENSION_currentSeed.size()>=MINIMUM_UNITS_FOR_VERBOSITY;
+
+	if(verbose){
+		cout<<"Rank "<<m_parameters->getRank()<<" skips seed [";
+		cout<<m_ed->m_EXTENSION_currentSeedIndex<<"/";
+		cout<<(*seeds).size()<<"]"<<endl;
+	}
 
 	m_ed->m_EXTENSION_currentSeedIndex++;// skip the current one.
 	m_ed->m_EXTENSION_currentPosition=0;
