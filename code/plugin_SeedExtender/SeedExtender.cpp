@@ -1098,8 +1098,6 @@ Kmer *currentVertex,BubbleData*bubbleData){
 	m_cacheAllocator.clear();
 	m_cache.clear();
 
-	fflush(stdout);
-
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(theRank);
 	}
@@ -1151,7 +1149,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 		&&(*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				printf("Rank %i is extending seeds [%i/%i] \n",theRank,(int)ed->m_EXTENSION_currentSeedIndex+1,(int)(*seeds).size());
-				fflush(stdout);
 				
 			}
 
@@ -1311,7 +1308,6 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				ed->m_EXTENSION_currentSeedIndex,
 				(int)ed->m_EXTENSION_currentSeed.size(),ed->m_flowNumber,
 					ed->m_EXTENSION_currentSeedIndex,(int)(*seeds).size());
-				fflush(stdout);
 				m_flowedVertices.push_back(ed->m_EXTENSION_currentSeed.size());
 			
 				/* flow #0 is the seed */
@@ -2009,7 +2005,6 @@ void SeedExtender::showReadsInRange(){
 		cout<<" "<<*i;
 	}
 	cout<<endl;
-	cout.flush();
 }
 
 void SeedExtender::printExtensionStatus(Kmer*currentVertex){
@@ -2019,7 +2014,6 @@ void SeedExtender::printExtensionStatus(Kmer*currentVertex){
 		(int)m_ed->m_EXTENSION_extension.size(),
 		m_ed->m_EXTENSION_currentSeedIndex,m_ed->m_flowNumber);
 
-	fflush(stdout);
 
 	m_derivative.addX(m_ed->m_EXTENSION_extension.size());
 	m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_EXTENSION],
@@ -2404,7 +2398,6 @@ void SeedExtender::finalizeExtensions(vector<GraphPath>*seeds,FusionData*fusionD
 
 	printf("Rank %i extended %i seeds out of %i (%.2f%%)\n",m_parameters->getRank(),
 		m_extended,(int)seeds->size(),ratio);
-	fflush(stdout);
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 	if(m_parameters->showMemoryUsage()){

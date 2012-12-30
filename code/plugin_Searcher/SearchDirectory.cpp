@@ -99,7 +99,6 @@ int SearchDirectory::getCount(int i){
 		cout<<"Error, file= "<<i<<" but size= "<<m_counts.size()<<endl;
 		cout<<"Directory= "<<getDirectoryName()<<endl;
 
-		cout.flush();
 	}
 
 	assert(i<(int)m_counts.size());

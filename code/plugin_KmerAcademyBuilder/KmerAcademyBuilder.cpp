@@ -87,7 +87,6 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 		}
 		printf("Rank %i is counting k-mers in sequence reads %s[%i/%i]\n",m_parameters->getRank(),
 			reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
-		fflush(stdout);
 
 		m_derivative.addX(m_mode_send_vertices_sequence_id);
 		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_ADD_VERTICES],RAY_SLAVE_MODE_ADD_VERTICES);
@@ -107,7 +106,6 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 			m_finished=true;
 			printf("Rank %i is counting k-mers in sequence reads [%i/%i] (completed)\n",
 				m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
-			fflush(stdout);
 			m_bufferedData.showStatistics(m_parameters->getRank());
 
 			

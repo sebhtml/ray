@@ -1931,7 +1931,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					#endif
 		
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'F'"<<endl;
-					//cout.flush();
 				}
 		
 				for(map<PathHandle,set<int> >::iterator i=m_contigCounts['R'].begin();i!=m_contigCounts['R'].end();i++){
@@ -1947,7 +1946,6 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					#endif
 		
 					//cout<<"contig-"<<contig<<" has "<<matches<<" matches on strand 'R'"<<endl;
-					//cout.flush();
 				}
 		
 				// send a message to write the abundances

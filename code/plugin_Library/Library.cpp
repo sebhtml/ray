@@ -329,9 +329,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 
 	if(m_completedJobs==(int)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
-		fflush(stdout);
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
-		fflush(stdout);
 		
 		if(mustWriteLibraryCheckpoint())
 			writeLibraryCheckpoint();
@@ -515,7 +513,6 @@ void Library::updateStates(){
 		m_aliveWorkers.erase(workerId);
 		if(m_completedJobs%10==0){
 			printf("Rank %i is calculating library lengths [%i/%i]\n",m_parameters->getRank(),m_completedJobs+1,(int)m_seedingData->m_SEEDING_seeds.size());
-			fflush(stdout);
 		}
 
 		m_completedJobs++;
@@ -551,7 +548,6 @@ void Library::completeSlaveMode(){
 	m_allocator.clear();
 
 	printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
-	fflush(stdout);
 	m_virtualCommunicator->printStatistics();
 
 	if(m_parameters->showMemoryUsage()){

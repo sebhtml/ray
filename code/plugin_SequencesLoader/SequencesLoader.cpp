@@ -210,7 +210,6 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 			return false;
 		}
 
-		fflush(stdout);
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
 			char qlt[20000];
@@ -248,12 +247,10 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
 	printf("Rank %i is loading sequence reads\n",m_rank);
-	fflush(stdout);
 
 	/* check if the checkpoint exists */
 	if(m_parameters->hasCheckpoint("Sequences")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Sequences"<<endl;
-		cout.flush();
 
 		ifstream f(m_parameters->getCheckpointFile("Sequences").c_str());
 		LargeCount count=0;
@@ -368,7 +365,6 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Sequences")){
 		/* announce the user that we are writing a checkpoint */
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Sequences"<<endl;
-		cout.flush();
 
 		ofstream f(m_parameters->getCheckpointFile("Sequences").c_str());
 

@@ -78,7 +78,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 			reverse="(reverse complement) ";
 		}
 		printf("Rank %i is adding edges %s[%i/%i]\n",m_parameters->getRank(),reverse.c_str(),(int)m_mode_send_vertices_sequence_id+1,(int)m_myReads->size());
-		fflush(stdout);
 
 		m_derivative.addX(m_mode_send_vertices_sequence_id);
 		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_ADD_EDGES],RAY_SLAVE_MODE_ADD_EDGES);
@@ -102,7 +101,6 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 			m_outbox->push_back(&aMessage);
 			m_finished=true;
 			printf("Rank %i is adding edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_mode_send_vertices_sequence_id,(int)m_myReads->size());
-			fflush(stdout);
 			m_bufferedDataForIngoingEdges.showStatistics(m_parameters->getRank());
 			m_bufferedDataForOutgoingEdges.showStatistics(m_parameters->getRank());
 

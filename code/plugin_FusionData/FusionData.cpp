@@ -91,7 +91,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 
 	}else if(m_buffers.isEmpty() && m_seedingData->m_SEEDING_i==(LargeCount)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is distributing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
-		fflush(stdout);
+
 		Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED,getRank());
 		m_outbox->push_back(&aMessage);
 		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
@@ -112,7 +112,6 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	if(m_ed->m_EXTENSION_currentPosition==0){
 		if(m_seedingData->m_SEEDING_i%10==0){
 			printf("Rank %i is distributing fusions [%i/%i]\n",getRank(),(int)(m_seedingData->m_SEEDING_i+1),(int)m_ed->m_EXTENSION_contigs.size());
-			fflush(stdout);
 
 			if(m_parameters->showMemoryUsage()){
 				showMemoryUsage(getRank());
@@ -215,7 +214,6 @@ bool FusionData::isReady(){
 void FusionData::finishFusions(){
 	if(m_seedingData->m_SEEDING_i==(LargeCount)m_ed->m_EXTENSION_contigs.size()){
 		printf("Rank %i is finishing fusions [%i/%i] (completed)\n",getRank(),(int)m_ed->m_EXTENSION_contigs.size(),(int)m_ed->m_EXTENSION_contigs.size());
-		fflush(stdout);
 
 		if(m_parameters->showMemoryUsage()){
 			showMemoryUsage(m_rank);
@@ -250,7 +248,6 @@ void FusionData::finishFusions(){
 	
 		if(m_seedingData->m_SEEDING_i%10==0){
 			printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
-			fflush(stdout);
 	
 			if(m_parameters->showMemoryUsage()){
 				showMemoryUsage(getRank());
@@ -325,7 +322,6 @@ void FusionData::finishFusions(){
 
 				if(m_seedingData->m_SEEDING_i%10==0){
 					printf("Rank %i is finishing fusions [%i/%i]\n",getRank(),(int)m_seedingData->m_SEEDING_i+1,(int)m_ed->m_EXTENSION_contigs.size());
-					fflush(stdout);
 	
 					if(m_parameters->showMemoryUsage()){
 						showMemoryUsage(getRank());

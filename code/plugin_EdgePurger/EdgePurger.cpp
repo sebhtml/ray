@@ -118,7 +118,6 @@ void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 
 void EdgePurger::finalizeMethod(){
 	printf("Rank %i is purging edges [%i/%i] (completed)\n",m_parameters->getRank(),(int)m_subgraph->size(),(int)m_subgraph->size());
-	fflush(stdout);
 	
 	m_done=true;
 
@@ -222,7 +221,6 @@ void EdgePurger::processWorkerResult(Worker*){
 	if(m_completedJobs%50000==0){
 		cout<<"Rank "<<m_parameters->getRank()<<" is purging edges ["<<m_completedJobs+1;
 		cout<<"/"<<m_subgraph->size()<<"]"<<endl;
-		cout.flush();
 
 		m_derivative.addX(m_completedJobs);
 		m_derivative.printStatus(SLAVE_MODES[RAY_SLAVE_MODE_PURGE_NULL_EDGES],RAY_SLAVE_MODE_PURGE_NULL_EDGES);

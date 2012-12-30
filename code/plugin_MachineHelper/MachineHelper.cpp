@@ -256,7 +256,6 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	m_parameters->setRepeatCoverage(distribution.getRepeatCoverage());
 
 	printf("\n");
-	fflush(stdout);
 
 	cout<<endl;
 	cout<<"Rank "<<getRank()<<": the minimum coverage is "<<m_parameters->getMinimumCoverage()<<endl;

@@ -665,7 +665,6 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("GenomeGraph")){
 		/* announce the user that we are writing a checkpoint */
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint GenomeGraph"<<endl;
-		cout.flush();
 
 		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
 
@@ -760,7 +759,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		if((*m_last_value)!=(int)m_subgraph->size() && (int)m_subgraph->size()%100000==0){
 			(*m_last_value)=m_subgraph->size();
 			printf("Rank %i has %i vertices\n",m_rank,(int)m_subgraph->size());
-			fflush(stdout);
 
 			if(m_parameters->showMemoryUsage()){
 				showMemoryUsage(m_rank);
@@ -836,7 +834,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 
 
 	printf("Rank %i has %i vertices (completed)\n",m_rank,(int)m_subgraph->size());
-	fflush(stdout);
 	
 	#if 0
 	m_subgraph->printStatistics();
@@ -844,7 +841,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_rank);
-		fflush(stdout);
 	}
 
 	*m_mode=RAY_SLAVE_MODE_PURGE_NULL_EDGES;
@@ -1035,7 +1031,6 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 
 	if(m_parameters->showMemoryUsage()){
 		showMemoryUsage(m_rank);
-		fflush(stdout);
 	}
 
 	(*m_mode_send_coverage_iterator)=0;
@@ -1708,7 +1703,6 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 		Vertex*node=m_subgraph->find(&vertex);
 		if(node==NULL){
 			cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
-			cout.flush();
 		}
 		assert(node!=NULL);
 
