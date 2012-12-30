@@ -128,7 +128,9 @@ void GraphPath::computePeakCoverageUsingMode(){
 		#endif
 	}
 
+	#ifdef CONFIG_VERBOSITY_FOR_SEEDS
 	cout<<"mode= "<<best<<" length= "<<m_vertices.size()<<endl;
+	#endif
 
 	m_peakCoverage=best;
 
@@ -255,7 +257,9 @@ void GraphPath::computePeakCoverageUsingStaggeredMean(){
 		}
 	}
 
+	#ifdef CONFIG_VERBOSITY_FOR_SEEDS
 	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<" onTheRight= "<<objectsOnRight<<"/"<<totalCount<<endl;
+	#endif
 
 	m_peakCoverage=mean;
 }

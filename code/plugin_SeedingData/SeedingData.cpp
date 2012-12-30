@@ -141,11 +141,16 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				Kmer lastVertex=seed[seed.size()-1];
 				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
 
-				if(firstVertex<firstReverse){
-					printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed.size());
-					fflush(stdout);
+				int minimumNucleotidesForVerbosity=1024;
 
-					if(m_parameters->showMemoryUsage()){
+				bool verbose=nucleotides>=minimumNucleotidesForVerbosity;
+				if(firstVertex<firstReverse){
+
+					if(verbose){
+						printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed.size());
+					}
+
+					if(m_parameters->showMemoryUsage() && verbose){
 						showMemoryUsage(m_rank);
 					}
 
@@ -159,18 +164,23 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 		
 					CoverageDepth peakCoverage=theSeed.getPeakCoverage();
 
-					cout<<"Got a seed, peak coverage: "<<peakCoverage;
+					if(verbose)
+						cout<<"Got a seed, peak coverage: "<<peakCoverage;
 	
 					/* ignore the seed if it has too much coverage. */
 					if(peakCoverage >= m_minimumSeedCoverageDepth
 						&& peakCoverage <= m_parameters->getMaximumSeedCoverage()){
 
-						cout<<", adding seed."<<endl;
+						if(verbose)
+							cout<<", adding seed."<<endl;
+
 						m_SEEDING_seeds.push_back(theSeed);
 		
 						m_eligiblePaths++;
 					}else{
-						cout<<", ignoring seed."<<endl;
+
+						if(verbose)
+							cout<<", ignoring seed."<<endl;
 			
 						m_skippedNotEnoughCoverage++;
 					}
@@ -195,7 +205,6 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			if(m_SEEDING_i<m_subgraph->size()&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
 				if(m_SEEDING_i % 100000 ==0){
 					printf("Rank %i is creating seeds [%i/%i]\n",getRank(),(int)m_SEEDING_i+1,(int)m_subgraph->size());
-					fflush(stdout);
 
 					if(m_parameters->showMemoryUsage()){
 						showMemoryUsage(m_rank);
@@ -241,11 +250,8 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 	if((int)m_subgraph->size()==m_completedJobs){
 
 		printf("Rank %i has %i seeds\n",m_rank,(int)m_SEEDING_seeds.size());
-		fflush(stdout);
 		printf("Rank %i is creating seeds [%i/%i] (completed)\n",getRank(),(int)m_SEEDING_i,(int)m_subgraph->size());
-		fflush(stdout);
 		printf("Rank %i: peak number of workers: %i, maximum: %i\n",m_rank,m_maximumWorkers,m_maximumAliveWorkers);
-		fflush(stdout);
 		m_virtualCommunicator->printStatistics();
 
 		cout<<"Rank "<<m_rank<<" runtime statistics for seeding algorithm: "<<endl;
