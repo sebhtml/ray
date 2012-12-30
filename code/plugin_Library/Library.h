@@ -124,6 +124,11 @@ class Library :  public CorePlugin{
 
 	void completeSlaveMode();
 
+	void readLibraryCheckpoint();
+	bool hasLibraryCheckpoint();
+	void writeLibraryCheckpoint();
+	bool mustWriteLibraryCheckpoint();
+
 public:
 	Library();
 	void allocateBuffers();

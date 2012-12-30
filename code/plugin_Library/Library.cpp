@@ -85,6 +85,46 @@ void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 	}
 }
 
+bool Library::hasLibraryCheckpoint(){
+	return m_parameters->hasCheckpoint("PairedLibraries");
+}
+
+void Library::readLibraryCheckpoint(){
+	ifstream f(m_parameters->getCheckpointFile("PairedLibraries").c_str());
+	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint PairedLibraries"<<endl;
+
+	uint32_t entries=0;
+	f.read((char*)&entries,sizeof(uint32_t));
+
+	#ifdef ASSERT
+	assert(m_libraryDistances.size()==0);
+	assert(m_detectedDistances==0);
+	#endif
+
+	while(entries--){
+
+		uint32_t library=0;
+		uint32_t distance=0;
+		uint32_t count=0;
+
+		f.read((char*)&library,sizeof(uint32_t));
+		f.read((char*)&distance,sizeof(uint32_t));
+		f.read((char*)&count,sizeof(uint32_t));
+
+		#ifdef ASSERT
+		if(m_libraryDistances.count(library)>0){
+			assert(m_libraryDistances[library].count(distance)==0);
+		}
+		#endif
+
+		m_libraryDistances[library][distance]=count;
+
+		m_detectedDistances+=count;
+	}
+
+	f.close();
+}
+
 void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	if(!m_initiatedIterator){
 		m_SEEDING_i=0;
@@ -98,6 +138,16 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 			return;
 		}
 
+/*
+ * If we have checkpoints, we read them right away and
+ * skip this code path.
+ */
+
+		if(hasLibraryCheckpoint()){
+			readLibraryCheckpoint();
+			completeSlaveMode();
+			return;
+		}
 
 		m_virtualCommunicator->resetCounters();
 	}
@@ -283,6 +333,9 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
 		fflush(stdout);
 		
+		if(mustWriteLibraryCheckpoint())
+			writeLibraryCheckpoint();
+
 		completeSlaveMode();
 	}
 
@@ -307,6 +360,48 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		}
 	}
 	#endif
+}
+
+bool Library::mustWriteLibraryCheckpoint(){
+	return m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("PairedLibraries");
+}
+
+void Library::writeLibraryCheckpoint(){
+	ofstream f(m_parameters->getCheckpointFile("PairedLibraries").c_str());
+	cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint PairedLibraries"<<endl;
+
+	uint32_t entries=0;
+
+// count the entries
+	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();
+		i!=m_libraryDistances.end();i++){
+
+		entries+=i->second.size();
+	}
+
+	f.write((char*)&entries,sizeof(uint32_t));
+
+// write the entries
+
+	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();
+		i!=m_libraryDistances.end();i++){
+
+		int library=i->first;
+
+		for(map<int,int>::iterator j=i->second.begin();
+			j!=i->second.end();j++){
+
+			int distance=j->first;
+			int count=j->second;
+
+			f.write((char*)&library,sizeof(uint32_t));
+			f.write((char*)&distance,sizeof(uint32_t));
+			f.write((char*)&count,sizeof(uint32_t));
+
+		}
+	}
+
+	f.close();
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,ExtensionData*m_ed,
