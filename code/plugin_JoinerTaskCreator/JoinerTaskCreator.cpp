@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -133,7 +133,7 @@ bool JoinerTaskCreator::hasUnassignedTask(){
  */
 Worker*JoinerTaskCreator::assignNextTask(){
 
-	if(m_currentWorkerIdentifier % 10== 0){
+	if(m_currentWorkerIdentifier % 100== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
@@ -167,7 +167,7 @@ Worker*JoinerTaskCreator::assignNextTask(){
 /** get the result of a worker */
 void JoinerTaskCreator::processWorkerResult(Worker*worker){
 
-	if(m_completedJobs % 10== 0){
+	if(m_completedJobs % 100== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){

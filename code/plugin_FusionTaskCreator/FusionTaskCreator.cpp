@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -129,7 +129,7 @@ bool FusionTaskCreator::hasUnassignedTask(){
  */
 Worker*FusionTaskCreator::assignNextTask(){
 
-	if(m_currentWorkerIdentifier % 10== 0){
+	if(m_currentWorkerIdentifier % 100== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
@@ -161,7 +161,7 @@ Worker*FusionTaskCreator::assignNextTask(){
 /** get the result of a worker */
 void FusionTaskCreator::processWorkerResult(Worker*worker){
 
-	if(m_completedJobs % 10== 0){
+	if(m_completedJobs % 100== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
