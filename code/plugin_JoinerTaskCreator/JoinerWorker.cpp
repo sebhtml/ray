@@ -310,7 +310,12 @@ void JoinerWorker::work(){
 				if(localScore > bestSelfScore){
 			
 					if(localScore >= relevantScore){
-						cout<<"New best score for self (handle: "<<m_identifier<<", length: "<<m_path->size()<<") with "<<localScore<<", other handle: "<<otherIdentifier<<endl;
+
+						if(m_parameters->hasOption("-debug-fusions")){
+							cout<<"New best score for self (handle: ";
+							cout<<m_identifier<<", length: "<<m_path->size()<<") with ";
+							cout<<localScore<<", other handle: "<<otherIdentifier<<endl;
+						}
 					}
 
 					m_minPositionOnSelf[otherIdentifier]=start;
@@ -353,7 +358,11 @@ void JoinerWorker::work(){
 				if(localScore > bestOtherScore){
 			
 					if(localScore >= relevantScore){
-						cout<<"New best score for other (handle: "<<otherIdentifier<<", length: "<<m_hitLengths[otherIdentifier]<<") with "<<localScore<<", other handle: "<<otherIdentifier<<endl;
+						if(m_parameters->hasOption("-debug-fusions")){
+							cout<<"New best score for other (handle: "<<otherIdentifier;
+							cout<<", length: "<<m_hitLengths[otherIdentifier]<<") with ";
+							cout<<localScore<<", other handle: "<<otherIdentifier<<endl;
+						}
 					}
 
 					m_minPosition[otherIdentifier]=start;
