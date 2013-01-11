@@ -511,7 +511,8 @@ void Library::updateStates(){
 
 		m_activeWorkers.erase(workerId);
 		m_aliveWorkers.erase(workerId);
-		if(m_completedJobs%10==0){
+
+		if(m_completedJobs%1000==0){
 			printf("Rank %i is calculating library lengths [%i/%i]\n",m_parameters->getRank(),m_completedJobs+1,(int)m_seedingData->m_SEEDING_seeds.size());
 		}
 

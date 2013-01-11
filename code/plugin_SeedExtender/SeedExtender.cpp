@@ -42,7 +42,7 @@
 //#define CONFIG_DEBUG_SEED_EXTENSION
 	
 /* TODO: free sequence in ExtensionElement objects when they are not needed anymore */
-#define __PROGRESSION_PERIOD 1000
+#define __PROGRESSION_PERIOD 10000
 
 #define MINIMUM_UNITS_FOR_VERBOSITY 1024
 
@@ -1154,7 +1154,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			m_dfsData->setTags(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	RAY_MPI_TAG_REQUEST_VERTEX_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 
 			m_receivedDirections.clear();
-			if(ed->m_EXTENSION_currentSeedIndex%10==0 && ed->m_EXTENSION_currentPosition==0 
+			if(ed->m_EXTENSION_currentSeedIndex%1000==0 && ed->m_EXTENSION_currentPosition==0 
 		&&(*last_value)!=ed->m_EXTENSION_currentSeedIndex){
 				(*last_value)=ed->m_EXTENSION_currentSeedIndex;
 				printf("Rank %i is extending seeds [%i/%i] \n",theRank,(int)ed->m_EXTENSION_currentSeedIndex+1,(int)(*seeds).size());
