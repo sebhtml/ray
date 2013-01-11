@@ -133,7 +133,7 @@ bool JoinerTaskCreator::hasUnassignedTask(){
  */
 Worker*JoinerTaskCreator::assignNextTask(){
 
-	if(m_currentWorkerIdentifier % 100== 0){
+	if(m_currentWorkerIdentifier % 10000== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" JoinerTaskCreator assignNextTask ["<<m_currentWorkerIdentifier<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){

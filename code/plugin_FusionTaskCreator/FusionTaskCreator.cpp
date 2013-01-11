@@ -161,7 +161,7 @@ Worker*FusionTaskCreator::assignNextTask(){
 /** get the result of a worker */
 void FusionTaskCreator::processWorkerResult(Worker*worker){
 
-	if(m_completedJobs % 100== 0){
+	if(m_completedJobs % 10000== 0){
 		cout<<"Rank "<<m_parameters->getRank()<<" FusionTaskCreator processWorkerResult ["<<m_completedJobs<<"/"<<m_paths->size()*2<<"]"<<endl;
 
 		if(m_parameters->showMemoryUsage()){
