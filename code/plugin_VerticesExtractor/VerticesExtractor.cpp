@@ -70,7 +70,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 		return;
 	}
 
-	if(m_mode_send_vertices_sequence_id%10000==0 &&m_mode_send_vertices_sequence_id_position==0
+	if(m_mode_send_vertices_sequence_id%100000==0 &&m_mode_send_vertices_sequence_id_position==0
 		&&m_mode_send_vertices_sequence_id<(int)m_myReads->size()){
 
 		string reverse="";
