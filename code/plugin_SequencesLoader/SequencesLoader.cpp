@@ -43,7 +43,7 @@ __CreateMessageTagAdapter(SequencesLoader,RAY_MPI_TAG_SET_FILE_ENTRIES);
 
 using namespace std;
 
-#define NUMBER_OF_SEQUENCES_PERIOD 10000
+#define NUMBER_OF_SEQUENCES_PERIOD 100000
 
 void SequencesLoader::registerSequence(){
 	if(m_myReads->size()% NUMBER_OF_SEQUENCES_PERIOD ==0){
