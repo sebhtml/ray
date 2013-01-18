@@ -1,7 +1,7 @@
 
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -82,10 +82,18 @@ int Loader::load(string file,bool isGenome){
 		return ret;
 		
 	}
+
 	if(file.substr(file.length()-6,6)==".fasta"){
 		m_type=FORMAT_FASTA;
 		int ret=m_fastq.open(file,2);
 		m_size=m_fastq.getSize();
+		return ret;
+	}
+
+	if(file.substr(file.length()-10,10)=="export.txt"){
+		m_type=FORMAT_EXPORT;
+		int ret=m_export.open(file);
+		m_size=m_export.getSize();
 		return ret;
 	}
 
@@ -187,6 +195,8 @@ void Loader::loadSequences(){
 		m_sff.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTA){
 		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator,2);
+	}else if(m_type==FORMAT_EXPORT){
+		m_export.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTA_BZ2){
 		#ifdef CONFIG_HAVE_LIBBZ2
 		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator,2);

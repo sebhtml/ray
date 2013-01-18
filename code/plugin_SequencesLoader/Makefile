@@ -5,6 +5,7 @@ SequencesLoader-y += code/plugin_SequencesLoader/ColorSpaceDecoder.o
 SequencesLoader-y += code/plugin_SequencesLoader/ColorSpaceLoader.o 
 SequencesLoader-y += code/plugin_SequencesLoader/FastaLoader.o 
 SequencesLoader-y += code/plugin_SequencesLoader/FastqLoader.o
+SequencesLoader-y += code/plugin_SequencesLoader/ExportLoader.o
 SequencesLoader-y += code/plugin_SequencesLoader/SffLoader.o 
 SequencesLoader-y += code/plugin_SequencesLoader/Loader.o 
 SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/plugin_SequencesLoader/BzReader.o  

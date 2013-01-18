@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C)  2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -25,6 +25,7 @@
 #include "Read.h"
 #include "ArrayOfReads.h"
 #include "FastaLoader.h"
+#include "ExportLoader.h"
 #include "FastqLoader.h"
 #include "ColorSpaceLoader.h"
 #include "SffLoader.h"
@@ -56,7 +57,8 @@ FORMAT_FASTQ,
 FORMAT_FASTA_GZ,
 FORMAT_FASTQ_GZ,
 FORMAT_FASTA_BZ2,
-FORMAT_FASTQ_BZ2
+FORMAT_FASTQ_BZ2,
+FORMAT_EXPORT
 };
 
 /*
@@ -82,6 +84,7 @@ class Loader{
 	ColorSpaceLoader m_color;
 	FastqLoader m_fastq;	
 	FastaLoader m_fasta;	
+	ExportLoader m_export;
 
 	#ifdef CONFIG_HAVE_LIBZ
 	FastqGzLoader m_fastqgz;
