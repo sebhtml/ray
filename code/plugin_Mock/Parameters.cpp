@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -1666,6 +1666,7 @@ void Parameters::showUsage(){
 	cout<<"     .fastq"<<endl;
 	cout<<"     .fastq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
+	cout<<"     export.txt"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;
 

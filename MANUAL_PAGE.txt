@@ -307,6 +307,7 @@ FILES
      .fastq
      .fastq.gz (needs HAVE_LIBZ=y at compilation)
      .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)
+     export.txt
      .sff (paired reads must be extracted manually)
      .csfasta (color-space reads)
 
@@ -389,8 +390,6 @@ FILES
 
   Communication
 
-     RayOutput/MessagePassingInterface.txt
-	    	Number of messages sent
      RayOutput/NetworkTest.txt
 	    	Latencies in microseconds
      RayOutput/Rank<rank>NetworkTestData.txt
