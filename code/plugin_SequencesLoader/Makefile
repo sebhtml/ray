@@ -8,6 +8,7 @@ SequencesLoader-y += code/plugin_SequencesLoader/FastaLoaderForReads.o
 SequencesLoader-y += code/plugin_SequencesLoader/FastqLoader.o
 SequencesLoader-y += code/plugin_SequencesLoader/ExportLoader.o
 SequencesLoader-y += code/plugin_SequencesLoader/LoaderInterface.o
+SequencesLoader-y += code/plugin_SequencesLoader/LoaderFactory.o
 SequencesLoader-y += code/plugin_SequencesLoader/SffLoader.o
 SequencesLoader-y += code/plugin_SequencesLoader/Loader.o
 SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/plugin_SequencesLoader/BzReader.o

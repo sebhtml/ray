@@ -22,24 +22,10 @@
 #ifndef _Loader
 #define _Loader
 
+#include "LoaderInterface.h"
+#include "LoaderFactory.h"
 #include "Read.h"
 #include "ArrayOfReads.h"
-#include "FastaLoader.h"
-#include "FastaLoaderForReads.h"
-#include "ExportLoader.h"
-#include "FastqLoader.h"
-#include "ColorSpaceLoader.h"
-#include "SffLoader.h"
-
-#ifdef CONFIG_HAVE_LIBZ
-#include "FastqGzLoader.h"
-#include "FastaGzLoader.h"
-#endif
-
-#ifdef CONFIG_HAVE_LIBBZ2
-#include "FastqBz2Loader.h"
-#include "FastaBz2Loader.h"
-#endif
 
 #include <code/plugin_Mock/common_functions.h>
 
@@ -51,30 +37,18 @@
 
 using namespace std;
 
-enum{
-FORMAT_NULL,
-FORMAT_CSFASTA,
-FORMAT_SFF,
-FORMAT_FASTA,
-FORMAT_FASTQ,
-FORMAT_FASTA_GZ,
-FORMAT_FASTQ_GZ,
-FORMAT_FASTA_BZ2,
-FORMAT_FASTQ_BZ2,
-FORMAT_EXPORT
-};
-
 /*
  * Loader loads data files. Data can be formated as SFF, FASTA, and FASTQ.
  * Ray makes no use of quality values, so Their encoding is irrelevant.
  * \author Sébastien Boisvert
  */
 class Loader{
-	
+
+	LoaderFactory m_factory;
+	LoaderInterface*m_interface;
 	Rank m_rank;
 
 	bool m_show;
-	int m_type;
 	int DISTRIBUTION_ALLOCATOR_CHUNK_SIZE;
 	ArrayOfReads m_reads;
 	MyAllocator m_allocator;
@@ -83,22 +57,6 @@ class Loader{
 	int m_maxToLoad;
 	LargeCount m_size;
 
-	SffLoader m_sff;
-	ColorSpaceLoader m_color;
-	FastqLoader m_fastq;	
-	FastaLoader m_fasta;	
-	FastaLoaderForReads m_fastaLoader;
-	ExportLoader m_export;
-
-	#ifdef CONFIG_HAVE_LIBZ
-	FastqGzLoader m_fastqgz;
-	FastaGzLoader m_fastagz;
-	#endif
-
-	#ifdef CONFIG_HAVE_LIBBZ2
-	FastqBz2Loader m_fastqbz2;
-	FastaBz2Loader m_fastabz2;
-	#endif
 
 	void loadSequences();
 
