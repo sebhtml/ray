@@ -95,3 +95,6 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 int ColorSpaceLoader::getSize(){
 	return m_size;
 }
+
+void ColorSpaceLoader::close(){
+}

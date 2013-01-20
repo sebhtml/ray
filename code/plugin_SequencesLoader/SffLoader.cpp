@@ -233,3 +233,6 @@ void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator
 int SffLoader::getSize(){
 	return m_size;
 }
+
+void SffLoader::close(){
+}

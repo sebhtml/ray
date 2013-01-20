@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -24,6 +24,7 @@
 
 #ifdef CONFIG_HAVE_LIBBZ2
 
+#include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "Read.h"
 #include "BzReader.h"
@@ -37,14 +38,17 @@ using namespace std;
 /**
  * \author Sébastien Boisvert
  */
-class FastqBz2Loader{
+class FastqBz2Loader: public LoaderInterface{
 	int m_loaded;
 	int m_size;
 	BzReader m_reader;
 public:
-	int open(string file,int period);
+	int openWithPeriod(string file,int period);
+	int open(string file);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	void close();
 };
 
 #endif

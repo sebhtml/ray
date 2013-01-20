@@ -1,6 +1,6 @@
 /*
- *  Ray -- Parallel genome assemblies for parallel DNA sequencing
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+ 	Ray
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,28 +19,27 @@
 
 */
 
-#ifndef _FastaLoader
-#define _FastaLoader
+#ifndef _LoaderInterface_h
+#define _LoaderInterface_h
 
-#include "LoaderInterface.h"
-#include "ArrayOfReads.h"
 #include "Read.h"
+#include "ArrayOfReads.h"
 
-#include <RayPlatform/memory/MyAllocator.h>
-
-#include <vector>
-#include <sstream>
-#include <stdio.h>
 #include <string>
 using namespace std;
 
 /**
+ * This is a interface for implementing new file formats.
+ *
  * \author Sébastien Boisvert
  */
-class FastaLoader{
+class LoaderInterface{
+
 public:
-	int load(string file,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	virtual int open(string file) = 0;
+	virtual int getSize() = 0;
+	virtual void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator) = 0;
+	virtual void close() = 0;
 };
 
 #endif
-

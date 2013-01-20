@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -22,6 +22,7 @@
 #ifndef _ExportLoader
 #define _ExportLoader
 
+#include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "Read.h"
 
@@ -39,9 +40,11 @@ using namespace std;
  * A loader for export files.
  *
  * This gene was created by a gene duplication of FastqLoader.h.
+ *
  * \author Sébastien Boisvert
  */
-class ExportLoader{
+class ExportLoader: public LoaderInterface{
+
 	int m_loaded;
 	int m_size;
 	FILE*m_f;
@@ -49,6 +52,7 @@ public:
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void close();
 };
 
 #endif

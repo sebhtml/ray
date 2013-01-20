@@ -98,3 +98,6 @@ void ExportLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAlloca
 int ExportLoader::getSize(){
 	return m_size;
 }
+
+void ExportLoader::close(){
+}

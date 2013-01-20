@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -33,7 +33,11 @@
 #include <stdlib.h>
 using namespace std;
 
-int FastqGzLoader::open(string file,int period){
+int FastqGzLoader::open(string file){
+	return openWithPeriod(file,4);
+}
+
+int FastqGzLoader::openWithPeriod(string file,int period){
 
 	m_debug=false;
 
@@ -73,8 +77,12 @@ int FastqGzLoader::open(string file,int period){
 	return EXIT_SUCCESS;
 }
 
+void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	loadWithPeriod(maxToLoad,reads,seqMyAllocator,4);
+}
+
 // a very simple and compact fastq.gz reader
-void FastqGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+void FastqGzLoader::loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
 	char buffer[CONFIG_ZLIB_MAXIMUM_READ_LENGTH];
 	int rotatingVariable=0;
 	int loadedSequences=0;
@@ -283,6 +291,9 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 		cout<<"Finding the next new line in "<<m_bufferedBytes<<" bytes starting at "<<m_firstNewLine<<""<<endl;
 
 	return true;
+}
+
+void FastqGzLoader::close(){
 }
 
 #endif

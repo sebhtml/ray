@@ -1,5 +1,5 @@
 /*
- 	Ray
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -22,6 +22,7 @@
 #ifndef _ColorSpaceLoader
 #define _ColorSpaceLoader
 
+#include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "ColorSpaceDecoder.h"
 #include "Read.h"
@@ -38,7 +39,8 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class ColorSpaceLoader{
+class ColorSpaceLoader: public LoaderInterface{
+
 	ColorSpaceDecoder m_decoder;
 	FILE*m_f;
 	int m_size;
@@ -47,6 +49,7 @@ public:
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 	int open(string file);
 	int getSize();
+	void close();
 };
 
 

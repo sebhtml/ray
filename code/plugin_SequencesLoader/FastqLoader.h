@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -22,6 +22,7 @@
 #ifndef _FastqLoader
 #define _FastqLoader
 
+#include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "Read.h"
 
@@ -37,14 +38,20 @@ using namespace std;
 /**
  * \author Sébastien Boisvert
  */
-class FastqLoader{
+class FastqLoader: public LoaderInterface{
 	int m_loaded;
 	int m_size;
 	FILE*m_f;
+
 public:
-	int open(string file,int period);
+
+	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	int openWithPeriod(string file,int period);
+
+	int open(string file);
 	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
+	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void close();
 };
 
 #endif

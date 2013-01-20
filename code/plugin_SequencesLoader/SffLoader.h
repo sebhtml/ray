@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
+ *  Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -22,6 +22,7 @@
 #ifndef _SffLoader
 #define _SffLoader
 
+#include "LoaderInterface.h"
 #include "Read.h"
 #include "ArrayOfReads.h"
 
@@ -38,7 +39,7 @@ using namespace std;
  * see http://454.com
  * \author Sébastien Boisvert
  */
-class SffLoader{
+class SffLoader: public LoaderInterface{
 	int m_size;
 	int m_loaded;
 	FILE*m_fp;
@@ -53,6 +54,7 @@ public:
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
+	void close();
 };
 
 #endif

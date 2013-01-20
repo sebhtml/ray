@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -32,7 +32,11 @@ int FastqBz2Loader::getSize(){
 	return m_size;
 }
 
-int FastqBz2Loader::open(string file,int period){
+int FastqBz2Loader::open(string file){
+	return openWithPeriod(file,4);
+}
+
+int FastqBz2Loader::openWithPeriod(string file,int period){
 	m_reader.open(file.c_str());
 	char buffer[4096];
 	m_loaded=0;
@@ -54,12 +58,16 @@ int FastqBz2Loader::open(string file,int period){
 	return EXIT_SUCCESS;
 }
 
+void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	loadWithPeriod(maxToLoad,reads,seqMyAllocator,4);
+}
+
 // a very simple and compact fastq.gz reader
-void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
-	char buffer[4096];
+void FastqBz2Loader::loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
 	int rotatingVariable=0;
 	int loadedSequences=0;
-	while(loadedSequences<maxToLoad&&NULL!=m_reader.readLine(buffer,4096)){
+	while(loadedSequences<maxToLoad&&NULL!=m_reader.readLine(buffer,RAY_MAXIMUM_READ_LENGTH)){
 		if(rotatingVariable==1){
 			Read t;
 			t.constructor(buffer,seqMyAllocator,true);
@@ -78,6 +86,9 @@ void FastqBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllo
 	if(m_loaded==m_size){
 		m_reader.close();
 	}
+}
+
+void FastqBz2Loader::close(){
 }
 
 #endif

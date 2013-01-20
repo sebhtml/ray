@@ -27,7 +27,11 @@
 #include <stdlib.h>
 using namespace std;
 
-int FastqLoader::open(string file,int period){
+int FastqLoader::open(string file){
+	return openWithPeriod(file,4);
+}
+
+int FastqLoader::openWithPeriod(string file,int period){
 	m_f=fopen(file.c_str(),"r");
 	m_size=0;
 	m_loaded=0;
@@ -48,7 +52,11 @@ int FastqLoader::open(string file,int period){
 	return EXIT_SUCCESS;
 }
 
-void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
+void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	loadWithPeriod(maxToLoad,reads,seqMyAllocator,4);
+}
+
+void FastqLoader::loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period){
 	char buffer[RAY_MAXIMUM_READ_LENGTH];
 	int rotatingVariable=0;
 	int loadedSequences=0;
@@ -76,4 +84,7 @@ void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocat
 
 int FastqLoader::getSize(){
 	return m_size;
+}
+
+void FastqLoader::close(){
 }
