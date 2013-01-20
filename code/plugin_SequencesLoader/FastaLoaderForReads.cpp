@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,38 +19,26 @@
 
 */
 
-#ifndef _BzReader 
-#define _BzReader
+#include "FastaLoaderForReads.h"
 
-#ifdef CONFIG_HAVE_LIBBZ2
+#include <code/plugin_Mock/constants.h>
 
-#include <bzlib.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <fstream>
+#include <stdlib.h>
+using namespace std;
 
-/**
- * \author Sébastien Boisvert
- */
-class BzReader{
-	BZFILE*m_bzFile;
-	FILE*m_file;
-	char*m_buffer;
-	int m_bufferSize;
-	int m_bufferPosition;
-	uint64_t m_bytesLoaded;
-	
-	char m_unused[BZ_MAX_UNUSED];
-	int m_nUnused;
-	void*m_unused1;
+int FastaLoaderForReads::open(string file){
+	return m_fastqLoader.openWithPeriod(file,2);
+}
 
-	void processError(int error);
+void FastaLoaderForReads::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	m_fastqLoader.loadWithPeriod(maxToLoad,reads,seqMyAllocator,2);
+}
 
-public:
-	void open(const char*file);
-	char*readLine(char*s, int n);
-	void close();
-};
+int FastaLoaderForReads::getSize(){
+	return m_fastqLoader.getSize();
+}
 
-#endif
-
-#endif /* _BzReader */
+void FastaLoaderForReads::close(){
+	m_fastqLoader.close();
+}

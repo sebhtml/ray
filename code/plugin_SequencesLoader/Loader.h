@@ -1,5 +1,5 @@
 /*
- 	Ray
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C)  2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -25,6 +25,7 @@
 #include "Read.h"
 #include "ArrayOfReads.h"
 #include "FastaLoader.h"
+#include "FastaLoaderForReads.h"
 #include "ExportLoader.h"
 #include "FastqLoader.h"
 #include "ColorSpaceLoader.h"
@@ -32,10 +33,12 @@
 
 #ifdef CONFIG_HAVE_LIBZ
 #include "FastqGzLoader.h"
+#include "FastaGzLoader.h"
 #endif
 
 #ifdef CONFIG_HAVE_LIBBZ2
 #include "FastqBz2Loader.h"
+#include "FastaBz2Loader.h"
 #endif
 
 #include <code/plugin_Mock/common_functions.h>
@@ -84,14 +87,17 @@ class Loader{
 	ColorSpaceLoader m_color;
 	FastqLoader m_fastq;	
 	FastaLoader m_fasta;	
+	FastaLoaderForReads m_fastaLoader;
 	ExportLoader m_export;
 
 	#ifdef CONFIG_HAVE_LIBZ
 	FastqGzLoader m_fastqgz;
+	FastaGzLoader m_fastagz;
 	#endif
 
 	#ifdef CONFIG_HAVE_LIBBZ2
 	FastqBz2Loader m_fastqbz2;
+	FastaBz2Loader m_fastabz2;
 	#endif
 
 	void loadSequences();

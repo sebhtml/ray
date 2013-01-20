@@ -15,7 +15,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -85,8 +85,8 @@ int Loader::load(string file,bool isGenome){
 
 	if(file.substr(file.length()-6,6)==".fasta"){
 		m_type=FORMAT_FASTA;
-		int ret=m_fastq.openWithPeriod(file,2);
-		m_size=m_fastq.getSize();
+		int ret=m_fastaLoader.open(file);
+		m_size=m_fastaLoader.getSize();
 		return ret;
 	}
 
@@ -99,7 +99,7 @@ int Loader::load(string file,bool isGenome){
 
 	if(file.substr(file.length()-6,6)==".fastq"){
 		m_type=FORMAT_FASTQ;
-		int ret=m_fastq.openWithPeriod(file,4);
+		int ret=m_fastq.open(file);
 		m_size=m_fastq.getSize();
 		return ret;
 	}
@@ -107,15 +107,15 @@ int Loader::load(string file,bool isGenome){
 	#ifdef CONFIG_HAVE_LIBZ
 	if(file.substr(file.length()-9,9)==".fastq.gz"){
 		m_type=FORMAT_FASTQ_GZ;
-		int ret=m_fastqgz.openWithPeriod(file,4);
+		int ret=m_fastqgz.open(file);
 		m_size=m_fastqgz.getSize();
 		return ret;
 	}
 
 	if(file.substr(file.length()-9,9)==".fasta.gz"){
 		m_type=FORMAT_FASTA_GZ;
-		int ret=m_fastqgz.openWithPeriod(file,2);
-		m_size=m_fastqgz.getSize();
+		int ret=m_fastagz.open(file);
+		m_size=m_fastagz.getSize();
 		return ret;
 	}
 	#endif
@@ -123,15 +123,15 @@ int Loader::load(string file,bool isGenome){
 	#ifdef CONFIG_HAVE_LIBBZ2
 	if(file.substr(file.length()-10,10)==".fastq.bz2"){
 		m_type=FORMAT_FASTQ_BZ2;
-		int ret=m_fastqbz2.openWithPeriod(file,4);
+		int ret=m_fastqbz2.open(file);
 		m_size=m_fastqbz2.getSize();
 		return ret;
 	}
 
 	if(file.substr(file.length()-10,10)==".fasta.bz2"){
 		m_type=FORMAT_FASTA_BZ2;
-		int ret=m_fastqbz2.openWithPeriod(file,2);
-		m_size=m_fastqbz2.getSize();
+		int ret=m_fastabz2.open(file);
+		m_size=m_fastabz2.getSize();
 		return ret;
 	}
 	#endif
@@ -181,29 +181,29 @@ void Loader::loadSequences(){
 
 	if(m_type==FORMAT_FASTQ_GZ){
 		#ifdef CONFIG_HAVE_LIBZ
-		m_fastqgz.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,4);
+		m_fastqgz.load(m_maxToLoad,&m_reads,&m_allocator);
 		#endif
 	}else if(m_type==FORMAT_FASTQ){
-		m_fastq.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,4);
+		m_fastq.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTQ_BZ2){
 		#ifdef CONFIG_HAVE_LIBBZ2
-		m_fastqbz2.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,4);
+		m_fastqbz2.load(m_maxToLoad,&m_reads,&m_allocator);
 		#endif
 	}else if(m_type==FORMAT_CSFASTA){
 		m_color.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_SFF){
 		m_sff.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTA){
-		m_fastq.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,2);
+		m_fastaLoader.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_EXPORT){
 		m_export.load(m_maxToLoad,&m_reads,&m_allocator);
 	}else if(m_type==FORMAT_FASTA_BZ2){
 		#ifdef CONFIG_HAVE_LIBBZ2
-		m_fastqbz2.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,2);
+		m_fastabz2.load(m_maxToLoad,&m_reads,&m_allocator);
 		#endif
 	}else if(m_type==FORMAT_FASTA_GZ){
 		#ifdef CONFIG_HAVE_LIBZ
-		m_fastqgz.loadWithPeriod(m_maxToLoad,&m_reads,&m_allocator,2);
+		m_fastagz.load(m_maxToLoad,&m_reads,&m_allocator);
 		#endif
 	}
 }

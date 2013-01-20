@@ -19,15 +19,15 @@
 
 */
 
-#ifndef _FastqBz2Loader
-#define _FastqBz2Loader
+#ifndef _FastaBz2Loader
+#define _FastaBz2Loader
 
 #ifdef CONFIG_HAVE_LIBBZ2
 
+#include "FastqBz2Loader.h"
 #include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "Read.h"
-#include "BzReader.h"
 
 #include <RayPlatform/memory/MyAllocator.h>
 
@@ -38,16 +38,12 @@ using namespace std;
 /**
  * \author Sébastien Boisvert
  */
-class FastqBz2Loader: public LoaderInterface{
-	int m_loaded;
-	int m_size;
-	BzReader m_reader;
+class FastaBz2Loader: public LoaderInterface{
+	FastqBz2Loader m_fastqBz2Loader;
 public:
-	int openWithPeriod(string file,int period);
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
-	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 	void close();
 };
 

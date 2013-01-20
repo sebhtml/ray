@@ -1,5 +1,5 @@
 /*
-    Ray -- Parallel genome assemblies for parallel DNA sequencing
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -19,38 +19,28 @@
 
 */
 
-#ifndef _FastqBz2Loader
-#define _FastqBz2Loader
-
 #ifdef CONFIG_HAVE_LIBBZ2
 
-#include "LoaderInterface.h"
-#include "ArrayOfReads.h"
-#include "Read.h"
-#include "BzReader.h"
+#include "FastaBz2Loader.h"
 
-#include <RayPlatform/memory/MyAllocator.h>
-
-#include <string>
-#include <vector>
+#include <stdlib.h>
+#include <fstream>
 using namespace std;
 
-/**
- * \author Sébastien Boisvert
- */
-class FastqBz2Loader: public LoaderInterface{
-	int m_loaded;
-	int m_size;
-	BzReader m_reader;
-public:
-	int openWithPeriod(string file,int period);
-	int open(string file);
-	int getSize();
-	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
-	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
-	void close();
-};
+int FastaBz2Loader::getSize(){
+	return m_fastqBz2Loader.getSize();
+}
+
+int FastaBz2Loader::open(string file){
+	return m_fastqBz2Loader.openWithPeriod(file,2);
+}
+
+void FastaBz2Loader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	m_fastqBz2Loader.loadWithPeriod(maxToLoad,reads,seqMyAllocator,2);
+}
+
+void FastaBz2Loader::close(){
+	m_fastqBz2Loader.close();
+}
 
 #endif
-#endif
-

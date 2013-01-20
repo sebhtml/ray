@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -13,44 +13,36 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
+
     You have received a copy of the GNU General Public License
     along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
 
-#ifndef _BzReader 
-#define _BzReader
+#ifdef CONFIG_HAVE_LIBZ
 
-#ifdef CONFIG_HAVE_LIBBZ2
+#include "FastaGzLoader.h"
 
-#include <bzlib.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <fstream>
+#include <stdlib.h>
+using namespace std;
 
-/**
- * \author Sébastien Boisvert
- */
-class BzReader{
-	BZFILE*m_bzFile;
-	FILE*m_file;
-	char*m_buffer;
-	int m_bufferSize;
-	int m_bufferPosition;
-	uint64_t m_bytesLoaded;
-	
-	char m_unused[BZ_MAX_UNUSED];
-	int m_nUnused;
-	void*m_unused1;
+int FastaGzLoader::open(string file){
+	return m_fastqGzLoader.openWithPeriod(file,2);
+}
 
-	void processError(int error);
+void FastaGzLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
+	m_fastqGzLoader.loadWithPeriod(maxToLoad,reads,seqMyAllocator,2);
+}
 
-public:
-	void open(const char*file);
-	char*readLine(char*s, int n);
-	void close();
-};
+int FastaGzLoader::getSize(){
+	return m_fastqGzLoader.getSize();
+}
+
+void FastaGzLoader::close(){
+	m_fastqGzLoader.close();
+}
 
 #endif
 
-#endif /* _BzReader */

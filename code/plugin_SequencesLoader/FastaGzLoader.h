@@ -1,5 +1,5 @@
 /*
-    Ray -- Parallel genome assemblies for parallel DNA sequencing
+ *  Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -19,15 +19,15 @@
 
 */
 
-#ifndef _FastqBz2Loader
-#define _FastqBz2Loader
+#ifndef _FastaGzLoader
+#define _FastaGzLoader
 
-#ifdef CONFIG_HAVE_LIBBZ2
+#ifdef CONFIG_HAVE_LIBZ
 
+#include "FastqGzLoader.h"
 #include "LoaderInterface.h"
-#include "ArrayOfReads.h"
 #include "Read.h"
-#include "BzReader.h"
+#include "ArrayOfReads.h"
 
 #include <RayPlatform/memory/MyAllocator.h>
 
@@ -35,22 +35,20 @@
 #include <vector>
 using namespace std;
 
+
 /**
+ * This class is responsible for reading .fasta.gz files.
  * \author Sébastien Boisvert
  */
-class FastqBz2Loader: public LoaderInterface{
-	int m_loaded;
-	int m_size;
-	BzReader m_reader;
+class FastaGzLoader: public LoaderInterface{
+
+	FastqGzLoader m_fastqGzLoader;
 public:
-	int openWithPeriod(string file,int period);
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
-	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 	void close();
 };
 
 #endif
 #endif
-

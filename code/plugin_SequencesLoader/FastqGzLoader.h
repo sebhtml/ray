@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -37,7 +37,7 @@ using namespace std;
 
 
 /**
- * This class is responsible for reading .fasta.gz and .fastq.gz files.
+ * This class is responsible for reading .fastq.gz files.
  * \author Sébastien Boisvert
  */
 class FastqGzLoader: public LoaderInterface{
