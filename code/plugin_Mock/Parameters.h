@@ -51,12 +51,6 @@ using namespace std;
  */
 #define __DEFAULT_BUCKETS_PER_GROUP 64
 
-// 8 bytes
-/*
- * The default number of bits in the Bloom filter.
- */
-#define __BLOOM_DEFAULT_BITS 268435456 //64000000
-
 /**
  * This class is the implementation of an interpreter for the RayInputFile.
  * It allows the following commands:

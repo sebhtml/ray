@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -890,7 +890,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_VERTICES_DISTRIBUTION(Message*mess
 
 	// with 4 000 000 kmers, the ratio is objects/bits is 16.
 	// with 0.000574
-	m_bloomBits=__BLOOM_DEFAULT_BITS; 
+	m_bloomBits=m_verticesExtractor->getDefaultNumberOfBitsForBloomFilter();
 
 	if(m_parameters->hasConfigurationOption("-bloom-filter-bits",1))
 		m_bloomBits=m_parameters->getConfigurationInteger("-bloom-filter-bits",0);

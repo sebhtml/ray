@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -51,6 +51,7 @@ __DeclareSlaveModeAdapter(VerticesExtractor,RAY_SLAVE_MODE_ADD_EDGES);
  * It also computes arcs between k-mers.
  * These bits are then sent (buffered) to
  * their respective owners.
+ *
  * \author Sébastien Boisvert
  */
 class VerticesExtractor: public CorePlugin{
@@ -112,6 +113,9 @@ public:
 StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*myReads
 );
 	void call_RAY_SLAVE_MODE_ADD_EDGES();
+
+	int getDefaultNumberOfBitsForBloomFilter();
+
 	void setReadiness();
 	
 	bool finished();

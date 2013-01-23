@@ -1479,7 +1479,7 @@ void Parameters::showUsage(){
 
 	ostringstream text;
 	showOption("-bloom-filter-bits bits","Sets the number of bits for the Bloom filter");
-	text<<"Default is "<<__BLOOM_DEFAULT_BITS<<" bits, 0 bits disables the Bloom filter.";
+	text<<"Default is "<<"auto"<<" bits (adaptive), 0 bits disables the Bloom filter.";
 	showOptionDescription(text.str());
 	cout<<endl;
 	

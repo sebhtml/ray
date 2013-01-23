@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -80,7 +80,6 @@ ULL means unsigned long long, it is necessary on some architectures
 
 	#ifdef ASSERT
 	assert(m_hashFunctions == 8);
-	assert(m_bits % 64 == 0);
 	#endif
 
 	uint64_t requiredBytes=m_bits/8;
@@ -94,7 +93,7 @@ ULL means unsigned long long, it is necessary on some architectures
 	if(m_bits%64!=0)
 		required8Bytes++;
 
-	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false); /* about 62 MB of memory */
+	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false);
 
 	cout<<"[BloomFilter] allocated "<<required8Bytes*sizeof(uint64_t)<<" bytes for table with "<<m_bits<<" bits"<<endl;
 	cout<<"[BloomFilter] hash numbers:";
