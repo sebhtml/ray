@@ -36,12 +36,8 @@ int GraphPath::size()const{
 	return m_vertices.size();
 }
 
-Kmer*GraphPath::at(int i){
-	return &(m_vertices.at(i));
-}
-
-Kmer*GraphPath::operator[](int i){
-	return at(i);
+void GraphPath::at(int i,Kmer*value){
+	(*value)=m_vertices.at(i);
 }
 
 CoverageDepth GraphPath::getCoverageAt(int position){
@@ -56,8 +52,12 @@ void GraphPath::push_back(Kmer*a){
 	m_vertices.push_back(*a);
 }
 
-vector<Kmer>*GraphPath::getVertices(){
-	return &m_vertices;
+void GraphPath::getVertices(vector<Kmer>*vertices){
+	for(int i=0;i<size();i++){
+		Kmer kmer;
+		at(i,&kmer);
+		vertices->push_back(kmer);
+	}
 }
 
 void GraphPath::clear(){

@@ -126,7 +126,9 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	assert(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 0);
 	#endif
 
-	Kmer vertex=*(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(m_ed->m_EXTENSION_currentPosition));
+	Kmer vertex;
+	m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(m_ed->m_EXTENSION_currentPosition,&vertex);
+
 	int destination=m_parameters->_vertexRank(&vertex);
 
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
@@ -298,7 +300,9 @@ void FusionData::finishFusions(){
 			}else{
 				int position=m_ed->m_EXTENSION_currentPosition;
 				GraphPath*path=&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]);
-				Kmer kmerObjectAtPosition=*(path->at(position));
+
+				Kmer kmerObjectAtPosition;
+				path->at(position,&kmerObjectAtPosition);
 
 				getPaths(kmerObjectAtPosition);
 			}
@@ -341,7 +345,8 @@ void FusionData::finishFusions(){
 			}
 
 			int position=m_ed->m_EXTENSION_currentPosition;
-			Kmer vertex=*(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(position));
+			Kmer vertex;
+			m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(position,&vertex);
 
 			m_FINISH_newFusions[m_FINISH_newFusions.size()-1].push_back(&vertex);
 
@@ -452,7 +457,8 @@ void FusionData::finishFusions(){
 
 				int position=m_ed->m_EXTENSION_currentPosition;
 				GraphPath*path=&(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i]);
-				Kmer kmerObject=*(path->at(position));
+				Kmer kmerObject;
+				path->at(position,&kmerObject);
 
 				getPaths(kmerObject);
 			}else{

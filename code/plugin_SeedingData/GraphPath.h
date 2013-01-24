@@ -57,13 +57,12 @@ public:
 	GraphPath();
 
 	int size()const;
-	Kmer*at(int i);
-	Kmer*operator[](int i);
+	void at(int i,Kmer*value);
 
 	CoverageDepth getCoverageAt(int i);
 	
 	void push_back(Kmer*a);
-	vector<Kmer>*getVertices();
+	void getVertices(vector<Kmer>*value);
 	void clear();
 
 	void addCoverageValue(CoverageDepth value);

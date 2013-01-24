@@ -478,11 +478,11 @@ void GenomeNeighbourhood::processSide(int mode){
 		Kmer kmer;
 
 		if(mode==FETCH_CHILDREN){
-			kmer=*(m_contigs->at(m_contigIndex).at(contigLength-1));
+			m_contigs->at(m_contigIndex).at(contigLength-1,&kmer);
 
 		}else if(mode==FETCH_PARENTS){
 
-			kmer=*(m_contigs->at(m_contigIndex).at(0));
+			m_contigs->at(m_contigIndex).at(0,&kmer);
 		}
 
 		createStacks(kmer);

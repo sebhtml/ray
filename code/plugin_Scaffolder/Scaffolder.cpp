@@ -439,7 +439,9 @@ void Scaffolder::getCoverageOfBlockOfLife(){
 // ask for the coverage value
 		if(!m_coverageRequested){
 
-			Kmer*vertex=m_contigs->at(m_contigId).at(m_positionOnContig);
+			Kmer vertex2;
+			m_contigs->at(m_contigId).at(m_positionOnContig,&vertex2);
+			Kmer*vertex=&vertex2;
 
 			MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 			int bufferPosition=0;
@@ -655,7 +657,8 @@ void Scaffolder::performSummary(){
 
 		for(int i=0;i<vertices;i++){
 
-			Kmer kmer=*((*m_contigs)[m_contigId].at(i));
+			Kmer kmer;
+			(*m_contigs)[m_contigId].at(i,&kmer);
 			CoverageDepth coverage=m_vertexCoverageValues[i];
 
 			fp<<i<<"	"<<kmer.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<"	"<<coverage<<endl;
@@ -728,7 +731,8 @@ void Scaffolder::processContigPosition(){
 	assert(m_positionOnContig<(int)(*m_contigs)[m_contigId].size());
 	#endif
 
-	Kmer vertex=*((*m_contigs)[m_contigId].at(m_positionOnContig));
+	Kmer vertex;
+	(*m_contigs)[m_contigId].at(m_positionOnContig,&vertex);
 
 	#ifdef ASSERT
 	assert(m_parameters!=NULL);

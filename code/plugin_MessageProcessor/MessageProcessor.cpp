@@ -2119,7 +2119,9 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 			GraphPath rc;
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
 
-				Kmer kmer=m_ed->m_EXTENSION_contigs[i][j]->complementVertex(*m_wordSize,
+				Kmer otherKmer;
+				m_ed->m_EXTENSION_contigs[i].at(j,&otherKmer);
+				Kmer kmer=otherKmer.complementVertex(*m_wordSize,
 					m_parameters->getColorSpaceMode());
 				rc.push_back(&kmer);
 			}
@@ -2249,7 +2251,9 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 		assert(position<(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size());
 		#endif
 
-		Kmer*a=(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]][position];
+		Kmer object;
+		m_ed->m_EXTENSION_contigs[m_fusionData->m_FUSION_identifier_map[id]].at(position,&object);
+		Kmer*a=&object;
 		int pos=i;
 		a->pack(messageBytes,&pos);
 	}
@@ -2291,8 +2295,10 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 			f.write((char*)&length,sizeof(int));
 
 			for(int j=0;j<(int)m_seedingData->m_SEEDING_seeds[i].size();j++){
-				m_seedingData->m_SEEDING_seeds[i].at(j)->write(&f);
-				
+				Kmer theKmer;
+				m_seedingData->m_SEEDING_seeds[i].at(j,&theKmer);
+				theKmer.write(&f);
+
 				CoverageDepth coverageValue=0;
 				coverageValue=m_seedingData->m_SEEDING_seeds[i].getCoverageAt(j);
 				f.write((char*)&coverageValue,sizeof(CoverageDepth));
@@ -2456,7 +2462,9 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 
 	while(position<length
 	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
-		m_ed->m_EXTENSION_contigs[index][position++]->pack(messageContent,&outputPosition);
+		Kmer theKmerObject;
+		m_ed->m_EXTENSION_contigs[index].at(position++,&theKmerObject);
+		theKmerObject.pack(messageContent,&outputPosition);
 		count++;
 	}
 	messageContent[origin]=count;

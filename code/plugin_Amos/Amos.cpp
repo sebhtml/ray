@@ -155,7 +155,8 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 
 			m_ed->m_EXTENSION_reads_requested=true;
 			m_ed->m_EXTENSION_reads_received=false;
-			Kmer vertex=*(m_ed->m_EXTENSION_contigs[m_contigId][m_mode_send_vertices_sequence_id_position]);
+			Kmer vertex;
+			m_ed->m_EXTENSION_contigs[m_contigId].at(m_mode_send_vertices_sequence_id_position,&vertex);
 
 			m_readFetcher.constructor(&vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,m_workerId,
  RAY_MPI_TAG_REQUEST_VERTEX_READS);

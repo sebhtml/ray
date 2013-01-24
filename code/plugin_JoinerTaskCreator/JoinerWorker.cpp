@@ -64,7 +64,8 @@ void JoinerWorker::work(){
 			assert(m_position < (int)m_path->size());
 			#endif
 
-			Kmer kmer=*(m_path->at(m_position));
+			Kmer kmer;
+			m_path->at(m_position,&kmer);
 
 			if(m_reverseStrand)
 				kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -117,7 +118,8 @@ void JoinerWorker::work(){
 		}else if(m_receivedNumberOfPaths && m_pathIndex < m_numberOfPaths){
 			/* request a path */
 			if(!m_requestedPath){
-				Kmer kmer=*(m_path->at(m_position));
+				Kmer kmer;
+				m_path->at(m_position,&kmer);
 
 				if(m_reverseStrand){
 					kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -638,7 +640,9 @@ Also, don't do it if the matching ratios are below 10%.
 					GraphPath rc;
 					for(int j=(*m_path).size()-1;j>=0;j--){
 	
-						Kmer newKmer=(*m_path).at(j)->complementVertex(m_parameters->getWordSize(),
+						Kmer theKmer;
+						(*m_path).at(j,&theKmer);
+						Kmer newKmer=theKmer.complementVertex(m_parameters->getWordSize(),
 							m_parameters->getColorSpaceMode());
 
 						rc.push_back(&newKmer);
@@ -648,7 +652,8 @@ Also, don't do it if the matching ratios are below 10%.
 
 				/* other path is always forward strand */
 				for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
-					Kmer otherKmer=*(m_hitVertices.at(i));
+					Kmer otherKmer;
+					m_hitVertices.at(i,&otherKmer);
 					newPath.push_back(&otherKmer);
 				}
 
@@ -696,7 +701,9 @@ Also, don't do it if the matching ratios are below 10%.
 				/* we push the forward path */
 				if(!m_reverseStrand){
 					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
-						newPath.push_back(m_path->at(i));
+						Kmer aKmer;
+						m_path->at(i,&aKmer);
+						newPath.push_back(&aKmer);
 					}
 
 				/* we push the reverse path */
@@ -704,13 +711,17 @@ Also, don't do it if the matching ratios are below 10%.
 					GraphPath rc;
 					for(int j=(*m_path).size()-1;j>=0;j--){
 
-						Kmer aKmer=(*m_path).at(j)->complementVertex(m_parameters->getWordSize(),
+						Kmer otherKmer;
+						(*m_path).at(j,&otherKmer);
+						Kmer aKmer=otherKmer.complementVertex(m_parameters->getWordSize(),
 							m_parameters->getColorSpaceMode());
 						rc.push_back(&aKmer);
 					}
 
 					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
-						newPath.push_back(rc.at(i));
+						Kmer otherKmer;
+						rc.at(i,&otherKmer);
+						newPath.push_back(&otherKmer);
 					}
 
 				}

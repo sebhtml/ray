@@ -70,11 +70,15 @@ string convertToString(GraphPath*b,int m_wordSize,bool color){
 		a<<codeToChar(b->at(p).getFirstSegmentFirstCode(m_wordSize));
 	}
 	#else
-	a<<b->at(0)->idToWord(m_wordSize,color);
+	Kmer object;
+	b->at(0,&object);
+	a<<object.idToWord(m_wordSize,color);
 	#endif
 
 	for(int j=1;j<(int)(*b).size();j++){
-		a<<b->at(j)->getLastSymbol(m_wordSize,color);
+		Kmer object;
+		b->at(j,&object);
+		a<<object.getLastSymbol(m_wordSize,color);
 	}
 	string contig=a.str();
 
