@@ -26,7 +26,7 @@ NAME = Ancient Granularity of Epochs
 MPICXX = mpicxx
 
 # CXXFLAGS can be changed by the end user with make CXXFLAGS="..."
-CXXFLAGS = -O3 -std=c++98 -Wall
+CXXFLAGS = -O3 -std=c++98 -Wall -g
 
 RM = rm
 CD = cd
