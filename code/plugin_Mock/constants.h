@@ -186,7 +186,7 @@ typedef uint16_t LibraryHandle;
  * CONFIG_PATH_STORAGE_DEFAULT uses arrays of vertices, which consumes memory a lot.
  * CONFIG_PATH_STORAGE_BLOCK uses a block approach for vertices.
  */
-#define CONFIG_PATH_STORAGE_BLOCK
-//#define CONFIG_PATH_STORAGE_DEFAULT
+//#define CONFIG_PATH_STORAGE_BLOCK
+#define CONFIG_PATH_STORAGE_DEFAULT
 
 #endif
