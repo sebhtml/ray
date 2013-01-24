@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -63,6 +63,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 				f.read((char*)&name,sizeof(PathHandle));
 				f.read((char*)&vertices,sizeof(int));
 				GraphPath path;
+				path.setKmerLength(m_parameters->getWordSize());
 				for(int j=0;j<vertices;j++){
 					Kmer kmer;
 					kmer.read(&f);
@@ -333,6 +334,8 @@ void FusionData::finishFusions(){
 					}
 				}
 				GraphPath aPath;
+				aPath.setKmerLength(m_parameters->getWordSize());
+
 				m_FINISH_newFusions.push_back(aPath);
 
 // TODO: GraphPath provides a way to store coverage too !

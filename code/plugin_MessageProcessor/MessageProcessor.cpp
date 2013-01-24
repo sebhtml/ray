@@ -2117,6 +2117,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 			}
 
 			GraphPath rc;
+			rc.setKmerLength(m_parameters->getWordSize());
 			for(int j=(m_ed->m_EXTENSION_contigs)[i].size()-1;j>=0;j--){
 
 				Kmer otherKmer;

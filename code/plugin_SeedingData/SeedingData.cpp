@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -155,6 +155,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					}
 
 					GraphPath theSeed;
+					theSeed.setKmerLength(m_parameters->getWordSize());
 					for(int i=0;i<(int)seed.size();i++){
 						theSeed.push_back(&(seed[i]));
 						theSeed.addCoverageValue(coverageValues->at(i));
@@ -455,6 +456,7 @@ void SeedingData::loadCheckpoint(){
 	f.read((char*)&n,sizeof(int));
 	for(int i=0;i<n;i++){
 		GraphPath seed;
+		seed.setKmerLength(m_parameters->getWordSize());
 		int vertices=0;
 		f.read((char*)&vertices,sizeof(int));
 		for(int j=0;j<vertices;j++){

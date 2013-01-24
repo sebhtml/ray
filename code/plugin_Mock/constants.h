@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -180,5 +180,13 @@ typedef uint64_t LargeCount;
 typedef uint64_t LargeIndex;
 
 typedef uint16_t LibraryHandle;
+
+/*
+ * path storage engine
+ * CONFIG_PATH_STORAGE_DEFAULT uses arrays of vertices, which consumes memory a lot.
+ * CONFIG_PATH_STORAGE_BLOCK uses a block approach for vertices.
+ */
+#define CONFIG_PATH_STORAGE_BLOCK
+//#define CONFIG_PATH_STORAGE_DEFAULT
 
 #endif

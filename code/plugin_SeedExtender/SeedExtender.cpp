@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -791,6 +791,8 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			if(!m_slicedComputationStarted){
 				m_slicedComputationStarted=true;
 				m_complementedSeed.clear();
+				m_complementedSeed.setKmerLength(m_parameters->getWordSize());
+
 				m_slicedProgression = ed->m_EXTENSION_extension.size()-1;
 				//cout<<"INITIATING SLICED COMPUTATION"<<endl;
 			}
@@ -951,6 +953,8 @@ Kmer *currentVertex,BubbleData*bubbleData){
 			m_slicedComputationStarted = true;
 			m_slicedProgression = 0;
 			GraphPath emptyOne;
+			emptyOne.setKmerLength(m_parameters->getWordSize());
+
 			ed->m_EXTENSION_contigs.push_back(emptyOne);
 
 			MACRO_COLLECT_PROFILING_INFORMATION();
@@ -1218,6 +1222,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 				cout<<"[SeedExtender] activating Hot Skipping !"<<endl;
 
 				ed->m_EXTENSION_extension.clear();
+				ed->m_EXTENSION_extension.setKmerLength(m_parameters->getWordSize());
+
 				storeExtensionAndGetNextOne(m_ed,m_rank,m_seeds,currentVertex,m_bubbleData);
 			}
 
@@ -1441,6 +1447,9 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		*receivedOutgoingEdges=currentVertex->_getOutgoingEdges(compactEdges,m_parameters->getWordSize());
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
+
+		if(ed->m_EXTENSION_extension.size()==0)
+			ed->m_EXTENSION_extension.setKmerLength(m_parameters->getWordSize());
 
 		ed->m_EXTENSION_extension.push_back((currentVertex));
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
@@ -2097,6 +2106,8 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 		assert(length>0);
 		#endif
 		GraphPath extension;
+		extension.setKmerLength(m_parameters->getWordSize());
+
 		for(int j=0;j<length;j++){
 			Kmer kmer;
 			kmer.read(&f);
@@ -2142,6 +2153,7 @@ void SeedExtender::showSequences(){
 
 	// print the contig
 	GraphPath lastBits;
+	lastBits.setKmerLength(m_parameters->getWordSize());
 
 	for(int i=firstPosition;i<(int)m_ed->m_EXTENSION_extension.size();i++){
 		Kmer object;

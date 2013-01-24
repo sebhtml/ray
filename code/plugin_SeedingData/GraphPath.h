@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -21,10 +21,19 @@
 #ifndef _GraphPath_h
 #define _GraphPath_h
 
+#include <code/plugin_Mock/constants.h>
 #include <code/plugin_KmerAcademyBuilder/Kmer.h>
 
 #include <vector>
 using namespace std;
+
+#ifdef CONFIG_PATH_STORAGE_BLOCK
+#define CONFIG_PATH_BLOCK_SIZE 1024
+
+struct GraphPathBlock{
+	char m_content[CONFIG_PATH_BLOCK_SIZE];
+};
+#endif
 
 /**
  * This class describes objects representing assembly seeds.
@@ -38,7 +47,16 @@ using namespace std;
  * TODO: the PathHandle should be here directly instead of being a separate instance.
  */
 class GraphPath{
+
+	int m_kmerLength;
+
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	vector<Kmer> m_vertices;
+#elif defined(CONFIG_PATH_STORAGE_BLOCK)
+	vector<GraphPathBlock> m_blocks;
+	int m_size;
+#endif
+
 	vector<CoverageDepth> m_coverageValues;
 
 	CoverageDepth m_peakCoverage;
@@ -52,6 +70,11 @@ class GraphPath{
 	void computePeakCoverageUsingStaggeredMean();
 
 	bool m_hasPeakCoverage;
+
+#ifdef CONFIG_PATH_STORAGE_BLOCK
+	void readObjectInBlock(int position,Kmer*object);
+	void writeObjectInBlock(Kmer*a);
+#endif
 
 public:
 	GraphPath();
@@ -71,6 +94,8 @@ public:
 
 	void computePeakCoverage();
 	void reserve(int size);
+
+	void setKmerLength(int kmerLength);
 };
 
 #endif

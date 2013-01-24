@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -1429,6 +1429,7 @@ void Scaffolder::getContigSequence(PathHandle id){
 		m_theLength=m_contigLengths[id];
 		m_position=0;
 		m_contigPath.clear();
+		m_contigPath.setKmerLength(m_parameters->getWordSize());
 		m_requestedContigChunk=false;
 	}
 	

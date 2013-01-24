@@ -631,6 +631,7 @@ Also, don't do it if the matching ratios are below 10%.
 					cout<<"VALID"<<endl;
 				
 				GraphPath newPath;
+				newPath.setKmerLength(m_parameters->getWordSize());
 
 				/* we take directly the path */
 				if(!m_reverseStrand){
@@ -638,6 +639,8 @@ Also, don't do it if the matching ratios are below 10%.
 				}else{
 					/* we need the reverse complement path */
 					GraphPath rc;
+					rc.setKmerLength(m_parameters->getWordSize());
+
 					for(int j=(*m_path).size()-1;j>=0;j--){
 	
 						Kmer theKmer;
@@ -697,6 +700,7 @@ Also, don't do it if the matching ratios are below 10%.
 
 				/* other path is always forward strand */
 				GraphPath newPath=m_hitVertices;
+				newPath.setKmerLength(m_parameters->getWordSize());
 
 				/* we push the forward path */
 				if(!m_reverseStrand){
@@ -709,6 +713,7 @@ Also, don't do it if the matching ratios are below 10%.
 				/* we push the reverse path */
 				}else{
 					GraphPath rc;
+					rc.setKmerLength(m_parameters->getWordSize());
 					for(int j=(*m_path).size()-1;j>=0;j--){
 
 						Kmer otherKmer;
@@ -797,6 +802,8 @@ vector<GraphPath>*newPaths,
 		cout<<"Spawned worker number "<<number<<endl;
 		cout<<" path "<<m_identifier<<" reverse "<<m_reverseStrand<<" length "<<m_path->size()<<endl;
 	}
+
+	m_hitVertices.setKmerLength(m_parameters->getWordSize());
 }
 
 bool JoinerWorker::isPathEliminated(){

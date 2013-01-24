@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -21,6 +21,7 @@
 #include "GraphPath.h"
 
 #include <code/plugin_Mock/constants.h>
+#include <code/plugin_Mock/common_functions.h>
 
 #include <RayPlatform/core/statistics.h>
 
@@ -28,16 +29,38 @@
 #include <map>
 using namespace std;
 
+#include <string.h>
+
+//#define CONFIG_PATH_VERBOSITY
+
 GraphPath::GraphPath(){
 	m_hasPeakCoverage=false;
+
+	m_kmerLength=0;
+
+#ifdef CONFIG_PATH_STORAGE_BLOCK
+	m_size=0;
+#endif
 }
 
 int GraphPath::size()const{
+
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	return m_vertices.size();
+#elif defined(CONFIG_PATH_STORAGE_BLOCK)
+	return m_size;
+#endif
+
 }
 
 void GraphPath::at(int i,Kmer*value){
+
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	(*value)=m_vertices.at(i);
+#elif defined(CONFIG_PATH_STORAGE_BLOCK)
+
+	readObjectInBlock(i,value);
+#endif
 }
 
 CoverageDepth GraphPath::getCoverageAt(int position){
@@ -49,7 +72,12 @@ CoverageDepth GraphPath::getCoverageAt(int position){
 }
 
 void GraphPath::push_back(Kmer*a){
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	m_vertices.push_back(*a);
+#elif defined(CONFIG_PATH_STORAGE_BLOCK)
+
+	writeObjectInBlock(a);
+#endif
 }
 
 void GraphPath::getVertices(vector<Kmer>*vertices){
@@ -61,7 +89,12 @@ void GraphPath::getVertices(vector<Kmer>*vertices){
 }
 
 void GraphPath::clear(){
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	m_vertices.clear();
+#elif defined(CONFIG_PATH_STORAGE_BLOCK)
+	m_blocks.clear();
+	m_size=0;
+#endif
 }
 
 void GraphPath::resetCoverageValues(){
@@ -77,7 +110,7 @@ void GraphPath::computePeakCoverage(){
 	int selectedAlgorithm=ALGORITHM_STAGGERED_MEAN;
 
 	#ifdef ASSERT
-	assert(m_coverageValues.size() == m_vertices.size());
+	assert((int)m_coverageValues.size() == size());
 	#endif
 
 	// the default is to use the weighted mean algorithm 
@@ -129,7 +162,7 @@ void GraphPath::computePeakCoverageUsingMode(){
 	}
 
 	#ifdef CONFIG_VERBOSITY_FOR_SEEDS
-	cout<<"mode= "<<best<<" length= "<<m_vertices.size()<<endl;
+	cout<<"mode= "<<best<<" length= "<<size()<<endl;
 	#endif
 
 	m_peakCoverage=best;
@@ -170,13 +203,15 @@ void GraphPath::computePeakCoverageUsingMean(){
 
 	CoverageDepth mean=( sum / count );
 
-	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<endl;
+	cout<<"mean= "<<mean <<" length= "<<size()<<endl;
 
 	m_peakCoverage=mean;
 }
 
 void GraphPath::reserve(int size){
+#ifdef CONFIG_PATH_STORAGE_DEFAULT
 	m_vertices.reserve(size);
+#endif
 	m_coverageValues.reserve(size);
 
 }
@@ -258,8 +293,145 @@ void GraphPath::computePeakCoverageUsingStaggeredMean(){
 	}
 
 	#ifdef CONFIG_VERBOSITY_FOR_SEEDS
-	cout<<"mean= "<<mean <<" length= "<<m_vertices.size()<<" onTheRight= "<<objectsOnRight<<"/"<<totalCount<<endl;
+	cout<<"mean= "<<mean <<" length= "<<size()<<" onTheRight= "<<objectsOnRight<<"/"<<totalCount<<endl;
 	#endif
 
 	m_peakCoverage=mean;
 }
+
+void GraphPath::setKmerLength(int kmerLength){
+	m_kmerLength=kmerLength;
+
+	#ifdef ASSERT
+	assert(kmerLength!=0);
+	assert(m_kmerLength!=0);
+	#endif
+}
+
+#ifdef CONFIG_PATH_STORAGE_BLOCK
+
+void GraphPath::writeObjectInBlock(Kmer*a){
+
+	#ifdef ASSERT
+	assert(m_kmerLength!=0);
+	#endif
+
+	if(m_size==0){
+		GraphPathBlock block;
+		m_blocks.push_back(block);
+		string sequence=a->idToWord(m_kmerLength,false);
+		int blockNumber=0;
+		int blockPosition=0;
+		memcpy(m_blocks[blockNumber].m_content+blockPosition,sequence.c_str(),m_kmerLength);
+	}else{
+		#ifdef ASSERT
+		assert(m_size>=1);
+		#endif
+
+		char lastSymbol=a->getLastSymbol(m_kmerLength,false);
+		int usedSymbols=m_size+m_kmerLength-1;
+
+		#ifdef ASSERT
+		assert(usedSymbols>=m_kmerLength);
+		#endif
+
+		int allocatedSymbols=m_blocks.size()*CONFIG_PATH_BLOCK_SIZE;
+
+		#ifdef ASSERT
+		assert(allocatedSymbols>=CONFIG_PATH_BLOCK_SIZE);
+		#endif
+
+		if(usedSymbols+1>allocatedSymbols){
+			GraphPathBlock block;
+			m_blocks.push_back(block);
+			allocatedSymbols=m_blocks.size()*CONFIG_PATH_BLOCK_SIZE;
+		}
+
+		#ifdef ASSERT
+		assert(usedSymbols+1<=allocatedSymbols);
+		assert(allocatedSymbols>=CONFIG_PATH_BLOCK_SIZE);
+		#endif
+
+		int position=usedSymbols;
+		int blockNumber=position/CONFIG_PATH_BLOCK_SIZE;
+		int positionInBlock=position%CONFIG_PATH_BLOCK_SIZE;
+
+		#ifdef ASSERT
+		assert(blockNumber<(int)m_blocks.size());
+		assert(positionInBlock<CONFIG_PATH_BLOCK_SIZE);
+		#endif
+
+		m_blocks[blockNumber].m_content[positionInBlock]=lastSymbol;
+	}
+
+	m_size++;
+}
+
+void GraphPath::readObjectInBlock(int position,Kmer*object){
+	#ifdef ASSERT
+	assert(position<size());
+	assert(m_kmerLength!=0);
+	#endif
+
+	int blockNumber=position/CONFIG_PATH_BLOCK_SIZE;
+	int positionInBlock=position%CONFIG_PATH_BLOCK_SIZE;
+
+	#ifdef ASSERT
+	assert(blockNumber<(int)m_blocks.size());
+	assert(positionInBlock<CONFIG_PATH_BLOCK_SIZE);
+	#endif
+
+	char kmer[CONFIG_MAXKMERLENGTH+1];
+
+	int lastPosition=position+m_kmerLength-1;
+
+	int blockNumberForLastPosition=lastPosition/CONFIG_PATH_BLOCK_SIZE;
+#if 0
+	int positionInBlockForLastPosition=lastPosition%CONFIG_PATH_BLOCK_SIZE;
+#endif
+
+	if(blockNumber==blockNumberForLastPosition){
+		char*block=m_blocks[blockNumber].m_content;
+		int count=m_kmerLength;
+		memcpy(kmer,block+positionInBlock,count);
+
+#ifdef CONFIG_PATH_VERBOSITY
+		cout<<"[Case1] [1/1] Copying "<<count<<" from block coordinate ("<<blockNumber<<","<<positionInBlock<<")"<<endl;
+#endif
+
+	}else{
+
+		#ifdef ASSERT
+		assert(blockNumber+1==blockNumberForLastPosition);
+		assert(blockNumber+1<(int)m_blocks.size());
+		#endif
+
+		char*block=m_blocks[blockNumber].m_content;
+		int count=(CONFIG_PATH_BLOCK_SIZE-1)-positionInBlock+1;
+		memcpy(kmer,block+positionInBlock,count);
+
+#ifdef CONFIG_PATH_VERBOSITY
+		cout<<"[Case2] [1/2] Copying "<<count<<" from block coordinate ("<<blockNumber<<","<<positionInBlock<<")"<<endl;
+#endif
+
+		int blockNumber2=blockNumber+1;
+		char*block2=m_blocks[blockNumber2].m_content;
+		int count2=m_kmerLength-count;
+		int positionInBlock2=0x00000;
+		memcpy(kmer+count,block2+positionInBlock2,count2);
+
+#ifdef CONFIG_PATH_VERBOSITY
+		cout<<"[Case2] [2/2] Copying "<<count2<<" from block coordinate ("<<blockNumber2<<","<<positionInBlock2<<")"<<endl;
+#endif
+	}
+
+	kmer[m_kmerLength]='\0';
+
+#ifdef CONFIG_PATH_VERBOSITY
+	cout<<"Object: "<<kmer<<endl;
+#endif
+
+	(*object)=wordId(kmer);
+}
+
+#endif
