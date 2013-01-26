@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -130,7 +130,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	Kmer vertex;
 	m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(m_ed->m_EXTENSION_currentPosition,&vertex);
 
-	int destination=m_parameters->_vertexRank(&vertex);
+	Rank destination=m_parameters->_vertexRank(&vertex);
 
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		m_buffers.addAt(destination,vertex.getU64(i));

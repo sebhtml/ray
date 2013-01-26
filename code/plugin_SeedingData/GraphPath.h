@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -28,9 +28,11 @@
 using namespace std;
 
 #ifdef CONFIG_PATH_STORAGE_BLOCK
-#define CONFIG_PATH_BLOCK_SIZE 1024
 
-struct GraphPathBlock{
+#define CONFIG_PATH_BLOCK_SIZE 4096
+
+class GraphPathBlock{
+public:
 	char m_content[CONFIG_PATH_BLOCK_SIZE];
 };
 #endif
@@ -48,6 +50,7 @@ struct GraphPathBlock{
  */
 class GraphPath{
 
+	bool m_errorRaised;
 	int m_kmerLength;
 
 #ifdef CONFIG_PATH_STORAGE_DEFAULT
@@ -72,24 +75,26 @@ class GraphPath{
 	bool m_hasPeakCoverage;
 
 #ifdef CONFIG_PATH_STORAGE_BLOCK
-	void readObjectInBlock(int position,Kmer*object);
-	void writeObjectInBlock(Kmer*a);
+	void readObjectInBlock(int position,Kmer*object)const;
+	void writeObjectInBlock(const Kmer*a);
 #endif
+
+	bool canBeAdded(const Kmer*value)const;
 
 public:
 	GraphPath();
 
 	int size()const;
-	void at(int i,Kmer*value);
+	void at(int i,Kmer*value)const;
 
-	CoverageDepth getCoverageAt(int i);
+	CoverageDepth getCoverageAt(int i)const;
 	
-	void push_back(Kmer*a);
-	void getVertices(vector<Kmer>*value);
+	void push_back(const Kmer*a);
+	void getVertices(vector<Kmer>*value)const;
 	void clear();
 
 	void addCoverageValue(CoverageDepth value);
-	CoverageDepth getPeakCoverage();
+	CoverageDepth getPeakCoverage()const;
 	void resetCoverageValues();
 
 	void computePeakCoverage();

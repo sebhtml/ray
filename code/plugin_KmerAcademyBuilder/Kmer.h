@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -72,10 +72,10 @@ class Kmer{
 public:
 	Kmer();
 	~Kmer();
-	bool isEqual(Kmer*a);
-	bool isLower(Kmer*a);
-	void print();
-	void pack(MessageUnit *messageBuffer,int*messagePosition);
+	bool isEqual(Kmer*a)const;
+	bool isLower(Kmer*a)const;
+	void print()const;
+	void pack(MessageUnit *messageBuffer,int*messagePosition)const;
 	void unpack(MessageUnit*messageBuffer,int*messagePosition);
 	void unpack(vector<MessageUnit>*messageBuffer,int*messagePosition);
 	void operator=(const Kmer&b);
@@ -85,52 +85,55 @@ public:
 
 	void setU64(int i,uint64_t b);
 
-	uint64_t getU64(int i);
+	uint64_t getU64(int i)const;
 
-	int getNumberOfU64();
+	int getNumberOfU64()const;
 /*
  * get the last letter of a uint64_t
  */
-	char getLastSymbol(int w,bool color);
+	char getLastSymbol(int w,bool color)const;
 
 /*
  * complement a vertex, and return another one
  */
-	Kmer complementVertex(int wordSize,bool colorSpace);
+	Kmer complementVertex(int wordSize,bool colorSpace)const;
 	
 /*
  * use mini distant segments here.
  */
-	uint8_t getFirstSegmentFirstCode(int w);
-	uint8_t getSecondSegmentLastCode(int w);
-	int vertexRank(int _size,int w,bool color);
+	uint8_t getFirstSegmentFirstCode(int w)const;
+	uint8_t getSecondSegmentLastCode(int w)const;
+	int vertexRank(int _size,int w,bool color)const;
 /**
  * get the outgoing Kmer objects for a Kmer a having edges and
  * a k-mer length k
  */
-	vector<Kmer> _getOutgoingEdges(uint8_t edges,int k);
+	vector<Kmer> _getOutgoingEdges(uint8_t edges,int k)const;
 
 /**
  * get the ingoing Kmer objects for a Kmer a having edges and
  * a k-mer length k
  */
-	vector<Kmer> _getIngoingEdges(uint8_t edges,int k);
+	vector<Kmer> _getIngoingEdges(uint8_t edges,int k)const;
 
 	/** hash 1 is used to distribute k-mers on MPI ranks */
-	uint64_t hash_function_1();
+	uint64_t hash_function_1()const;
 
 	/** hash 2 is used for double hashing in the hash tables */
-	uint64_t hash_function_2();
+	uint64_t hash_function_2()const;
 /*
  * transform a Kmer in a string
  */
-	string idToWord(int wordSize,bool color);
+	string idToWord(int wordSize,bool color)const;
 
-	void write(ofstream*f);
+	void write(ofstream*f)const;
 	void read(ifstream*f);
 
-	void convertToString(int kmerLength,bool coloredMode,char*buffer);
-	double getGuanineCytosineProportion(int kmerLength,bool coloredMode);
+	void convertToString(int kmerLength,bool coloredMode,char*buffer)const;
+	double getGuanineCytosineProportion(int kmerLength,bool coloredMode)const;
+
+	bool canHaveChild(const Kmer*otherKmer,int kmerLength)const;
+	bool canHaveParent(const Kmer*otherKmer,int kmerLength)const;
 
 }ATTRIBUTE_PACKED;
 

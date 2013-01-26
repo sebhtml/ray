@@ -1629,6 +1629,11 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 
 		#ifdef ASSERT
 		Vertex*node=m_subgraph->find(&vertex);
+		if(node==NULL){
+			cout<<"Error: vertex does not exist: "<<vertex.idToWord(m_parameters->getWordSize(),
+				m_parameters->getColorSpaceMode())<<endl;
+		}
+
 		assert(node!=NULL);
 
 		Vertex copy=*node;

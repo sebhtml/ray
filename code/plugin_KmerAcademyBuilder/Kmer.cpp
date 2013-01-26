@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -23,11 +23,13 @@
 
 #include <RayPlatform/cryptography/crypto.h>
 
-#include <stdio.h>
-#include <assert.h>
 #include <string>
 #include <fstream>
 using namespace std;
+
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
 
 bool Kmer::operator<(const Kmer&b)const{
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
@@ -49,11 +51,11 @@ Kmer::Kmer(){
 Kmer::~Kmer(){
 }
 
-int Kmer::getNumberOfU64(){
+int Kmer::getNumberOfU64()const{
 	return KMER_U64_ARRAY_SIZE;
 }
 
-bool Kmer::isLower(Kmer*a){
+bool Kmer::isLower(Kmer*a)const{
 	for(int i=0;i<getNumberOfU64();i++){
 		if(getU64(i)<a->getU64(i)){
 			return true;
@@ -64,7 +66,7 @@ bool Kmer::isLower(Kmer*a){
 	return false;
 }
 
-bool Kmer::isEqual(Kmer*a){
+bool Kmer::isEqual(Kmer*a)const{
 	for(int i=0;i<getNumberOfU64();i++){
 		if(getU64(i)!=a->getU64(i)){
 			return false;
@@ -73,7 +75,7 @@ bool Kmer::isEqual(Kmer*a){
 	return true;
 }
 
-void Kmer::print(){
+void Kmer::print()const{
 	for(int j=0;j<getNumberOfU64();j++){
 		uint64_t a=getU64(j);
 		for(int k=63;k>=0;k-=2){
@@ -86,7 +88,7 @@ void Kmer::print(){
 	printf("\n");
 }
 
-void Kmer::pack(MessageUnit*messageBuffer,int*messagePosition){
+void Kmer::pack(MessageUnit*messageBuffer,int*messagePosition)const{
 	for(int i=0;i<getNumberOfU64();i++){
 		messageBuffer[*messagePosition]=getU64(i);
 		(*messagePosition)++;
@@ -131,11 +133,11 @@ bool Kmer::operator!=(const Kmer&b) const{
 	return false;
 }
 
-char Kmer::getLastSymbol(int m_wordSize,bool color){
+char Kmer::getLastSymbol(int m_wordSize,bool color)const{
 	return codeToChar(getSecondSegmentLastCode(m_wordSize),color);
 }
 
-uint8_t Kmer::getSecondSegmentLastCode(int w){
+uint8_t Kmer::getSecondSegmentLastCode(int w)const{
 	int bitPosition=2*w;
 	int chunkId=bitPosition/64;
 	int bitPositionInChunk=bitPosition%64;
@@ -145,7 +147,7 @@ uint8_t Kmer::getSecondSegmentLastCode(int w){
 	return (uint8_t)chunk;
 }
 
-uint8_t Kmer::getFirstSegmentFirstCode(int w){
+uint8_t Kmer::getFirstSegmentFirstCode(int w)const{
 	// ATCAGTTGCAGTACTGCAATCTACG
 	// 0000000000000011100001100100000000000000000000000001011100100100
 	//                                                   6 5 4 3 2 1 0
@@ -155,7 +157,7 @@ uint8_t Kmer::getFirstSegmentFirstCode(int w){
 	return a;
 }
 
-int Kmer::vertexRank(int _size,int w,bool color){
+int Kmer::vertexRank(int _size,int w,bool color)const{
 	Kmer b=complementVertex(w,color);
 	if(isLower(&b))
 		b=*this;
@@ -166,7 +168,7 @@ int Kmer::vertexRank(int _size,int w,bool color){
  * Get the outgoing edges
  * one bit (1=yes, 0=no) per possible edge
  */
-vector<Kmer> Kmer::_getOutgoingEdges(uint8_t edges,int k){
+vector<Kmer> Kmer::_getOutgoingEdges(uint8_t edges,int k)const{
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*this;
@@ -210,7 +212,7 @@ vector<Kmer> Kmer::_getOutgoingEdges(uint8_t edges,int k){
  * Get the ingoing edges
  * one bit (1=yes, 0=no) per possible edge
  */
-vector<Kmer> Kmer::_getIngoingEdges(uint8_t edges,int k){
+vector<Kmer> Kmer::_getIngoingEdges(uint8_t edges,int k)const{
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*this;
@@ -274,7 +276,7 @@ vector<Kmer> Kmer::_getIngoingEdges(uint8_t edges,int k){
 	return b;
 }
 
-uint64_t Kmer::hash_function_1(){
+uint64_t Kmer::hash_function_1()const{
 	#if KMER_U64_ARRAY_SIZE == 1
 	return uniform_hashing_function_1_64_64(getU64(0));
 	#else
@@ -288,7 +290,7 @@ uint64_t Kmer::hash_function_1(){
 	#endif
 }
 
-uint64_t Kmer::hash_function_2(){
+uint64_t Kmer::hash_function_2()const{
 	#if KMER_U64_ARRAY_SIZE == 1
 	return uniform_hashing_function_2_64_64(getU64(0));
 	#else
@@ -302,7 +304,7 @@ uint64_t Kmer::hash_function_2(){
 	#endif
 }
 
-void Kmer::convertToString(int kmerLength,bool color, char*buffer){
+void Kmer::convertToString(int kmerLength,bool color, char*buffer)const{
 	for(int p=0;p<kmerLength;p++){
 		int bitPosition=2*p;
 		int chunkId=p/32;
@@ -314,8 +316,8 @@ void Kmer::convertToString(int kmerLength,bool color, char*buffer){
 	buffer[kmerLength]='\0';
 }
 
-string Kmer::idToWord(int wordSize,bool color){
-	char a[300];
+string Kmer::idToWord(int wordSize,bool color)const{
+	char a[CONFIG_MAXKMERLENGTH+1];
 
 	convertToString(wordSize,color,a);
 
@@ -352,7 +354,7 @@ char codeToChar(uint8_t a,bool color){
 	return 'A';
 }
 
-void Kmer::write(ofstream*f){
+void Kmer::write(ofstream*f)const{
 	for(int i=0;i<getNumberOfU64();i++){
 		uint64_t a=getU64(i);
 		f->write((char*)&a,sizeof(uint64_t));
@@ -374,14 +376,14 @@ void Kmer::setU64(int i,uint64_t b){
 	m_u64[i]=b;
 }
 
-uint64_t Kmer::getU64(int i){
+uint64_t Kmer::getU64(int i)const{
 	#ifdef ASSERT
 	assert(i<KMER_U64_ARRAY_SIZE);
 	#endif
 	return m_u64[i];
 }
 
-Kmer Kmer::complementVertex(int wordSize,bool colorSpace){
+Kmer Kmer::complementVertex(int wordSize,bool colorSpace)const{
 	Kmer output;
 	int bitPositionInOutput=0;
 	uint64_t mask=3;
@@ -405,8 +407,8 @@ Kmer Kmer::complementVertex(int wordSize,bool colorSpace){
 	return output;
 }
 
-double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode){
-	char buffer[300];
+double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode)const{
+	char buffer[CONFIG_MAXKMERLENGTH+1];
 
 	convertToString(kmerLength,coloredMode,buffer);
 
@@ -425,4 +427,22 @@ double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode){
 	double proportion=(0.0+count)/kmerLength;
 
 	return proportion;
+}
+
+bool Kmer::canHaveParent(const Kmer*otherKmer,int kmerLength)const{
+	return otherKmer->canHaveChild(this,kmerLength);
+}
+
+bool Kmer::canHaveChild(const Kmer*otherKmer,int kmerLength)const{
+
+	string left=idToWord(kmerLength,false);
+	string right=otherKmer->idToWord(kmerLength,false);
+	right[kmerLength-1]='\0';
+
+	int match=0;
+
+	if(strcmp(left.c_str()+1,right.c_str()+0)!=match)
+		return false;
+	return true;
+
 }
