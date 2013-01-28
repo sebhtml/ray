@@ -29,6 +29,11 @@ using namespace std;
 
 #ifdef CONFIG_PATH_STORAGE_BLOCK
 
+/*
+ * Each block has 128 uint64_t objects, which can store 4096 nucleotides.
+ * 4096*2 = 8192 bits
+ * 128 * 8 * 8 = 8192 bits
+ */
 #define CONFIG_PATH_BLOCK_SIZE 4096
 
 class GraphPathBlock{
@@ -81,6 +86,12 @@ class GraphPath{
 
 	bool canBeAdded(const Kmer*value)const;
 
+	int getBlockSize()const;
+	int getBlockNumber(int position)const;
+	int getPositionInBlock(int position)const;
+
+	char readSymbolInBlock(int position)const;
+	void writeSymbolInBlock(int position,char symbol);
 public:
 	GraphPath();
 

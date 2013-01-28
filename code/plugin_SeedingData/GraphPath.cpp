@@ -372,9 +372,10 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 		GraphPathBlock block;
 		m_blocks.push_back(block);
 		string sequence=a->idToWord(m_kmerLength,false);
-		int blockNumber=0;
-		int blockPosition=0;
-		memcpy(m_blocks[blockNumber].m_content+blockPosition,sequence.c_str(),m_kmerLength);
+
+		for(int blockPosition=0;blockPosition<m_kmerLength;blockPosition++){
+			writeSymbolInBlock(blockPosition,sequence[blockPosition]);
+		}
 	}else{
 		#ifdef ASSERT
 		assert(m_size>=1);
@@ -390,35 +391,30 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 		assert(m_blocks.size()>=1);
 		#endif
 
-		int allocatedSymbols=m_blocks.size()*CONFIG_PATH_BLOCK_SIZE;
+		int allocatedSymbols=m_blocks.size()*getBlockSize();
 
 		#ifdef ASSERT
-		assert(allocatedSymbols>=CONFIG_PATH_BLOCK_SIZE);
+		assert(allocatedSymbols>=getBlockSize());
 		#endif
 
 		if(usedSymbols+1>allocatedSymbols){
 			GraphPathBlock block;
 			m_blocks.push_back(block);
-			allocatedSymbols=m_blocks.size()*CONFIG_PATH_BLOCK_SIZE;
+			allocatedSymbols=m_blocks.size()*getBlockSize();
 		}
 
 		#ifdef ASSERT
 		assert(usedSymbols+1<=allocatedSymbols);
-		assert(allocatedSymbols>=CONFIG_PATH_BLOCK_SIZE);
+		assert(allocatedSymbols>=getBlockSize());
 		#endif
 
 		int position=usedSymbols;
-		int blockNumber=position/CONFIG_PATH_BLOCK_SIZE;
-		int positionInBlock=position%CONFIG_PATH_BLOCK_SIZE;
 
 		#ifdef ASSERT
-		assert(blockNumber<(int)m_blocks.size());
-		assert(positionInBlock<CONFIG_PATH_BLOCK_SIZE);
-		assert(blockNumber>=0);
-		assert(positionInBlock>=0);
+		assert(position<allocatedSymbols);
 		#endif
 
-		m_blocks[blockNumber].m_content[positionInBlock]=lastSymbol;
+		writeSymbolInBlock(position,lastSymbol);
 	}
 
 	m_size++;
@@ -430,7 +426,7 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 	if((*a)!=addedObject){
 		cout<<"Error: expected: "<<a->idToWord(m_kmerLength,false)<<endl;
 		cout<<"actual: "<<addedObject.idToWord(m_kmerLength,false)<<" at position "<<size()-1<<endl;
-		cout<<"kmerLength: "<<m_kmerLength<<" CONFIG_PATH_BLOCK_SIZE "<<CONFIG_PATH_BLOCK_SIZE<<endl;
+		cout<<"kmerLength: "<<m_kmerLength<<" blockSize: "<<getBlockSize()<<endl;
 		int i=size()-1;
 		int j=0;
 		cout<<"dump:"<<endl;
@@ -448,83 +444,62 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 #endif
 }
 
+int GraphPath::getBlockNumber(int position)const{
+
+	return position/getBlockSize();
+
+}
+
+int GraphPath::getBlockSize()const{
+	return CONFIG_PATH_BLOCK_SIZE;
+}
+
+int GraphPath::getPositionInBlock(int position)const{
+
+	return position%getBlockSize();
+}
+
 void GraphPath::readObjectInBlock(int position,Kmer*object)const{
+
 	#ifdef ASSERT
 	assert(position<size());
 	assert(position>=0);
 	assert(m_kmerLength!=0);
 	#endif
 
-	int blockNumber=position/CONFIG_PATH_BLOCK_SIZE;
-	int positionInBlock=position%CONFIG_PATH_BLOCK_SIZE;
-
-	#ifdef ASSERT
-	assert(blockNumber<(int)m_blocks.size());
-	assert(positionInBlock<CONFIG_PATH_BLOCK_SIZE);
-	#endif
-
 	char kmer[CONFIG_MAXKMERLENGTH+1];
 
-	int lastPosition=position+m_kmerLength-1;
-
-	int blockNumberForLastPosition=lastPosition/CONFIG_PATH_BLOCK_SIZE;
-#if 0
-	int positionInBlockForLastPosition=lastPosition%CONFIG_PATH_BLOCK_SIZE;
-#endif
-
-	if(blockNumber==blockNumberForLastPosition){
-		const char*block=m_blocks[blockNumber].m_content;
-		int count=m_kmerLength;
-		memcpy(kmer,block+positionInBlock,count);
-
-#ifdef CONFIG_PATH_VERBOSITY
-		cout<<"[Case1] [1/1] Copying "<<count<<" from block coordinate ("<<blockNumber<<","<<positionInBlock<<")"<<endl;
-#endif
-
-	}else{
-
-		#ifdef ASSERT
-		assert(blockNumber+1==blockNumberForLastPosition);
-		assert(blockNumber+1<(int)m_blocks.size());
-		#endif
-
-		const char*block=m_blocks[blockNumber].m_content;
-		int count=(CONFIG_PATH_BLOCK_SIZE-1)-positionInBlock+1;
-		memcpy(kmer,block+positionInBlock,count);
-
-#ifdef CONFIG_PATH_VERBOSITY
-		cout<<"[Case2] [1/2] Copying "<<count<<" from block coordinate ("<<blockNumber<<","<<positionInBlock<<")"<<endl;
-#endif
-
-		int blockNumber2=blockNumber+1;
-		const char*block2=m_blocks[blockNumber2].m_content;
-		int count2=m_kmerLength-count;
-		int positionInBlock2=0;
-		memcpy(kmer+count,block2+positionInBlock2,count2);
-
-#ifdef CONFIG_PATH_VERBOSITY
-		cout<<"[Case2] [2/2] Copying "<<count2<<" from block coordinate ("<<blockNumber2<<","<<positionInBlock2<<")"<<endl;
-#endif
+	for(int i=0;i<m_kmerLength;i++){
+		kmer[i]=readSymbolInBlock(position+i);
 	}
 
 	kmer[m_kmerLength]='\0';
-
-#ifdef CHECK_BUG_142
-	string copyA="AGGAAGAACCTGCTGAGGAACAAGAAGGTCAACTGCCTGGACTGTAATACC";
-	string copyB=kmer;
-	if(copyA==copyB){
-		cout<<"[GraphPath::readObjectInBlock] returns "<<copyB<<endl;
-		cout<<"position: "<<position<<" blocks: "<<m_blocks.size()<<" vertices: "<<size()<<" kmerLength: "<<m_kmerLength<<endl;
-		cout<<"blockNumber: "<<blockNumber<<" positionInBlock: "<<positionInBlock<<endl;
-		cout<<"CONFIG_PATH_BLOCK_SIZE "<<CONFIG_PATH_BLOCK_SIZE<<endl;
-	}
-#endif
 
 #ifdef CONFIG_PATH_VERBOSITY
 	cout<<"Object: "<<kmer<<endl;
 #endif
 
 	(*object)=wordId(kmer);
+}
+
+char GraphPath::readSymbolInBlock(int position)const{
+
+	int blockNumber=getBlockNumber(position);
+	int positionInBlock=getPositionInBlock(position);
+
+	return m_blocks[blockNumber].m_content[positionInBlock];
+}
+
+void GraphPath::writeSymbolInBlock(int position,char symbol){
+
+	int blockNumber=getBlockNumber(position);
+	int positionInBlock=getPositionInBlock(position);
+
+	m_blocks[blockNumber].m_content[positionInBlock]=symbol;
+
+#ifdef ASSERT
+	assert(readSymbolInBlock(position)==symbol);
+#endif
 }
 
 #endif
