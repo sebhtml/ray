@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -38,6 +38,10 @@ __CreatePlugin(SeedingData);
 
 __CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
 __CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
+
+/*
+ * TODO: port this with the VirtualProcessor framework.
+ */
 
 bool myComparator_sort(const GraphPath & a,const GraphPath & b){
 	return a.size()>b.size();
@@ -104,16 +108,11 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 		}
 		if(m_aliveWorkers[workerId].isDone()){
 			m_workersDone.push_back(workerId);
-			vector<Kmer> seed=*(m_aliveWorkers[workerId].getSeed());
-			vector<int>*coverageValues=m_aliveWorkers[workerId].getCoverageVector();
+			GraphPath*seed=m_aliveWorkers[workerId].getSeed();
 
-			#ifdef ASSERT
-			assert(seed.size() == coverageValues->size());
-			#endif
+			int nucleotides=getNumberOfNucleotides(seed->size(),m_wordSize);
 
-			int nucleotides=getNumberOfNucleotides(seed.size(),m_wordSize);
-
-			if(seed.size() > 0 && m_parameters->debugSeeds()){
+			if(seed->size() > 0 && m_parameters->debugSeeds()){
 				cout<<"Raw seed length: "<<nucleotides<<" nucleotides"<<endl;
 			}
 
@@ -134,36 +133,38 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				#endif
 				
 				#ifdef ASSERT
-				assert(seed.size()>0);
+				assert(seed->size()>0);
 				#endif
 
-				Kmer firstVertex=seed[0];
-				Kmer lastVertex=seed[seed.size()-1];
+				Kmer firstVertex;
+				seed->at(0,&firstVertex);
+				Kmer lastVertex;
+				seed->at(seed->size()-1,&lastVertex);
 				Kmer firstReverse=m_parameters->_complementVertex(&lastVertex);
 
 				int minimumNucleotidesForVerbosity=1024;
 
 				bool verbose=nucleotides>=minimumNucleotidesForVerbosity;
+
+				if(m_parameters->debugSeeds()){
+					verbose=true;
+				}
+
 				if(firstVertex<firstReverse){
 
 					if(verbose){
-						printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed.size());
+						printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed->size());
 					}
 
 					if(m_parameters->showMemoryUsage() && verbose){
 						showMemoryUsage(m_rank);
 					}
 
-					GraphPath theSeed;
-					theSeed.setKmerLength(m_parameters->getWordSize());
-					for(int i=0;i<(int)seed.size();i++){
-						theSeed.push_back(&(seed[i]));
-						theSeed.addCoverageValue(coverageValues->at(i));
-					}
+					GraphPath*theSeed=seed;
 
-					theSeed.computePeakCoverage();
+					theSeed->computePeakCoverage();
 		
-					CoverageDepth peakCoverage=theSeed.getPeakCoverage();
+					CoverageDepth peakCoverage=theSeed->getPeakCoverage();
 
 					if(verbose)
 						cout<<"Got a seed, peak coverage: "<<peakCoverage;
@@ -175,7 +176,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 						if(verbose)
 							cout<<", adding seed."<<endl;
 
-						m_SEEDING_seeds.push_back(theSeed);
+						m_SEEDING_seeds.push_back(*theSeed);
 		
 						m_eligiblePaths++;
 					}else{
