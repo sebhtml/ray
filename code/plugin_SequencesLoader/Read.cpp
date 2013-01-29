@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C)  2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -33,19 +33,19 @@ char*Read::trim(char*buffer,const char*sequence){
 	int theLen=strlen(sequence);
 	strcpy(buffer,sequence);
 	for(int i=0;i<theLen;i++){
-		if(buffer[i]=='a')
-			buffer[i]='A';
-		else if(buffer[i]=='t')
-			buffer[i]='T';
-		else if(buffer[i]=='c')
-			buffer[i]='C';
-		else if(buffer[i]=='g')
-			buffer[i]='G';
+		if(buffer[i]==SYMBOL_LOWER_A)
+			buffer[i]=SYMBOL_A;
+		else if(buffer[i]==SYMBOL_LOWER_T)
+			buffer[i]=SYMBOL_T;
+		else if(buffer[i]==SYMBOL_LOWER_C)
+			buffer[i]=SYMBOL_C;
+		else if(buffer[i]==SYMBOL_LOWER_G)
+			buffer[i]=SYMBOL_G;
 	}
 	// discard N at the beginning and end of the read.
 	// find the first symbol that is a A,T,C or G
 	int first=0;
-	while(buffer[first]!='A' && buffer[first]!='T' &&buffer[first]!='C' &&buffer[first]!='G' &&first<theLen){
+	while(buffer[first]!=SYMBOL_A && buffer[first]!=SYMBOL_T &&buffer[first]!=SYMBOL_C &&buffer[first]!=SYMBOL_G &&first<theLen){
 		first++;
 	}
 	char*corrected=buffer+first;
@@ -54,7 +54,7 @@ char*Read::trim(char*buffer,const char*sequence){
 	int last=0;
 	int len=strlen(corrected);
 	for(int i=0;i<len;i++){
-		if(corrected[i]=='A' || corrected[i]=='T' || corrected[i]=='C' || corrected[i]=='G'){
+		if(corrected[i]==SYMBOL_A || corrected[i]==SYMBOL_T || corrected[i]==SYMBOL_C || corrected[i]==SYMBOL_G){
 			last=i;
 		}
 	}
@@ -114,13 +114,13 @@ void Read::constructor(const char*sequence,MyAllocator*seqMyAllocator,bool trimF
 
 	for(int position=0;position<length;position++){
 		char nucleotide=sequence[position];
-		if(nucleotide!='A'&&nucleotide!='T'&&nucleotide!='C'&&nucleotide!='G'){
+		if(nucleotide!=SYMBOL_A&&nucleotide!=SYMBOL_T&&nucleotide!=SYMBOL_C&&nucleotide!=SYMBOL_G){
 
 			#ifdef DEBUG_GCC_4_7_2
 			cout<<"[DEBUG_GCC_4_7_2] nucleotide "<<nucleotide<<" is not in {A,T,C,G}, position "<<position<<" in "<<sequence<<", length is "<<length<<endl;
 			#endif
 
-			nucleotide='A';
+			nucleotide=SYMBOL_A;
 		}
 
 		uint8_t code=charToCode(nucleotide);

@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -20,6 +20,8 @@
 */
 
 #include "KeyEncoder.h"
+
+#include <code/plugin_Mock/constants.h>
 
 #include <string.h>
 #include <iostream>

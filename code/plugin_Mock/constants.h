@@ -81,6 +81,16 @@
 #define RAY_NUCLEOTIDE_G 2 /* ~10 == 01 */
 #define RAY_NUCLEOTIDE_T 3 /* ~11 == 00 */
 
+#define SYMBOL_A 'A'
+#define SYMBOL_T 'T'
+#define SYMBOL_G 'G'
+#define SYMBOL_C 'C'
+
+#define SYMBOL_LOWER_A 'a'
+#define SYMBOL_LOWER_T 't'
+#define SYMBOL_LOWER_G 'g'
+#define SYMBOL_LOWER_C 'c'
+
 #define DOUBLE_ENCODING_A_COLOR '0'
 #define DOUBLE_ENCODING_C_COLOR '1'
 #define DOUBLE_ENCODING_G_COLOR '2'

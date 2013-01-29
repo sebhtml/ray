@@ -343,15 +343,15 @@ char codeToChar(uint8_t a,bool color){
 
 	switch(a){
 		case RAY_NUCLEOTIDE_A:
-			return 'A';
+			return SYMBOL_A;
 		case RAY_NUCLEOTIDE_T:
-			return 'T';
+			return SYMBOL_T;
 		case RAY_NUCLEOTIDE_C:
-			return 'C';
+			return SYMBOL_C;
 		case RAY_NUCLEOTIDE_G:
-			return 'G';
+			return SYMBOL_G;
 	}
-	return 'A';
+	return SYMBOL_A;
 }
 
 void Kmer::write(ofstream*f)const{
@@ -415,7 +415,7 @@ double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode)const{
 	int count=0;
 
 	for(int i=0;i<kmerLength;i++){
-		if(buffer[i]=='G' || buffer[i]=='C'){
+		if(buffer[i]==SYMBOL_G || buffer[i]==SYMBOL_C){
 			count++;
 		}
 	}

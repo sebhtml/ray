@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C)  2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -21,6 +21,8 @@
 
 #include "ColorSpaceDecoder.h"
 
+#include <code/plugin_Mock/constants.h>
+
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
@@ -34,14 +36,10 @@ using namespace std;
 #define _COLOR_SPACE_DECODER_COLOR_GREEN '1'
 #define _COLOR_SPACE_DECODER_COLOR_ORANGE '2'
 #define _COLOR_SPACE_DECODER_COLOR_RED '3'
-#define _COLOR_SPACE_DECODER_LETTER_A 'A'
-#define _COLOR_SPACE_DECODER_LETTER_T 'T'
-#define _COLOR_SPACE_DECODER_LETTER_C 'C'
-#define _COLOR_SPACE_DECODER_LETTER_G 'G'
 #define _COLOR_SPACE_DECODER_NUMBER_OF_COLORS 4
 
 /*
- * see http://www.ploscompbiol.org/article/slideshow.action?uri=info:doi/10.1371/journal.pcbi.1000386&imageURI=info:doi/10.1371/journal.pcbi.1000386.g002
+ * \see http://www.ploscompbiol.org/article/slideshow.action?uri=info:doi/10.1371/journal.pcbi.1000386&imageURI=info:doi/10.1371/journal.pcbi.1000386.g002
  */
 ColorSpaceDecoder::ColorSpaceDecoder(){
 	int i=0;
@@ -79,13 +77,13 @@ string ColorSpaceDecoder::decode(char*x){
 	char v[1024];
 	int lastCode=0;
 	char boot=x[0];
-	if(boot==_COLOR_SPACE_DECODER_LETTER_A){
+	if(boot==SYMBOL_A){
 		lastCode=_COLOR_SPACE_DECODER_CODE_A;
-	}else if(boot==_COLOR_SPACE_DECODER_LETTER_T){
+	}else if(boot==SYMBOL_T){
 		lastCode=_COLOR_SPACE_DECODER_CODE_T;
-	}else if(boot==_COLOR_SPACE_DECODER_LETTER_C){
+	}else if(boot==SYMBOL_C){
 		lastCode=_COLOR_SPACE_DECODER_CODE_C;
-	}else if(boot==_COLOR_SPACE_DECODER_LETTER_G){
+	}else if(boot==SYMBOL_G){
 		lastCode=_COLOR_SPACE_DECODER_CODE_G;
 	}
 	int i=1;
@@ -99,13 +97,13 @@ string ColorSpaceDecoder::decode(char*x){
 			currentCode++;
 		}
 		if(currentCode==_COLOR_SPACE_DECODER_CODE_A){
-			v[i-1]=_COLOR_SPACE_DECODER_LETTER_A;
+			v[i-1]=SYMBOL_A;
 		}else if(currentCode==_COLOR_SPACE_DECODER_CODE_C){
-			v[i-1]=_COLOR_SPACE_DECODER_LETTER_C;
+			v[i-1]=SYMBOL_C;
 		}else if(currentCode==_COLOR_SPACE_DECODER_CODE_G){
-			v[i-1]=_COLOR_SPACE_DECODER_LETTER_G;
+			v[i-1]=SYMBOL_G;
 		}else if(currentCode==_COLOR_SPACE_DECODER_CODE_T){
-			v[i-1]=_COLOR_SPACE_DECODER_LETTER_T;
+			v[i-1]=SYMBOL_T;
 		}
 		lastCode=currentCode;
 		i++;

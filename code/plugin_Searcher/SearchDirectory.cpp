@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -435,22 +435,22 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 	for(int i=0;i<kmerLength;i++){
 		char nucleotide=sequenceBuffer[i];
 		switch (nucleotide){
-			case 'a':
-				nucleotide='A';
+			case SYMBOL_LOWER_A:
+				nucleotide=SYMBOL_A;
 				break;
-			case 't':
-				nucleotide='T';
+			case SYMBOL_LOWER_T:
+				nucleotide=SYMBOL_T;
 				break;
-			case 'c':
-				nucleotide='C';
+			case SYMBOL_LOWER_C:
+				nucleotide=SYMBOL_C;
 				break;
-			case 'g':
-				nucleotide='G';
+			case SYMBOL_LOWER_G:
+				nucleotide=SYMBOL_G;
 				break;
 		}
 
-		if(nucleotide!='A' && nucleotide!='T' && nucleotide!='C'
-			&& nucleotide!='G'){
+		if(nucleotide!=SYMBOL_A && nucleotide!=SYMBOL_T && nucleotide!=SYMBOL_C
+			&& nucleotide!=SYMBOL_G){
 
 			m_hasN=true;
 		}

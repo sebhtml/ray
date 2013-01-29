@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -42,7 +42,7 @@ bool isValidDNA(char*x){
 	int len=strlen(x);
 	for(int i=0;i<len;i++){
 		char a=x[i];
-		if(!(a=='A'||a=='T'||a=='C'||a=='G'))
+		if(!(a==SYMBOL_A||a==SYMBOL_T||a==SYMBOL_C||a==SYMBOL_G))
 			return false;
 	}
 	return true;
@@ -150,13 +150,13 @@ void print8(uint8_t a){
 
 uint8_t charToCode(char a){
 	switch (a){
-		case 'A':
+		case SYMBOL_A:
 			return RAY_NUCLEOTIDE_A;
-		case 'T':
+		case SYMBOL_T:
 			return RAY_NUCLEOTIDE_T;
-		case 'C':
+		case SYMBOL_C:
 			return RAY_NUCLEOTIDE_C;
-		case 'G':
+		case SYMBOL_G:
 			return RAY_NUCLEOTIDE_G;
 		default:
 			return RAY_NUCLEOTIDE_A;
@@ -165,14 +165,14 @@ uint8_t charToCode(char a){
 
 char complementNucleotide(char c){
 	switch(c){
-		case 'A':
-			return 'T';
-		case 'T':
-			return 'A';
-		case 'G':
-			return 'C';
-		case 'C':
-			return 'G';
+		case SYMBOL_A:
+			return SYMBOL_T;
+		case SYMBOL_T:
+			return SYMBOL_A;
+		case SYMBOL_G:
+			return SYMBOL_C;
+		case SYMBOL_C:
+			return SYMBOL_G;
 		default:
 			return c;
 	}

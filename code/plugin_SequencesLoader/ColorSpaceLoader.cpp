@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C)  2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -70,13 +70,13 @@ void ColorSpaceLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAl
 
 			for(int j=0;j<(int)strlen(bufferForLine);j++){
 				if(bufferForLine[j]==DOUBLE_ENCODING_A_COLOR){
-					bufferForLine[j]='A';
+					bufferForLine[j]=SYMBOL_A;
 				}else if(bufferForLine[j]==DOUBLE_ENCODING_T_COLOR){
-					bufferForLine[j]='T';
+					bufferForLine[j]=SYMBOL_T;
 				}else if(bufferForLine[j]==DOUBLE_ENCODING_C_COLOR){
-					bufferForLine[j]='C';
+					bufferForLine[j]=SYMBOL_C;
 				}else if(bufferForLine[j]==DOUBLE_ENCODING_G_COLOR){
-					bufferForLine[j]='G';
+					bufferForLine[j]=SYMBOL_G;
 				}
 			}
 			Read t;
