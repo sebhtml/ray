@@ -224,7 +224,6 @@ public:
 	/** 
 	* debug the code that computes seeds
 	*/
-	bool debugSeeds();
 	bool showMemoryUsage();
 	bool showEndingContext();
 

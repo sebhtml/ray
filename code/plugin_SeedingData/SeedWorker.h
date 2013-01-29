@@ -46,6 +46,7 @@ class SeedWorker : public Worker {
 	int m_mainVertexCoverage;
 
 	bool m_hasDeadEnd;
+	bool m_debugSeeds;
 
 	map<Kmer,int> m_cache;
 	WorkerHandle m_workerIdentifier;
@@ -97,6 +98,7 @@ class SeedWorker : public Worker {
 	int getSize();
 	bool m_SEEDING_1_1_test_done;
 	VirtualCommunicator*m_virtualCommunicator;
+
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,WorkerHandle workerId,
@@ -121,6 +123,7 @@ public:
 	WorkerHandle getWorkerIdentifier();
 
 	bool hasDeadEnd();
+	void enableDebugMode();
 };
 
 #endif

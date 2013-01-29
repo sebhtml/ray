@@ -116,10 +116,6 @@ bool Parameters::runProfiler(){
 	return m_profiler;
 }
 
-bool Parameters::debugSeeds(){
-	return m_debugSeeds;
-}
-
 int Parameters::getWordSize(){
 	return m_wordSize;
 }
@@ -295,10 +291,6 @@ void Parameters::parseCommands(){
 	debugBubbles.insert("-debug-bubbles");
 	debugBubbles.insert("--debug-bubbles");
 
-	set<string> debugSeeds;
-	debugSeeds.insert("-debug-seeds");
-	debugSeeds.insert("--debug-seeds");
-
 	set<string> runProfiler;
 	runProfiler.insert("-run-profiler");
 	runProfiler.insert("--run-profiler");
@@ -367,7 +359,6 @@ void Parameters::parseCommands(){
 	toAdd.push_back(connectionType);
 	toAdd.push_back(showMemory);	
 	toAdd.push_back(debugBubbles);
-	toAdd.push_back(debugSeeds);
 	toAdd.push_back(runProfiler);
 	toAdd.push_back(showContext);
 	toAdd.push_back(showMalloc);
@@ -884,11 +875,6 @@ void Parameters::parseCommands(){
 				cout<<endl;
 				cout<<"Enabling color-space mode"<<endl;
 				cout<<"All reads should be in color space."<<endl;
-			}
-		}else if(debugSeeds.count(token)>0){
-			m_debugSeeds=true;
-			if(m_rank==MASTER_RANK){
-				printf("Enabling seed debug mode.\n");
 			}
 		}else if(showMemory.count(token)>0){
 			m_showMemoryUsage=true;

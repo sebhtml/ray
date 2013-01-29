@@ -83,6 +83,8 @@ class SeedingData : public CorePlugin{
 	int m_skippedNotEnoughCoverage;
 	int m_eligiblePaths;
 
+	bool m_debugSeeds;
+
 	/** checkpointing */
 	bool m_checkedCheckpoint;
 

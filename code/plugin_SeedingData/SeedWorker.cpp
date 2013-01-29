@@ -84,7 +84,7 @@ void SeedWorker::work(){
 			if(!m_SEEDING_1_1_test_result){
 				m_finished=true;
 
-				if(m_parameters->debugSeeds()){
+				if(m_debugSeeds){
 					printf("Rank %i next vertex: Coverage= %i, ingoing coverages:",m_rank,m_cache[m_SEEDING_currentVertex]);
 					for(int i=0;i<(int)m_ingoingCoverages.size();i++){
 						printf(" %i",m_ingoingCoverages[i]);
@@ -168,6 +168,12 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 #endif
 
 	m_SEEDING_seed.setKmerLength(m_wordSize);
+
+	m_debugSeeds=false;
+}
+
+void SeedWorker::enableDebugMode(){
+	m_debugSeeds=true;
 }
 
 /*

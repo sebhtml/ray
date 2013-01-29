@@ -112,7 +112,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 
 			int nucleotides=getNumberOfNucleotides(seed->size(),m_wordSize);
 
-			if(seed->size() > 0 && m_parameters->debugSeeds()){
+			if(seed->size() > 0 && m_debugSeeds){
 				cout<<"Raw seed length: "<<nucleotides<<" nucleotides"<<endl;
 			}
 
@@ -146,7 +146,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 
 				bool verbose=nucleotides>=minimumNucleotidesForVerbosity;
 
-				if(m_parameters->debugSeeds()){
+				if(m_debugSeeds){
 					verbose=true;
 				}
 
@@ -226,6 +226,9 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 );
+				if(m_debugSeeds)
+					m_aliveWorkers[m_SEEDING_i].enableDebugMode();
+
 				m_activeWorkers.insert(m_SEEDING_i);
 
 				int population=m_aliveWorkers.size();
@@ -342,6 +345,11 @@ int*mode,
 		m_minimumSeedCoverageDepth=m_parameters->getConfigurationInteger("-use-minimum-seed-coverage",0);
 		cout<<"[SeedingData] will use "<<m_minimumSeedCoverageDepth<<" for the minimum seed coverage"<<endl;
 	}
+
+	m_debugSeeds=false;
+
+	if(m_parameters->hasConfigurationOption("-debug-seeds",0))
+		m_debugSeeds=true;
 }
 
 int SeedingData::getRank(){
