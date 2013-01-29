@@ -369,8 +369,7 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 		assert(m_blocks.size()==0);
 		#endif
 
-		GraphPathBlock block;
-		m_blocks.push_back(block);
+		addBlock();
 		string sequence=a->idToWord(m_kmerLength,false);
 
 		for(int blockPosition=0;blockPosition<m_kmerLength;blockPosition++){
@@ -398,8 +397,7 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 		#endif
 
 		if(usedSymbols+1>allocatedSymbols){
-			GraphPathBlock block;
-			m_blocks.push_back(block);
+			addBlock();
 			allocatedSymbols=m_blocks.size()*getBlockSize();
 		}
 
@@ -444,19 +442,8 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 #endif
 }
 
-int GraphPath::getBlockNumber(int position)const{
-
-	return position/getBlockSize();
-
-}
-
 int GraphPath::getBlockSize()const{
 	return CONFIG_PATH_BLOCK_SIZE;
-}
-
-int GraphPath::getPositionInBlock(int position)const{
-
-	return position%getBlockSize();
 }
 
 void GraphPath::readObjectInBlock(int position,Kmer*object)const{
@@ -484,22 +471,88 @@ void GraphPath::readObjectInBlock(int position,Kmer*object)const{
 
 char GraphPath::readSymbolInBlock(int position)const{
 
-	int blockNumber=getBlockNumber(position);
-	int positionInBlock=getPositionInBlock(position);
+	int globalPosition=position*BITS_PER_NUCLEOTIDE;
+	int numberOfBitsPerBlock=CONFIG_PATH_BLOCK_SIZE*BITS_PER_NUCLEOTIDE;
 
-	return m_blocks[blockNumber].m_content[positionInBlock];
+/*
+ * Example:
+ *
+ * CONFIG_PATH_BLOCK_SIZE: 4096
+ * blocks: 3
+ * availableSymbols: 12288
+ * total bits: 24576
+ * bits per block: 8192
+ *
+ * position: 9999
+ * bit position: 19998
+ * block for the bit: 19998/8192 = 2
+ * uint64_t in block for the bit: 19998%8192/64 = 3614/64 = 56
+ * bit in uint64_t in block: 19998%8192%64 = (19998%8192)%64 = 30
+ *
+ * The address of position 9999 is (2,56,30).
+ */
+
+/* a block contains an array of uint64_t */
+	int blockNumber=globalPosition/numberOfBitsPerBlock;
+
+/* this is the index of the uint64_t in the block */
+	int positionInBlock=(globalPosition%numberOfBitsPerBlock)/(sizeof(uint64_t)*BITS_PER_BYTE);
+	int bitPosition=(globalPosition%numberOfBitsPerBlock)%(sizeof(uint64_t)*BITS_PER_BYTE);
+
+	uint64_t oldChunkValue=m_blocks[blockNumber].m_content[positionInBlock];
+
+	oldChunkValue<<=(sizeof(uint64_t)*BITS_PER_BYTE-BITS_PER_NUCLEOTIDE-bitPosition);
+	oldChunkValue>>=(sizeof(uint64_t)*BITS_PER_BYTE-BITS_PER_NUCLEOTIDE);
+
+	uint8_t code=oldChunkValue;
+
+#ifdef ASSERT
+	assert(code==RAY_NUCLEOTIDE_A||code==RAY_NUCLEOTIDE_T||code==RAY_NUCLEOTIDE_C||code==RAY_NUCLEOTIDE_G);
+#endif
+
+	char symbol=codeToChar(code,false);
+
+	return symbol;
 }
 
 void GraphPath::writeSymbolInBlock(int position,char symbol){
 
-	int blockNumber=getBlockNumber(position);
-	int positionInBlock=getPositionInBlock(position);
+	int globalPosition=position*BITS_PER_NUCLEOTIDE;
+	int numberOfBitsPerBlock=CONFIG_PATH_BLOCK_SIZE*BITS_PER_NUCLEOTIDE;
 
-	m_blocks[blockNumber].m_content[positionInBlock]=symbol;
+/* a block contains an array of uint64_t */
+	int blockNumber=globalPosition/numberOfBitsPerBlock;
+
+/* this is the index of the uint64_t in the block */
+	int positionInBlock=(globalPosition%numberOfBitsPerBlock)/(sizeof(uint64_t)*BITS_PER_BYTE);
+	int bitPosition=(globalPosition%numberOfBitsPerBlock)%(sizeof(uint64_t)*BITS_PER_BYTE);
+
+	uint64_t oldChunkValue=m_blocks[blockNumber].m_content[positionInBlock];
+
+	uint64_t mask=charToCode(symbol);
+	mask<<=bitPosition;
+
+	oldChunkValue|=mask;
+
+	m_blocks[blockNumber].m_content[positionInBlock]=oldChunkValue;
 
 #ifdef ASSERT
+	if(readSymbolInBlock(position)!=symbol){
+		cout<<"Expected "<<symbol<<" Actual "<<readSymbolInBlock(position)<<endl;
+	}
+
 	assert(readSymbolInBlock(position)==symbol);
 #endif
+}
+
+void GraphPath::addBlock(){
+
+	GraphPathBlock block;
+	m_blocks.push_back(block);
+
+	for(int i=0;i<(int)NUMBER_OF_64_BIT_INTEGERS;i++){
+		m_blocks[m_blocks.size()-1].m_content[i]=0;
+	}
 }
 
 #endif
