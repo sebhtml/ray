@@ -107,6 +107,16 @@ void SeedWorker::work(){
 					}
 					printf("\n");
 				}
+
+/*
+ * Check if it's a dead end. We don't want dead ends because they consume too
+ * much time.
+ */
+
+				if(m_ingoingCoverages.size()==0 || m_outgoingCoverages.size()==0){
+					m_hasDeadEnd=true;
+				}
+
 			}else{
 
 				Kmer object;
@@ -385,14 +395,6 @@ void SeedWorker::do_1_1_test(){
 		if(m_mainVertexCoverage<minimumCoverageToStore)
 			m_SEEDING_1_1_test_result=false;
 
-/*
- * Check if it's a dead end. We don't want dead ends because they consume too
- * much time.
- */
-
-		if(m_ingoingCoverages.size()==0 || m_outgoingCoverages.size()==0){
-			m_hasDeadEnd=true;
-		}
 	}
 }
 
