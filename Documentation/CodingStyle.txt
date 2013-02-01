@@ -5,13 +5,14 @@
 
 * With TAB symbols.
 
-
 == New lines ==
 
 * Only use '\n'
 
-
 == Symbols ==
+
+* Class names are names, not verbs.
+* Method names are verbs, not names.
 
 * Attribute members of a class are prefixed with 'm_'.
 
@@ -29,5 +30,8 @@ Include the headers in this order:
 
 * plugin headers
 * other plugin headers
-* RayPlatform
-* system libraries
+* RayPlatform headers
+* C++ headers
+* C headers
+* POSIX headers
+
