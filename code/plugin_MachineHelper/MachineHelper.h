@@ -1,6 +1,7 @@
 /*
- 	Ray
-    Copyright (C) 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -24,6 +25,7 @@
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_FusionData/FusionData.h>
 #include <code/plugin_NetworkTest/NetworkTest.h>
+#include <code/plugin_Example/Example.h>
 #include <code/plugin_Partitioner/Partitioner.h>
 #include <code/plugin_SequencesLoader/SequencesLoader.h>
 #include <code/plugin_SeedingData/SeedingData.h>
@@ -251,6 +253,7 @@ class MachineHelper: public CorePlugin{
 	MasterMode RAY_MASTER_MODE_UPDATE_DISTANCES;
 	MasterMode RAY_MASTER_MODE_WRITE_KMERS;
 	MasterMode RAY_MASTER_MODE_WRITE_SCAFFOLDS;
+	MasterMode RAY_MASTER_MODE_STEP_A;
 
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_ADD_COLORS;
@@ -359,7 +362,7 @@ class MachineHelper: public CorePlugin{
 
 	int getRank();
 	int getSize();
-
+	void performAssemblyWorkflow(ComputeCore*core);
 
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,

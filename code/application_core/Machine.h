@@ -1,6 +1,7 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -63,6 +64,7 @@
 #include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 #include <code/plugin_GeneOntology/GeneOntology.h>
 #include <code/plugin_Mock/Mock.h>
+#include <code/plugin_Example/Example.h>
 
 
 
@@ -159,6 +161,7 @@ class Machine : public MiniRank{
 	EdgePurger m_edgePurger;
 	PhylogenyViewer m_phylogeny;
 	GeneOntology m_ontologyPlugin;
+	Example m_example;
 
 	KmerAcademyBuilder m_kmerAcademyBuilder;
 	bool m_initialisedAcademy;

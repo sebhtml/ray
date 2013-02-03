@@ -1,6 +1,7 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -813,6 +814,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_genomeNeighbourhood);
 	m_computeCore.registerPlugin(&m_ontologyPlugin);
 	m_computeCore.registerPlugin(&m_mock);
+	m_computeCore.registerPlugin(&m_example);
 
 	// resolve the symbols
 	// this is done here because we want to write a summary for

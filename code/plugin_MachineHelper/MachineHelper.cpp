@@ -1,6 +1,7 @@
 /*
- 	Ray
-    Copyright (C) 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -1225,6 +1226,7 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_MASTER_MODE_UPDATE_DISTANCES=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_UPDATE_DISTANCES");
 	RAY_MASTER_MODE_WRITE_KMERS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_KMERS");
 	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
+	RAY_MASTER_MODE_STEP_A=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_STEP_A");
 
 	RAY_MPI_TAG_FINISH_FUSIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS");
 	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
@@ -1312,31 +1314,13 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SET_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES");
 	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
 
-	core->setFirstMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG);
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG, RAY_MASTER_MODE_TEST_NETWORK);
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_SEEDING,RAY_MASTER_MODE_TRIGGER_SEEDING);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_SEEDING,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_SEQUENCES,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEND_COVERAGE_VALUES,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING,RAY_MASTER_MODE_PURGE_NULL_EDGES);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PURGE_NULL_EDGES,RAY_MASTER_MODE_WRITE_KMERS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_WRITE_KMERS,RAY_MASTER_MODE_TRIGGER_INDEXING);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_INDEXING,RAY_MASTER_MODE_PREPARE_SEEDING);
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_UPDATING_DISTANCES,RAY_MASTER_MODE_UPDATE_DISTANCES);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FUSIONS,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS,RAY_MASTER_MODE_START_FUSION_CYCLE);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_FUSION_CYCLE,RAY_MASTER_MODE_ASK_EXTENSIONS);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ASK_EXTENSIONS,RAY_MASTER_MODE_SCAFFOLDER);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SCAFFOLDER,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
-
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_KILL_RANKS,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+	if (m_parameters->hasOption("-example")) {
+		cout << "************** Example Mode **************" << endl;
+		core->setFirstMasterMode(m_plugin, RAY_MASTER_MODE_STEP_A);
+	}
+	else {
+		performAssemblyWorkflow(core);
+	}
 
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON");
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
@@ -1382,4 +1366,30 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	m_startedToSendCounts=false;
 }
 
+void MachineHelper::performAssemblyWorkflow(ComputeCore*core) {
+	core->setFirstMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG);
 
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_CONFIG, RAY_MASTER_MODE_TEST_NETWORK);
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_SEEDING,RAY_MASTER_MODE_TRIGGER_SEEDING);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_SEEDING,RAY_MASTER_MODE_START_UPDATING_DISTANCES);
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_LOAD_SEQUENCES,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS,RAY_MASTER_MODE_SEND_COVERAGE_VALUES);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SEND_COVERAGE_VALUES,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_GRAPH_BUILDING,RAY_MASTER_MODE_PURGE_NULL_EDGES);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_PURGE_NULL_EDGES,RAY_MASTER_MODE_WRITE_KMERS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_WRITE_KMERS,RAY_MASTER_MODE_TRIGGER_INDEXING);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_INDEXING,RAY_MASTER_MODE_PREPARE_SEEDING);
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_UPDATING_DISTANCES,RAY_MASTER_MODE_UPDATE_DISTANCES);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FUSIONS,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS,RAY_MASTER_MODE_START_FUSION_CYCLE);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_FUSION_CYCLE,RAY_MASTER_MODE_ASK_EXTENSIONS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ASK_EXTENSIONS,RAY_MASTER_MODE_SCAFFOLDER);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SCAFFOLDER,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
+
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_KILL_RANKS,RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+}
