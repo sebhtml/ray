@@ -103,16 +103,20 @@ public:
  */
 	uint8_t getFirstSegmentFirstCode(int w)const;
 	uint8_t getSecondSegmentLastCode(int w)const;
-	int vertexRank(int _size,int w,bool color)const;
+	Rank vertexRank(int _size,int w,bool color)const;
 /**
  * get the outgoing Kmer objects for a Kmer a having edges and
  * a k-mer length k
+ *
+ * TODO: vector<Kmer>* should be a output parameter
  */
 	vector<Kmer> _getOutgoingEdges(uint8_t edges,int k)const;
 
 /**
  * get the ingoing Kmer objects for a Kmer a having edges and
  * a k-mer length k
+ *
+ * TODO: vector<Kmer>* should be a output parameter
  */
 	vector<Kmer> _getIngoingEdges(uint8_t edges,int k)const;
 

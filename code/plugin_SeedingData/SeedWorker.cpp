@@ -73,7 +73,8 @@ void SeedWorker::work(){
 			}
 		}
 	// check if currentVertex has 1 ingoing edge and 1 outgoing edge, if yes, add it
-	}else{
+	}else if(m_elongationMode){
+
 		// attempt to add m_SEEDING_currentVertex
 		if(!m_SEEDING_1_1_test_done){
 			do_1_1_test();
@@ -82,7 +83,6 @@ void SeedWorker::work(){
 				m_SEEDING_1_1_test_result=false;
 			}
 			if(!m_SEEDING_1_1_test_result){
-				m_finished=true;
 
 				if(m_debugSeeds){
 					printf("Rank %i next vertex: Coverage= %i, ingoing coverages:",m_rank,m_cache[m_SEEDING_currentVertex]);
@@ -108,15 +108,9 @@ void SeedWorker::work(){
 					printf("\n");
 				}
 
-/*
- * Check if it's a dead end. We don't want dead ends because they consume too
- * much time.
- */
 
-				if(m_ingoingCoverages.size()==0 || m_outgoingCoverages.size()==0){
-					m_hasDeadEnd=true;
-				}
-
+				m_elongationMode=false;
+				m_endChecksMode=true;
 			}else{
 
 				Kmer object;
@@ -139,6 +133,116 @@ void SeedWorker::work(){
 				}
 			}
 		}
+	}else if(m_endChecksMode){
+
+		performChecksOnPathEnds();
+	}else{
+		m_finished=true;
+	}
+}
+
+void SeedWorker::performChecksOnPathEnds(){
+/*
+ * Check if it's a dead end. We don't want dead ends because they consume too
+ * much time.
+ *
+ * First, check that the first k-mer is connected to something in the graph.
+ *
+ * Then, check that the last k-mer is connected to something in the graph too.
+ */
+
+	if(!m_endChecksModeStarted){
+		m_endChecksModeStarted=true;
+		m_checkedHead=false;
+		m_vertexFetcherStarted=false;
+
+		m_fetchedParent0=false;
+
+/*
+ * Check parents to see if it's a dead end.
+ */
+	}else if(!m_checkedHead){
+
+		if(!m_fetchedParent0){
+
+			Kmer kmer;
+			int positionInPath=0;
+			m_SEEDING_seed.at(positionInPath,&kmer);
+
+			if(fetchVertexData(&kmer)){
+
+				if(m_vertexFetcherParents.size()==1){
+					m_fetchedParent1=false;
+
+					m_parent0=m_vertexFetcherParents[0];
+				}else{
+					m_fetchedParent1=true;
+				}
+
+				m_fetchedParent0=true;
+				m_vertexFetcherStarted=false;
+			}
+		}else if(!m_fetchedParent1){
+
+			if(fetchVertexData(&m_parent0)){
+
+				if(m_vertexFetcherParents.size()==0){
+					m_headIsDeadEnd=true;
+				}
+
+				m_fetchedParent1=true;
+				m_vertexFetcherStarted=false;
+			}
+		}else{
+			m_checkedHead=true;
+
+			m_checkedTail=false;
+			m_fetchedChild0=false;
+		}
+
+/*
+ * Check children of the last k-mer to see if there is a dead end.
+ */
+	}else if(!m_checkedTail){
+
+		if(!m_fetchedChild0){
+
+			Kmer kmer;
+			int positionInPath=m_SEEDING_seed.size()-1;
+			m_SEEDING_seed.at(positionInPath,&kmer);
+
+			if(fetchVertexData(&kmer)){
+
+				if(m_vertexFetcherChildren.size()==1){
+					m_fetchedChild1=false;
+
+					m_child0=m_vertexFetcherChildren[0];
+				}else{
+					m_fetchedChild1=true;
+				}
+
+				m_fetchedChild0=true;
+				m_vertexFetcherStarted=false;
+			}
+		}else if(!m_fetchedChild1){
+
+			if(fetchVertexData(&m_child0)){
+
+				if(m_vertexFetcherChildren.size()==0){
+					m_tailIsDeadEnd=true;
+				}
+
+				m_fetchedChild1=true;
+				m_vertexFetcherStarted=false;
+			}
+		}else{
+
+			m_checkedTail=true;
+		}
+
+
+	}else{
+		m_endChecksMode=false;
 	}
 }
 
@@ -171,8 +275,6 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	m_wordSize=parameters->getWordSize();
 	m_parameters=parameters;
 
-	m_hasDeadEnd=false;
-
 #ifdef ASSERT
 	assert(m_wordSize!=0);
 #endif
@@ -180,6 +282,13 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	m_SEEDING_seed.setKmerLength(m_wordSize);
 
 	m_debugSeeds=false;
+
+	m_elongationMode=true;
+
+	m_endChecksMode=false;
+
+	m_headIsDeadEnd=false;
+	m_tailIsDeadEnd=false;
 }
 
 void SeedWorker::enableDebugMode(){
@@ -414,6 +523,62 @@ WorkerHandle SeedWorker::getWorkerIdentifier(){
 	return m_workerIdentifier;
 }
 
-bool SeedWorker::hasDeadEnd(){
-	return m_hasDeadEnd;
+bool SeedWorker::isHeadADeadEnd(){
+	return m_headIsDeadEnd;
+}
+
+bool SeedWorker::isTailADeadEnd(){
+	return m_tailIsDeadEnd;
+}
+
+/**
+ * Fetch parents and children and coverage depth.
+ */
+bool SeedWorker::fetchVertexData(Kmer*kmer){
+
+	if(!m_vertexFetcherStarted){
+
+		m_vertexFetcherRequestedData=false;
+
+		m_vertexFetcherCoverage=0;
+		m_vertexFetcherParents.clear();
+		m_vertexFetcherChildren.clear();
+
+		m_vertexFetcherStarted=true;
+
+	}else if(!m_vertexFetcherRequestedData){
+
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
+		int bufferPosition=0;
+		kmer->pack(message,&bufferPosition);
+		Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
+			m_parameters->_vertexRank(kmer),
+			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
+
+		m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
+
+		m_vertexFetcherRequestedData=true;
+		m_vertexFetcherReceivedData=false;
+
+	}else if(!m_vertexFetcherReceivedData && m_virtualCommunicator->isMessageProcessed(m_workerIdentifier)){
+
+		vector<MessageUnit> elements;
+		m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&elements);
+
+		int bufferPosition=0;
+
+		uint8_t edges=elements[bufferPosition++];
+		m_vertexFetcherCoverage=elements[bufferPosition++];
+
+		m_vertexFetcherParents=kmer->_getIngoingEdges(edges,m_wordSize);
+		m_vertexFetcherChildren=kmer->_getOutgoingEdges(edges,m_wordSize);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool SeedWorker::isBubbleWeakComponent(){
+	return false;
 }

@@ -36,6 +36,7 @@ using namespace std;
 /*
  * Given a Kmer, SeedWorker determines if it spawns a seed.
  * If yes, it computes the seed.
+ *
  * \author Sébastien Boisvert
  */
 class SeedWorker : public Worker {
@@ -47,6 +48,8 @@ class SeedWorker : public Worker {
 
 	bool m_hasDeadEnd;
 	bool m_debugSeeds;
+
+	bool m_elongationMode;
 
 	map<Kmer,int> m_cache;
 	WorkerHandle m_workerIdentifier;
@@ -99,6 +102,31 @@ class SeedWorker : public Worker {
 	bool m_SEEDING_1_1_test_done;
 	VirtualCommunicator*m_virtualCommunicator;
 
+/*
+ * Additional quality control tests.
+ */
+	bool m_checkedHead;
+	bool m_checkedTail;
+	bool m_endChecksModeStarted;
+	bool m_endChecksMode;
+	bool m_vertexFetcherStarted;
+	vector<Kmer> m_vertexFetcherParents;
+	vector<Kmer> m_vertexFetcherChildren;
+	CoverageDepth m_vertexFetcherCoverage;
+	bool m_vertexFetcherReceivedData;
+	bool m_vertexFetcherRequestedData;
+	Kmer m_parent0;
+	bool m_fetchedParent0;
+	bool m_fetchedParent1;
+	bool m_headIsDeadEnd;
+	bool m_tailIsDeadEnd;
+
+	bool m_fetchedChild0;
+	bool m_fetchedChild1;
+	Kmer m_child0;
+
+	void performChecksOnPathEnds();
+	bool fetchVertexData(Kmer*kmer);
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,WorkerHandle workerId,
@@ -122,8 +150,10 @@ public:
 	/** get the worker number */
 	WorkerHandle getWorkerIdentifier();
 
-	bool hasDeadEnd();
+	bool isHeadADeadEnd();
+	bool isTailADeadEnd();
 	void enableDebugMode();
+	bool isBubbleWeakComponent();
 };
 
 #endif

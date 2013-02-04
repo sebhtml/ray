@@ -120,11 +120,23 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			assert(nucleotides==0 || nucleotides>=m_wordSize);
 			#endif
 
-			bool skipBecauseOfDeadEnd=m_aliveWorkers[workerId].hasDeadEnd();
+			SeedWorker*worker=&(m_aliveWorkers[workerId]);
 
-			if(skipBecauseOfDeadEnd){
+			if(worker->isHeadADeadEnd() && worker->isTailADeadEnd()){
 			
-				m_skippedObjectsWithDeadEnd++;
+				m_skippedObjectsWithTwoDeadEnds++;
+
+			}else if(worker->isHeadADeadEnd()){
+
+				m_skippedObjectsWithDeadEndForHead++;
+
+			}else if(worker->isTailADeadEnd()){
+
+				m_skippedObjectsWithDeadEndForTail++;
+
+			}else if(worker->isBubbleWeakComponent()){
+
+				m_skippedObjectsWithBubbleWeakComponent++;
 
 			// only consider the long ones.
 			}else if(nucleotides>=m_parameters->getMinimumContigLength()){
@@ -260,7 +272,10 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 		m_virtualCommunicator->printStatistics();
 
 		cout<<"Rank "<<m_rank<<" runtime statistics for seeding algorithm: "<<endl;
-		cout<<"Rank "<<m_rank<<" Skipped paths because of dead ends: "<<m_skippedObjectsWithDeadEnd<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of dead end for head: "<<m_skippedObjectsWithDeadEndForHead<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of dead end for tail: "<<m_skippedObjectsWithDeadEndForTail<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of two dead ends: "<<m_skippedObjectsWithTwoDeadEnds<<endl;
+		cout<<"Rank "<<m_rank<<" Skipped paths because of bubble weak component: "<<m_skippedObjectsWithBubbleWeakComponent<<endl;
 		cout<<"Rank "<<m_rank<<" Skipped paths because of short length: "<<m_skippedTooShort<<endl;
 		cout<<"Rank "<<m_rank<<" Skipped paths because of bad ownership: "<<m_skippedNotMine<<endl;
 		cout<<"Rank "<<m_rank<<" Skipped paths because of low coverage: "<<m_skippedNotEnoughCoverage<<endl;
@@ -312,8 +327,11 @@ int*mode,
 	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
 
+	m_skippedObjectsWithDeadEndForHead=0;
+	m_skippedObjectsWithDeadEndForTail=0;
+	m_skippedObjectsWithTwoDeadEnds=0;
+	m_skippedObjectsWithBubbleWeakComponent=0;
 
-	m_skippedObjectsWithDeadEnd=0;
 	m_skippedTooShort=0;
 	m_skippedNotMine=0;
 	m_skippedNotEnoughCoverage=0;
