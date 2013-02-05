@@ -141,6 +141,83 @@ void SeedWorker::work(){
 	}
 }
 
+bool SeedWorker::getPathAfter(Kmer*kmer,int depth){
+
+	Kmer object=*kmer;
+
+	if(m_verticesAfter.size()>0){
+		object=m_verticesAfter[m_verticesAfter.size()-1];
+	}
+
+// we reached the desired depth
+	if((int)m_verticesAfter.size()>=depth){
+		m_verticesAfter.clear();
+		return true;
+	}
+
+// query data remotely
+	if(fetchVertexData(&object)){
+
+		m_vertexFetcherStarted=false;
+
+		// only one parent
+		if(m_vertexFetcherChildren.size()==1){
+			m_verticesAfter.push_back(m_vertexFetcherChildren[0]);
+
+		// more than 1 parent
+		}else if(m_vertexFetcherChildren.size()>1){
+			return true;
+
+		// this is a dead end
+		}else if(m_vertexFetcherChildren.size()==0){
+
+			m_tailIsDeadEnd=true;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SeedWorker::getPathBefore(Kmer*kmer,int depth){
+
+	Kmer object=*kmer;
+
+	if(m_verticesBefore.size()>0){
+		object=m_verticesBefore[m_verticesBefore.size()-1];
+	}
+
+// we reached the desired depth
+	if((int)m_verticesBefore.size()>=depth){
+		m_verticesBefore.clear();
+		return true;
+	}
+
+// query data remotely
+	if(fetchVertexData(&object)){
+
+		m_vertexFetcherStarted=false;
+
+		// only one parent
+		if(m_vertexFetcherParents.size()==1){
+			m_verticesBefore.push_back(m_vertexFetcherParents[0]);
+
+		// more than 1 parent
+		}else if(m_vertexFetcherParents.size()>1){
+			return true;
+
+		// this is a dead end
+		}else if(m_vertexFetcherParents.size()==0){
+
+			m_headIsDeadEnd=true;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void SeedWorker::performChecksOnPathEnds(){
 /*
  * Check if it's a dead end. We don't want dead ends because they consume too
@@ -156,48 +233,20 @@ void SeedWorker::performChecksOnPathEnds(){
 		m_checkedHead=false;
 		m_vertexFetcherStarted=false;
 
-		m_fetchedParent0=false;
-
 /*
  * Check parents to see if it's a dead end.
  */
 	}else if(!m_checkedHead){
 
-		if(!m_fetchedParent0){
+		Kmer kmer;
+		int positionInPath=0;
+		m_SEEDING_seed.at(positionInPath,&kmer);
 
-			Kmer kmer;
-			int positionInPath=0;
-			m_SEEDING_seed.at(positionInPath,&kmer);
+		if(getPathBefore(&kmer,10)){
 
-			if(fetchVertexData(&kmer)){
-
-				if(m_vertexFetcherParents.size()==1){
-					m_fetchedParent1=false;
-
-					m_parent0=m_vertexFetcherParents[0];
-				}else{
-					m_fetchedParent1=true;
-				}
-
-				m_fetchedParent0=true;
-				m_vertexFetcherStarted=false;
-			}
-		}else if(!m_fetchedParent1){
-
-			if(fetchVertexData(&m_parent0)){
-
-				if(m_vertexFetcherParents.size()==0){
-					m_headIsDeadEnd=true;
-				}
-
-				m_fetchedParent1=true;
-				m_vertexFetcherStarted=false;
-			}
-		}else{
 			m_checkedHead=true;
-
 			m_checkedTail=false;
-			m_fetchedChild0=false;
+			m_vertexFetcherStarted=false;
 		}
 
 /*
@@ -205,41 +254,14 @@ void SeedWorker::performChecksOnPathEnds(){
  */
 	}else if(!m_checkedTail){
 
-		if(!m_fetchedChild0){
+		Kmer kmer;
+		int positionInPath=m_SEEDING_seed.size()-1;
+		m_SEEDING_seed.at(positionInPath,&kmer);
 
-			Kmer kmer;
-			int positionInPath=m_SEEDING_seed.size()-1;
-			m_SEEDING_seed.at(positionInPath,&kmer);
-
-			if(fetchVertexData(&kmer)){
-
-				if(m_vertexFetcherChildren.size()==1){
-					m_fetchedChild1=false;
-
-					m_child0=m_vertexFetcherChildren[0];
-				}else{
-					m_fetchedChild1=true;
-				}
-
-				m_fetchedChild0=true;
-				m_vertexFetcherStarted=false;
-			}
-		}else if(!m_fetchedChild1){
-
-			if(fetchVertexData(&m_child0)){
-
-				if(m_vertexFetcherChildren.size()==0){
-					m_tailIsDeadEnd=true;
-				}
-
-				m_fetchedChild1=true;
-				m_vertexFetcherStarted=false;
-			}
-		}else{
-
+		if(getPathAfter(&kmer,10)){
 			m_checkedTail=true;
+			m_vertexFetcherStarted=false;
 		}
-
 
 	}else{
 		m_endChecksMode=false;

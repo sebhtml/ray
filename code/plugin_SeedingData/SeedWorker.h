@@ -115,18 +115,19 @@ class SeedWorker : public Worker {
 	CoverageDepth m_vertexFetcherCoverage;
 	bool m_vertexFetcherReceivedData;
 	bool m_vertexFetcherRequestedData;
-	Kmer m_parent0;
-	bool m_fetchedParent0;
-	bool m_fetchedParent1;
 	bool m_headIsDeadEnd;
 	bool m_tailIsDeadEnd;
 
-	bool m_fetchedChild0;
-	bool m_fetchedChild1;
-	Kmer m_child0;
+// topological algorithm for graphs
+	vector<Kmer> m_verticesBefore;
+	vector<Kmer> m_verticesAfter;
 
 	void performChecksOnPathEnds();
 	bool fetchVertexData(Kmer*kmer);
+
+	bool getPathBefore(Kmer*kmer,int depth);
+	bool getPathAfter(Kmer*kmer,int depth);
+
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,WorkerHandle workerId,
