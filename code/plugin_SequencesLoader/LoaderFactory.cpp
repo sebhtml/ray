@@ -20,6 +20,9 @@
 
 #include "LoaderFactory.h"
 
+/*
+ * TODO: check if m_type is required, if not remove it.
+ */
 LoaderInterface*LoaderFactory::makeLoader(string file){
 	string csfastaExtension=".csfasta";
 	if(file.length()>=csfastaExtension.length() &&
@@ -27,46 +30,45 @@ LoaderInterface*LoaderFactory::makeLoader(string file){
 		m_type=FORMAT_CSFASTA;
 		return &m_color;
 	}
-	if(file.substr(file.length()-4,4)==".sff"){
+	if(hasSuffix(file.c_str(),".sff")){
 		m_type=FORMAT_SFF;
 		return &m_sff;
-		
 	}
 
-	if(file.substr(file.length()-6,6)==".fasta"){
+	if(hasSuffix(file.c_str(),".fasta")){
 		m_type=FORMAT_FASTA;
 		return &m_fastaLoader;
 	}
 
-	if(file.substr(file.length()-10,10)=="export.txt"){
+	if(hasSuffix(file.c_str(),"export.txt")){
 		m_type=FORMAT_EXPORT;
 		return &m_export;
 	}
 
-	if(file.substr(file.length()-6,6)==".fastq"){
+	if(hasSuffix(file.c_str(),".fastq")){
 		m_type=FORMAT_FASTQ;
 		return &m_fastq;
 	}
 
 	#ifdef CONFIG_HAVE_LIBZ
-	if(file.substr(file.length()-9,9)==".fastq.gz"){
+	if(hasSuffix(file.c_str(),".fastq.gz")){
 		m_type=FORMAT_FASTQ_GZ;
 		return &m_fastqgz;
 	}
 
-	if(file.substr(file.length()-9,9)==".fasta.gz"){
+	if(hasSuffix(file.c_str(),".fasta.gz")){
 		m_type=FORMAT_FASTA_GZ;
 		return &m_fastagz;
 	}
 	#endif
 
 	#ifdef CONFIG_HAVE_LIBBZ2
-	if(file.substr(file.length()-10,10)==".fastq.bz2"){
+	if(hasSuffix(file.c_str(),".fastq.bz2")){
 		m_type=FORMAT_FASTQ_BZ2;
 		return &m_fastqbz2;
 	}
 
-	if(file.substr(file.length()-10,10)==".fasta.bz2"){
+	if(hasSuffix(file.c_str(),".fasta.bz2")){
 		m_type=FORMAT_FASTA_BZ2;
 		return &m_fastabz2;
 	}
@@ -75,3 +77,20 @@ LoaderInterface*LoaderFactory::makeLoader(string file){
 	return NULL;
 }
 
+bool LoaderFactory::hasSuffix(const char*fileName,const char*suffix){
+	int fileNameLength=strlen(fileName);
+	int suffixLength=strlen(suffix);
+
+	if(suffixLength>fileNameLength)
+		return false;
+
+	int delta=0;
+
+	while(delta<suffixLength){
+		if(suffix[suffixLength-1-delta]!=fileName[fileNameLength-1-delta])
+			return false;
+		delta++;
+	}
+
+	return true;
+}

@@ -79,6 +79,7 @@ class LoaderFactory{
 	FastaBz2Loader m_fastabz2;
 	#endif
 
+	bool hasSuffix(const char*fileName,const char*suffix);
 public:
 	LoaderInterface*makeLoader(string file);
 };
