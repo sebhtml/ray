@@ -1107,7 +1107,6 @@ void GenomeNeighbourhood::resolveSymbols(ComputeCore*core){
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 	m_contigLengths=(map<PathHandle,int>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigLengths.ray");
 
-
 	m_virtualCommunicator=core->getVirtualCommunicator();
 
 	m_core=core;

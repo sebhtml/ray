@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -48,6 +48,9 @@ __CreatePlugin(Scaffolder);
 
 __CreateMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 __CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
+
+__CreateMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+__CreateMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK);
 
 void Scaffolder::addMasterLink(SummarizedLink*a){
 	m_masterLinks.push_back(*a);
@@ -1423,6 +1426,84 @@ Case 16. (allowed)
 }
 
 void Scaffolder::getContigSequence(PathHandle id){
+	int mode=0;
+	int CODE_PATH_VANILLA_KMERS=mode++;
+	int CODE_PATH_PACKED_REGION=mode++;
+
+	int configuredCodePath=CODE_PATH_VANILLA_KMERS;
+
+	if(configuredCodePath==CODE_PATH_VANILLA_KMERS)
+		getContigSequenceFromKmers(id);
+	else if(configuredCodePath==CODE_PATH_PACKED_REGION){
+		getContigSequenceFromPackedObjects(id);
+	}
+}
+
+void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
+
+	if(!m_hasContigSequence_Initialised){
+		m_hasContigSequence_Initialised=true;
+		m_rankIdForContig=getRankFromPathUniqueId(id);
+		m_theLengthInNucleotides=m_contigLengths[id];
+		m_position=0;
+		m_requestedContigChunk=false;
+		m_contigPathBuffer.str("");
+	}
+
+	if(m_position<m_theLengthInNucleotides){
+		if(!m_requestedContigChunk){
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+			int bufferPosition=0;
+			message[bufferPosition++]=id;
+			message[bufferPosition++]=m_position;
+			Message aMessage(message,bufferPosition,
+				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
+
+			m_requestedContigChunk=true;
+
+		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
+
+			vector<MessageUnit> data;
+			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
+			/* the position in the message buffer */
+			int position=0;
+			/* the first element is the number of nucleotides */
+			int count=data[position++];
+			int iterator=0;
+			while(iterator<count){
+				int elementIndex=(iterator*2 ) / (sizeof(MessageUnit)*BITS_PER_BYTE);
+				int offset=(iterator*2) % (sizeof(MessageUnit)*BITS_PER_BYTE);
+
+				#ifdef ASSERT
+				assert(sizeof(MessageUnit)==sizeof(uint64_t));
+				#endif
+
+				uint64_t value=data[position+elementIndex];
+
+				value <<= ( sizeof(MessageUnit) - BITS_PER_NUCLEOTIDE - offset);
+				value>>= (sizeof(MessageUnit) - BITS_PER_NUCLEOTIDE );
+
+				char nucleotide=codeToChar(value,m_parameters->getColorSpaceMode());
+
+				m_contigPathBuffer<<nucleotide;
+			}
+			m_position+=count;
+			m_requestedContigChunk=false;
+		}
+	}else{
+		m_contigSequence=m_contigPathBuffer.str();
+		m_hasContigSequence=true;
+
+		#ifdef ASSERT
+		assert((int)m_contigSequence.length()==m_theLengthInNucleotides);
+		#endif
+	}
+}
+
+void Scaffolder::getContigSequenceFromKmers(PathHandle id){
+
 	if(!m_hasContigSequence_Initialised){
 		m_hasContigSequence_Initialised=true;
 		m_rankIdForContig=getRankFromPathUniqueId(id);
@@ -1526,6 +1607,7 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 					m_positionOnScaffold++;
 
 /*
+ *
  * Only add a new line if there is something more to add.
  */
 					if(m_positionOnScaffold%columns==0 && contigPosition < length){
@@ -1591,6 +1673,86 @@ void Scaffolder::setTimePrinter(TimePrinter*a){
 	m_timePrinter=a;
 }
 
+void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message){
+// TODO: this returns a part of a region, in 2-bit encoding
+
+	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
+	int thePosition=0;
+	PathHandle contigId=incoming[thePosition++];
+	int position=incoming[thePosition++];
+
+#ifdef ASSERT
+	assert(m_contigNameIndex->count(contigId)>0);
+#endif
+
+	int index=(*m_contigNameIndex)[contigId];
+	int length=(*m_contigs)[index].size();
+	MessageUnit*messageContent=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int outputPosition=0;
+	int origin=outputPosition;
+	outputPosition++;
+	int count=0;
+
+	while(position<length
+	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
+		Kmer theKmerObject;
+
+#ifdef ASSERT
+		assert(index<(int)m_contigs->size());
+#endif
+
+		(*m_contigs)[index].at(position++,&theKmerObject);
+		theKmerObject.pack(messageContent,&outputPosition);
+		count++;
+	}
+	messageContent[origin]=count;
+	Message aMessage(messageContent,
+		m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK),
+		message->getSource(),RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY,
+		m_parameters->getRank());
+	m_outbox->push_back(&aMessage);
+}
+
+void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
+	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
+	int thePosition=0;
+	PathHandle contigId=incoming[thePosition++];
+	int position=incoming[thePosition++];
+
+#ifdef ASSERT
+	assert(m_contigNameIndex->count(contigId)>0);
+#endif
+
+	int index=(*m_contigNameIndex)[contigId];
+	int length=(*m_contigs)[index].size();
+	MessageUnit*messageContent=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int outputPosition=0;
+	int origin=outputPosition;
+	outputPosition++;
+	int count=0;
+
+	while(position<length
+	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
+		Kmer theKmerObject;
+
+#ifdef ASSERT
+		assert(index<(int)m_contigs->size());
+#endif
+		(*m_contigs)[index].at(position++,&theKmerObject);
+		theKmerObject.pack(messageContent,&outputPosition);
+		count++;
+	}
+
+	messageContent[origin]=count;
+	Message aMessage(messageContent,
+		m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_CONTIG_CHUNK),
+		message->getSource(),RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,
+		m_parameters->getRank());
+	m_outbox->push_back(&aMessage);
+}
+
+
+
 void Scaffolder::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 
@@ -1614,6 +1776,19 @@ void Scaffolder::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_START_SCAFFOLDER=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_START_SCAFFOLDER,"RAY_MPI_TAG_START_SCAFFOLDER");
+
+	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK, __GetAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
+
+	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK, __GetAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK");
+
+	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
+	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY");
 }
 
 void Scaffolder::resolveSymbols(ComputeCore*core){
@@ -1626,6 +1801,7 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 
 	RAY_MPI_TAG_CONTIG_INFO=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_CONTIG_INFO");
 	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
+	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK");
 	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION");
 	RAY_MPI_TAG_GET_PATH_LENGTH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_PATH_LENGTH");
 	RAY_MPI_TAG_GET_READ_MARKERS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_READ_MARKERS");
@@ -1640,12 +1816,37 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SCAFFOLDING_LINKS_REPLY");
 	RAY_MPI_TAG_START_SCAFFOLDER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_START_SCAFFOLDER");
 
+	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
+	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
+	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK");
+	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY");
+
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MPI_TAG_START_SCAFFOLDER,             RAY_SLAVE_MODE_SCAFFOLDER );
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_WRITE_SCAFFOLDS, RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS);
+
+// the two message tags below won't multiplex very well during the transit
+// in the virtual messaging layer of Ray Platform
+
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit) );
+	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,             RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,             MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit) );
 
 	__BindPlugin(Scaffolder);
 
 	__BindAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 	__BindAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK);
+
+#if 0
+	m_contigs=(vector<GraphPath>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
+#endif
+
+	m_contigNameIndex=(map<PathHandle,int>*)core->getObjectFromSymbol(m_plugin, "/RayAssembler/ObjectStore/ContigNameIndex.ray");
+
+#ifdef ASSERT
+	assert(m_contigNameIndex!=NULL);
+#endif
 }

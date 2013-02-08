@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -84,11 +84,9 @@ class SeedExtender: public CorePlugin  {
 
 	void configureTheBeautifulHotSkippingTechnology();
 
-
 	Rank m_rank;
 
 	MessageTag RAY_MPI_TAG_CONTIG_INFO_REPLY;
-	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY;
 
 	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED;
 	MessageTag RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY;
@@ -107,8 +105,6 @@ class SeedExtender: public CorePlugin  {
 
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
-
-
 
 // all these parameters are not attributes.
 	vector<GraphPath>*m_seeds;

@@ -1,5 +1,5 @@
 /*
- 	Ray
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
     Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -19,8 +19,8 @@
 
 */
 
-#ifndef _Scaffolder
-#define _Scaffolder
+#ifndef _Scaffolder_h
+#define _Scaffolder_h
 
 #include "ScaffoldingLink.h"
 #include "SummarizedLink.h"
@@ -47,6 +47,8 @@ __DeclarePlugin(Scaffolder);
 
 __DeclareMasterModeAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 __DeclareSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
+__DeclareMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+__DeclareMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK);
 
 /**
  * Scaffolder class, it uses MPI through the virtual communicator.
@@ -57,6 +59,8 @@ class Scaffolder :  public CorePlugin{
 
 	__AddAdapter(Scaffolder,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 	__AddAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
+	__AddAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK);
+	__AddAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK);
 
 	ostringstream m_operationBuffer;
 
@@ -66,6 +70,9 @@ class Scaffolder :  public CorePlugin{
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_READS;
 	MessageTag RAY_MPI_TAG_CONTIG_INFO;
 	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK;
+	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY;
+	MessageTag RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK;
+	MessageTag RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY;
 	MessageTag RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION;
 	MessageTag RAY_MPI_TAG_GET_PATH_LENGTH;
 	MessageTag RAY_MPI_TAG_GET_READ_MARKERS;
@@ -188,10 +195,15 @@ class Scaffolder :  public CorePlugin{
 	RingAllocator*m_outboxAllocator;
 	bool m_ready;
 
-	/**
+/**
  *	gets a contig sequence by receiving several MPI messages
  */
+
+	map<PathHandle,int>*m_contigNameIndex;
+
 	void getContigSequence(PathHandle id);
+	void getContigSequenceFromKmers(PathHandle id);
+	void getContigSequenceFromPackedObjects(PathHandle id);
 	void processContig();
 	void processContigPosition();
 	void processVertex(Kmer*vertex);
@@ -211,26 +223,38 @@ class Scaffolder :  public CorePlugin{
 	void getCoverageOfBlockOfLife();
 	
 	Rank m_rank;
+
+/*
+ * Variables for fetching remote paths.
+ */
+
+	int m_theLengthInNucleotides;
+	ostringstream m_contigPathBuffer;
 public:
 
 	bool m_initialised;
-	/**
+/**
  *	Number of ranks that have finished scaffolding
  */
 	int m_numberOfRanksFinished;
 	
-	
-	/**
+/**
  *	Constructor of the scaffolder
  */
 	void constructor(StaticVector*outbox,StaticVector*inbox,RingAllocator*outboxAllocator,Parameters*parameters,
 		VirtualCommunicator*vc,SwitchMan*switchMan);
-	void call_RAY_SLAVE_MODE_SCAFFOLDER();
 	void setContigPaths(vector<PathHandle>*names,vector<GraphPath>*paths);
 	void addMasterLink(SummarizedLink*link);
 	void solve();
 	void addMasterContig(PathHandle name,int length);
+
 	void call_RAY_MASTER_MODE_WRITE_SCAFFOLDS();
+
+	void call_RAY_SLAVE_MODE_SCAFFOLDER();
+
+	void call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message);
+	void call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message);
+
 	void printFinalMessage();
 
 	void setTimePrinter(TimePrinter*a);
@@ -240,4 +264,3 @@ public:
 };
 
 #endif
-

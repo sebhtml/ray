@@ -145,7 +145,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REPL
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 
 void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
@@ -2454,33 +2453,6 @@ void MessageProcessor::call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message){
 	}
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
-	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
-	PathHandle contigId=incoming[0];
-	int position=incoming[1];
-	int index=m_fusionData->m_FUSION_identifier_map[contigId];
-	int length=m_ed->m_EXTENSION_contigs[index].size();
-	MessageUnit*messageContent=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int outputPosition=0;
-	int origin=outputPosition;
-	outputPosition++;
-	int count=0;
-
-	while(position<length
-	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
-		Kmer theKmerObject;
-		m_ed->m_EXTENSION_contigs[index].at(position++,&theKmerObject);
-		theKmerObject.pack(messageContent,&outputPosition);
-		count++;
-	}
-	messageContent[origin]=count;
-	Message aMessage(messageContent,
-		m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_CONTIG_CHUNK),
-		message->getSource(),RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY,
-		m_parameters->getRank());
-	m_outbox->push_back(&aMessage);
-}
-
 void MessageProcessor::setScaffolder(Scaffolder*a){
 	m_scaffolder=a;
 }
@@ -3031,9 +3003,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING, __GetAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,"RAY_MPI_TAG_I_FINISHED_SCAFFOLDING");
 
-	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK, __GetAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
 
 }
 
@@ -3138,8 +3107,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_FINISH_FUSIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS");
 	RAY_MPI_TAG_FINISH_FUSIONS_FINISHED=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS_FINISHED");
 	RAY_MPI_TAG_FUSION_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FUSION_DONE");
-	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
-	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION");
 	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_MARK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_MARK");
@@ -3213,8 +3180,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION, RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION);
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ASK_LIBRARY_DISTANCES, RAY_SLAVE_MODE_SEND_LIBRARY_DISTANCES);
 
-
-	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_READS, RAY_MPI_TAG_REQUEST_VERTEX_READS_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_GET_READ_MATE,                RAY_MPI_TAG_GET_READ_MATE_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,      RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY );
@@ -3234,7 +3199,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_READ_SEQUENCE,                RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY );
 	core->setMessageTagReplyMessageTag(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,        RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES_REPLY );
 
-	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_CONTIG_CHUNK,             MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit) );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_READS,                 max(5,KMER_U64_ARRAY_SIZE+1) );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_READ_MATE,                4 );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,      KMER_U64_ARRAY_SIZE );
@@ -3355,6 +3319,5 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 }
 

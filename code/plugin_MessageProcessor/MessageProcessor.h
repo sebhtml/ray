@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -19,8 +19,8 @@
 
 */
 
-#ifndef _MessageProcessor
-#define _MessageProcessor
+#ifndef _MessageProcessor_h
+#define _MessageProcessor_h
 
 #include <code/plugin_SeedExtender/OpenAssemblerChooser.h>
 #include <code/plugin_SeedExtender/SeedExtender.h>
@@ -157,13 +157,13 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_SEND_COVERAGE_VALUES_REP
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
-__DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 
 /**
  * MessageProcessor receives all the messages of a MPI rank
  * Message objects may also be checked using the Message inbox (m_inbox)
  *
  * Sometimes, a message will generate a reply (_REPLY)
+ *
  * \author Sébastien Boisvert
  */
 class MessageProcessor :  public CorePlugin {
@@ -270,7 +270,6 @@ class MessageProcessor :  public CorePlugin {
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
-	__AddAdapter(MessageProcessor,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 
 	uint64_t m_bloomBits;
 
@@ -342,8 +341,6 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS;
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS_FINISHED;
 	MessageTag RAY_MPI_TAG_FUSION_DONE;
-	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK;
-	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY;
 	MessageTag RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION;
 	MessageTag RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY;
 	MessageTag RAY_MPI_TAG_GET_COVERAGE_AND_MARK;
@@ -680,12 +677,9 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message);
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message);
-	void call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message);
 	
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
 };
 
 #endif
-	
-

@@ -1191,6 +1191,12 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,"RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY");
+
+	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_contigs),"/RayAssembler/ObjectStore/ContigPaths.ray");
+	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_identifiers),"/RayAssembler/ObjectStore/ContigNames.ray");
+
+	void*address=&(m_fusionData->m_FUSION_identifier_map);
+	core->setObjectSymbol(m_plugin,address,"/RayAssembler/ObjectStore/ContigNameIndex.ray");
 }
 
 void MachineHelper::resolveSymbols(ComputeCore*core){
@@ -1357,9 +1363,6 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DIE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DIE");
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON, RAY_SLAVE_MODE_DIE);
-
-	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_contigs),"/RayAssembler/ObjectStore/ContigPaths.ray");
-	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_identifiers),"/RayAssembler/ObjectStore/ContigNames.ray");
 
 	__BindPlugin(MachineHelper);
 
