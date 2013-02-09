@@ -68,6 +68,8 @@ __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
+__CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+
 /*
  * This is the first upcall.
  */
@@ -84,16 +86,19 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 			m_parameters->showUsage();
 			(*m_aborted)=true;
 			f.close();
+			m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_NOTIFY_ERROR);
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 			return;
 		}
 	}else if(m_oldDirectoryExists){
+		m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_NOTIFY_ERROR);
 		m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		return;
 	}
 
 	if(m_parameters->getError()){
 		(*m_aborted)=true;
+		m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_NOTIFY_ERROR);
 		m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		return;
 	}
@@ -1033,6 +1038,10 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
 	}
 }
 
+void MachineHelper::call_RAY_MPI_TAG_NOTIFY_ERROR(Message*message){
+	(*m_aborted)=true;
+}
+
 int MachineHelper::getSize(){
 	return m_parameters->getSize();
 }
@@ -1194,6 +1203,10 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 
 	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_contigs),"/RayAssembler/ObjectStore/ContigPaths.ray");
 	core->setObjectSymbol(m_plugin,&(m_ed->m_EXTENSION_identifiers),"/RayAssembler/ObjectStore/ContigNames.ray");
+
+	RAY_MPI_TAG_NOTIFY_ERROR=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,__GetAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,"RAY_MPI_TAG_NOTIFY_ERROR");
 
 	void*address=&(m_fusionData->m_FUSION_identifier_map);
 	core->setObjectSymbol(m_plugin,address,"/RayAssembler/ObjectStore/ContigNameIndex.ray");
@@ -1393,6 +1406,7 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
+	__BindAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
 
 	m_startedToSendCounts=false;
 }

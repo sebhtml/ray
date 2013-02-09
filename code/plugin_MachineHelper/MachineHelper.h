@@ -1,6 +1,6 @@
 /*
     Ray -- Parallel genome assemblies for parallel DNA sequencing
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
     Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -88,7 +88,7 @@ __DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 __DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 __DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
-
+__DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
 
 /** 
  * This file contains __legacy code__
@@ -126,6 +126,9 @@ class MachineHelper: public CorePlugin{
 	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
+	__AddAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+
+	MessageTag RAY_MPI_TAG_NOTIFY_ERROR;
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS;
 	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK;
 	MessageTag RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY;
@@ -415,6 +418,8 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_ASSEMBLE_WAVES();
 	void call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA();
 	void call_RAY_SLAVE_MODE_DIE();
+
+	void call_RAY_MPI_TAG_NOTIFY_ERROR(Message*message);
 
 	void notifyThatOldDirectoryExists();
 

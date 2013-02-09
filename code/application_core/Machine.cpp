@@ -1,6 +1,6 @@
 /*
     Ray -- Parallel genome assemblies for parallel DNA sequencing
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
     Copyright (C) 2013 Charles Joly Beauparlant
 
 	http://DeNovoAssembler.SourceForge.Net/
@@ -367,10 +367,9 @@ void Machine::start(){
  * Tell the first plugin that the job will not run.
  */
 			m_helper.notifyThatOldDirectoryExists();
+
+			oldDirectoryExists=true;
 		}
-
-		oldDirectoryExists=true;
-
 	}
 	
 	// create the directory
@@ -578,7 +577,7 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	if(!oldDirectoryExists){
+	if(!oldDirectoryExists && !m_aborted){
 
 		ostringstream masterTicks;
 		masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
