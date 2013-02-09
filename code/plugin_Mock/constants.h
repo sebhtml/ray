@@ -199,4 +199,7 @@ typedef uint16_t LibraryHandle;
 #define CONFIG_PATH_STORAGE_BLOCK
 //#define CONFIG_PATH_STORAGE_DEFAULT
 
+#define BITS_PER_NUCLEOTIDE 2
+#define BITS_PER_BYTE 8
+
 #endif

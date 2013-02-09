@@ -444,5 +444,16 @@ bool Kmer::canHaveChild(const Kmer*otherKmer,int kmerLength)const{
 	if(strcmp(left.c_str()+1,right.c_str()+0)!=match)
 		return false;
 	return true;
+}
 
+char Kmer::getSymbolAtPosition(int kmerLength,bool colored, int position)const{
+	int bitPosition=BITS_PER_NUCLEOTIDE*position;
+	int chunkId=position/(sizeof(uint64_t)*BITS_PER_BYTE/BITS_PER_NUCLEOTIDE);
+	int bitPositionInChunk=(bitPosition%(sizeof(uint64_t)*BITS_PER_BYTE));
+	uint64_t chunk=getU64(chunkId);
+	chunk<<=((sizeof(uint64_t)*BITS_PER_BYTE-BITS_PER_NUCLEOTIDE)-bitPositionInChunk);
+	chunk>>=(sizeof(uint64_t)*BITS_PER_BYTE-BITS_PER_NUCLEOTIDE); // clear the bits.
+	char symbol=codeToChar(chunk,colored);
+
+	return symbol;
 }

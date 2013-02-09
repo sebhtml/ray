@@ -88,10 +88,13 @@ public:
 	uint64_t getU64(int i)const;
 
 	int getNumberOfU64()const;
+
 /*
  * get the last letter of a uint64_t
  */
 	char getLastSymbol(int w,bool color)const;
+
+	char getSymbolAtPosition(int kmerLength,bool colored, int position)const;
 
 /*
  * complement a vertex, and return another one

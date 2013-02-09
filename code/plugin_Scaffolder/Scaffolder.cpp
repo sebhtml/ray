@@ -52,6 +52,8 @@ __CreateSlaveModeAdapter(Scaffolder,RAY_SLAVE_MODE_SCAFFOLDER);
 __CreateMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK);
 __CreateMessageTagAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK);
 
+// #define DEBUG_SCAFFOLDER_MESSAGES
+
 void Scaffolder::addMasterLink(SummarizedLink*a){
 	m_masterLinks.push_back(*a);
 }
@@ -1430,7 +1432,8 @@ void Scaffolder::getContigSequence(PathHandle id){
 	int CODE_PATH_VANILLA_KMERS=mode++;
 	int CODE_PATH_PACKED_REGION=mode++;
 
-	int configuredCodePath=CODE_PATH_VANILLA_KMERS;
+	//int configuredCodePath=CODE_PATH_VANILLA_KMERS;
+	int configuredCodePath=CODE_PATH_PACKED_REGION;
 
 	if(configuredCodePath==CODE_PATH_VANILLA_KMERS)
 		getContigSequenceFromKmers(id);
@@ -1444,7 +1447,7 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 	if(!m_hasContigSequence_Initialised){
 		m_hasContigSequence_Initialised=true;
 		m_rankIdForContig=getRankFromPathUniqueId(id);
-		m_theLengthInNucleotides=m_contigLengths[id];
+		m_theLengthInNucleotides=getNumberOfNucleotides(m_contigLengths[id],m_parameters->getWordSize());
 		m_position=0;
 		m_requestedContigChunk=false;
 		m_contigPathBuffer.str("");
@@ -1461,20 +1464,32 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 
+#ifdef DEBUG_SCAFFOLDER_MESSAGES
+			cout<<"[DEBUG] getContigSequenceFromPackedObjects SEND RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK"<<endl;
+#endif
+
 			m_requestedContigChunk=true;
 
 		}else if(m_virtualCommunicator->isMessageProcessed(m_workerId)){
 
+#ifdef DEBUG_SCAFFOLDER_MESSAGES
+			cout<<"[DEBUG] getContigSequenceFromPackedObjects RECEIVE RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY"<<endl;
+#endif
+
+			bool colored=m_parameters->getColorSpaceMode();
+
 			vector<MessageUnit> data;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&data);
+
 			/* the position in the message buffer */
 			int position=0;
 			/* the first element is the number of nucleotides */
 			int count=data[position++];
 			int iterator=0;
+
 			while(iterator<count){
-				int elementIndex=(iterator*2 ) / (sizeof(MessageUnit)*BITS_PER_BYTE);
-				int offset=(iterator*2) % (sizeof(MessageUnit)*BITS_PER_BYTE);
+				int elementIndex=(iterator*BITS_PER_NUCLEOTIDE ) / (sizeof(MessageUnit)*BITS_PER_BYTE);
+				int offset=(iterator*BITS_PER_NUCLEOTIDE) % (sizeof(MessageUnit)*BITS_PER_BYTE);
 
 				#ifdef ASSERT
 				assert(sizeof(MessageUnit)==sizeof(uint64_t));
@@ -1482,14 +1497,18 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 
 				uint64_t value=data[position+elementIndex];
 
-				value <<= ( sizeof(MessageUnit) - BITS_PER_NUCLEOTIDE - offset);
-				value>>= (sizeof(MessageUnit) - BITS_PER_NUCLEOTIDE );
+				value <<= ( sizeof(uint64_t)*BITS_PER_BYTE - BITS_PER_NUCLEOTIDE - offset);
+				value>>= (sizeof(uint64_t)*BITS_PER_BYTE - BITS_PER_NUCLEOTIDE );
 
-				char nucleotide=codeToChar(value,m_parameters->getColorSpaceMode());
+				char nucleotide=codeToChar(value,colored);
 
 				m_contigPathBuffer<<nucleotide;
+
+				iterator++;
 			}
+
 			m_position+=count;
+
 			m_requestedContigChunk=false;
 		}
 	}else{
@@ -1497,6 +1516,10 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 		m_hasContigSequence=true;
 
 		#ifdef ASSERT
+		if((int)m_contigSequence.length()!=m_theLengthInNucleotides){
+			cout<<"expected: "<<m_theLengthInNucleotides<<" actual: "<<m_contigSequence.length()<<endl;
+		}
+
 		assert((int)m_contigSequence.length()==m_theLengthInNucleotides);
 		#endif
 	}
@@ -1673,44 +1696,110 @@ void Scaffolder::setTimePrinter(TimePrinter*a){
 	m_timePrinter=a;
 }
 
+/**
+ * input is 2 MessageUnit objects: contigId, position
+ *
+ * output is a packed object
+ */
 void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message){
+
+#ifdef DEBUG_SCAFFOLDER_MESSAGES
+	cout<<"[DEBUG] call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK RECEIVE RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK"<<endl;
+#endif
+
 // TODO: this returns a part of a region, in 2-bit encoding
 
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
 	int thePosition=0;
 	PathHandle contigId=incoming[thePosition++];
-	int position=incoming[thePosition++];
+	int nucleotidePosition=incoming[thePosition++];
 
 #ifdef ASSERT
 	assert(m_contigNameIndex->count(contigId)>0);
 #endif
 
+	int kmerLength=m_parameters->getWordSize();
+
 	int index=(*m_contigNameIndex)[contigId];
 	int length=(*m_contigs)[index].size();
+	int lengthInNucleotides=getNumberOfNucleotides(length,kmerLength);
 	MessageUnit*messageContent=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int outputPosition=0;
 	int origin=outputPosition;
 	outputPosition++;
 	int count=0;
 
-	while(position<length
-	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
-		Kmer theKmerObject;
+	bool useColorSpace=m_parameters->getColorSpaceMode();
+
+	int availableMessageUnits=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
+	availableMessageUnits--; // we need one for the count
+
+// clear bits
+	memset(messageContent,0,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 #ifdef ASSERT
 		assert(index<(int)m_contigs->size());
 #endif
 
-		(*m_contigs)[index].at(position++,&theKmerObject);
-		theKmerObject.pack(messageContent,&outputPosition);
+	GraphPath*path=&((*m_contigs)[index]);
+
+	while(nucleotidePosition<lengthInNucleotides){
+
+		Kmer theKmerObject;
+
+		int kmerPosition=nucleotidePosition;
+
+		if(nucleotidePosition>=path->size()){
+			kmerPosition=path->size()-1;
+		}
+
+		path->at(kmerPosition,&theKmerObject);
+
+		int localPosition=nucleotidePosition-kmerPosition;
+
+#ifdef ASSERT
+		assert(localPosition>=0);
+		assert(localPosition<kmerLength);
+#endif
+
+		char symbol=theKmerObject.getSymbolAtPosition(kmerPosition,useColorSpace,localPosition);
+
+		int bitPosition=count*BITS_PER_NUCLEOTIDE;
+		int messageUnitIndex=bitPosition/(sizeof(uint64_t)*BITS_PER_BYTE);
+
+/*
+ * Our buffer is full.
+ */
+		if(messageUnitIndex>=availableMessageUnits)
+			break;
+
+		int offsetInMessageUnit=bitPosition%(sizeof(uint64_t)*BITS_PER_BYTE);
+
+		uint64_t oldValue=messageContent[outputPosition+messageUnitIndex];
+
+		uint64_t mask=charToCode(symbol);
+		mask<<=offsetInMessageUnit;
+
+		oldValue|=mask;
+		messageContent[outputPosition+messageUnitIndex]=oldValue;
+
 		count++;
+		nucleotidePosition++;
 	}
+
+// count is the number of packed nucleotides
 	messageContent[origin]=count;
+
 	Message aMessage(messageContent,
 		m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK),
 		message->getSource(),RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY,
 		m_parameters->getRank());
+
 	m_outbox->push_back(&aMessage);
+
+#ifdef DEBUG_SCAFFOLDER_MESSAGES
+	cout<<"[DEBUG] call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK SEND RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK_REPLY"<<endl;
+#endif
 }
 
 void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
@@ -1782,7 +1871,7 @@ void Scaffolder::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_CHUNK,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
 
 	RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK, __GetAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_CHUNK));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK, __GetAdapter(Scaffolder,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,"RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK");
 
 	RAY_MPI_TAG_GET_CONTIG_CHUNK_REPLY=core->allocateMessageTagHandle(plugin);

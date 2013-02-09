@@ -40,9 +40,6 @@ using namespace std;
  * 128 * 8 * 8 = 8192 bits
  */
 
-#define BITS_PER_NUCLEOTIDE 2
-#define BITS_PER_BYTE 8
-
 #define NUMBER_OF_64_BIT_INTEGERS ( CONFIG_PATH_BLOCK_SIZE * BITS_PER_NUCLEOTIDE / sizeof(uint64_t) / BITS_PER_BYTE )
 
 class GraphPathBlock{
