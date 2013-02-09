@@ -715,10 +715,6 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	fp.close();
 
-	if(m_parameters->showMemoryUsage()){
-		showMemoryUsage(getRank());
-	}
-
 	/** possibly write the checkpoint */
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("ContigPaths")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ContigPaths"<<endl;

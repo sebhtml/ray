@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -71,8 +71,10 @@ void GridTable::printStatus(){
 	int bucketsPerGroup=m_parameters->getNumberOfBucketsPerGroup();
 	double loadFactorThreshold=m_parameters->getLoadFactorThreshold();
 
-	cout<<"[GridTable] buckets="<<buckets<<" bucketsPerGroup="<<bucketsPerGroup;
-	cout<<" loadFactorThreshold="<<loadFactorThreshold<<endl;
+	if(m_parameters->hasOption("-hash-table-verbosity")){
+		cout<<"[GridTable] buckets="<<buckets<<" bucketsPerGroup="<<bucketsPerGroup;
+		cout<<" loadFactorThreshold="<<loadFactorThreshold<<endl;
+	}
 }
 
 LargeCount GridTable::size(){

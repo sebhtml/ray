@@ -470,11 +470,6 @@ void Machine::start(){
 	(*m_alive)=true;
 	m_totalLetters=0;
 
-
-	if(!oldDirectoryExists && m_parameters.showMemoryUsage()){
-		showMemoryUsage(getRank());
-	}
-
 /*
  * Build the monstruous object.
  */
@@ -554,10 +549,6 @@ m_seedingData,
 		m_timePrinter.printDurations();
 
 		cout<<endl;
-	}
-
-	if(!oldDirectoryExists && !m_aborted && m_parameters.showMemoryUsage()){
-		showMemoryUsage(getRank());
 	}
 
 /*
