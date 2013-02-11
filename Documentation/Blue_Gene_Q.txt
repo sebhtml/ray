@@ -1,0 +1,5 @@
+On the IBM Blue Gene/Q:
+
+module load mpich2
+make CXXFLAGS="-qminimaltoc -g -O3 -qarch=qp -qtune=qp "
+
