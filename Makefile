@@ -1,8 +1,8 @@
 VERSION = 2
-PATCHLEVEL = 1
-SUBLEVEL = 1
-EXTRAVERSION = -devel
-NAME = Ancient Granularity of Epochs
+PATCHLEVEL = 2
+SUBLEVEL = 0
+EXTRAVERSION = -rc0
+NAME = Cloudy Sky of Wishes
 
 # Like in Linux, stuff that must be propagated to
 # the source code (C++ here) or other Makefiles
