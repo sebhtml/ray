@@ -38,12 +38,12 @@ int FastqBz2Loader::open(string file){
 
 int FastqBz2Loader::openWithPeriod(string file,int period){
 	m_reader.open(file.c_str());
-	char buffer[4096];
+	char buffer[RAY_MAXIMUM_READ_LENGTH];
 	m_loaded=0;
 	m_size=0;
 
 	int rotatingVariable=0;
-	while(NULL!=m_reader.readLine(buffer,4096)){
+	while(NULL!=m_reader.readLine(buffer,RAY_MAXIMUM_READ_LENGTH)){
 		if(rotatingVariable==1){
 			m_size++;
 		}

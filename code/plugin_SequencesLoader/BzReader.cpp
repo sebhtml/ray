@@ -21,7 +21,7 @@
 
 #ifdef CONFIG_HAVE_LIBBZ2
 
-#define __BzReader_MAXIMUM_LENGTH 2*4096
+#define __BzReader_MAXIMUM_LENGTH RAY_MAXIMUM_READ_LENGTH*2
 
 #include "BzReader.h"
 
@@ -63,6 +63,9 @@ char*BzReader::readLine(char*s, int n){
 	//cout<<"[BzReader::readLine]"<<endl;
 
 	#ifdef ASSERT
+	if(!(n<=__BzReader_MAXIMUM_LENGTH)){
+		cout<<"Expected: "<<__BzReader_MAXIMUM_LENGTH<<" Actual: "<<n<<endl;
+	}
 	assert(n<=__BzReader_MAXIMUM_LENGTH);
 	#endif
 
