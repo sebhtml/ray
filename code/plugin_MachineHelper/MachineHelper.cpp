@@ -715,37 +715,9 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	fp.close();
 
-	writeCheckpointForContigPaths();
-
 	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 	m_outbox->push_back(&aMessage);
-}
-
-void MachineHelper::writeCheckpointForContigPaths(){
-
-	/** possibly write the checkpoint */
-	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("ContigPaths")){
-		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ContigPaths"<<endl;
-		ofstream f(m_parameters->getCheckpointFile("ContigPaths").c_str());
-		int theSize=m_ed->m_EXTENSION_contigs.size();
-		f.write((char*)&theSize,sizeof(int));
-
-		/* write each path with its name and vertices */
-		for(int i=0;i<theSize;i++){
-			PathHandle name=m_ed->m_EXTENSION_identifiers[i];
-			int vertices=m_ed->m_EXTENSION_contigs[i].size();
-			f.write((char*)&name,sizeof(PathHandle));
-			f.write((char*)&vertices,sizeof(int));
-			for(int j=0;j<vertices;j++){
-				Kmer kmer;
-				m_ed->m_EXTENSION_contigs[i].at(j,&kmer);
-				kmer.write(&f);
-			}
-		}
-		f.close();
-	}
-
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){

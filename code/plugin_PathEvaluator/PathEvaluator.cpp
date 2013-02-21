@@ -20,12 +20,59 @@
 
 #include "PathEvaluator.h"
 
+#include <fstream>
+using namespace std;
+
 __CreatePlugin(PathEvaluator);
 
 __CreateMasterModeAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS);
+__CreateSlaveModeAdapter(PathEvaluator,RAY_SLAVE_MODE_EVALUATE_PATHS);
 
 void PathEvaluator::call_RAY_MASTER_MODE_EVALUATE_PATHS(){
-	m_core->getSwitchMan()->closeMasterMode();
+
+	if(!m_masterModeStarted){
+		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getRank());
+
+		m_masterModeStarted=true;
+
+	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+		m_core->getSwitchMan()->closeMasterMode();
+	}
+
+}
+
+void PathEvaluator::call_RAY_SLAVE_MODE_EVALUATE_PATHS(){
+
+	cout<<"call_RAY_SLAVE_MODE_EVALUATE_PATHS"<<endl;
+
+	writeCheckpointForContigPaths();
+
+	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+}
+
+void PathEvaluator::writeCheckpointForContigPaths(){
+
+	/** possibly write the checkpoint */
+	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("ContigPaths")){
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ContigPaths"<<endl;
+		ofstream f(m_parameters->getCheckpointFile("ContigPaths").c_str());
+		int theSize=m_contigs->size();
+		f.write((char*)&theSize,sizeof(int));
+
+		/* write each path with its name and vertices */
+		for(int i=0;i<theSize;i++){
+			PathHandle name=(*m_contigNames)[i];
+			int vertices=(*m_contigs)[i].size();
+			f.write((char*)&name,sizeof(PathHandle));
+			f.write((char*)&vertices,sizeof(int));
+			for(int j=0;j<vertices;j++){
+				Kmer kmer;
+				(*m_contigs)[i].at(j,&kmer);
+				kmer.write(&f);
+			}
+		}
+		f.close();
+	}
 }
 
 void PathEvaluator::registerPlugin(ComputeCore*core){
@@ -43,6 +90,14 @@ void PathEvaluator::registerPlugin(ComputeCore*core){
 	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_EVALUATE_PATHS,
 		__GetAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS));
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_EVALUATE_PATHS,"RAY_MASTER_MODE_EVALUATE_PATHS");
+
+	RAY_SLAVE_MODE_EVALUATE_PATHS=core->allocateSlaveModeHandle(plugin);
+	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EVALUATE_PATHS,
+		__GetAdapter(PathEvaluator,RAY_SLAVE_MODE_EVALUATE_PATHS));
+	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EVALUATE_PATHS,"RAY_SLAVE_MODE_EVALUATE_PATHS");
+
+	RAY_MPI_TAG_EVALUATE_PATHS=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EVALUATE_PATHS,"RAY_MPI_TAG_EVALUATE_PATHS");
 }
 
 void PathEvaluator::resolveSymbols(ComputeCore*core){
@@ -51,8 +106,18 @@ void PathEvaluator::resolveSymbols(ComputeCore*core){
 	RAY_MASTER_MODE_ASK_EXTENSIONS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_ASK_EXTENSIONS");
 
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_EVALUATE_PATHS,RAY_MASTER_MODE_ASK_EXTENSIONS);
+	core->setMasterModeToMessageTagSwitch(m_plugin,RAY_MASTER_MODE_EVALUATE_PATHS,RAY_MPI_TAG_EVALUATE_PATHS);
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_EVALUATE_PATHS,RAY_SLAVE_MODE_EVALUATE_PATHS);
+
+	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+	m_contigs=(vector<GraphPath>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
+	m_contigNames=(vector<PathHandle>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
+
 
 	__BindPlugin(PathEvaluator);
 
 	__BindAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS);
+	__BindAdapter(PathEvaluator,RAY_SLAVE_MODE_EVALUATE_PATHS);
+
+	m_masterModeStarted=false;
 }

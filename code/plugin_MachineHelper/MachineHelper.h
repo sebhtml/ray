@@ -368,8 +368,6 @@ class MachineHelper: public CorePlugin{
 	int getSize();
 	void performAssemblyWorkflow(ComputeCore*core);
 
-	void writeCheckpointForContigPaths();
-
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,
 		SwitchMan*switchMan,RingAllocator*outboxAllocator,
