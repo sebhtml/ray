@@ -257,6 +257,7 @@ class MachineHelper: public CorePlugin{
 	MasterMode RAY_MASTER_MODE_WRITE_KMERS;
 	MasterMode RAY_MASTER_MODE_WRITE_SCAFFOLDS;
 	MasterMode RAY_MASTER_MODE_STEP_A;
+	MasterMode RAY_MASTER_MODE_EVALUATE_PATHS;
 
 	SlaveMode RAY_SLAVE_MODE_EXTENSION;
 	SlaveMode RAY_SLAVE_MODE_ADD_COLORS;
@@ -366,6 +367,8 @@ class MachineHelper: public CorePlugin{
 	int getRank();
 	int getSize();
 	void performAssemblyWorkflow(ComputeCore*core);
+
+	void writeCheckpointForContigPaths();
 
 public:
 	void constructor(int argc,char**argv,Parameters*parameters,

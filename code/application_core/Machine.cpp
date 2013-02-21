@@ -805,6 +805,7 @@ void Machine::registerPlugins(){
 	m_computeCore.registerPlugin(&m_ontologyPlugin);
 	m_computeCore.registerPlugin(&m_mock);
 	m_computeCore.registerPlugin(&m_example);
+	m_computeCore.registerPlugin(&m_pathEvaluator);
 
 	// resolve the symbols
 	// this is done here because we want to write a summary for

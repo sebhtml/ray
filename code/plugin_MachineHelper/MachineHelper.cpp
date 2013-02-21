@@ -715,6 +715,15 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	fp.close();
 
+	writeCheckpointForContigPaths();
+
+	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
+	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
+	m_outbox->push_back(&aMessage);
+}
+
+void MachineHelper::writeCheckpointForContigPaths(){
+
 	/** possibly write the checkpoint */
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("ContigPaths")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ContigPaths"<<endl;
@@ -737,9 +746,6 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 		f.close();
 	}
 
-	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
-	m_outbox->push_back(&aMessage);
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
@@ -872,7 +878,7 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_timePrinter->printElapsedTime("Merging of redundant paths");
 			cout<<endl;
 
-			m_switchMan->setMasterMode(RAY_MASTER_MODE_ASK_EXTENSIONS);
+			m_switchMan->closeMasterMode();
 
 			m_ed->m_EXTENSION_currentRankIsSet=false;
 			m_ed->m_EXTENSION_rank=-1;
@@ -1063,7 +1069,7 @@ void MachineHelper::performAssemblyWorkflow(ComputeCore*core) {
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_UPDATING_DISTANCES,RAY_MASTER_MODE_UPDATE_DISTANCES);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FUSIONS,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS,RAY_MASTER_MODE_START_FUSION_CYCLE);
-	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_FUSION_CYCLE,RAY_MASTER_MODE_ASK_EXTENSIONS);
+	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_START_FUSION_CYCLE,RAY_MASTER_MODE_EVALUATE_PATHS);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_ASK_EXTENSIONS,RAY_MASTER_MODE_SCAFFOLDER);
 	core->setMasterModeNextMasterMode(m_plugin,RAY_MASTER_MODE_SCAFFOLDER,RAY_MASTER_MODE_WRITE_SCAFFOLDS);
 
@@ -1270,6 +1276,7 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_MASTER_MODE_WRITE_KMERS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_KMERS");
 	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
 	RAY_MASTER_MODE_STEP_A=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_STEP_A");
+	RAY_MASTER_MODE_EVALUATE_PATHS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_EVALUATE_PATHS");
 
 	RAY_MPI_TAG_FINISH_FUSIONS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_FINISH_FUSIONS");
 	RAY_MPI_TAG_GET_CONTIG_CHUNK=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_CONTIG_CHUNK");
