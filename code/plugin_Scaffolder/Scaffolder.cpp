@@ -514,10 +514,11 @@ void Scaffolder::processContig(){
 		m_sentContigMeta=false;
 		m_sentContigInfo=false;
 
-	}
-
-	if(!m_coverageWasComputedWithJustice){
-		getCoverageOfBlockOfLife();
+	}else if(!m_coverageWasComputedWithJustice){
+		if(m_skipScaffolding)
+			m_coverageWasComputedWithJustice=true;
+		else
+			getCoverageOfBlockOfLife();
 	}else if(m_positionOnContig<(int)(*m_contigs)[m_contigId].size()){
 		processContigPosition();
 	}else if(!m_summaryPerformed){
