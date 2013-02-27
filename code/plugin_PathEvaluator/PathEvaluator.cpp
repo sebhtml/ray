@@ -38,12 +38,9 @@ void PathEvaluator::call_RAY_MASTER_MODE_EVALUATE_PATHS(){
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 		m_core->getSwitchMan()->closeMasterMode();
 	}
-
 }
 
 void PathEvaluator::call_RAY_SLAVE_MODE_EVALUATE_PATHS(){
-
-	cout<<"call_RAY_SLAVE_MODE_EVALUATE_PATHS"<<endl;
 
 	writeCheckpointForContigPaths();
 

@@ -92,6 +92,7 @@ __DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
 __DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
 __DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
 __DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+__DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END);
 
 /** 
  * This file contains __legacy code__
@@ -133,6 +134,7 @@ class MachineHelper: public CorePlugin{
 	__AddAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
 	__AddAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
 	__AddAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+	__AddAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END);
 
 	MessageTag RAY_MPI_TAG_NOTIFY_ERROR;
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS;
@@ -224,6 +226,7 @@ class MachineHelper: public CorePlugin{
 	int m_ranksThatComputedStorage;
 	vector<uint64_t> m_rankStorage;
 	uint64_t m_offsetForContigs;
+	int m_ranksThatWroteContigs;
 
 /*
  * Stuff for sending entries in files.
@@ -437,6 +440,7 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Message*message);
 	void call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
+	void call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message);
 
 	void notifyThatOldDirectoryExists();
 

@@ -103,7 +103,6 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
-__DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
@@ -215,7 +214,6 @@ class MessageProcessor :  public CorePlugin {
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
-	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
@@ -332,7 +330,6 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY;
 	MessageTag RAY_MPI_TAG_ELIMINATE_PATH;
 	MessageTag RAY_MPI_TAG_EXTENSION_DATA;
-	MessageTag RAY_MPI_TAG_EXTENSION_DATA_END;
 	MessageTag RAY_MPI_TAG_EXTENSION_DATA_REPLY;
 	MessageTag RAY_MPI_TAG_EXTENSION_IS_DONE;
 	MessageTag RAY_MPI_TAG_EXTENSION_START;
@@ -619,7 +616,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_ASK_EXTENSION(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA(Message*message);
-	void call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message);
 	void call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message);
 	void call_RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION(Message*message);

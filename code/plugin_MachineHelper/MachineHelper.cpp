@@ -72,6 +72,11 @@ __CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
 __CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
 __CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
 __CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+__CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END);
+
+void MachineHelper::call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message){
+	m_ranksThatWroteContigs++;
+}
 
 /*
  * This is the first upcall.
@@ -117,6 +122,8 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_TEST_NETWORK);
 }
+
+
 
 void MachineHelper::constructor(int argc,char**argv,Parameters*parameters,
 SwitchMan*switchMan,RingAllocator*outboxAllocator,
@@ -985,6 +992,23 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 		}
 
 		fclose(fp);
+
+/*
+ * Rewrite the file in parallel.
+ */
+
+		uint64_t offset=0;
+
+		for(int rank=0;rank<getSize();rank++){
+
+			MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			buffer[0]=offset;
+
+			Message aMessage(buffer,1,rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
+			m_outbox->push_back(&aMessage);
+
+			offset+=m_rankStorage[rank];
+		}
 	}
 }
 
@@ -993,26 +1017,18 @@ void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){
 
+		m_ranksThatWroteContigs=0;
+		m_ranksThatComputedStorage=0;
+		m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+
+		m_rankStorage.resize(getSize());
+
 		m_ed->m_EXTENSION_currentRankIsSet=true;
-		m_ed->m_EXTENSION_currentRankIsStarted=false;
-		m_ed->m_EXTENSION_rank++;
 
-		m_seedExtender->closePathFile();
+	}else if(m_ranksThatWroteContigs==getSize()){
 
-		if(m_ed->m_EXTENSION_rank==0){
-
-			m_ranksThatComputedStorage=0;
-			m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
-
-			m_rankStorage.resize(getSize());
-		}
-
-	}else if(m_ranksThatComputedStorage!=getSize()){
-
-		// wait for that
-
-	}else if(m_ed->m_EXTENSION_rank==getSize()){
 		m_timePrinter->printElapsedTime("Generation of contigs");
+
 		if(m_parameters->useAmos()){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_AMOS);
 
@@ -1028,24 +1044,6 @@ void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 			m_scaffolder->m_numberOfRanksFinished=0;
 		}
-
-	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
-		m_ed->m_EXTENSION_currentRankIsStarted=true;
-
-		uint64_t offset=0;
-		for(int i=0;i<m_ed->m_EXTENSION_rank;i++){
-			offset+=m_rankStorage[i];
-		}
-
-		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		buffer[0]=offset;
-
-		Message aMessage(buffer,1,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
-		m_outbox->push_back(&aMessage);
-		m_ed->m_EXTENSION_currentRankIsDone=false;
-
-	}else if(m_ed->m_EXTENSION_currentRankIsDone){
-		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}
 }
 
@@ -1316,6 +1314,11 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS,
 		"RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS");
 
+	RAY_MPI_TAG_EXTENSION_DATA_END=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA_END,
+		__GetAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA_END,"RAY_MPI_TAG_EXTENSION_DATA_END");
+
 	RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY,
 		__GetAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY));
@@ -1533,7 +1536,8 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
 	__BindAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
 	__BindAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+	__BindAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
+	__BindAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END);
 
 	m_startedToSendCounts=false;
 }

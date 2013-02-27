@@ -91,7 +91,6 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
-__CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
@@ -1501,10 +1500,6 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA(Message*message){
 	m_outbox->push_back(&aMessage);
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message){
-	(m_ed->m_EXTENSION_currentRankIsDone)=true;
-}
-
 void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 	void*buffer=message->getBuffer();
 	int count=message->getCount();
@@ -2779,10 +2774,6 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA, __GetAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA,"RAY_MPI_TAG_EXTENSION_DATA");
 
-	RAY_MPI_TAG_EXTENSION_DATA_END=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_EXTENSION_DATA_END, __GetAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END));
-	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EXTENSION_DATA_END,"RAY_MPI_TAG_EXTENSION_DATA_END");
-
 	RAY_MPI_TAG_ATTACH_SEQUENCE=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE, __GetAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ATTACH_SEQUENCE,"RAY_MPI_TAG_ATTACH_SEQUENCE");
@@ -3089,7 +3080,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_DISTRIBUTE_FUSIONS_FINISHED_REPLY_REPLY");
 	RAY_MPI_TAG_ELIMINATE_PATH=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ELIMINATE_PATH");
 	RAY_MPI_TAG_EXTENSION_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_DATA");
-	RAY_MPI_TAG_EXTENSION_DATA_END=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_DATA_END");
 	RAY_MPI_TAG_EXTENSION_DATA_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_DATA_REPLY");
 	RAY_MPI_TAG_EXTENSION_IS_DONE=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_IS_DONE");
 	RAY_MPI_TAG_EXTENSION_START=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_EXTENSION_START");
@@ -3252,7 +3242,6 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
-	__BindAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ATTACH_SEQUENCE_REPLY);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION);
