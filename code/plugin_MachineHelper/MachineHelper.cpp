@@ -69,6 +69,9 @@ __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 __CreateSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 __CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+__CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+__CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
+__CreateMessageTagAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 
 /*
  * This is the first upcall.
@@ -270,7 +273,7 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	LargeCount numberOfVertices=0;
 	LargeCount verticesWith1Coverage=0;
 	CoverageDepth lowestCoverage=9999;
-	
+
 	LargeCount genomeKmers=0;
 
 	for(map<CoverageDepth,LargeCount>::iterator i=m_coverageDistribution->begin();
@@ -427,7 +430,7 @@ void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_VERTICE_DISTRIBUTION(){
 	m_timePrinter->printElapsedTime("Sequence loading");
 	cout<<endl;
-	
+
 	for(int i=0;i<getSize();i++){
 		Message aMessage(NULL,0,i,RAY_MPI_TAG_START_VERTICES_DISTRIBUTION,getRank());
 		m_outbox->push_back(&aMessage);
@@ -502,7 +505,7 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		m_edgeDistribution.clear();
 		f.close();
 		cout<<"Rank "<<getRank()<<" wrote "<<edgeFile.str()<<endl;
-	
+
 	}else if(m_coverageRank==m_numberOfRanksDone){
 
 		if(m_parameters->writeKmers()){
@@ -521,7 +524,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 	if(m_parameters->writeKmers()){
 		m_coverageGatherer->writeKmers();
 	}
-	
+
 	/* send edge distribution */
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
@@ -551,7 +554,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_WRITE_KMERS(){
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_INDEXING(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
-	
+
 	m_timePrinter->printElapsedTime("Null edge purging");
 	cout<<endl;
 
@@ -592,7 +595,7 @@ void MachineHelper::call_RAY_MASTER_MODE_PREPARE_DISTRIBUTIONS_WITH_ANSWERS(){
 void MachineHelper::call_RAY_MASTER_MODE_PREPARE_SEEDING(){
 	(*m_ranksDoneAttachingReads)=-1;
 	(*m_readyToSeed)=getSize();
-	
+
 	m_switchMan->closeMasterMode();
 }
 
@@ -646,7 +649,7 @@ void MachineHelper::call_RAY_MASTER_MODE_START_UPDATING_DISTANCES(){
 	(*m_numberOfRanksDoneSendingDistances)=-1;
 	m_parameters->computeAverageDistances();
 	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
-	
+
 	m_switchMan->closeMasterMode();
 }
 
@@ -658,7 +661,8 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_EXTENSIONS(){
 	m_switchMan->setMasterMode(RAY_MASTER_MODE_DO_NOTHING);
 }
 
-void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
+void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Message*message){
+
 	/* clear eliminated paths */
 	vector<PathHandle> newNames;
 	vector<GraphPath> newPaths;
@@ -679,29 +683,77 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	m_ed->m_EXTENSION_identifiers=newNames;
 	m_ed->m_EXTENSION_contigs=newPaths;
 
-	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions"<<endl;
-	string output=m_parameters->getOutputFile();
-	ofstream fp;
-
-	fp.open(output.c_str(),ios_base::out|ios_base::app);
-
-	int total=0;
-
 	m_scaffolder->setContigPaths(&(m_ed->m_EXTENSION_identifiers),&(m_ed->m_EXTENSION_contigs));
 	m_searcher->setContigs(&(m_ed->m_EXTENSION_contigs),&(m_ed->m_EXTENSION_identifiers));
+
+// <cutHere>
+
+	ostringstream testBuffer;
+	uint64_t requiredBytes=0;
+	int threshold=1024*1024*1; // 1 MiB
+
+	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
+		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
+
+		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		string withLineBreaks=addLineBreaks(contig,m_parameters->getColumns());
+
+		testBuffer<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
+
+		if(testBuffer.tellp()>=threshold){
+			requiredBytes+=testBuffer.tellp();
+			testBuffer.str("");
+		}
+	}
+
+	requiredBytes+=testBuffer.tellp();
+	testBuffer.str("");
+
+	cout<<"Rank "<<m_parameters->getRank()<<" requires "<<requiredBytes<<" bytes for storage."<<endl;
+
+	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int bufferPosition=0;
+	messageBuffer[bufferPosition++]=requiredBytes;
+
+	Message aMessage(messageBuffer,bufferPosition,message->getSource(),
+		RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY,getRank());
+
+	m_outbox->push_back(&aMessage);
+}
+
+/**
+ * the equivalent of
+ *
+ * fopen with "r+"
+ *
+ * is
+ *
+ * fstream::open with std::ios::in and std::ios::out
+ *
+ * \see http://www.c-jump.com/CIS60/lecture09_1.htm
+ * \see http://bytes.com/topic/c/answers/127391-iostreams-equivalent-cs-fopen-r
+ */
+void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
+
+	string output=m_parameters->getOutputFile();
+	fstream fp;
+
+	fp.open(output.c_str(), std::ios::in | std::ios::out);
+	fp.seekp(m_offsetForContigs);
+
+	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions at "<<m_offsetForContigs<<endl;
+
+	int total=0;
 
 	ostringstream operationBuffer;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
 
-		if(m_fusionData->m_FUSION_eliminated.count(uniqueId)>0){
-			continue;
-		}
-
 		total++;
 		string contig=convertToString(&(m_ed->m_EXTENSION_contigs[i]),m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
-		
+
 		string withLineBreaks=addLineBreaks(contig,m_parameters->getColumns());
 
 		operationBuffer<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
@@ -723,7 +775,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
 	m_timePrinter->printElapsedTime("Bidirectional extension of seeds");
 	cout<<endl;
-	
+
 	m_cycleNumber=0;
 
 	m_switchMan->closeMasterMode();
@@ -734,7 +786,7 @@ void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_FIRST_FUSIONS(){
 	(*m_reductionOccured)=true;
 	m_cycleStarted=false;
 	m_mustStop=false;
-	
+
 	m_switchMan->closeMasterMode();
 }
 
@@ -836,7 +888,7 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			m_outbox->push_back(&aMessage);
 		}
 		(*m_DISTRIBUTE_n)=0;
-	
+
 		cout<<"Rank 0: starting distribution step"<<endl;
 	}else if((*m_DISTRIBUTE_n)==getSize() && (*m_isFinalFusion) && m_currentCycleStep==5){
 		//cout<<"cycleStep= "<<m_currentCycleStep<<endl;
@@ -864,7 +916,7 @@ void MachineHelper::call_RAY_MASTER_MODE_START_FUSION_CYCLE(){
 			Message aMessage(NULL,0,i,RAY_MPI_TAG_START_FUSION,getRank());
 			m_outbox->push_back(&aMessage);
 		}
-		
+
 	}else if(m_fusionData->m_FUSION_numberOfRanksDone==getSize() && (*m_isFinalFusion) && m_currentCycleStep==6){
 
 		/** always force cycle number 2 */
@@ -891,18 +943,75 @@ void MachineHelper::notifyThatOldDirectoryExists(){
 	m_oldDirectoryExists=true;
 }
 
+void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY(Message*message){
+
+	Rank source=message->getSource();
+	MessageUnit*buffer=message->getBuffer();
+	uint64_t bytes=buffer[0];
+
+	m_rankStorage[source]=bytes;
+
+	m_ranksThatComputedStorage++;
+
+	if(m_ranksThatComputedStorage==getSize()){
+
+		string output=m_parameters->getOutputFile();
+
+		int bufferSize=4096;
+		char*buffer=(char*)malloc(bufferSize*sizeof(char));
+
+#ifdef ASSERT
+		assert(buffer!=NULL);
+#endif
+
+		memset(buffer,0,bufferSize);
+
+		FILE*fp=fopen(output.c_str(),"w");
+
+		uint64_t requiredBytes=0;
+		for(int i=0;i<getSize();i++){
+			requiredBytes+=m_rankStorage[i];
+		}
+
+		while(requiredBytes!=0){
+
+			if(requiredBytes>=bufferSize){
+				fwrite(buffer,1,bufferSize,fp);
+				requiredBytes-=bufferSize;
+			}else{
+				fwrite(buffer,1,requiredBytes,fp);
+				requiredBytes-=requiredBytes;
+			}
+		}
+
+		fclose(fp);
+	}
+}
+
 void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 	// ask ranks to send their extensions.
 	if(!m_ed->m_EXTENSION_currentRankIsSet){
+
 		m_ed->m_EXTENSION_currentRankIsSet=true;
 		m_ed->m_EXTENSION_currentRankIsStarted=false;
 		m_ed->m_EXTENSION_rank++;
 
 		m_seedExtender->closePathFile();
 
-	}
-	if(m_ed->m_EXTENSION_rank==getSize()){
+		if(m_ed->m_EXTENSION_rank==0){
+
+			m_ranksThatComputedStorage=0;
+			m_switchMan->sendToAll(m_outbox,getRank(),RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+
+			m_rankStorage.resize(getSize());
+		}
+
+	}else if(m_ranksThatComputedStorage!=getSize()){
+
+		// wait for that
+
+	}else if(m_ed->m_EXTENSION_rank==getSize()){
 		m_timePrinter->printElapsedTime("Generation of contigs");
 		if(m_parameters->useAmos()){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_AMOS);
@@ -919,15 +1028,34 @@ void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 			m_scaffolder->m_numberOfRanksFinished=0;
 		}
-		
+
 	}else if(!m_ed->m_EXTENSION_currentRankIsStarted){
 		m_ed->m_EXTENSION_currentRankIsStarted=true;
-		Message aMessage(NULL,0,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
+
+		uint64_t offset=0;
+		for(int i=0;i<m_ed->m_EXTENSION_rank;i++){
+			offset+=m_rankStorage[i];
+		}
+
+		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		buffer[0]=offset;
+
+		Message aMessage(buffer,1,m_ed->m_EXTENSION_rank,RAY_MPI_TAG_ASK_EXTENSION_DATA,getRank());
 		m_outbox->push_back(&aMessage);
 		m_ed->m_EXTENSION_currentRankIsDone=false;
+
 	}else if(m_ed->m_EXTENSION_currentRankIsDone){
 		m_ed->m_EXTENSION_currentRankIsSet=false;
 	}
+}
+
+void MachineHelper::call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message){
+	(m_seedingData->m_SEEDING_i)=0;
+	(m_ed->m_EXTENSION_currentPosition)=0;
+
+	MessageUnit*buffer=message->getBuffer();
+
+	m_offsetForContigs=buffer[0];
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_SCAFFOLDER(){
@@ -1182,6 +1310,22 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,__GetAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR));
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,"RAY_MPI_TAG_NOTIFY_ERROR");
 
+	RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS,
+		__GetAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS,
+		"RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS");
+
+	RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY,
+		__GetAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY));
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY,
+		"RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY");
+
+	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->allocateMessageTagHandle(plugin);
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA, __GetAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA));
+	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA,"RAY_MPI_TAG_ASK_EXTENSION_DATA");
+
 	void*address=&(m_fusionData->m_FUSION_identifier_map);
 	core->setObjectSymbol(m_plugin,address,"/RayAssembler/ObjectStore/ContigNameIndex.ray");
 }
@@ -1336,6 +1480,8 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SET_FILE_ENTRIES=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES");
 	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY");
 
+	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_ASK_EXTENSION_DATA");
+
 	if (m_parameters->hasOption("-example")) {
 		cout << "************** Example Mode **************" << endl;
 		core->setFirstMasterMode(m_plugin, RAY_MASTER_MODE_STEP_A);
@@ -1351,6 +1497,8 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	RAY_SLAVE_MODE_DIE=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DIE");
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON, RAY_SLAVE_MODE_DIE);
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA, RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 
 	__BindPlugin(MachineHelper);
 
@@ -1381,7 +1529,11 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_ASSEMBLE_WAVES);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 	__BindAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
+
 	__BindAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+	__BindAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+	__BindAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
+	__BindAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 
 	m_startedToSendCounts=false;
 }

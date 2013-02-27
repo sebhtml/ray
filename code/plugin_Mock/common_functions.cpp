@@ -252,7 +252,9 @@ bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int b
 
 	if(force || available>=bufferSize){
 
-		(*file)<<buffer->str();
+		string copy=buffer->str();
+		file->write(copy.c_str(),copy.length());
+
 		buffer->str("");
 
 		return true;

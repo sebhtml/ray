@@ -89,6 +89,9 @@ __DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_SEND_EXTENSION_DATA);
 __DeclareSlaveModeAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 __DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+__DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+__DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
+__DeclareMessageTagAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 
 /** 
  * This file contains __legacy code__
@@ -127,6 +130,9 @@ class MachineHelper: public CorePlugin{
 	__AddAdapter(MachineHelper,RAY_SLAVE_MODE_DIE);
 
 	__AddAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR);
+	__AddAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS);
+	__AddAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY);
+	__AddAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 
 	MessageTag RAY_MPI_TAG_NOTIFY_ERROR;
 	MessageTag RAY_MPI_TAG_FINISH_FUSIONS;
@@ -211,6 +217,13 @@ class MachineHelper: public CorePlugin{
 	MessageTag RAY_MPI_TAG_COUNT_SEARCH_ELEMENTS;
 	MessageTag RAY_MPI_TAG_DISTRIBUTE_FUSIONS;
 	MessageTag RAY_MPI_TAG_EXTENSION_DATA_END;
+
+	MessageTag RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS;
+	MessageTag RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY;
+
+	int m_ranksThatComputedStorage;
+	vector<uint64_t> m_rankStorage;
+	uint64_t m_offsetForContigs;
 
 /*
  * Stuff for sending entries in files.
@@ -421,6 +434,9 @@ SequencesLoader*sl,time_t*lastTime,bool*writeKmerInitialised,Partitioner*partiti
 	void call_RAY_SLAVE_MODE_DIE();
 
 	void call_RAY_MPI_TAG_NOTIFY_ERROR(Message*message);
+	void call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Message*message);
+	void call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY(Message*message);
+	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
 
 	void notifyThatOldDirectoryExists();
 

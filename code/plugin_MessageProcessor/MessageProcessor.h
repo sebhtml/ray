@@ -101,7 +101,6 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_E
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
-__DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
@@ -214,7 +213,6 @@ class MessageProcessor :  public CorePlugin {
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_IS_DONE);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION);
-	__AddAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_EXTENSION_DATA_END);
@@ -376,7 +374,6 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER;
 	MessageTag RAY_MPI_TAG_ACTIVATE_RELAY_CHECKER_REPLY;
 	MessageTag RAY_MPI_TAG_ASK_EXTENSION;
-	MessageTag RAY_MPI_TAG_ASK_EXTENSION_DATA;
 	MessageTag RAY_MPI_TAG_ASK_LIBRARY_DISTANCES;
 	MessageTag RAY_MPI_TAG_ASK_LIBRARY_DISTANCES_FINISHED;
 	MessageTag RAY_MPI_TAG_ASK_READ_LENGTH;
@@ -620,7 +617,6 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_IS_DONE(Message*message);
 	void call_RAY_MPI_TAG_ASK_EXTENSION(Message*message);
-	void call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_REPLY(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA(Message*message);
 	void call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message);
