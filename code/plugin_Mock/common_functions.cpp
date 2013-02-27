@@ -243,6 +243,46 @@ void unpack_pointer(void**pointer,uint64_t integerValue){
 
 }
 
+#ifdef CONFIG_USE_MPI_IO
+
+bool flushFileOperationBuffer_MPI_IO(bool force,ostringstream*buffer,MPI_File file,int bufferSize){
+
+	int available=buffer->tellp();
+
+	if(available==0)
+		return false;
+
+	if(force || available>=bufferSize){
+
+/*
+ * The const_cast is not required by MPI 3.0. MPI <= 2.2 has stupid semantic
+ * (i.e. MPI_File_write takes a non-const buffer (???))
+ */
+
+		string copy=buffer->str();
+		const char*constantCopy=copy.c_str();
+
+		char*data=const_cast<char*> ( constantCopy );
+
+		int bytes=copy.length();
+
+		MPI_Status writeStatus;
+		int returnValue=MPI_File_write(file,data,bytes,MPI_BYTE,&writeStatus);
+
+		if(returnValue!=MPI_SUCCESS){
+			cout<<"Error: could not write to file with MPI I/O."<<endl;
+		}
+
+		buffer->str("");
+
+		return true;
+	}
+
+	return false;
+}
+
+#endif
+
 bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int bufferSize){
 
 	int available=buffer->tellp();

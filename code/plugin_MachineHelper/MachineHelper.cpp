@@ -744,16 +744,36 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Messa
 void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	string output=m_parameters->getOutputFile();
-	fstream fp;
+	const char*fileNameValue=output.c_str();
 
-	fp.open(output.c_str(), std::ios::in | std::ios::out);
+/*
+ * The const_cast thing is now required with MPI 3.0.
+ */
+	char*fileName= const_cast<char*> ( fileNameValue );
+
+#ifdef CONFIG_USE_MPI_IO
+	MPI_File fp;
+	MPI_File_open(MPI_COMM_WORLD,fileName,MPI_MODE_RDWR,MPI_INFO_NULL,&fp);
+	MPI_Offset offset=m_offsetForContigs;
+	int returnValue=MPI_File_seek(fp,offset,MPI_SEEK_SET);
+
+	if(returnValue!= MPI_SUCCESS){
+		cout<<"Error seeking position in file."<<endl;
+	}
+
+#else
+	fstream fp;
+	fp.open(fileName, std::ios::in | std::ios::out);
 	fp.seekp(m_offsetForContigs);
+#endif
 
 	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions at "<<m_offsetForContigs<<endl;
 
 	int total=0;
 
 	ostringstream operationBuffer;
+
+	bool force=false;
 
 	for(int i=0;i<(int)m_ed->m_EXTENSION_contigs.size();i++){
 		PathHandle uniqueId=m_ed->m_EXTENSION_identifiers[i];
@@ -765,14 +785,24 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 		operationBuffer<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
 
-		flushFileOperationBuffer(false,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
+#ifdef CONFIG_USE_MPI_IO
+		flushFileOperationBuffer_MPI_IO(force,&operationBuffer,fp,CONFIG_FILE_IO_BUFFER_SIZE);
+#else
+		flushFileOperationBuffer(force,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
+#endif
 	}
+
+	force=true;
 
 	cout<<"Rank "<<m_parameters->getRank()<<" appended "<<total<<" elements"<<endl;
 
-	flushFileOperationBuffer(true,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
-
+#ifdef CONFIG_USE_MPI_IO
+	flushFileOperationBuffer_MPI_IO(force,&operationBuffer,fp,CONFIG_FILE_IO_BUFFER_SIZE);
+	MPI_File_close(&fp);
+#else
+	flushFileOperationBuffer(force,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
 	fp.close();
+#endif
 
 	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
