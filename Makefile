@@ -91,6 +91,10 @@ PROFILER_COLLECT=n
 # needs -l rt too
 CLOCK_GETTIME=n
 
+# use MPI I/O for file operations
+
+MPI_IO=n
+
 #######################################################################
 # Don't edit below this this point ---> .
 #######################################################################
@@ -103,6 +107,7 @@ CONFIG_HAVE_LIBBZ2=$(HAVE_LIBBZ2)
 CONFIG_FORCE_PACKING=$(FORCE_PACKING)
 CONFIG_PROFILER_COLLECT=$(PROFILER_COLLECT)
 CONFIG_CLOCK_GETTIME=$(CLOCK_GETTIME)
+CONFIG_MPI_IO=$(MPI_IO)
 
 # These 2 are used by an other Makefile
 export CONFIG_HAVE_LIBZ
@@ -131,6 +136,8 @@ LDFLAGS-$(CONFIG_HAVE_LIBBZ2) += -lbz2
 # pack data in memory to save space
 CONFIG_FLAGS-$(CONFIG_FORCE_PACKING) += -D CONFIG_FORCE_PACKING
 
+# use MPI I/O
+CONFIG_FLAGS-$(CONFIG_MPI_IO) += -D CONFIG_MPI_IO
 CONFIG_FLAGS-$(CONFIG_PROFILER_COLLECT) += -D CONFIG_PROFILER_COLLECT
 CONFIG_FLAGS-$(CONFIG_CLOCK_GETTIME) += -D CONFIG_CLOCK_GETTIME
 LDFLAGS-$(CONFIG_CLOCK_GETTIME) += -l rt

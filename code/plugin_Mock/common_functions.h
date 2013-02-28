@@ -24,7 +24,7 @@ see <http://www.gnu.org/licenses/>
 
 #include "constants.h"
 
-#ifdef CONFIG_USE_MPI_IO
+#ifdef CONFIG_MPI_IO
 #include <mpi.h>
 #endif
 
@@ -93,7 +93,10 @@ void unpack_pointer(void**pointer,MessageUnit integerValue);
 
 bool flushFileOperationBuffer(bool force,ostringstream*buffer,ostream*file,int bufferSize);
 bool flushFileOperationBuffer_FILE(bool force,ostringstream*buffer,FILE*file,int bufferSize);
+
+#ifdef CONFIG_MPI_IO
 bool flushFileOperationBuffer_MPI_IO(bool force,ostringstream*buffer,MPI_File file,int bufferSize);
+#endif
 
 #endif
 

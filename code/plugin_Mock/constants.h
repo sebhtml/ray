@@ -202,9 +202,4 @@ typedef uint16_t LibraryHandle;
 #define BITS_PER_NUCLEOTIDE 2
 #define BITS_PER_BYTE 8
 
-/**
- * Use MPI I/O for file operations.
- */
-#define CONFIG_USE_MPI_IO
-
 #endif

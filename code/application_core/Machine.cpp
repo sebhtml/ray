@@ -769,10 +769,10 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
  */
 	cout<<"MPI I/O: ";
 
-#ifdef CONFIG_USE_MPI_IO
-	cout<<"yes";
+#ifdef CONFIG_MPI_IO
+	cout<<"y";
 #else
-	cout<<"no";
+	cout<<"n";
 #endif
 	cout<<endl;
 	

@@ -751,7 +751,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
  */
 	char*fileName= const_cast<char*> ( fileNameValue );
 
-#ifdef CONFIG_USE_MPI_IO
+#ifdef CONFIG_MPI_IO
 
 /*
  * Create a view in the file for this MPI rank.
@@ -794,7 +794,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 		operationBuffer<<">contig-"<<uniqueId<<" "<<contig.length()<<" nucleotides"<<endl<<withLineBreaks;
 
-#ifdef CONFIG_USE_MPI_IO
+#ifdef CONFIG_MPI_IO
 		flushFileOperationBuffer_MPI_IO(force,&operationBuffer,fp,CONFIG_FILE_IO_BUFFER_SIZE);
 #else
 		flushFileOperationBuffer(force,&operationBuffer,&fp,CONFIG_FILE_IO_BUFFER_SIZE);
@@ -805,7 +805,7 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 	cout<<"Rank "<<m_parameters->getRank()<<" appended "<<total<<" elements"<<endl;
 
-#ifdef CONFIG_USE_MPI_IO
+#ifdef CONFIG_MPI_IO
 	flushFileOperationBuffer_MPI_IO(force,&operationBuffer,fp,CONFIG_FILE_IO_BUFFER_SIZE);
 	MPI_File_close(&fp);
 #else
@@ -1001,7 +1001,7 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 
 	if(m_ranksThatComputedStorage==getSize()){
 
-#ifdef CONFIG_USE_MPI_IO
+#ifdef CONFIG_MPI_IO
 
 /* nothing to do with MPI I/O.
  * MPI I/O is cool and will do that for us.

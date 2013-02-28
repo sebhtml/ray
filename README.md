@@ -86,6 +86,11 @@ You need a C++ compiler (supporting C++ 1998), make, an implementation of MPI (s
 
 Tested C++ compilers: see Documentation/COMPILERS.txt
 
+## Parallel I/O
+
+To compile with MPI I/O, use this:
+
+	make MPI_IO=y
 
 ## Faster execution
 
