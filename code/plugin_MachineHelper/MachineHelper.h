@@ -227,6 +227,7 @@ class MachineHelper: public CorePlugin{
 	vector<uint64_t> m_rankStorage;
 	uint64_t m_offsetForContigs;
 	int m_ranksThatWroteContigs;
+	bool m_authorized;
 
 /*
  * Stuff for sending entries in files.
@@ -238,6 +239,7 @@ class MachineHelper: public CorePlugin{
 	bool m_startedToSendCounts;
 	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES;
 	MessageTag RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY;
+	MessageTag RAY_MPI_TAG_SEND_AUTHORIZATION;
 
 	MasterMode RAY_MASTER_MODE_ADD_COLORS;
 	MasterMode RAY_MASTER_MODE_AMOS;

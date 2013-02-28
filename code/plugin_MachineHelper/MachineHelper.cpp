@@ -743,6 +743,21 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Messa
  */
 void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
+#ifndef CONFIG_MPI_IO
+/*
+ * Only allow one MPI rank to write at any time.
+ */
+	if(m_parameters->getRank()==0){
+		m_authorized=true;
+	}else if(m_inbox->hasMessage(RAY_MPI_TAG_SEND_AUTHORIZATION)){
+		m_authorized=true;
+	}
+
+	if(!m_authorized)
+		return;
+
+#endif
+
 	string output=m_parameters->getOutputFile();
 	const char*fileNameValue=output.c_str();
 
@@ -771,9 +786,8 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 
 #else
 
-	fstream fp;
-	fp.open(fileName, std::ios::in | std::ios::out);
-	fp.seekp(m_offsetForContigs);
+	ofstream fp;
+	fp.open(fileName, std::ios::app);
 #endif
 
 	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions at "<<m_offsetForContigs<<endl;
@@ -816,6 +830,14 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	m_switchMan->setSlaveMode(RAY_SLAVE_MODE_DO_NOTHING);
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_EXTENSION_DATA_END,getRank());
 	m_outbox->push_back(&aMessage);
+
+/*
+ * Send the authorization code to the next MPI rank.
+ */
+	if(getRank()!=getSize()-1){
+		Message aMessage(NULL,0,getRank()+1,RAY_MPI_TAG_SEND_AUTHORIZATION,getRank());
+		m_outbox->push_back(&aMessage);
+	}
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_TRIGGER_FUSIONS(){
@@ -1001,52 +1023,8 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 
 	if(m_ranksThatComputedStorage==getSize()){
 
-#ifdef CONFIG_MPI_IO
-
-/* nothing to do with MPI I/O.
- * MPI I/O is cool and will do that for us.
- */
-
-#else
-
 /*
- * The code below is only used for the POSIX interface.
- */
-
-		string output=m_parameters->getOutputFile();
-
-		int bufferSize=4096;
-		char*buffer=(char*)malloc(bufferSize*sizeof(char));
-
-#ifdef ASSERT
-		assert(buffer!=NULL);
-#endif
-
-		memset(buffer,0,bufferSize);
-
-		FILE*fp=fopen(output.c_str(),"w");
-
-		uint64_t requiredBytes=0;
-		for(int i=0;i<getSize();i++){
-			requiredBytes+=m_rankStorage[i];
-		}
-
-		while(requiredBytes!=0){
-
-			if(requiredBytes>=bufferSize){
-				fwrite(buffer,1,bufferSize,fp);
-				requiredBytes-=bufferSize;
-			}else{
-				fwrite(buffer,1,requiredBytes,fp);
-				requiredBytes-=requiredBytes;
-			}
-		}
-
-		fclose(fp);
-#endif
-
-/*
- * Rewrite the file in parallel.
+ * Write the file in parallel (or not).
  */
 
 		uint64_t offset=0;
@@ -1360,6 +1338,9 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,__GetAdapter(MachineHelper,RAY_MPI_TAG_NOTIFY_ERROR));
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_NOTIFY_ERROR,"RAY_MPI_TAG_NOTIFY_ERROR");
 
+	RAY_MPI_TAG_SEND_AUTHORIZATION=core->allocateMessageTagHandle(m_plugin);
+	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_SEND_AUTHORIZATION,"RAY_MPI_TAG_SEND_AUTHORIZATION");
+
 	RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS,
 		__GetAdapter(MachineHelper,RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS));
@@ -1592,6 +1573,7 @@ void MachineHelper::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MachineHelper,RAY_MPI_TAG_EXTENSION_DATA_END);
 
 	m_startedToSendCounts=false;
+	m_authorized=false;
 }
 
 
