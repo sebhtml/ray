@@ -151,7 +151,7 @@ void GraphPath::computePeakCoverage(){
 	int selectedAlgorithm=ALGORITHM_STAGGERED_MEAN;
 
 	#ifdef ASSERT
-	if(m_coverageValues.size()!=size())
+	if((int)m_coverageValues.size()!=size())
 		cout<<"Error: there are "<<size()<<" objects, but only "<<m_coverageValues.size()<<" coverage values"<<endl;
 
 	assert((int)m_coverageValues.size() == size());

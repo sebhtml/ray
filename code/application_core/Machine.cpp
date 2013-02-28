@@ -764,6 +764,17 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	cout<<"Compiler: GNU gcc/g++ "<<__VERSION__<<endl;
 	#endif
 
+/**
+ * Report availability of MPI I/O
+ */
+	cout<<"MPI I/O: ";
+
+#ifdef CONFIG_USE_MPI_IO
+	cout<<"yes";
+#else
+	cout<<"no";
+#endif
+	cout<<endl;
 	
 	#ifdef __SSE4_2__
 	cout<<"With SSE 4.2"<<endl;

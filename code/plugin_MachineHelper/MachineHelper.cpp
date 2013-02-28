@@ -752,16 +752,25 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	char*fileName= const_cast<char*> ( fileNameValue );
 
 #ifdef CONFIG_USE_MPI_IO
+
+/*
+ * Create a view in the file for this MPI rank.
+ */
 	MPI_File fp;
-	MPI_File_open(MPI_COMM_WORLD,fileName,MPI_MODE_RDWR,MPI_INFO_NULL,&fp);
-	MPI_Offset offset=m_offsetForContigs;
-	int returnValue=MPI_File_seek(fp,offset,MPI_SEEK_SET);
+	MPI_File_open(MPI_COMM_WORLD,fileName,MPI_MODE_CREATE|MPI_MODE_RDWR,MPI_INFO_NULL,&fp);
+	MPI_Datatype elementType=MPI_BYTE;
+	MPI_Datatype fileType=MPI_BYTE;
+	char representation[]="native";
+	MPI_Offset displacement=m_offsetForContigs;
+
+	int returnValue=MPI_File_set_view(fp,displacement,elementType,fileType,representation,MPI_INFO_NULL);
 
 	if(returnValue!= MPI_SUCCESS){
-		cout<<"Error seeking position in file."<<endl;
+		cout<<"Error: can not create view."<<endl;
 	}
 
 #else
+
 	fstream fp;
 	fp.open(fileName, std::ios::in | std::ios::out);
 	fp.seekp(m_offsetForContigs);
@@ -992,6 +1001,18 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 
 	if(m_ranksThatComputedStorage==getSize()){
 
+#ifdef CONFIG_USE_MPI_IO
+
+/* nothing to do with MPI I/O.
+ * MPI I/O is cool and will do that for us.
+ */
+
+#else
+
+/*
+ * The code below is only used for the POSIX interface.
+ */
+
 		string output=m_parameters->getOutputFile();
 
 		int bufferSize=4096;
@@ -1022,6 +1043,7 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 		}
 
 		fclose(fp);
+#endif
 
 /*
  * Rewrite the file in parallel.
