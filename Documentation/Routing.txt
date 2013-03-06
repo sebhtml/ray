@@ -2,11 +2,69 @@ For very large jobs, routing should be enabled.
 Message routing reduces the latency and memory usage.
 Also, the network will by happier.
 
-This guide contains network architecture for routing messages with Ray.
+This guide contains virtual network architectures for routing messages with Ray.
 
 Vertices is the number of computer cores to use (mpiexec -n ###)
 
 See also Documentation/Very-Large-Jobs.txt.
+
+## Convex regular polytope
+
+Messages can be routed with a polytope using
+the polytope connection type. A hypercube is a polytope with radix
+of 2. The connection types 'polytope' and 'hypercube' use the same code
+path so they are equivalent.
+
+The basic relation for edges is that only 1 dimension can be different.
+
+  Example:  <0,1,2> -> <0,2,2>
+
+For the convex regular polytope, we have
+
+Vertices:= Radix^Dimension
+Degree:= (Radix-1)*Dimension
+
+Vertices: 64
+Type: Polytope
+Radix: 8
+Dimension: 2
+Degree: 14
+Options: -route-messages -connection-type polytope -routing-graph-degree 14
+
+Vertices: 512
+Type: Polytope
+Radix: 8
+Dimension: 3 (8^3=512)
+Degree: 21=(8-1)*3
+Options:  -route-messages -connection-type polytope -routing-graph-degree 21
+
+Vertices: 1024 = 32*32
+Type: Polytope
+Radix: 32
+Dimension: 2 (32^2=1024)
+Degree: 62 = (32-1)*2
+Options:  -route-messages -connection-type polytope -routing-graph-degree 62
+
+Vertices: 1024
+Type: Polytope
+Radix: 2
+Dimension: 10 (2^10=1024)
+Degree: 10
+Options:  -route-messages -connection-type polytope -routing-graph-degree 10
+
+Vertices: 2025 (45 ^ 2)
+Type: Polytope
+Radix: 45
+Dimension: 2
+Degree: 88 ((45 - 1 ) * 2)
+Options:  -route-messages -connection-type polytope -routing-graph-degree 88
+
+Vertices: 4225 = 65*65
+Type: Polytope
+Degree: 128 = (65-1)*2
+Diameter: 2 (65^2=1024)
+Options:  -route-messages -connection-type polytope -routing-graph-degree 128
+
 
 ## Torus
 
@@ -23,55 +81,6 @@ Dimension: 5
 Vertices: Radix^Dimension = 1024
 Degree: 2*Dimension = 10
 Options:  -route-messages -connection-type torus -routing-graph-degree 10
-
-
-
-## Convex regular polytope
-
-Messages can be routed with a polytope using
-the polytope connection type. A hypercube is a polytope with alphabetSize
-of 2. The connection types 'polytope' and 'hypercube' use the same code
-path so they are equivalent.
-
-The basic relation for edges is that only 1 symbol can be different.
-
-  Example:  <0,1,2> -> <0,2,2>
-
-For the convex regular polytope, we have
-
-vertices:= alphabetSize^wordLength
-degree:= (alphabetSize-1)*wordLength
-
-Vertices: 64
-Type: Polytope
-Degree: 14
-Diameter: 2
-Options: -route-messages -connection-type polytope -routing-graph-degree 14
-
-Vertices: 512
-Type: Polytope
-Degree: 21=(8-1)*3
-Diameter: 3 (8^3=512)
-Options:  -route-messages -connection-type polytope -routing-graph-degree 21
-
-
-Vertices: 1024 = 32*32
-Type: Polytope
-Degree: 62 = (32-1)*2
-Diameter: 2 (32^2=1024)
-Options:  -route-messages -connection-type polytope -routing-graph-degree 62
-
-Vertices: 4225 = 65*65
-Type: Polytope
-Degree: 128 = (65-1)*2
-Diameter: 2 (65^2=1024)
-Options:  -route-messages -connection-type polytope -routing-graph-degree 128
-
-Vertices: 1024
-Type: Polytope
-Degree: 10
-Diameter: 10 (2^10=1024)
-Options:  -route-messages -connection-type polytope -routing-graph-degree 10
 
 
 ## de Bruijn
