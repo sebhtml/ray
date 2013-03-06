@@ -88,6 +88,9 @@ DESCRIPTION:
               Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.
               First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.
 
+       -debug-recycling
+              Debug the recycling events
+
        -disable-scaffolder
               Disables the scaffolder.
 
@@ -110,7 +113,7 @@ DESCRIPTION:
 
        -bloom-filter-bits bits
               Sets the number of bits for the Bloom filter
-              Default is 268435456 bits, 0 bits disables the Bloom filter.
+              Default is auto bits (adaptive), 0 bits disables the Bloom filter.
 
        -hash-table-buckets buckets
               Sets the initial number of buckets. Must be a power of 2 !
@@ -366,7 +369,7 @@ FILES
 
      RayOutput/LibraryStatistics.txt
      	Estimation of outer distances for paired reads
-     RayOutput/Library<LibraryNumber>.txt
+     RayOutput/LibraryData.xml
          Frequencies for observed outer distances (insert size + read lengths)
 
   Partition
@@ -423,4 +426,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.1.1-devel
+Ray 2.2.0-rc0

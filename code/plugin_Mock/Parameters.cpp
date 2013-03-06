@@ -1423,7 +1423,6 @@ void Parameters::showUsage(){
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
 	cout<<endl;
 
-
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;
 	
@@ -1435,6 +1434,9 @@ void Parameters::showUsage(){
 	showOptionDescription("see Constrained traversal of repeats with paired sequences.");
 	showOptionDescription("Sébastien Boisvert, Élénie Godzaridis, François Laviolette & Jacques Corbeil.");
 	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
+	cout<<endl;
+
+	showOption("-debug-recycling","Debug the recycling events");
 	cout<<endl;
 
 	showOption("-disable-scaffolder","Disables the scaffolder.");

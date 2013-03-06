@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -31,6 +31,7 @@
 /*
  * An extension element is a read mapped on an
  * extension for an MPI rank.
+ *
  * \author Sébastien Boisvert
  */
 class ExtensionElement{
@@ -45,9 +46,11 @@ class ExtensionElement{
 
 	/** the overall agreement of this molecular target */
 	uint16_t m_agreement;
+
+	uint8_t m_numberOfTries;
+	bool m_activated;
 	
 public:
-	bool m_activated;
 
 	void setStrandPosition(int a);
 	int getStrandPosition();
@@ -72,6 +75,13 @@ public:
 
 	void increaseAgreement();
 	int getAgreement();
+
+	void deactivate();
+	void activate();
+	bool isActive()const;
+
+	int getNumberOfTries()const;
+	void increaseNumberOfTries();
 
 } ATTRIBUTE_PACKED;
 

@@ -568,17 +568,30 @@ Presently, insertions or deletions up to 8 are supported.
 						}
 
 						ReadHandle uniqueId=ed->m_sequencesToFree[i];
+						ExtensionElement*element=ed->getUsedRead(uniqueId);
+
+/*
+ * We can't recycle a read after so many attempts !
+ */
+						int maximumNumberOfTries=16;
+
+						if(element->getNumberOfTries() > maximumNumberOfTries)
+							continue;
+
 						m_ed->m_pairedReadsWithoutMate.erase(uniqueId);
 
 						// free the sequence
 						#ifdef ASSERT
-						ExtensionElement*element=ed->getUsedRead(uniqueId);
 						if(element==NULL){
 							cout<<"element "<<uniqueId<<" not found now="<<m_ed->m_EXTENSION_extension.size()-1<<""<<endl;
 						}
 						assert(element!=NULL);
 						#endif
 
+						if(m_parameters->hasOption("-debug-recycling")){
+							cout<<"Rank "<<m_rank<<" recycles read "<<uniqueId<<" at position ";
+							cout<<m_ed->m_EXTENSION_extension.size()-1<<endl;
+						}
 
 						// remove it
 						ed->removeSequence(uniqueId);

@@ -69,12 +69,9 @@ void ExtensionData::destroyStructures(Profiler*m_profiler){
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	//cout<<"m_pairedReadsWithoutMate= "<<m_pairedReadsWithoutMate.size()<<endl;
 	m_pairedReadsWithoutMate.clear();
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
-
-	//cout<<"m_expirations.size= "<<m_expirations.size()<<endl;
 
 	m_expirations.clear();
 
@@ -105,9 +102,9 @@ void ExtensionData::destructor(){
 }
 
 ExtensionElement*ExtensionData::getUsedRead(ReadHandle a){
-	int bin=0;//uniform_hashing_function_1_64_64(a)%m_numberOfBins;
-	SplayNode<ReadHandle,ExtensionElement>*node=m_database[bin].find(a,true);
-	if(node!=NULL && node->getValue()->m_activated){
+	int bin=0;
+	SplayNode<ReadHandle,ExtensionElement>*node=m_database[bin].find(a,false);
+	if(node!=NULL && node->getValue()->isActive()){
 		return node->getValue();
 	}
 	return NULL;
@@ -116,14 +113,35 @@ ExtensionElement*ExtensionData::getUsedRead(ReadHandle a){
 ExtensionElement*ExtensionData::addUsedRead(ReadHandle a){
 	bool val;
 	int bin=0;
+
+	SplayNode<ReadHandle,ExtensionElement>*node=m_database[bin].find(a,false);
+
+	if(node!=NULL){
+		ExtensionElement*element=node->getValue();
+		element->activate();
+		element->increaseNumberOfTries();
+
+		return element;
+	}
+
 	ExtensionElement*element=m_database[bin].insert(a,&m_allocator,&val)->getValue();
 	element->constructor();
-	element->m_activated=true;
+	element->activate();
+	element->increaseNumberOfTries();
 	return element;
 }
 
 void ExtensionData::removeSequence(ReadHandle a){
 	int bin=0;
+
+	SplayNode<ReadHandle,ExtensionElement>*node=m_database[bin].find(a,false);
+
+	if(node!=NULL){
+		node->getValue()->deactivate();
+		return;
+	}
+
+// the line below is useless
 	m_database[bin].remove(a,false,&m_allocator);
 }
 
@@ -136,6 +154,6 @@ void ExtensionData::lazyDestructor(){
 	i.constructor(&(m_database[0]));
 	while(i.hasNext()){
 		ExtensionElement*element=i.next()->getValue();
-		element->m_activated=false;
+		element->deactivate();
 	}
 }

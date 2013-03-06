@@ -1,6 +1,6 @@
 /*
- 	Ray
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Ray -- Parallel genome assemblies for parallel DNA sequencing
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -94,8 +94,21 @@ void ExtensionElement::removeSequence(){
 
 void ExtensionElement::constructor(){
 	m_canMove=true;
-
+	m_numberOfTries=0;
+	m_activated=false;
 	m_agreement=0;
+}
+
+void ExtensionElement::increaseNumberOfTries(){
+	m_numberOfTries++;
+
+#if 0
+	cout<<"Number of tries is "<<(int)m_numberOfTries<<endl;
+#endif
+}
+
+int ExtensionElement::getNumberOfTries()const{
+	return m_numberOfTries;
 }
 
 bool ExtensionElement::canMove(){
@@ -116,4 +129,16 @@ int ExtensionElement::getAgreement(){
 
 int ExtensionElement::getReadLength(){
 	return m_read.length();
+}
+
+void ExtensionElement::deactivate(){
+	m_activated=false;
+}
+
+void ExtensionElement::activate(){
+	m_activated=true;
+}
+
+bool ExtensionElement::isActive()const{
+	return m_activated;
 }
