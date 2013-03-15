@@ -26,6 +26,7 @@
 
 #include <RayPlatform/communication/mpi_tags.h>
 #include <RayPlatform/communication/Message.h>
+#include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/core/master_modes.h>
 #include <RayPlatform/core/slave_modes.h>
 
@@ -226,6 +227,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 }
 
 void Amos::registerPlugin(ComputeCore*core){
+	m_core=core;
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
 
@@ -234,13 +236,10 @@ void Amos::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_AMOS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_AMOS, __GetAdapter(Amos,RAY_SLAVE_MODE_AMOS));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_AMOS,"RAY_SLAVE_MODE_AMOS");
+	__ConfigureMasterModeHandler(Amos, RAY_MASTER_MODE_AMOS);
+	__ConfigureSlaveModeHandler(Amos, RAY_SLAVE_MODE_AMOS);
 
-	RAY_MASTER_MODE_AMOS=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_AMOS, __GetAdapter(Amos,RAY_MASTER_MODE_AMOS));
-	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_AMOS,"RAY_MASTER_MODE_AMOS");
+	__BindPlugin(Amos);
 }
 
 void Amos::resolveSymbols(ComputeCore*core){
@@ -254,9 +253,4 @@ void Amos::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_WRITE_AMOS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS");
 	RAY_MPI_TAG_WRITE_AMOS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_WRITE_AMOS_REPLY");
 	RAY_MPI_TAG_REQUEST_VERTEX_READS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_REQUEST_VERTEX_READS");
-
-	__BindPlugin(Amos);
-
-	__BindAdapter(Amos,RAY_MASTER_MODE_AMOS);
-	__BindAdapter(Amos,RAY_SLAVE_MODE_AMOS);
 }

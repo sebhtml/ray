@@ -159,17 +159,19 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS);
-	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MASTER_MODE_FILTER_SEEDS);
-	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS);
+	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
+	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
+	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
 
-	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_SLAVE_MODE_REGISTER_SEEDS);
-	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_SLAVE_MODE_FILTER_SEEDS);
-	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, m_plugin, RAY_SLAVE_MODE_CLEAN_SEEDS);
+	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
+	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
+	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
 
-	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MESSAGE_TAG_REGISTER_SEEDS);
-	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MESSAGE_TAG_FILTER_SEEDS);
-	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, m_plugin, RAY_MESSAGE_TAG_CLEAN_SEEDS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
+
+	__BindPlugin(SpuriousSeedAnnihilator);
 }
 
 void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){

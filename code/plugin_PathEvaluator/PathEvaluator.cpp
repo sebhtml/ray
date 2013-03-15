@@ -83,18 +83,13 @@ void PathEvaluator::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_MASTER_MODE_EVALUATE_PATHS=core->allocateMasterModeHandle(plugin);
-	core->setMasterModeObjectHandler(plugin,RAY_MASTER_MODE_EVALUATE_PATHS,
-		__GetAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS));
-	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_EVALUATE_PATHS,"RAY_MASTER_MODE_EVALUATE_PATHS");
-
-	RAY_SLAVE_MODE_EVALUATE_PATHS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_EVALUATE_PATHS,
-		__GetAdapter(PathEvaluator,RAY_SLAVE_MODE_EVALUATE_PATHS));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_EVALUATE_PATHS,"RAY_SLAVE_MODE_EVALUATE_PATHS");
+	__ConfigureMasterModeHandler(PathEvaluator, RAY_MASTER_MODE_EVALUATE_PATHS);
+	__ConfigureSlaveModeHandler(PathEvaluator, RAY_SLAVE_MODE_EVALUATE_PATHS);
 
 	RAY_MPI_TAG_EVALUATE_PATHS=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_EVALUATE_PATHS,"RAY_MPI_TAG_EVALUATE_PATHS");
+
+	__BindPlugin(PathEvaluator);
 }
 
 void PathEvaluator::resolveSymbols(ComputeCore*core){
@@ -109,11 +104,6 @@ void PathEvaluator::resolveSymbols(ComputeCore*core){
 	m_parameters=(Parameters*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 	m_contigs=(vector<GraphPath>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
 	m_contigNames=(vector<PathHandle>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
-
-	__BindPlugin(PathEvaluator);
-
-	__BindAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS);
-	__BindAdapter(PathEvaluator,RAY_SLAVE_MODE_EVALUATE_PATHS);
 
 	m_masterModeStarted=false;
 }

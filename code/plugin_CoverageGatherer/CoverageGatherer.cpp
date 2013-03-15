@@ -217,6 +217,7 @@ void CoverageGatherer::writeHeader(FILE*kmerFile){
 }
 
 void CoverageGatherer::registerPlugin(ComputeCore*core){
+	m_core=core;
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
 
@@ -225,9 +226,7 @@ void CoverageGatherer::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_SEND_DISTRIBUTION=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION, __GetAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_DISTRIBUTION,"RAY_SLAVE_MODE_SEND_DISTRIBUTION");
+	__ConfigureSlaveModeHandler(CoverageGatherer, RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 	RAY_MPI_TAG_COVERAGE_DATA_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_COVERAGE_DATA_REPLY,"RAY_MPI_TAG_COVERAGE_DATA_REPLY");
@@ -241,6 +240,7 @@ void CoverageGatherer::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY,"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY");
 
+	__BindPlugin(CoverageGatherer);
 }
 
 void CoverageGatherer::resolveSymbols(ComputeCore*core){
@@ -255,8 +255,4 @@ void CoverageGatherer::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_MARK_REPLY");
 	RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_GET_COVERAGE_AND_PATHS_REPLY");
-
-	__BindPlugin(CoverageGatherer);
-
-	__BindAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 }
