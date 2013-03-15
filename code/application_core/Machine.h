@@ -66,6 +66,7 @@
 #include <code/plugin_Mock/Mock.h>
 #include <code/plugin_Example/Example.h>
 #include <code/plugin_PathEvaluator/PathEvaluator.h>
+#include <code/SpuriousSeedAnnihilator/SpuriousSeedAnnihilator.h>
 
 /** Chapter I. stuff pulled from RayPlatform, called The Platform hereafter */
 
@@ -137,6 +138,7 @@ class Machine : public MiniRank{
  */
 	GenomeNeighbourhood m_genomeNeighbourhood;
 	PathEvaluator m_pathEvaluator;
+	SpuriousSeedAnnihilator m_spuriousSeedAnnihilator;
 
 	Searcher m_searcher;
 

@@ -160,8 +160,7 @@ all: Ray
 	$(Q)$(ECHO) "  CXX $@"
 	$(Q)$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -c $< -o $@
 
-include code/application_core/Makefile
-include code/plugin_*/Makefile
+include code/*/Makefile
 
 showOptions: 
 	$(Q)echo ""

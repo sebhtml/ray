@@ -110,7 +110,6 @@ void PathEvaluator::resolveSymbols(ComputeCore*core){
 	m_contigs=(vector<GraphPath>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigPaths.ray");
 	m_contigNames=(vector<PathHandle>*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/ContigNames.ray");
 
-
 	__BindPlugin(PathEvaluator);
 
 	__BindAdapter(PathEvaluator,RAY_MASTER_MODE_EVALUATE_PATHS);

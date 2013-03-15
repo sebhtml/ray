@@ -1384,7 +1384,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*mes
 
 	if((*m_numberOfRanksDoneSeeding)==m_size){
 		(*m_numberOfRanksDoneSeeding)=0;
-		(*m_master_mode)=RAY_MASTER_MODE_TRIGGER_DETECTION;
+		(*m_master_mode)=RAY_MASTER_MODE_REGISTER_SEEDS;
 		m_seedingData->writeSeedStatistics();
 	}
 }
@@ -2982,12 +2982,12 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_I_FINISHED_SCAFFOLDING=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING, __GetAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,"RAY_MPI_TAG_I_FINISHED_SCAFFOLDING");
-
-
 }
 
-
 void MessageProcessor::resolveSymbols(ComputeCore*core){
+
+	m_core=core;
+
 	RAY_SLAVE_MODE_PURGE_NULL_EDGES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_PURGE_NULL_EDGES");
 
 	RAY_SLAVE_MODE_AMOS=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_AMOS");
@@ -3016,8 +3016,7 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	RAY_MASTER_MODE_TRIGGER_FUSIONS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_FUSIONS");
 	RAY_MASTER_MODE_TRIGGER_SEEDING=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_SEEDING");
 	RAY_MASTER_MODE_WRITE_SCAFFOLDS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_WRITE_SCAFFOLDS");
-
-
+	RAY_MASTER_MODE_REGISTER_SEEDS=m_core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_REGISTER_SEEDS");
 
 	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION");
 	RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION_ANSWER");
