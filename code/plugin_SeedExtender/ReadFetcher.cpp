@@ -88,7 +88,7 @@ void ReadFetcher::work(){
 
 		#endif
 		
-		int destination=m_parameters->_vertexRank(&m_vertex);
+		int destination=m_parameters->vertexRank(&m_vertex);
 
 		#ifdef GUILLIMIN_BUG
 		if(m_parameters->getRank()==destination){
@@ -120,7 +120,7 @@ void ReadFetcher::work(){
 		//. ------
 		
 		#ifdef GUILLIMIN_BUG
-		int destination=m_parameters->_vertexRank(&m_vertex);
+		int destination=m_parameters->vertexRank(&m_vertex);
 		if(m_parameters->getRank()==destination){
 			cout<<endl;
 			cout<<"worker: "<<m_workerId<<endl;
@@ -155,7 +155,7 @@ void ReadFetcher::work(){
 			char strand=(char)buffer[4];
 
 			#ifdef ASSERT
-			int destination=m_parameters->_vertexRank(&m_vertex);
+			int destination=m_parameters->vertexRank(&m_vertex);
 
 			assert(readIndex>=0);
 			assert(position>=0);
@@ -191,7 +191,7 @@ void ReadFetcher::work(){
 			}
 
 
-			int destination=m_parameters->_vertexRank(&m_vertex);
+			int destination=m_parameters->vertexRank(&m_vertex);
 			Message aMessage(message2,period,destination,RAY_MPI_TAG_REQUEST_VERTEX_READS,m_parameters->getRank());
 
 			#ifdef GUILLIMIN_BUG

@@ -139,7 +139,7 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 		int bufferPosition=0;
 		kmer.pack(buffer,&bufferPosition);
 	
-		Rank destination=m_parameters->_vertexRank(&kmer);
+		Rank destination=m_parameters->vertexRank(&kmer);
 
 		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE),
 			destination,RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,m_rank);
@@ -358,7 +358,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 		int bufferPosition=0;
 		currentKmer.pack(buffer,&bufferPosition);
 	
-		Rank destination=m_parameters->_vertexRank(&currentKmer);
+		Rank destination=m_parameters->vertexRank(&currentKmer);
 
 		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
 			destination,RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_rank);

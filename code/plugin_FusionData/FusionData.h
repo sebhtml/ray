@@ -99,6 +99,8 @@ class FusionData : public CorePlugin {
 	PathHandle m_selectedPath;
 	int m_selectedPosition;
 
+	void processCheckpoints();
+
 public:
 
 	bool m_FINISH_vertex_received;

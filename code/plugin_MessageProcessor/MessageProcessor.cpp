@@ -144,6 +144,9 @@ __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 __CreateMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
 
+__CreateMessageTagAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS);
+__CreateMessageTagAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
+
 void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
 	m_scaffolder->addMasterContig(incoming[0],incoming[1]);
@@ -1597,6 +1600,17 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 	(m_ed->m_EXTENSION_receivedLength)=incoming[0];
 }
 
+void MessageProcessor::call_RAY_MESSAGE_TAG_PUSH_SEEDS(Message*message){
+
+// TODO: activate this call
+	//call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
+	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY,m_rank);
+	m_outbox->push_back(&aMessage);
+}
+
+void MessageProcessor::call_RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY(Message*message){
+}
+
 void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY(Message*message){
 	call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_REPLY,m_rank);
@@ -2570,6 +2584,8 @@ void MessageProcessor::setSwitchMan(SwitchMan*a){
 }
 
 void MessageProcessor::registerPlugin(ComputeCore*core){
+
+	m_core = core;
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
 
@@ -2982,6 +2998,9 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_I_FINISHED_SCAFFOLDING=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING, __GetAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING,"RAY_MPI_TAG_I_FINISHED_SCAFFOLDING");
+
+	__ConfigureMessageTagHandler(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS);
+	__ConfigureMessageTagHandler(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
 }
 
 void MessageProcessor::resolveSymbols(ComputeCore*core){
@@ -3190,6 +3209,8 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, KMER_U64_ARRAY_SIZE );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_ASK_VERTEX_PATH, (KMER_U64_ARRAY_SIZE + 2) );
 	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_GET_PATH_VERTEX, max(2,KMER_U64_ARRAY_SIZE) );
+	core->setMessageTagSize(m_plugin, RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY, KMER_U64_ARRAY_SIZE+2 );
+	core->setMessageTagSize(m_plugin, RAY_MESSAGE_TAG_PUSH_SEEDS, KMER_U64_ARRAY_SIZE+2 );
 
 	__BindPlugin(MessageProcessor);
 

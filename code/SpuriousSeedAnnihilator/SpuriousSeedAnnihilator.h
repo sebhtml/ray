@@ -18,8 +18,16 @@
  *  see <http://www.gnu.org/licenses/>
  */
 
+#include <code/plugin_SeedingData/GraphPath.h>
+#include <code/plugin_Mock/Parameters.h>
+
 #include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/scheduling/TaskCreator.h>
+#include <RayPlatform/communication/VirtualCommunicator.h>
+#include <RayPlatform/communication/BufferedData.h>
+
+#include <vector>
+using namespace std;
 
 __DeclarePlugin(SpuriousSeedAnnihilator);
 
@@ -81,10 +89,27 @@ class SpuriousSeedAnnihilator: public CorePlugin, public TaskCreator {
 	MessageTag RAY_MESSAGE_TAG_FILTER_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_CLEAN_SEEDS;
 
+	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS;
+	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY;
+
 	bool m_distributionIsStarted;
 	bool m_filteringIsStarted;
 	bool m_cleaningIsStarted;
 
+	vector<GraphPath>*m_seeds;
+	Parameters*m_parameters;
+
+	int m_seedIndex;
+	int m_seedPosition;
+
+	int m_activeQueries;
+	BufferedData m_buffers;
+	VirtualCommunicator*m_virtualCommunicator;
+	Rank m_rank;
+	int m_size;
+	RingAllocator*m_outboxAllocator;
+	StaticVector*m_inbox;
+	StaticVector*m_outbox;
 public:
 
 	SpuriousSeedAnnihilator();

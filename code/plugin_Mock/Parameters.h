@@ -211,7 +211,7 @@ public:
 	void setMinimumCoverage(CoverageDepth a);
 	Kmer _complementVertex(Kmer*a);
 	bool hasPairedReads();
-	int _vertexRank(Kmer*a);
+	Rank vertexRank(Kmer*a);
 	string getMemoryPrefix();
 	/**
 	* run the profiler

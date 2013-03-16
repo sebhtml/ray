@@ -156,6 +156,9 @@ __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 __DeclareMessageTagAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
 
+__DeclareMessageTagAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS);
+__DeclareMessageTagAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
+
 /**
  * MessageProcessor receives all the messages of a MPI rank
  * Message objects may also be checked using the Message inbox (m_inbox)
@@ -266,6 +269,9 @@ class MessageProcessor :  public CorePlugin {
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	__AddAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
+
+	__AddAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS);
+	__AddAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
 
 	uint64_t m_bloomBits;
 
@@ -392,6 +398,9 @@ class MessageProcessor :  public CorePlugin {
 	MessageTag RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION_IS_DONE;
 	MessageTag RAY_MPI_TAG_CLEAR_DIRECTIONS;
 	MessageTag RAY_MPI_TAG_CLEAR_DIRECTIONS_REPLY;
+
+	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS;
+	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY;
 
 	MasterMode RAY_MASTER_MODE_ASK_DISTANCES;
 	MasterMode RAY_MASTER_MODE_DO_NOTHING;
@@ -672,6 +681,9 @@ SequencesIndexer*m_si
 	void call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY(Message*message);
 	void call_RAY_MPI_TAG_I_FINISHED_SCAFFOLDING(Message*message);
 	
+	void call_RAY_MESSAGE_TAG_PUSH_SEEDS(Message*message);
+	void call_RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY(Message*message);
+
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
 };

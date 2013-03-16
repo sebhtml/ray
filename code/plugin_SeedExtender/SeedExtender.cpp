@@ -222,7 +222,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 				int bufferPosition=0;
 				kmer.pack(message,&bufferPosition);
-				Rank dest=m_parameters->_vertexRank(&kmer);
+				Rank dest=m_parameters->vertexRank(&kmer);
 
 
 				Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
@@ -245,7 +245,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				#ifdef ASSERT
 
 				if(coverageValue==0){
-					Rank dest=m_parameters->_vertexRank(&kmer);
+					Rank dest=m_parameters->vertexRank(&kmer);
 
 					cout<<"The kmer has a coverage of 0: ";
 					cout<<kmer.idToWord(m_parameters->getWordSize(),
@@ -1209,7 +1209,7 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			currentVertex->pack(message,&bufferPosition);
 			message[bufferPosition++]=m_rank;
 
-			Rank destination=m_parameters->_vertexRank(currentVertex);
+			Rank destination=m_parameters->vertexRank(currentVertex);
 			Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_ASK_IS_ASSEMBLED,theRank);
 			(*outbox).push_back(&aMessage);
 

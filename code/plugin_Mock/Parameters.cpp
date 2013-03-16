@@ -1877,7 +1877,7 @@ bool Parameters::hasPairedReads(){
 	return m_numberOfLibraries!=0;
 }
 
-int Parameters::_vertexRank(Kmer*a){
+Rank Parameters::vertexRank(Kmer*a){
 	return a->vertexRank(m_size,m_wordSize,m_colorSpaceMode);
 }
 

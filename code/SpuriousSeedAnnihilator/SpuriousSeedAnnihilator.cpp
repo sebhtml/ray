@@ -86,6 +86,7 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
 		m_distributionIsStarted=true;
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+
 		m_core->getSwitchMan()->closeMasterMode();
 	}
 }
@@ -116,7 +117,58 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
-	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY))
+		m_activeQueries--;
+
+	#ifdef ASSERT
+	assert(m_activeQueries>=0);
+	#endif
+
+	if(m_activeQueries > 0)
+		return;
+
+	#ifdef ASSERT
+	assert(m_activeQueries==0);
+	#endif
+
+	if(m_seedIndex < (int)m_seeds->size()){
+
+		if(m_seedPosition < (*m_seeds)[m_seedIndex].size()){
+
+			if(m_seedIndex==0 && m_seedPosition == 0)
+				cout<<"Rank "<<m_core->getRank()<<" has "<<m_seeds->size()<<" seeds to register."<<endl;
+
+			Kmer vertex;
+			(*m_seeds)[m_seedIndex].at(m_seedPosition,&vertex);
+
+			Rank destination=m_parameters->vertexRank(&vertex);
+
+			MessageTag tag=RAY_MESSAGE_TAG_PUSH_SEEDS;
+			int elements = m_virtualCommunicator->getElementsPerQuery(tag);
+
+			for(int i=0;i<vertex.getNumberOfU64();i++){
+				m_buffers.addAt(destination,vertex.getU64(i));
+			}
+
+			PathHandle identifier = getPathUniqueId(m_rank, m_seedIndex);
+			m_buffers.addAt(destination, identifier);
+			m_buffers.addAt(destination, m_seedPosition);
+
+			if(m_buffers.flush(destination, elements, tag, m_outboxAllocator, m_outbox, m_rank,false)){
+				m_activeQueries++;
+			}
+
+			m_seedPosition++;
+		}else{
+
+			m_seedIndex++;
+		}
+	}else{
+		m_seedIndex=0;
+		m_seedPosition=0;
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+	}
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
@@ -172,18 +224,23 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
 
 	__BindPlugin(SpuriousSeedAnnihilator);
-}
 
-void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
+	m_outboxAllocator = m_core->getOutboxAllocator();
+	m_outbox = m_core->getOutbox() ;
+	m_rank = m_core->getRank() ;
+	m_inbox = m_core->getInbox();
 
-	// before arriving here, there is this edition to be performed elsewhere in the code
-	// replace RAY_MASTER_MODE_TRIGGER_DETECTION by RAY_MASTER_MODE_CLEAN_SEEDS
+	m_size = m_core->getSize();
 
-	RAY_MASTER_MODE_TRIGGER_DETECTION=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_DETECTION");
+	m_distributionIsStarted=false;
+	m_filteringIsStarted=false;
+	m_cleaningIsStarted=false;
+
+	m_seedIndex=0;
+	m_seedPosition=0;
 
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS, RAY_MASTER_MODE_FILTER_SEEDS);
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_FILTER_SEEDS, RAY_MASTER_MODE_CLEAN_SEEDS);
-	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MASTER_MODE_TRIGGER_DETECTION);
 
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_REGISTER_SEEDS, RAY_SLAVE_MODE_REGISTER_SEEDS);
@@ -194,7 +251,27 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MESSAGE_TAG_CLEAN_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_CLEAN_SEEDS, RAY_SLAVE_MODE_CLEAN_SEEDS);
 
-	m_distributionIsStarted=false;
-	m_filteringIsStarted=false;
-	m_cleaningIsStarted=false;
+	m_activeQueries=0;
+
+	m_virtualCommunicator = m_core->getVirtualCommunicator();
+}
+
+void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
+
+	// before arriving here, there is this edition to be performed elsewhere in the code
+	// replace RAY_MASTER_MODE_TRIGGER_DETECTION by RAY_MASTER_MODE_CLEAN_SEEDS
+
+	RAY_MASTER_MODE_TRIGGER_DETECTION=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_DETECTION");
+	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MASTER_MODE_TRIGGER_DETECTION);
+
+	m_seeds=(vector<GraphPath>*) m_core->getObjectFromSymbol(m_plugin, "/RayAssembler/ObjectStore/Seeds.ray");
+	m_parameters=(Parameters*)m_core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+
+	RAY_MESSAGE_TAG_PUSH_SEEDS = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS");
+	RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY");
+
+	int elements = m_virtualCommunicator->getElementsPerQuery(RAY_MESSAGE_TAG_PUSH_SEEDS);
+
+	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+		"/memory/SpuriousSeedAnnihilator",m_parameters->showMemoryAllocations(),elements);
 }

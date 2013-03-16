@@ -252,5 +252,5 @@ void VertexMessenger::constructor(Kmer vertex,PathHandle wave,int pos,
 	m_annotations.clear();
 	m_isDone=false;
 	m_requestedBasicInfo=false;
-	m_destination=m_parameters->_vertexRank(&m_vertex);
+	m_destination=m_parameters->vertexRank(&m_vertex);
 }

@@ -452,7 +452,7 @@ void Scaffolder::getCoverageOfBlockOfLife(){
 			int bufferPosition=0;
 			vertex->pack(buffer,&bufferPosition);
 			Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
-				m_parameters->_vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
+				m_parameters->vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
 			m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 			m_coverageRequested=true;
 			m_coverageReceived=false;
@@ -783,7 +783,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 		int bufferPosition=0;
 		vertex->pack(buffer,&bufferPosition);
 		Message aMessage(buffer,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
-			m_parameters->_vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
+			m_parameters->vertexRank(vertex),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_coverageRequested=true;
 		m_coverageReceived=false;
@@ -1011,7 +1011,7 @@ void Scaffolder::processAnnotation(){
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
 
 		Message aMessage(buffer,elementsPerQuery,
-			m_parameters->_vertexRank(&m_pairedForwardMarker),
+			m_parameters->vertexRank(&m_pairedForwardMarker),
 			RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_forwardDirectionsRequested=true;
@@ -1228,7 +1228,7 @@ Case 13. (allowed)
 		int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION);
 
 		Message aMessage(buffer,elementsPerQuery,
-			m_parameters->_vertexRank(&m_pairedReverseMarker),
+			m_parameters->vertexRank(&m_pairedReverseMarker),
 			RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
 		m_reverseDirectionsRequested=true;

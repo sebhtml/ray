@@ -506,6 +506,8 @@ void SeedingData::loadCheckpoint(){
 }
 
 void SeedingData::registerPlugin(ComputeCore*core){
+
+	m_core=core;
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
 
@@ -514,17 +516,15 @@ void SeedingData::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_SLAVE_MODE_START_SEEDING=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_START_SEEDING, __GetAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_START_SEEDING,"RAY_SLAVE_MODE_START_SEEDING");
-
-	RAY_SLAVE_MODE_SEND_SEED_LENGTHS=core->allocateSlaveModeHandle(plugin);
-	core->setSlaveModeObjectHandler(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS, __GetAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS));
-	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_SEND_SEED_LENGTHS,"RAY_SLAVE_MODE_SEND_SEED_LENGTHS");
+	__ConfigureSlaveModeHandler(SeedingData, RAY_SLAVE_MODE_START_SEEDING);
+	__ConfigureSlaveModeHandler(SeedingData, RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
 
 	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
 
+	__BindPlugin(SeedingData);
+
+	m_core->setObjectSymbol(m_plugin, &m_SEEDING_seeds,"/RayAssembler/ObjectStore/Seeds.ray");
 }
 
 void SeedingData::resolveSymbols(ComputeCore*core){
@@ -539,10 +539,4 @@ void SeedingData::resolveSymbols(ComputeCore*core){
 	RAY_MPI_TAG_SEEDING_IS_OVER=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEEDING_IS_OVER");
 	RAY_MPI_TAG_SEND_SEED_LENGTHS=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS");
 	RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY=core->getMessageTagFromSymbol(m_plugin,"RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY");
-
-	__BindPlugin(SeedingData);
-
-	__BindAdapter(SeedingData,RAY_SLAVE_MODE_START_SEEDING);
-	__BindAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
-
 }

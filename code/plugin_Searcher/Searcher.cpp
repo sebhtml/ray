@@ -1059,7 +1059,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			(*m_contigs)[m_contig].at(m_contigPosition,&kmer2);
 			Kmer*kmer=&kmer2;
 
-			int rankToFlush=m_parameters->_vertexRank(kmer);
+			int rankToFlush=m_parameters->vertexRank(kmer);
 
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS);
 			int added=0;
@@ -2128,7 +2128,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					continue;
 				}
 
-				int rankToFlush=m_parameters->_vertexRank(&kmer);
+				int rankToFlush=m_parameters->vertexRank(&kmer);
 
 				int added=0;
 				// pack the k-mer
@@ -3384,7 +3384,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 					continue;
 				}
 
-				int rankToFlush=m_parameters->_vertexRank(&kmer);
+				Rank rankToFlush=m_parameters->vertexRank(&kmer);
 
 				int added=0;
 				// pack the k-mer
@@ -4422,5 +4422,4 @@ void Searcher::resolveSymbols(ComputeCore*core){
 	__BindAdapter(Searcher,RAY_MPI_TAG_GRAPH_COUNTS);
 	__BindAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA);
 	__BindAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
-
 }

@@ -172,7 +172,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 				// outgoing edge
 				// PreviousVertex(*) -> CurrentVertex
-				Rank outgoingRank=m_parameters->_vertexRank(&m_previousVertex);
+				Rank outgoingRank=m_parameters->vertexRank(&m_previousVertex);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,m_previousVertex.getU64(i));
 				}
@@ -187,7 +187,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 				// ingoing edge
 				// PreviousVertex -> CurrentVertex(*)
-				Rank ingoingRank=m_parameters->_vertexRank(&currentForwardKmer);
+				Rank ingoingRank=m_parameters->vertexRank(&currentForwardKmer);
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,m_previousVertex.getU64(i));
 				}
@@ -214,7 +214,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 				// outgoing edge
 				// 
-				Rank outgoingRank=m_parameters->_vertexRank(&currentReverseKmer);
+				Rank outgoingRank=m_parameters->vertexRank(&currentReverseKmer);
 
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForOutgoingEdges.addAt(outgoingRank,currentReverseKmer.getU64(i));
@@ -234,7 +234,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 				MACRO_COLLECT_PROFILING_INFORMATION();
 
 				// ingoing edge
-				Rank ingoingRank=m_parameters->_vertexRank(&m_previousVertexRC);
+				Rank ingoingRank=m_parameters->vertexRank(&m_previousVertexRC);
 
 				for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 					m_bufferedDataForIngoingEdges.addAt(ingoingRank,currentReverseKmer.getU64(i));

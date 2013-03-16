@@ -39,7 +39,7 @@ using namespace std;
 
 #define SHOW_FUSION
 
-void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
+void FusionData::processCheckpoints(){
 
 	/** read the checkpoint ContigPaths */
 	if(!m_processedCheckpoint){
@@ -81,6 +81,11 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 			f.close();
 		}
 	}
+}
+
+void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
+
+	processCheckpoints();
 
 	if(!isReady()){
 		return;
@@ -130,7 +135,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 	Kmer vertex;
 	m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].at(m_ed->m_EXTENSION_currentPosition,&vertex);
 
-	Rank destination=m_parameters->_vertexRank(&vertex);
+	Rank destination=m_parameters->vertexRank(&vertex);
 
 	for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
 		m_buffers.addAt(destination,vertex.getU64(i));
@@ -618,7 +623,7 @@ void FusionData::getPaths(Kmer vertex){
 		vertex.pack(message,&bufferPosition);
 		message[bufferPosition++]=0;
 		Message aMessage(message,bufferPosition,
-			m_parameters->_vertexRank(&vertex),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
+			m_parameters->vertexRank(&vertex),RAY_MPI_TAG_ASK_VERTEX_PATHS,getRank());
 		m_outbox->push_back(&aMessage);
 		m_FUSION_paths_requested=true;
 		m_FUSION_paths_received=false;

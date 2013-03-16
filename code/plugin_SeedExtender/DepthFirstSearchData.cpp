@@ -71,7 +71,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 			int j=0;
 			vertexToVisit.pack(message,&j);
-			int dest=parameters->_vertexRank(&vertexToVisit);
+			int dest=parameters->vertexRank(&vertexToVisit);
 			
 			Message aMessage(message,j,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(&aMessage);
@@ -89,7 +89,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
-				int destination=parameters->_vertexRank(&vertexToVisit);
+				int destination=parameters->vertexRank(&vertexToVisit);
 				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES,theRank);
 				(*outbox).push_back(&aMessage);
 				(*edgesRequested)=true;
@@ -196,7 +196,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 			int bufferPosition=0;
 			vertexToVisit.pack(message,&bufferPosition);
-			int dest=parameters->_vertexRank(&vertexToVisit);
+			int dest=parameters->vertexRank(&vertexToVisit);
 			Message aMessage(message,bufferPosition,dest,RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,theRank);
 			(*outbox).push_back(&aMessage);
 		}else if((*vertexCoverageReceived)){
@@ -234,7 +234,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				MessageUnit*message=(MessageUnit*)(*outboxAllocator).allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertexToVisit.pack(message,&bufferPosition);
-				int destination=parameters->_vertexRank(&vertexToVisit);
+				int destination=parameters->vertexRank(&vertexToVisit);
 				Message aMessage(message,bufferPosition,destination,RAY_MPI_TAG_REQUEST_VERTEX_EDGES,theRank);
 
 				(*outbox).push_back(&aMessage);

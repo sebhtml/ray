@@ -355,7 +355,7 @@ void SeedWorker::do_1_1_test(){
 			int bufferPosition=0;
 			m_SEEDING_currentVertex.pack(message,&bufferPosition);
 			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
-			m_parameters->_vertexRank(&m_SEEDING_currentVertex),
+			m_parameters->vertexRank(&m_SEEDING_currentVertex),
 				RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 			m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);
 			m_SEEDING_numberOfIngoingEdgesWithSeedCoverage=0;
@@ -405,7 +405,7 @@ void SeedWorker::do_1_1_test(){
 					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
-					int dest=m_parameters->_vertexRank(&vertex);
+					int dest=m_parameters->vertexRank(&vertex);
 
 					Message aMessage(message,bufferPosition,dest,
 						RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,getRank());
@@ -430,7 +430,7 @@ void SeedWorker::do_1_1_test(){
 					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(KMER_U64_ARRAY_SIZE*sizeof(MessageUnit));
 					int bufferPosition=0;
 					vertex.pack(message,&bufferPosition);
-					int dest=m_parameters->_vertexRank(&vertex);
+					int dest=m_parameters->vertexRank(&vertex);
 
 					Message aMessage(message,bufferPosition,
 						dest,
@@ -574,7 +574,7 @@ bool SeedWorker::fetchVertexData(Kmer*kmer){
 		int bufferPosition=0;
 		kmer->pack(message,&bufferPosition);
 		Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT),
-			m_parameters->_vertexRank(kmer),
+			m_parameters->vertexRank(kmer),
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,getRank());
 
 		m_virtualCommunicator->pushMessage(m_workerIdentifier,&aMessage);

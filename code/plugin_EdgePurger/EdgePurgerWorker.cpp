@@ -35,7 +35,7 @@ void EdgePurgerWorker::work(){
 		}else if(m_iterator<(int)m_edges.size()){
 			Kmer vertex=m_edges[m_iterator];
 			if(!m_coverageRequested){
-				Rank sendTo=m_parameters->_vertexRank(&vertex);
+				Rank sendTo=m_parameters->vertexRank(&vertex);
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
@@ -72,7 +72,7 @@ void EdgePurgerWorker::work(){
 		}else if(m_iterator<(int)m_edges.size()){
 			Kmer vertex=m_edges[m_iterator];
 			if(!m_coverageRequested){
-				Rank sendTo=m_parameters->_vertexRank(&vertex);
+				Rank sendTo=m_parameters->vertexRank(&vertex);
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 				int bufferPosition=0;
 				vertex.pack(message,&bufferPosition);
