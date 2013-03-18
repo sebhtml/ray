@@ -96,6 +96,8 @@ ULL means unsigned long long, it is necessary on some architectures
 	m_bitmap=(uint64_t*)__Malloc(required8Bytes*sizeof(uint64_t), "RAY_MALLOC_TYPE_BLOOM_FILTER", false);
 
 	cout<<"[BloomFilter] allocated "<<required8Bytes*sizeof(uint64_t)<<" bytes for table with "<<m_bits<<" bits"<<endl;
+
+#ifdef CONFIG_VERBOSE_BLOOM_FILTER
 	cout<<"[BloomFilter] hash numbers:";
 
 	for(int i=0;i<m_hashFunctions;i++){
@@ -103,6 +105,8 @@ ULL means unsigned long long, it is necessary on some architectures
 	}
 
 	cout<<dec<<endl;
+
+#endif /* CONFIG_VERBOSE_BLOOM_FILTER */
 
 	#ifdef ASSERT
 	assert(required8Bytes > 0);
