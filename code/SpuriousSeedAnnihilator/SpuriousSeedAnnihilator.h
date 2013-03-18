@@ -18,12 +18,13 @@
  *  see <http://www.gnu.org/licenses/>
  */
 
+#include "SeedFilteringWorkflow.h"
+
 #include <code/plugin_SeedingData/GraphPath.h>
 #include <code/plugin_Mock/Parameters.h>
 #include <code/plugin_VerticesExtractor/GridTable.h>
 
 #include <RayPlatform/core/ComputeCore.h>
-#include <RayPlatform/scheduling/TaskCreator.h>
 #include <RayPlatform/communication/VirtualCommunicator.h>
 #include <RayPlatform/communication/BufferedData.h>
 
@@ -62,7 +63,7 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS)
  * \author Sébastien Boisvert
  * \see TODO put github issues here
  */
-class SpuriousSeedAnnihilator: public CorePlugin, public TaskCreator {
+class SpuriousSeedAnnihilator: public CorePlugin {
 
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
@@ -97,6 +98,8 @@ class SpuriousSeedAnnihilator: public CorePlugin, public TaskCreator {
 	bool m_filteringIsStarted;
 	bool m_cleaningIsStarted;
 
+	SeedFilteringWorkflow m_workflow;
+
 	GridTable*m_subgraph;
 	MyAllocator*m_directionsAllocator;
 
@@ -108,12 +111,16 @@ class SpuriousSeedAnnihilator: public CorePlugin, public TaskCreator {
 
 	int m_activeQueries;
 	BufferedData m_buffers;
-	VirtualCommunicator*m_virtualCommunicator;
+
+	VirtualCommunicator * m_virtualCommunicator;
+	VirtualProcessor * m_virtualProcessor;
+
 	Rank m_rank;
 	int m_size;
 	RingAllocator*m_outboxAllocator;
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
+
 public:
 
 	SpuriousSeedAnnihilator();
@@ -123,31 +130,6 @@ public:
  */
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);
-
-/*
- * Methods to implement for the TaskCreator interface.
- *
- * The TaskCreator stack is used in the handler
- * RAY_SLAVE_MODE_FILTER_SEEDS.
- */
-
-	/** initialize the whole thing */
-	void initializeMethod();
-
-	/** finalize the whole thing */
-	void finalizeMethod();
-
-	/** has an unassigned task left to compute */
-	bool hasUnassignedTask();
-
-	/** assign the next task to a worker and return this worker */
-	Worker*assignNextTask();
-
-	/** get the result of a worker */
-	void processWorkerResult(Worker*worker);
-
-	/** destroy a worker */
-	void destroyWorker(Worker*worker);
 
 /*
  * handlers.

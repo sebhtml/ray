@@ -41,43 +41,6 @@ SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
 
 /*
- * Methods to implement for the TaskCreator interface.
- *
- * The TaskCreator stack is used in the handler
- * RAY_SLAVE_MODE_FILTER_SEEDS.
- */
-
-/** initialize the whole thing */
-void SpuriousSeedAnnihilator::initializeMethod(){
-
-}
-
-/** finalize the whole thing */
-void SpuriousSeedAnnihilator::finalizeMethod(){
-
-}
-
-/** has an unassigned task left to compute */
-bool SpuriousSeedAnnihilator::hasUnassignedTask(){
-	return false;
-}
-
-/** assign the next task to a worker and return this worker */
-Worker*SpuriousSeedAnnihilator::assignNextTask(){
-	return NULL;
-}
-
-/** get the result of a worker */
-void SpuriousSeedAnnihilator::processWorkerResult(Worker*worker){
-
-}
-
-/** destroy a worker */
-void SpuriousSeedAnnihilator::destroyWorker(Worker*worker){
-
-}
-
-/*
  * handlers.
  */
 void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
@@ -185,7 +148,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
-	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+	m_workflow.mainLoop();
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
@@ -316,6 +279,7 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	m_activeQueries=0;
 
 	m_virtualCommunicator = m_core->getVirtualCommunicator();
+	m_virtualProcessor = m_core->getVirtualProcessor();
 }
 
 void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
@@ -339,4 +303,6 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 
 	m_subgraph=(GridTable*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
 	m_directionsAllocator = (MyAllocator*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/directionMemoryPool.ray");
+
+	m_workflow.initialize(m_seeds, m_virtualCommunicator, m_virtualProcessor, m_core);
 }
