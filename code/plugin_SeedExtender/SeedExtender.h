@@ -168,7 +168,9 @@ class SeedExtender: public CorePlugin  {
 	Parameters*m_parameters;
 	BubbleTool m_bubbleTool;
 	ExtensionData*m_ed;
-	MyAllocator*m_directionsAllocator;
+
+	// allocator for directions in the de Bruijn graph
+	MyAllocator m_directionsAllocatorInstance;
 
 	set<ReadHandle> m_matesToMeet;
 	bool m_messengerInitiated;
@@ -258,7 +260,7 @@ public:
 
 	set<PathHandle>*getEliminatedSeeds();
 
-	void constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,GridTable*table,StaticVector*inbox,
+	void constructor(Parameters*parameters,ExtensionData*ed,GridTable*table,StaticVector*inbox,
 	Profiler*profiler,StaticVector*outbox,SeedingData*seedingData,int*mode,
 	bool*vertexCoverageRequested,bool*vertexCoverageReceived,RingAllocator*outboxAllocator,
 		FusionData*fusionData,vector<GraphPath>*seeds,BubbleData*bubbleData,

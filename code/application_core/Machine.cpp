@@ -327,11 +327,6 @@ void Machine::start(){
 	m_persistentAllocator.constructor(PERSISTENT_ALLOCATOR_CHUNK_SIZE,"RAY_MALLOC_TYPE_PERSISTENT_DATA_ALLOCATOR",
 		m_parameters.showMemoryAllocations());
 
-	int directionAllocatorChunkSize=4194304; // 4 MiB
-
-	m_directionsAllocator.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
-		m_parameters.showMemoryAllocations());
-
 	// options are loaded from here
 	// plus the directory exists now
 	if(m_parameters.hasOption("-route-messages")){
@@ -412,16 +407,14 @@ void Machine::start(){
 		f7.close();
 	}
 
-
 	// set the attributes of the seed extender.
-	m_seedExtender.constructor(&m_parameters,&m_directionsAllocator,m_ed,&m_subgraph,m_inbox,m_profiler,
+	m_seedExtender.constructor(&m_parameters,m_ed,&m_subgraph,m_inbox,m_profiler,
 		m_outbox,m_seedingData,m_switchMan->getSlaveModePointer(),&(m_seedingData->m_SEEDING_vertexCoverageRequested),
 		&(m_seedingData->m_SEEDING_vertexCoverageReceived),m_outboxAllocator,m_fusionData,
 		&(m_seedingData->m_SEEDING_seeds),m_bubbleData,&(m_seedingData->m_SEEDING_edgesRequested),
 		&(m_seedingData->m_SEEDING_edgesReceived),&(m_seedingData->m_SEEDING_outgoingEdgeIndex),
 		&(m_seedingData->m_SEEDING_currentVertex),&(m_seedingData->m_SEEDING_receivedVertexCoverage),
 		&(m_seedingData->m_SEEDING_receivedOutgoingEdges),&m_c,&m_oa);
-
 
 	m_kmerAcademyBuilder.constructor(m_parameters.getSize(),&m_parameters,&m_subgraph,
 		&m_myReads,m_inbox,m_outbox,m_switchMan->getSlaveModePointer(),m_outboxAllocator);
@@ -506,7 +499,6 @@ m_seedingData,
 	&m_readyToSeed,
 	&m_FINISH_n,
 	&m_reductionOccured,
-	&m_directionsAllocator,
 	&m_mode_send_coverage_iterator,
 	&m_coverageDistribution,
 	&m_sequence_ready_machines,
@@ -584,7 +576,6 @@ m_seedingData,
 	}
 
 	m_persistentAllocator.clear();
-	m_directionsAllocator.clear();
 
 	m_diskAllocator.clear();
 
@@ -593,6 +584,9 @@ m_seedingData,
  * It should work also without this call because it
  * is RayPlatform that destroys the MessagesHandler.
  */
+
+// TODO: it would be nice to have a callback to deregister plugins
+
 	m_computeCore.destructor();
 }
 

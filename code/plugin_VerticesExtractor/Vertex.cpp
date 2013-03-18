@@ -385,3 +385,7 @@ uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2){
 	return map;
 }
 
+Direction*Vertex::getFirstDirection()const{
+
+	return m_directions;
+}

@@ -253,9 +253,6 @@ class Machine : public MiniRank{
 	// allocator for persistent data
 	MyAllocator m_persistentAllocator;
 
-	// allocator for directions in the de Bruijn graph
-	MyAllocator m_directionsAllocator;
-
 	ArrayOfReads m_myReads;
 
 	bool m_mode_send_vertices;

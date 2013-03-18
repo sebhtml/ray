@@ -20,6 +20,7 @@
 
 #include <code/plugin_SeedingData/GraphPath.h>
 #include <code/plugin_Mock/Parameters.h>
+#include <code/plugin_VerticesExtractor/GridTable.h>
 
 #include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/scheduling/TaskCreator.h>
@@ -95,6 +96,9 @@ class SpuriousSeedAnnihilator: public CorePlugin, public TaskCreator {
 	bool m_distributionIsStarted;
 	bool m_filteringIsStarted;
 	bool m_cleaningIsStarted;
+
+	GridTable*m_subgraph;
+	MyAllocator*m_directionsAllocator;
 
 	vector<GraphPath>*m_seeds;
 	Parameters*m_parameters;

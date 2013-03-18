@@ -493,14 +493,6 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 
 	Rank origin=getRankFromPathUniqueId(wave);
 
-/*
-	int progression=incoming[bufferPosition++];
-	// add direction in the graph
-	Direction*d=(Direction*)m_directionsAllocator->allocate(sizeof(Direction));
-	d->constructor(wave,progression,lower);
-	m_subgraph->addDirection(&vertex,d);
-*/
-
 	m_subgraph->find(&vertex)->assemble(origin);
 
 	MessageUnit*outgoingMessage=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -1602,8 +1594,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MESSAGE_TAG_PUSH_SEEDS(Message*message){
 
-// TODO: activate this call
-	//call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
+// : activate this call
+	call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
 	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
 }
@@ -1681,7 +1673,6 @@ void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
 	bool reductionOccured=incoming[0];
 
 	if(reductionOccured){
-		//cout<<"Reduction occured from RAY_MPI_TAG_FUSION_DONE!"<<endl;
 		(*m_nextReductionOccured)=true;
 	}
 
@@ -2492,7 +2483,6 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 	int*m_readyToSeed,
 	int*m_FINISH_n,
 	bool*m_nextReductionOccured,
-	MyAllocator*m_directionsAllocator,
 	int*m_mode_send_coverage_iterator,
 	map<CoverageDepth,LargeCount>*m_coverageDistribution,
 	int*m_sequence_ready_machines,
@@ -2545,7 +2535,6 @@ SequencesIndexer*m_si){
 	this->m_readyToSeed=m_readyToSeed;
 	this->m_FINISH_n=m_FINISH_n;
 	this->m_nextReductionOccured=m_nextReductionOccured;
-	this->m_directionsAllocator=m_directionsAllocator;
 	this->m_mode_send_coverage_iterator=m_mode_send_coverage_iterator;
 	this->m_coverageDistribution=m_coverageDistribution;
 	this->m_sequence_ready_machines=m_sequence_ready_machines;
@@ -3001,6 +2990,7 @@ void MessageProcessor::registerPlugin(ComputeCore*core){
 
 	__ConfigureMessageTagHandler(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS);
 	__ConfigureMessageTagHandler(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
+
 }
 
 void MessageProcessor::resolveSymbols(ComputeCore*core){
@@ -3314,5 +3304,7 @@ void MessageProcessor::resolveSymbols(ComputeCore*core){
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_REQUEST_READ_SEQUENCE_REPLY);
 	__BindAdapter(MessageProcessor,RAY_MPI_TAG_I_FINISHED_SCAFFOLDING);
+
+	m_directionsAllocator = (MyAllocator*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/directionMemoryPool.ray");
 }
 

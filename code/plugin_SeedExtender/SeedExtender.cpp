@@ -1813,7 +1813,7 @@ set<PathHandle>*SeedExtender::getEliminatedSeeds(){
 	return &m_eliminatedSeeds;
 }
 
-void SeedExtender::constructor(Parameters*parameters,MyAllocator*m_directionsAllocator,ExtensionData*ed,
+void SeedExtender::constructor(Parameters*parameters,ExtensionData*ed,
 	GridTable*subgraph,StaticVector*inbox,Profiler*profiler,StaticVector*outbox,
 	SeedingData*seedingData,int*mode,
 bool*vertexCoverageRequested,
@@ -1862,7 +1862,6 @@ Chooser*chooser,OpenAssemblerChooser*oa
 	m_dfsData->setTags(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,	RAY_MPI_TAG_REQUEST_VERTEX_EDGES,RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES);
 	m_cache.constructor();
 	m_ed=ed;
-	this->m_directionsAllocator=m_directionsAllocator;
 	m_bubbleTool.constructor(parameters);
 
 	m_profiler=profiler;
@@ -2662,6 +2661,9 @@ void SeedExtender::skipSeed(vector<GraphPath>*seeds){
 }
 
 void SeedExtender::registerPlugin(ComputeCore*core){
+
+	m_core=core;
+
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
 
@@ -2690,6 +2692,10 @@ void SeedExtender::registerPlugin(ComputeCore*core){
 	RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY=core->allocateMessageTagHandle(plugin);
 	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY, __GetAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY,"RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY");
+
+// this needs to be started here because it is shared between plugins
+
+	m_core->setObjectSymbol(m_plugin,&m_directionsAllocatorInstance,"/RayAssembler/ObjectStore/directionMemoryPool.ray");
 }
 
 void SeedExtender::resolveSymbols(ComputeCore*core){
@@ -2719,4 +2725,10 @@ void SeedExtender::resolveSymbols(ComputeCore*core){
 	__BindAdapter(SeedExtender,RAY_MPI_TAG_ADD_GRAPH_PATH);
 	__BindAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED); /**/
 	__BindAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**/
+
+	m_parameters=(Parameters*)m_core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+
+	int directionAllocatorChunkSize=4194304; // 4 MiB
+	m_directionsAllocatorInstance.constructor(directionAllocatorChunkSize,"RAY_MALLOC_TYPE_WAVE_ALLOCATOR",
+		m_parameters->showMemoryAllocations());
 }

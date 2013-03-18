@@ -20,6 +20,8 @@
 
 #include "SpuriousSeedAnnihilator.h"
 
+#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+
 __CreatePlugin(SpuriousSeedAnnihilator);
 
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
@@ -163,6 +165,16 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 			m_seedIndex++;
 		}
+
+	}else if(!m_buffers.isEmpty()){
+
+/**
+ * Flush additional queries
+ */
+		MessageTag tag=RAY_MESSAGE_TAG_PUSH_SEEDS;
+
+		m_activeQueries += m_buffers.flushAll(tag, m_outboxAllocator, m_outbox, m_rank);
+
 	}else{
 		m_seedIndex=0;
 		m_seedPosition=0;
@@ -178,6 +190,56 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
+// Trace was here -> PASS
+
+	#ifdef ASSERT
+	assert(m_parameters != NULL);
+	assert(m_subgraph != NULL);
+	#endif
+
+	// clear graph
+	GridTableIterator iterator;
+	iterator.constructor(m_subgraph, m_parameters->getWordSize(), m_parameters);
+
+	#ifdef ASSERT
+	LargeCount cleared=0;
+	#endif
+
+// Trace was here -> PASS
+
+	while(iterator.hasNext()){
+		iterator.next();
+		Kmer key=*(iterator.getKey());
+		m_subgraph->clearDirections(&key);
+
+		#ifdef ASSERT
+		cleared++;
+
+		Vertex*node=m_subgraph->find(&key);
+		assert(node->getFirstDirection() == NULL);
+
+		#endif
+	}
+
+// Trace was here -> PASS
+
+	#ifdef ASSERT
+	assert(cleared == m_subgraph->size());
+	#endif
+
+// Trace was here -> PASS
+
+	int bytes=m_directionsAllocator->getChunkSize() * m_directionsAllocator->getNumberOfChunks();
+
+	m_directionsAllocator->clear();
+
+	cout<<"Rank "<<m_rank<<" freed "<<bytes/1024<<" KiB from the path memory pool"<<endl;
+
+// Trace was here -> <s>FAIL</s>  PASS
+
+/*
+ * Tell another rank that we are done with this.
+ */
 	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 }
 
@@ -274,4 +336,7 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 
 	m_buffers.constructor(m_size,MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 		"/memory/SpuriousSeedAnnihilator",m_parameters->showMemoryAllocations(),elements);
+
+	m_subgraph=(GridTable*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/deBruijnGraph_part.ray");
+	m_directionsAllocator = (MyAllocator*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/directionMemoryPool.ray");
 }

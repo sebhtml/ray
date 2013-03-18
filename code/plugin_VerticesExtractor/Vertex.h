@@ -205,6 +205,8 @@ public:
 	Kmer getKey();
 	void setKey(Kmer key);
 
+	Direction*getFirstDirection()const;
+
 } ATTRIBUTE_PACKED;
 
 #endif /* _Vertex */
