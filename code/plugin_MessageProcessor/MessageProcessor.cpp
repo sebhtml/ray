@@ -1380,7 +1380,6 @@ void MessageProcessor::call_RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS(Message*mes
 	if((*m_numberOfRanksDoneSeeding)==m_size){
 		(*m_numberOfRanksDoneSeeding)=0;
 		(*m_master_mode)=RAY_MASTER_MODE_REGISTER_SEEDS;
-		m_seedingData->writeSeedStatistics();
 	}
 }
 

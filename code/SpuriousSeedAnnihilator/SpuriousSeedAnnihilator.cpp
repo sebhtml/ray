@@ -22,6 +22,9 @@
 
 #include <code/plugin_VerticesExtractor/GridTableIterator.h>
 
+#include <sstream>
+using namespace std;
+
 __CreatePlugin(SpuriousSeedAnnihilator);
 
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
@@ -111,6 +114,8 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_PUSH_SEED_LENGTHS(){
 		m_gatheringHasStarted=true;
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+
+		writeSeedStatistics();
 
 		m_core->getSwitchMan()->closeMasterMode();
 	}
@@ -297,6 +302,22 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*mes
 
 	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
+}
+
+void SpuriousSeedAnnihilator::writeSeedStatistics(){
+	ostringstream file;
+	file<<m_parameters->getPrefix();
+	file<<"SeedLengthDistribution.txt";
+	ofstream f(file.str().c_str());
+
+	f<<"# SeedLengthInNucleotides	Frequency"<<endl;
+
+	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
+		int length=i->first;
+		int count=i->second;
+		f<<length<<"\t"<<count<<endl;
+	}
+	f.close();
 }
 
 /*

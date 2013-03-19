@@ -426,23 +426,6 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
-void SeedingData::writeSeedStatistics(){
-	ostringstream file;
-	file<<m_parameters->getPrefix();
-	file<<"SeedLengthDistribution.txt";
-	ofstream f(file.str().c_str());
-
-	f<<"# SeedLengthInNucleotides	Frequency"<<endl;
-
-	for(map<int,int>::iterator i=m_masterSeedLengths.begin();i!=m_masterSeedLengths.end();i++){
-		int length=i->first;
-		int count=i->second;
-		f<<length<<"\t"<<count<<endl;
-	}
-	f.close();
-}
-
-
 void SeedingData::loadCheckpoint(){
 	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Seeds"<<endl;
 

@@ -176,7 +176,6 @@ public:
 	void call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS();
 
 	bool m_initialized;
-	void writeSeedStatistics();
 
 	void registerPlugin(ComputeCore*core);
 	void resolveSymbols(ComputeCore*core);

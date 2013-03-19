@@ -150,6 +150,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	bool m_initialized;
 	bool m_communicatorWasTriggered;
+
+	void writeSeedStatistics();
 public:
 
 	SpuriousSeedAnnihilator();
