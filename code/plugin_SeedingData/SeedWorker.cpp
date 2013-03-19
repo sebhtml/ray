@@ -376,9 +376,9 @@ void SeedWorker::do_1_1_test(){
 
 			m_cache[m_SEEDING_currentVertex]=m_mainVertexCoverage;
 
-			m_SEEDING_receivedIngoingEdges=m_SEEDING_currentVertex._getIngoingEdges(edges,m_wordSize);
+			m_SEEDING_receivedIngoingEdges=m_SEEDING_currentVertex.getIngoingEdges(edges,m_wordSize);
 
-			m_SEEDING_receivedOutgoingEdges=m_SEEDING_currentVertex._getOutgoingEdges(edges,m_wordSize);
+			m_SEEDING_receivedOutgoingEdges=m_SEEDING_currentVertex.getOutgoingEdges(edges,m_wordSize);
 
 			m_ingoingCoverages.clear();
 			m_outgoingCoverages.clear();
@@ -592,8 +592,8 @@ bool SeedWorker::fetchVertexData(Kmer*kmer){
 		uint8_t edges=elements[bufferPosition++];
 		m_vertexFetcherCoverage=elements[bufferPosition++];
 
-		m_vertexFetcherParents=kmer->_getIngoingEdges(edges,m_wordSize);
-		m_vertexFetcherChildren=kmer->_getOutgoingEdges(edges,m_wordSize);
+		m_vertexFetcherParents=kmer->getIngoingEdges(edges,m_wordSize);
+		m_vertexFetcherChildren=kmer->getOutgoingEdges(edges,m_wordSize);
 
 		return true;
 	}

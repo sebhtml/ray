@@ -168,7 +168,7 @@ int Kmer::vertexRank(int _size,int w,bool color)const{
  * Get the outgoing edges
  * one bit (1=yes, 0=no) per possible edge
  */
-vector<Kmer> Kmer::_getOutgoingEdges(uint8_t edges,int k)const{
+vector<Kmer> Kmer::getOutgoingEdges(uint8_t edges,int k)const{
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*this;
@@ -212,7 +212,7 @@ vector<Kmer> Kmer::_getOutgoingEdges(uint8_t edges,int k)const{
  * Get the ingoing edges
  * one bit (1=yes, 0=no) per possible edge
  */
-vector<Kmer> Kmer::_getIngoingEdges(uint8_t edges,int k)const{
+vector<Kmer> Kmer::getIngoingEdges(uint8_t edges,int k)const{
 	vector<Kmer> b;
 	Kmer aTemplate;
 	aTemplate=*this;

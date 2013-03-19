@@ -22,6 +22,7 @@
 #define _AnnihilationWorker_h
 
 #include <code/plugin_SeedingData/GraphPath.h>
+#include <code/plugin_Mock/Parameters.h>
 
 #include <RayPlatform/scheduling/Worker.h>
 
@@ -34,10 +35,28 @@
  */
 class AnnihilationWorker: public Worker{
 
-	uint64_t m_identifier;
-	bool m_done;
+	uint64_t m_identifier;       // TODO this should be in Worker because it's always there anyway
+	bool m_done;          // TODO this should be in Worker because it's always there anyway
 	GraphPath * m_seed;
 
+	VirtualCommunicator * m_virtualCommunicator; // TODO this should be in Worker because it's always there anyway
+	Parameters * m_parameters;
+
+	Kmer m_parent;
+	Kmer m_grandparent;
+
+	int m_step;
+
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+
+	int STEP_FETCH_FIRST_PARENT;
+	int STEP_FETCH_SECOND_PARENT;
+	int STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS;
+	int STEP_GET_SEED_SEQUENCE_NOW;
+
+	bool m_queryWasSent;
+	Rank m_rank;
+	RingAllocator*m_outboxAllocator;
 public:
 	void work();
 
@@ -45,7 +64,9 @@ public:
 
 	WorkerHandle getWorkerIdentifier();
 
-	void initialize(uint64_t identifier, GraphPath*seed);
+	void initialize(uint64_t identifier, GraphPath*seed, Parameters * parameters,
+		VirtualCommunicator * virtualCommunicator, MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+		RingAllocator * outboxAllocator);
 };
 
 #endif

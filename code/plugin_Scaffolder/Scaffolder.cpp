@@ -839,8 +839,8 @@ void Scaffolder::processVertex(Kmer*vertex){
 		m_vertexCoverageValues.push_back(m_receivedCoverage);
 
 		/* here, make sure that the vertex has exactly 1 parent and 1 child */
-		int parents=vertex->_getIngoingEdges(edges,m_parameters->getWordSize()).size();
-		int children=vertex->_getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+		int parents=vertex->getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=vertex->getOutgoingEdges(edges,m_parameters->getWordSize()).size();
 
 		#ifdef SHOW_EDGES
 		cout<<"/ "<<coverage<<" "<<parents<<" "<<children<<endl;
@@ -1033,8 +1033,8 @@ void Scaffolder::processAnnotation(){
 		m_forwardDirectionLengthRequested=false;
 
 		/* here, make sure that the vertex has exactly 1 parent and 1 child */
-		int parents=m_pairedForwardMarker._getIngoingEdges(edges,m_parameters->getWordSize()).size();
-		int children=m_pairedForwardMarker._getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+		int parents=m_pairedForwardMarker.getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=m_pairedForwardMarker.getOutgoingEdges(edges,m_parameters->getWordSize()).size();
 
 		#ifdef SHOW_EDGES
 		cout<<"/ "<<m_pairedForwardMarkerCoverage<<" "<<parents<<" "<<children<<endl;
@@ -1248,8 +1248,8 @@ Case 13. (allowed)
 		m_reverseDirectionLengthRequested=false;
 
 		/* here, make sure that the vertex has exactly 1 parent and 1 child */
-		int parents=m_pairedReverseMarker._getIngoingEdges(edges,m_parameters->getWordSize()).size();
-		int children=m_pairedReverseMarker._getOutgoingEdges(edges,m_parameters->getWordSize()).size();
+		int parents=m_pairedReverseMarker.getIngoingEdges(edges,m_parameters->getWordSize()).size();
+		int children=m_pairedReverseMarker.getOutgoingEdges(edges,m_parameters->getWordSize()).size();
 
 		#ifdef SHOW_EDGES
 		cout<<"/ "<<m_pairedReverseMarkerCoverage<<" "<<parents<<" "<<children<<endl;

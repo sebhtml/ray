@@ -393,8 +393,8 @@ void GenomeNeighbourhood::processLinks(int mode){
 		assert(coverage>0);
 		#endif
 
-		vector<Kmer> parents=currentKmer._getIngoingEdges(edges,m_parameters->getWordSize());
-		vector<Kmer> children=currentKmer._getOutgoingEdges(edges,m_parameters->getWordSize());
+		vector<Kmer> parents=currentKmer.getIngoingEdges(edges,m_parameters->getWordSize());
+		vector<Kmer> children=currentKmer.getOutgoingEdges(edges,m_parameters->getWordSize());
 
 		#ifdef DEBUG_NEIGHBOURHOOD_COMMUNICATION
 		cout<<"information: "<<parents.size()<<" parents, "<<children.size()<<" children"<<endl;

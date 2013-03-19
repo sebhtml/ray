@@ -2278,7 +2278,7 @@ void MessageProcessor::call_RAY_MPI_TAG_WRITE_AMOS_REPLY(Message*message){
 	m_ed->m_EXTENSION_currentPosition=((MessageUnit*)message->getBuffer())[0];
 }
 
-void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+void MessageProcessor::writeCheckpointForSeeds(){
 
 	/* write the Seeds checkpoint */
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Seeds")){
@@ -2304,6 +2304,11 @@ void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*mes
 		}
 		f.close();
 	}
+}
+
+void MessageProcessor::call_RAY_MPI_TAG_AUTOMATIC_DISTANCE_DETECTION(Message*message){
+
+	writeCheckpointForSeeds();
 
 	(m_seedingData->m_SEEDING_i)=0;
 	(m_ed->m_EXTENSION_currentPosition)=0;

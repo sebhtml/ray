@@ -1457,7 +1457,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		uint8_t compactEdges=m_vertexMessenger.getEdges();
 
 		m_compactEdges=compactEdges;
-		*receivedOutgoingEdges=currentVertex->_getOutgoingEdges(compactEdges,m_parameters->getWordSize());
+		*receivedOutgoingEdges=currentVertex->getOutgoingEdges(compactEdges,m_parameters->getWordSize());
 
 		MACRO_COLLECT_PROFILING_INFORMATION();
 
@@ -2390,7 +2390,7 @@ int SeedExtender::chooseWithSeed(){
 		assert(m_ed->m_EXTENSION_coverages.size()==m_ed->m_enumerateChoices_outgoingEdges.size());
 		#endif
 
-		vector<Kmer> compactData=m_currentVertex->_getOutgoingEdges(m_compactEdges,
+		vector<Kmer> compactData=m_currentVertex->getOutgoingEdges(m_compactEdges,
 			m_parameters->getWordSize());
 
 		cout<<"Ray info ***********************"<<endl;

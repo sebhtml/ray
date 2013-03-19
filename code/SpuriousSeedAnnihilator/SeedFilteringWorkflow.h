@@ -22,6 +22,7 @@
 #define _SeedFilteringWorkflow_h
 
 #include <code/plugin_SeedingData/GraphPath.h>
+#include <code/plugin_Mock/Parameters.h>
 
 #include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/scheduling/TaskCreator.h>
@@ -37,11 +38,14 @@ class SeedFilteringWorkflow: public TaskCreator {
 
 	ComputeCore*m_core;
 	int m_seedIndex;
-
+	Parameters * m_parameters;
 	vector<GraphPath>*m_seeds;
 
 /* TODO: maybe this should be in the TaskCreator */
 	VirtualCommunicator * m_virtualCommunicator;
+
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+
 public:
 
 /*
@@ -70,7 +74,8 @@ public:
 	void destroyWorker(Worker*worker);
 
 	void initialize(vector<GraphPath>*seeds, VirtualCommunicator*virtualCommunicator,
-		VirtualProcessor * virtualProcessor, ComputeCore * core);
+		VirtualProcessor * virtualProcessor, ComputeCore * core,
+		Parameters * parameters, MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
 };
 
 #endif

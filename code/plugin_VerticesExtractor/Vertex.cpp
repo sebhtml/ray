@@ -76,11 +76,11 @@ CoverageDepth Vertex::getCoverage(Kmer*a){
 }
 
 vector<Kmer> Vertex::getIngoingEdges(Kmer *a,int k){
-	return a->_getIngoingEdges(getEdges(a),k);
+	return a->getIngoingEdges(getEdges(a),k);
 }
 
 vector<Kmer> Vertex::getOutgoingEdges(Kmer*a,int k){
-	return a->_getOutgoingEdges(getEdges(a),k);
+	return a->getOutgoingEdges(getEdges(a),k);
 }
 
 void Vertex::addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k){

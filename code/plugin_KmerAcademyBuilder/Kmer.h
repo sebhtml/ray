@@ -113,7 +113,7 @@ public:
  *
  * TODO: vector<Kmer>* should be a output parameter
  */
-	vector<Kmer> _getOutgoingEdges(uint8_t edges,int k)const;
+	vector<Kmer> getOutgoingEdges(uint8_t edges,int k)const;
 
 /**
  * get the ingoing Kmer objects for a Kmer a having edges and
@@ -121,7 +121,7 @@ public:
  *
  * TODO: vector<Kmer>* should be a output parameter
  */
-	vector<Kmer> _getIngoingEdges(uint8_t edges,int k)const;
+	vector<Kmer> getIngoingEdges(uint8_t edges,int k)const;
 
 	/** hash 1 is used to distribute k-mers on MPI ranks */
 	uint64_t hash_function_1()const;

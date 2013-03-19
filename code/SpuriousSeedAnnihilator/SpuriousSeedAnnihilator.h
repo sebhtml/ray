@@ -93,11 +93,17 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY;
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 
 	bool m_distributionIsStarted;
 	bool m_filteringIsStarted;
 	bool m_cleaningIsStarted;
 
+/*
+ * The workflow implements the TaskCreator interface so that it's possible for a 
+ * single CorePlugin to implement several workflows that use VirtualCommunicator and
+ * VirtualProcessor via TaskCreator.
+ */
 	SeedFilteringWorkflow m_workflow;
 
 	GridTable*m_subgraph;
