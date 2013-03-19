@@ -130,7 +130,6 @@ public:
 
 	map<int,int> m_masterSeedLengths;
 	map<int,int> m_slaveSeedLengths;
-	
 
 	bool m_SEEDING_edgesRequested;
 	int m_SEEDING_ingoingEdgeIndex;

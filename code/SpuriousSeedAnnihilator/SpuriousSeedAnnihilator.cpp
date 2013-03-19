@@ -27,17 +27,64 @@ __CreatePlugin(SpuriousSeedAnnihilator);
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
+__CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
+__CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
 
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
+}
 
+void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
+	if(!m_initialized){
+		for(int i=0;i<(int)(*m_seeds).size();i++){
+			int length=getNumberOfNucleotides((*m_seeds)[i].size(),
+				m_parameters->getWordSize());
+			m_slaveSeedLengths[length]++;
+		}
+		m_iterator=m_slaveSeedLengths.begin();
+		m_initialized=true;
+		m_communicatorWasTriggered=false;
+
+
+		m_virtualCommunicator->resetCounters();
+	}
+
+	if(m_inbox->size()==1&&(*m_inbox)[0]->getTag()==RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY)
+		m_communicatorWasTriggered=false;
+
+	if(m_communicatorWasTriggered)
+		return;
+
+	if(m_iterator==m_slaveSeedLengths.end()){
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+
+		return;
+	}
+
+	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)/2;
+	int i=0; while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
+		int length=m_iterator->first;
+		int count=m_iterator->second;
+		messageBuffer[2*i]=length;
+		messageBuffer[2*i+1]=count;
+		i++;
+		m_iterator++;
+	}
+
+	Message aMessage(messageBuffer,2*i,MASTER_RANK,
+		RAY_MESSAGE_TAG_SEND_SEED_LENGTHS, m_rank);
+	m_outbox->push_back(&aMessage);
 }
 
 /*
@@ -49,6 +96,19 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
 		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getRank());
 
 		m_distributionIsStarted=true;
+
+	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+
+		m_core->getSwitchMan()->closeMasterMode();
+	}
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_PUSH_SEED_LENGTHS(){
+
+	if(!m_gatheringHasStarted){
+		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getRank());
+
+		m_gatheringHasStarted=true;
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 
@@ -216,10 +276,27 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_REGISTER_SEEDS(Message*message){
 }
 
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS(Message*message){
+}
+
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_FILTER_SEEDS(Message*message){
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_CLEAN_SEEDS(Message*message){
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*message){
+	void*buffer=message->getBuffer();
+	MessageUnit*incoming=(MessageUnit*)buffer;
+	int count=message->getCount();
+	for(int i=0;i<count;i+=2){
+		int seedLength=incoming[i];
+		int number=incoming[i+1];
+		m_masterSeedLengths[seedLength]+=number;
+	}
+
+	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY,m_rank);
+	m_outbox->push_back(&aMessage);
 }
 
 /*
@@ -239,16 +316,21 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
+	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
+	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
 
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 
-	__BindPlugin(SpuriousSeedAnnihilator);
+	RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY = m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");
 
 	m_outboxAllocator = m_core->getOutboxAllocator();
 	m_outbox = m_core->getOutbox() ;
@@ -266,20 +348,26 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS, RAY_MASTER_MODE_FILTER_SEEDS);
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_FILTER_SEEDS, RAY_MASTER_MODE_CLEAN_SEEDS);
+	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS, RAY_MESSAGE_TAG_REGISTER_SEEDS);
-	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_REGISTER_SEEDS, RAY_SLAVE_MODE_REGISTER_SEEDS);
-
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_FILTER_SEEDS, RAY_MESSAGE_TAG_FILTER_SEEDS);
-	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_FILTER_SEEDS, RAY_SLAVE_MODE_FILTER_SEEDS);
-
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MESSAGE_TAG_CLEAN_SEEDS);
+	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_PUSH_SEED_LENGTHS, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
+
+	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_REGISTER_SEEDS, RAY_SLAVE_MODE_REGISTER_SEEDS);
+	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_FILTER_SEEDS, RAY_SLAVE_MODE_FILTER_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_CLEAN_SEEDS, RAY_SLAVE_MODE_CLEAN_SEEDS);
+	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
 
 	m_activeQueries=0;
 
 	m_virtualCommunicator = m_core->getVirtualCommunicator();
 	m_virtualProcessor = m_core->getVirtualProcessor();
+
+	m_initialized=false;
+
+	__BindPlugin(SpuriousSeedAnnihilator);
 }
 
 void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
@@ -288,13 +376,14 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	// replace RAY_MASTER_MODE_TRIGGER_DETECTION by RAY_MASTER_MODE_CLEAN_SEEDS
 
 	RAY_MASTER_MODE_TRIGGER_DETECTION=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_TRIGGER_DETECTION");
-	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MASTER_MODE_TRIGGER_DETECTION);
+	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_PUSH_SEED_LENGTHS, RAY_MASTER_MODE_TRIGGER_DETECTION);
 
 	m_seeds=(vector<GraphPath>*) m_core->getObjectFromSymbol(m_plugin, "/RayAssembler/ObjectStore/Seeds.ray");
 	m_parameters=(Parameters*)m_core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 
 	RAY_MESSAGE_TAG_PUSH_SEEDS = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS");
 	RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY");
+	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS");
 
 	int elements = m_virtualCommunicator->getElementsPerQuery(RAY_MESSAGE_TAG_PUSH_SEEDS);
 

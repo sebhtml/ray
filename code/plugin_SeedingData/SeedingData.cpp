@@ -414,48 +414,16 @@ void SeedingData::updateStates(){
 
 void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 	if(!m_initialized){
-		for(int i=0;i<(int)m_SEEDING_seeds.size();i++){
-			int length=getNumberOfNucleotides(m_SEEDING_seeds[i].size(),
-				m_parameters->getWordSize());
-			m_slaveSeedLengths[length]++;
-		}
-		m_iterator=m_slaveSeedLengths.begin();
-		m_initialized=true;
-		m_communicatorWasTriggered=false;
-
 
 		m_virtualCommunicator->resetCounters();
+
+		m_initialized = true;
 	}
 
-	if(m_inbox->size()==1&&(*m_inbox)[0]->getTag()==RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY)
-		m_communicatorWasTriggered=false;
-	
-	if(m_communicatorWasTriggered)
-		return;
-
-	if(m_iterator==m_slaveSeedLengths.end()){
-		Message aMessage(NULL,0,MASTER_RANK,
-			RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,getRank());
-		m_outbox->push_back(&aMessage);
-		(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
-		return;
-	}
-	
-	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)/2;
-	int i=0;
-	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
-		int length=m_iterator->first;
-		int count=m_iterator->second;
-		messageBuffer[2*i]=length;
-		messageBuffer[2*i+1]=count;
-		i++;
-		m_iterator++;
-	}
-
-	Message aMessage(messageBuffer,2*i,MASTER_RANK,
-		RAY_MPI_TAG_SEND_SEED_LENGTHS,getRank());
+	Message aMessage(NULL,0,MASTER_RANK,
+		RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS,getRank());
 	m_outbox->push_back(&aMessage);
+	(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 }
 
 void SeedingData::writeSeedStatistics(){
