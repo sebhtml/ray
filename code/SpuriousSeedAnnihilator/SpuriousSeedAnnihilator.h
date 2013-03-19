@@ -152,8 +152,9 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	bool m_communicatorWasTriggered;
 
 	void writeSeedStatistics();
-
+	void writeSingleSeedFile();
 	void writeCheckpointForSeeds();
+
 public:
 
 	SpuriousSeedAnnihilator();

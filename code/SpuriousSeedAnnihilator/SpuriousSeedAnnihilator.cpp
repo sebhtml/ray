@@ -71,6 +71,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 
 		writeCheckpointForSeeds();
 
+		writeSingleSeedFile();
+
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 
 		return;
@@ -78,7 +80,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 
 	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int maximumPairs=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit)/2;
-	int i=0; while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
+
+	int i=0;
+
+	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
 		int length=m_iterator->first;
 		int count=m_iterator->second;
 		messageBuffer[2*i]=length;
@@ -105,6 +110,26 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 
 		m_core->getSwitchMan()->closeMasterMode();
+	}
+}
+
+void SpuriousSeedAnnihilator::writeSingleSeedFile(){
+
+	/** write seeds for debugging purposes */
+	if(m_parameters->hasOption("-write-seeds")){
+		ostringstream fileName;
+		fileName<<m_parameters->getPrefix()<<"Rank"<<m_parameters->getRank()<<".RaySeeds.fasta";
+		ofstream f(fileName.str().c_str());
+
+		for(int i=0;i<(int)(*m_seeds).size();i++){
+			PathHandle id=getPathUniqueId(m_parameters->getRank(),i);
+			f<<">RaySeed-"<<id<<endl;
+
+			f<<addLineBreaks(convertToString(&((*m_seeds)[i]),
+				m_parameters->getWordSize(),m_parameters->getColorSpaceMode()),
+				m_parameters->getColumns());
+		}
+		f.close();
 	}
 }
 
