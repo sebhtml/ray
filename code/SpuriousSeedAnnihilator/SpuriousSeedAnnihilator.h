@@ -148,6 +148,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	StaticVector*m_inbox;
 	StaticVector*m_outbox;
 
+	bool m_hasCheckpointFilesForSeeds;
 	bool m_initialized;
 	bool m_communicatorWasTriggered;
 

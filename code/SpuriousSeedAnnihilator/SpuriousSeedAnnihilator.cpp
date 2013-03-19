@@ -46,6 +46,9 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LEN
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
 
+/**
+ * Even if checkpoints exist, we don't skip this code path.
+ */
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 	if(!m_initialized){
 		for(int i=0;i<(int)(*m_seeds).size();i++){
@@ -174,6 +177,16 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
+	if(m_parameters->hasCheckpoint("Seeds")){
+		m_hasCheckpointFilesForSeeds = true;
+	}
+
+	if(m_hasCheckpointFilesForSeeds){
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+		return;
+	}
+
 	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY))
 		m_activeQueries--;
 
@@ -240,10 +253,22 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
+	if(m_hasCheckpointFilesForSeeds){
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+		return;
+	}
+
 	m_workflow.mainLoop();
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
+
+	if(m_hasCheckpointFilesForSeeds){
+
+		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+		return;
+	}
 
 // Trace was here -> PASS
 
@@ -444,6 +469,8 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	m_initialized=false;
 
 	__BindPlugin(SpuriousSeedAnnihilator);
+
+	m_hasCheckpointFilesForSeeds = false;
 }
 
 void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
