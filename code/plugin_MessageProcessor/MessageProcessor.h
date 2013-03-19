@@ -513,8 +513,6 @@ class MessageProcessor :  public CorePlugin {
 	int*m_numberOfRanksWithCoverageData;
 	SeedExtender*seedExtender;
 
-	void writeCheckpointForSeeds();
-
 public:
 
 	void constructor(

@@ -69,6 +69,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 
 	if(m_iterator==m_slaveSeedLengths.end()){
 
+		writeCheckpointForSeeds();
+
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 
 		return;
@@ -302,6 +304,34 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*mes
 
 	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
+}
+
+void SpuriousSeedAnnihilator::writeCheckpointForSeeds(){
+
+	/* write the Seeds checkpoint */
+	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Seeds")){
+
+		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Seeds"<<endl;
+		int count=(*m_seeds).size();
+		f.write((char*)&count,sizeof(int));
+
+		for(int i=0;i<(int)(*m_seeds).size();i++){
+			int length=(*m_seeds)[i].size();
+			f.write((char*)&length,sizeof(int));
+
+			for(int j=0;j<(int)(*m_seeds)[i].size();j++){
+				Kmer theKmer;
+				(*m_seeds)[i].at(j,&theKmer);
+				theKmer.write(&f);
+
+				CoverageDepth coverageValue=0;
+				coverageValue=(*m_seeds)[i].getCoverageAt(j);
+				f.write((char*)&coverageValue,sizeof(CoverageDepth));
+			}
+		}
+		f.close();
+	}
 }
 
 void SpuriousSeedAnnihilator::writeSeedStatistics(){
