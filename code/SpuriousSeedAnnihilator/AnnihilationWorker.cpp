@@ -56,10 +56,7 @@
  *
  * Algorithm:
  *
- * 1. STEP_FETCH_FIRST_PARENT
- * 2. STEP_FETCH_SECOND_PARENT
- * 3. STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS
- * 4. STEP_GET_SEED_SEQUENCE_NOW
+ * See the initialize method for steps.
  *
  * \author Sébastien Boisvert
  */
@@ -70,6 +67,14 @@ void AnnihilationWorker::work(){
  */
 	if(m_seed->size() > 3 * m_parameters->getWordSize()){
 		m_done = true;
+
+	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_LEFT){
+
+		m_step++;
+
+	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_RIGHT){
+
+		m_step++;
 
 	}else if(m_step==STEP_FETCH_FIRST_PARENT){
 
@@ -131,7 +136,7 @@ void AnnihilationWorker::work(){
 				m_parent=parents[0];
 			}
 
-			m_step = STEP_FETCH_SECOND_PARENT;
+			m_step ++;
 			m_queryWasSent = false;
 		}
 
@@ -139,6 +144,7 @@ void AnnihilationWorker::work(){
 // so maybe this should be pushed in a method.
 
 	}else if(m_step == STEP_FETCH_SECOND_PARENT){
+
 
 		if(!m_queryWasSent){
 
@@ -193,7 +199,7 @@ void AnnihilationWorker::work(){
 				m_grandparent=parents[0];
 			}
 
-			m_step = STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS;
+			m_step ++;
 			m_queryWasSent = false;
 		}
 
@@ -205,7 +211,7 @@ void AnnihilationWorker::work(){
 			m_queryWasSent = true;
 
 		}else{
-			m_step = STEP_GET_SEED_SEQUENCE_NOW;
+			m_step ++;
 			m_queryWasSent = false;
 		}
 
@@ -242,12 +248,15 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 	m_parameters = parameters;
 
 	int stepValue = 0;
+
+	STEP_CHECK_DEAD_END_ON_THE_LEFT = stepValue ++;
+	STEP_CHECK_DEAD_END_ON_THE_RIGHT = stepValue ++;
 	STEP_FETCH_FIRST_PARENT = stepValue ++;
 	STEP_FETCH_SECOND_PARENT = stepValue ++;
 	STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS = stepValue ++;
 	STEP_GET_SEED_SEQUENCE_NOW = stepValue ++;
 
-	m_step = STEP_FETCH_FIRST_PARENT;
+	m_step = STEP_CHECK_DEAD_END_ON_THE_LEFT;
 
 	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	m_rank = m_parameters->getRank();

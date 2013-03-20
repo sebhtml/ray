@@ -49,6 +49,8 @@ class AnnihilationWorker: public Worker{
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 
+	int STEP_CHECK_DEAD_END_ON_THE_LEFT;
+	int STEP_CHECK_DEAD_END_ON_THE_RIGHT;
 	int STEP_FETCH_FIRST_PARENT;
 	int STEP_FETCH_SECOND_PARENT;
 	int STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS;
@@ -57,6 +59,7 @@ class AnnihilationWorker: public Worker{
 	bool m_queryWasSent;
 	Rank m_rank;
 	RingAllocator*m_outboxAllocator;
+
 public:
 	void work();
 

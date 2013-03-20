@@ -43,6 +43,16 @@ GraphPath::GraphPath(){
 #ifdef CONFIG_PATH_STORAGE_BLOCK
 	m_size=0;
 #endif
+
+	m_deleted = false;
+}
+
+bool GraphPath::isDeleted(){
+	return m_deleted;
+}
+
+void GraphPath::markAsDeleted(){
+	m_deleted = true;
 }
 
 int GraphPath::size()const{

@@ -51,7 +51,21 @@ SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
  */
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 	if(!m_initialized){
+
+		vector<GraphPath> newSeeds;
+
 		for(int i=0;i<(int)(*m_seeds).size();i++){
+
+			if((*m_seeds)[i].isDeleted())
+				continue;
+
+			newSeeds.push_back((*m_seeds)[i]);
+		}
+
+		(*m_seeds) = newSeeds;
+
+		for(int i=0;i<(int)(*m_seeds).size();i++){
+
 			int length=getNumberOfNucleotides((*m_seeds)[i].size(),
 				m_parameters->getWordSize());
 			m_slaveSeedLengths[length]++;
@@ -364,6 +378,7 @@ void SpuriousSeedAnnihilator::writeCheckpointForSeeds(){
 		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Seeds"<<endl;
 		int count=(*m_seeds).size();
+
 		f.write((char*)&count,sizeof(int));
 
 		for(int i=0;i<(int)(*m_seeds).size();i++){

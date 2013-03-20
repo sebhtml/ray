@@ -61,6 +61,8 @@ public:
  */
 class GraphPath{
 
+	bool m_deleted;
+
 	bool m_errorRaised;
 	int m_kmerLength;
 
@@ -119,6 +121,9 @@ public:
 	void reserve(int size);
 
 	void setKmerLength(int kmerLength);
+
+	bool isDeleted();
+	void markAsDeleted();
 };
 
 #endif
