@@ -465,7 +465,7 @@ void NetworkTest::registerPlugin(ComputeCore*core){
 	core->setMasterModeSymbol(plugin,RAY_MASTER_MODE_TEST_NETWORK,"RAY_MASTER_MODE_TEST_NETWORK");
 
 	RAY_MPI_TAG_TEST_NETWORK_MESSAGE=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE, __GetAdapter(MessageProcessor,RAY_MPI_TAG_TEST_NETWORK_MESSAGE));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE, __GetAdapter(NetworkTest,RAY_MPI_TAG_TEST_NETWORK_MESSAGE));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_TEST_NETWORK_MESSAGE,"RAY_MPI_TAG_TEST_NETWORK_MESSAGE");
 
 	RAY_MPI_TAG_TEST_NETWORK=core->allocateMessageTagHandle(plugin);

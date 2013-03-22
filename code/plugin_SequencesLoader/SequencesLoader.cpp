@@ -442,11 +442,11 @@ void SequencesLoader::registerPlugin(ComputeCore*core){
 	core->setSlaveModeSymbol(plugin,RAY_SLAVE_MODE_LOAD_SEQUENCES,"RAY_SLAVE_MODE_LOAD_SEQUENCES");
 
 	RAY_MPI_TAG_LOAD_SEQUENCES=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LOAD_SEQUENCES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_LOAD_SEQUENCES));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_LOAD_SEQUENCES, __GetAdapter(SequencesLoader,RAY_MPI_TAG_LOAD_SEQUENCES));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_LOAD_SEQUENCES,"RAY_MPI_TAG_LOAD_SEQUENCES");
 
 	RAY_MPI_TAG_SET_FILE_ENTRIES=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES, __GetAdapter(MessageProcessor,RAY_MPI_TAG_SET_FILE_ENTRIES));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES, __GetAdapter(SequencesLoader,RAY_MPI_TAG_SET_FILE_ENTRIES));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_SET_FILE_ENTRIES,"RAY_MPI_TAG_SET_FILE_ENTRIES");
 
 	RAY_MPI_TAG_SET_FILE_ENTRIES_REPLY=core->allocateMessageTagHandle(plugin);

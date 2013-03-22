@@ -1359,7 +1359,7 @@ void MachineHelper::registerPlugin(ComputeCore*core){
 		"RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY");
 
 	RAY_MPI_TAG_ASK_EXTENSION_DATA=core->allocateMessageTagHandle(plugin);
-	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA, __GetAdapter(MessageProcessor,RAY_MPI_TAG_ASK_EXTENSION_DATA));
+	core->setMessageTagObjectHandler(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA, __GetAdapter(MachineHelper,RAY_MPI_TAG_ASK_EXTENSION_DATA));
 	core->setMessageTagSymbol(plugin,RAY_MPI_TAG_ASK_EXTENSION_DATA,"RAY_MPI_TAG_ASK_EXTENSION_DATA");
 
 	void*address=&(m_fusionData->m_FUSION_identifier_map);
