@@ -70,74 +70,33 @@ void AnnihilationWorker::work(){
 
 	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_LEFT){
 
-		m_step++;
+		checkDeadEndOnTheLeft();
 
 	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_RIGHT){
 
-		m_step++;
+		checkDeadEndOnTheRight();
 
 	}else if(m_step==STEP_FETCH_FIRST_PARENT){
 
-		if(!m_queryWasSent){
-			if(m_seed->size() == 0){
-				m_done = true;
-				return;
-			}
+		Kmer startingPoint;
+		int index = 0;
+		m_seed->at(index, &startingPoint);
 
-			MessageTag tag = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+		if(!fetchObjectMetaData(&startingPoint)){
 
-			Kmer startingPoint;
-			int index = 0;
-			m_seed->at(index, &startingPoint);
+		}else{
 
-			Rank destination = m_parameters->vertexRank(&startingPoint);
-			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
-			int bufferPosition=0;
-			startingPoint.pack(message,&bufferPosition);
-			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(tag),
-				destination, tag, m_rank);
-
-			m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
-
-			m_queryWasSent = true;
-
-		}else if(m_virtualCommunicator->isMessageProcessed(m_identifier)){
-
-			vector<MessageUnit> elements;
-			m_virtualCommunicator->getMessageResponseElements(m_identifier, &elements);
-
-			int bufferPosition=0;
-
-			uint8_t edges = elements[bufferPosition++];
-
-#ifdef ASSERT
-			CoverageDepth coverage=elements[bufferPosition++];
-			assert(coverage >= 1);
-#endif
-
-			vector<Kmer> parents;
-			vector<Kmer> children;
-
-			Kmer kmer;
-			int index = 0;
-			m_seed->at(index, &kmer);
-
-			parents = kmer.getIngoingEdges(edges, m_parameters->getWordSize());
-			children = kmer.getOutgoingEdges(edges, m_parameters->getWordSize());
-
-// TODO: actually the code should supports more than 1 parent for STEP_FETCH_SECOND_PARENT
-// by definition, STEP_FETCH_FIRST_PARENT will always go through exactly one parent.
-
-			if(parents.size() != 1){
+			if(m_parents.size() != 1){
 
 				m_done = true;
 			}else{
 
-				m_parent=parents[0];
+				m_parent=m_parents[0];
 			}
 
 			m_step ++;
-			m_queryWasSent = false;
+
+			m_initializedFetcher = false;
 		}
 
 // TODO: the code path for STEP_FETCH_SECOND_PARENT is mostly identical to that of STEP_FETCH_FIRST_PARENT
@@ -145,64 +104,22 @@ void AnnihilationWorker::work(){
 
 	}else if(m_step == STEP_FETCH_SECOND_PARENT){
 
-
-		if(!m_queryWasSent){
-
-			MessageTag tag = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
-
-			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
-			int bufferPosition=0;
-
-			Rank destination = m_parameters->vertexRank(&m_parent);
-			m_parent.pack(message,&bufferPosition);
-			Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(tag),
-				destination, tag, m_rank);
-
-			m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
-
-			m_queryWasSent = true;
-
-		}else if(m_virtualCommunicator->isMessageProcessed(m_identifier)){
-
-			vector<MessageUnit> elements;
-			m_virtualCommunicator->getMessageResponseElements(m_identifier, &elements);
-
-			int bufferPosition=0;
-
-			uint8_t edges = elements[bufferPosition++];
-
-#ifdef ASSERT
-			CoverageDepth coverage=elements[bufferPosition++];
-			assert(coverage >= 1);
-#endif
-
-			vector<Kmer> parents;
-			vector<Kmer> children;
-
-			Kmer kmer;
-			int index = 0;
-			m_seed->at(index, &kmer);
-
-			parents = kmer.getIngoingEdges(edges, m_parameters->getWordSize());
-
-// TODO: this line is useless
-			children = kmer.getOutgoingEdges(edges, m_parameters->getWordSize());
-
-// TODO: actually the code should supports more than 1 parent for STEP_FETCH_SECOND_PARENT
-// by definition, STEP_FETCH_FIRST_PARENT will always go through exactly one parent.
-
-			if(parents.size() != 1){
+		if(!fetchObjectMetaData(&m_parent)){
+			// this is not yet finished.
+		}else{
+			if(m_parents.size() != 1){
 
 				m_done = true;
 			}else{
 
-				m_grandparent=parents[0];
+				m_grandparent=m_parents[0];
 			}
 
 			m_step ++;
 			m_queryWasSent = false;
-		}
 
+			m_initializedFetcher = false;
+		}
 
 	}else if(m_step == STEP_DOWNLOAD_ORIGINAL_ANNOTATIONS){
 
@@ -222,6 +139,30 @@ void AnnihilationWorker::work(){
 		}else{
 			m_done = true;
 		}
+	}
+}
+
+void AnnihilationWorker::checkDeadEndOnTheLeft(){
+
+	if(!m_startedToCheckDeadEndOnTheLeft){
+
+		m_startedToCheckDeadEndOnTheLeft=true;
+	}else{
+		m_step++;
+
+		m_initializedFetcher = false;
+	}
+}
+
+void AnnihilationWorker::checkDeadEndOnTheRight(){
+
+	if(!m_startedToCheckDeadEndOnTheRight){
+
+		m_startedToCheckDeadEndOnTheRight=true;
+	}else{
+		m_step++;
+
+		m_initializedFetcher = false;
 	}
 }
 
@@ -261,4 +202,54 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	m_rank = m_parameters->getRank();
 	m_outboxAllocator = outboxAllocator;
+
+	m_startedToCheckDeadEndOnTheLeft = false;
+	m_startedToCheckDeadEndOnTheRight = false;
+}
+
+bool AnnihilationWorker::fetchObjectMetaData(Kmer * object){
+
+	if(!m_initializedFetcher){
+
+		m_queryWasSent=false;
+		m_initializedFetcher=true;
+
+	}else if(!m_queryWasSent){
+
+		MessageTag tag = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+
+		Rank destination = m_parameters->vertexRank(object);
+		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
+		int bufferPosition=0;
+		object->pack(message,&bufferPosition);
+		Message aMessage(message,m_virtualCommunicator->getElementsPerQuery(tag),
+			destination, tag, m_rank);
+
+		m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
+
+		m_queryWasSent = true;
+
+	}else if(m_virtualCommunicator->isMessageProcessed(m_identifier)){
+
+		vector<MessageUnit> elements;
+		m_virtualCommunicator->getMessageResponseElements(m_identifier, &elements);
+
+		int bufferPosition=0;
+
+		uint8_t edges = elements[bufferPosition++];
+
+		m_depth=elements[bufferPosition++];
+#ifdef ASSERT
+		assert(m_depth>= 1);
+#endif
+
+		m_parents = object->getIngoingEdges(edges, m_parameters->getWordSize());
+		m_children = object->getOutgoingEdges(edges, m_parameters->getWordSize());
+
+		m_queryWasSent = false;
+
+		return true;
+	}
+
+	return false;
 }

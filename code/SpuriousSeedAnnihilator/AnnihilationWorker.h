@@ -60,6 +60,18 @@ class AnnihilationWorker: public Worker{
 	Rank m_rank;
 	RingAllocator*m_outboxAllocator;
 
+	bool m_startedToCheckDeadEndOnTheLeft;
+	bool m_startedToCheckDeadEndOnTheRight;
+
+	void checkDeadEndOnTheLeft();
+	void checkDeadEndOnTheRight();
+
+	bool m_initializedFetcher;
+	vector<Kmer> m_parents;
+	vector<Kmer> m_children;
+	CoverageDepth m_depth;
+	bool fetchObjectMetaData(Kmer * object);
+
 public:
 	void work();
 
