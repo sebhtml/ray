@@ -41,6 +41,7 @@
 #include <RayPlatform/core/OperatingSystem.h>
 #include <RayPlatform/memory/MyAllocator.h>
 #include <RayPlatform/cryptography/crypto.h>
+#include <RayPlatform/core/types.h>
 
 #include <iostream>
 #include <fstream>
@@ -689,6 +690,14 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	#else
 	cout<<"n";
 	#endif
+	cout<<endl;
+
+	cout<<"MINIRANKS = ";
+#ifdef CONFIG_MINI_RANKS
+	cout<<"y";
+#else
+	cout<<"n";
+#endif
 	cout<<endl;
 
 	cout<<"CLOCK_GETTIME = ";

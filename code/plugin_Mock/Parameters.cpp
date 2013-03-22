@@ -32,6 +32,7 @@
 
 #include <RayPlatform/memory/MyAllocator.h>
 #include <RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/types.h> /* for CONFIG_MINI_RANKS */
 
 #include <string>
 #include <sstream>
@@ -1346,8 +1347,11 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<basicSpaces<<"mpiexec -n 80 Ray Ray.conf # with commands in a file"<<endl;
 	cout<<endl;
+
+#ifdef CONFIG_MINI_RANKS
 	cout<<basicSpaces<<"mpiexec -n 10 Ray -mini-ranks-per-rank 7 Ray.conf # with mini-ranks"<<endl;
 	cout<<endl;
+#endif /* CONFIG_MINI_RANKS */
 
 	cout<<"DESCRIPTION:"<<endl;
 
@@ -1377,10 +1381,13 @@ void Parameters::showUsage(){
 	cout<<"    mpiexec -n 80 Ray ..."<<endl;
 	cout<<endl;
 
+#ifdef CONFIG_MINI_RANKS
 	cout<<"  Run Ray with mini-ranks on 10 machines, 8 cores / machine (MPI and IEEE POSIX threads)"<<endl;
 	cout<<endl;
 	cout<<"    mpiexec -n 10 Ray -mini-ranks-per-rank 7 ..."<<endl;
 	cout<<endl;
+
+#endif /* CONFIG_MINI_RANKS */
 
 	cout<<"  Run Ray on one core only (still needs MPI)"<<endl;
 	cout<<endl;
