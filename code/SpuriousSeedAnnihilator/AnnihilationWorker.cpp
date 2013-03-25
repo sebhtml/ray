@@ -158,7 +158,7 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 			m_vertices.pop();
 
 		int depth=0;
-		m_maximumAllowedDepth = 32;
+		m_maximumAllowedDepth = 128;
 		m_actualMaximumDepth=0;
 
 		Kmer startingPoint;
