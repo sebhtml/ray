@@ -68,14 +68,11 @@ class AnnihilationWorker: public Worker{
 	bool m_startedToCheckDeadEndOnTheLeft;
 	bool m_startedToCheckDeadEndOnTheRight;
 
-	void checkDeadEndOnTheLeft();
-	void checkDeadEndOnTheRight();
 
 	bool m_initializedFetcher;
 	vector<Kmer> m_parents;
 	vector<Kmer> m_children;
 	CoverageDepth m_depth;
-	bool fetchObjectMetaData(Kmer * object);
 
 	stack<int> m_depths;
 	stack<Kmer> m_vertices;
@@ -84,6 +81,18 @@ class AnnihilationWorker: public Worker{
 
 	bool m_valid;
 	set<Kmer> m_visited;
+
+	bool m_searchIsStarted;
+
+	int DIRECTION_PARENTS;
+	int DIRECTION_CHILDREN;
+
+// private methods
+
+	bool fetchObjectMetaData(Kmer * object);
+	void checkDeadEndOnTheLeft();
+	void checkDeadEndOnTheRight();
+	bool searchGraphForNiceThings(int direction);
 
 public:
 	void work();

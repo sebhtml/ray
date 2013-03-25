@@ -143,14 +143,12 @@ void AnnihilationWorker::work(){
 	}
 }
 
-// #define DEBUG_LEFT_EXPLORATION
+bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 
-void AnnihilationWorker::checkDeadEndOnTheLeft(){
+	if(!m_searchIsStarted) {
 
-	if(!m_startedToCheckDeadEndOnTheLeft){
-
-#ifdef DEBUG_LEFT_EXPLORATION
-		cout<<"Starting !"<<endl;
+#ifdef ASSERT
+		assert(direction == DIRECTION_PARENTS || direction == DIRECTION_CHILDREN);
 #endif
 
 		while(!m_depths.empty())
@@ -159,12 +157,22 @@ void AnnihilationWorker::checkDeadEndOnTheLeft(){
 		while(!m_vertices.empty())
 			m_vertices.pop();
 
-		Kmer startingPoint;
-		int index = 0;
-		m_seed->at(index, &startingPoint);
 		int depth=0;
 		m_maximumAllowedDepth = 32;
 		m_actualMaximumDepth=0;
+
+		Kmer startingPoint;
+		int index = -1;
+
+		if(direction == DIRECTION_PARENTS)
+			index = 0;
+		else if(direction == DIRECTION_CHILDREN)
+			index = m_seed->size() -1;
+
+#ifdef ASSERT
+		assert(index == 0 || index == m_seed->size()-1);
+#endif
+		m_seed->at(index, &startingPoint);
 
 		m_vertices.push(startingPoint);
 		m_depths.push(depth);
@@ -172,7 +180,7 @@ void AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 		m_initializedFetcher = false;
 
-		m_startedToCheckDeadEndOnTheLeft=true;
+		m_searchIsStarted = true;
 
 	}else if(!m_vertices.empty()){
 
@@ -211,9 +219,21 @@ void AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 			m_visited.insert(kmer);
 // explore links
-			for(int i = 0 ; i < (int)m_parents.size() ; i++){
 
-				Kmer parent = m_parents[i];
+			vector<Kmer> * links = NULL;
+
+			if(direction == DIRECTION_PARENTS)
+				links = & m_parents;
+			else if(direction == DIRECTION_CHILDREN)
+				links = & m_children;
+
+#ifdef ASSERT
+			assert(links != NULL);
+#endif
+
+			for(int i = 0 ; i < (int)links->size() ; i++){
+
+				Kmer parent = links->at(i);
 
 				if(m_visited.count(parent)>0)
 					continue;
@@ -233,6 +253,34 @@ void AnnihilationWorker::checkDeadEndOnTheLeft(){
 	}else if(m_actualMaximumDepth < m_maximumAllowedDepth){ 
 
 		m_valid = false;
+
+		return true;
+	}else{
+		return true;
+	}
+
+	return false;
+}
+
+// #define DEBUG_LEFT_EXPLORATION
+
+void AnnihilationWorker::checkDeadEndOnTheLeft(){
+
+	if(!m_startedToCheckDeadEndOnTheLeft){
+
+#ifdef DEBUG_LEFT_EXPLORATION
+		cout<<"Starting !"<<endl;
+#endif
+
+		m_searchIsStarted = false;
+		m_startedToCheckDeadEndOnTheLeft=true;
+
+	}else if(!searchGraphForNiceThings(DIRECTION_PARENTS)){
+
+		// wait a little bit now
+
+	}else if(!m_valid){
+
 		m_done = true;
 
 	}else{
@@ -246,12 +294,27 @@ void AnnihilationWorker::checkDeadEndOnTheRight(){
 
 	if(!m_startedToCheckDeadEndOnTheRight){
 
-		m_startedToCheckDeadEndOnTheRight=true;
+#ifdef DEBUG_LEFT_EXPLORATION
+		cout<<"Starting !"<<endl;
+#endif
+
+		m_searchIsStarted = false;
+		m_startedToCheckDeadEndOnTheRight = true;
+
+	}else if(!searchGraphForNiceThings(DIRECTION_CHILDREN)){
+
+		// wait a little bit now
+
+	}else if(!m_valid){
+
+		m_done = true;
+
 	}else{
 		m_step++;
 
 		m_initializedFetcher = false;
 	}
+
 }
 
 bool AnnihilationWorker::isDone(){
@@ -295,6 +358,9 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 	m_startedToCheckDeadEndOnTheRight = false;
 
 	m_valid = true;
+
+	DIRECTION_PARENTS = 0;
+	DIRECTION_CHILDREN = 1;
 }
 
 bool AnnihilationWorker::fetchObjectMetaData(Kmer * object){
