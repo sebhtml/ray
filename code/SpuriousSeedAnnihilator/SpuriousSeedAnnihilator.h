@@ -156,6 +156,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void writeSingleSeedFile();
 	void writeCheckpointForSeeds();
 
+	bool m_debugCode;
+
 public:
 
 	SpuriousSeedAnnihilator();

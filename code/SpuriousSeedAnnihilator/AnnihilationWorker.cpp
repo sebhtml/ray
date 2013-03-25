@@ -19,6 +19,7 @@
  */
 
 #include "AnnihilationWorker.h"
+#include <stack>
 
 /**
  *
@@ -142,11 +143,98 @@ void AnnihilationWorker::work(){
 	}
 }
 
+// #define DEBUG_LEFT_EXPLORATION
+
 void AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 	if(!m_startedToCheckDeadEndOnTheLeft){
 
+#ifdef DEBUG_LEFT_EXPLORATION
+		cout<<"Starting !"<<endl;
+#endif
+
+		while(!m_depths.empty())
+			m_depths.pop();
+
+		while(!m_vertices.empty())
+			m_vertices.pop();
+
+		Kmer startingPoint;
+		int index = 0;
+		m_seed->at(index, &startingPoint);
+		int depth=0;
+		m_maximumAllowedDepth = 32;
+		m_actualMaximumDepth=0;
+
+		m_vertices.push(startingPoint);
+		m_depths.push(depth);
+		m_visited.clear();
+
+		m_initializedFetcher = false;
+
 		m_startedToCheckDeadEndOnTheLeft=true;
+
+	}else if(!m_vertices.empty()){
+
+		Kmer kmer = m_vertices.top();
+		int depth = m_depths.top();
+
+#ifdef DEBUG_LEFT_EXPLORATION
+		//cout<<"Stack is not empty"<<endl;
+#endif
+
+		if(depth > m_actualMaximumDepth)
+			m_actualMaximumDepth = depth;
+
+// too deep
+		if(depth == m_maximumAllowedDepth){
+
+#ifdef DEBUG_LEFT_EXPLORATION
+			cout<<"Reached maximum"<<endl;
+#endif
+
+			m_vertices.pop();
+			m_depths.pop();
+
+// working ...
+		}else if(!fetchObjectMetaData(&kmer)){
+
+		}else{
+
+// need to pop the thing now !
+			m_vertices.pop();
+			m_depths.pop();
+
+#ifdef DEBUG_LEFT_EXPLORATION
+			cout<<"fetchObjectMetaData is done... " << m_parents.size() << " links "<<endl;
+#endif
+
+			m_visited.insert(kmer);
+// explore links
+			for(int i = 0 ; i < (int)m_parents.size() ; i++){
+
+				Kmer parent = m_parents[i];
+
+				if(m_visited.count(parent)>0)
+					continue;
+
+				m_vertices.push(parent);
+				m_depths.push( depth + 1 );
+			}
+
+
+// prepare the system for the next wave.
+
+			m_initializedFetcher = false;
+		}
+
+// the exploration is finished
+// and we did not go far.
+	}else if(m_actualMaximumDepth < m_maximumAllowedDepth){ 
+
+		m_valid = false;
+		m_done = true;
+
 	}else{
 		m_step++;
 
@@ -205,6 +293,8 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 
 	m_startedToCheckDeadEndOnTheLeft = false;
 	m_startedToCheckDeadEndOnTheRight = false;
+
+	m_valid = true;
 }
 
 bool AnnihilationWorker::fetchObjectMetaData(Kmer * object){
@@ -252,4 +342,8 @@ bool AnnihilationWorker::fetchObjectMetaData(Kmer * object){
 	}
 
 	return false;
+}
+
+bool AnnihilationWorker::isValid(){
+	return m_valid;
 }

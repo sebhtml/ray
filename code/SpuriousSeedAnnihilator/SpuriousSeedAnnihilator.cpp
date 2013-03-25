@@ -191,7 +191,7 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
-	if(m_parameters->hasCheckpoint("Seeds")){
+	if(!m_debugCode && m_parameters->hasCheckpoint("Seeds")){
 		m_hasCheckpointFilesForSeeds = true;
 	}
 
@@ -267,7 +267,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
-	if(m_hasCheckpointFilesForSeeds){
+	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -278,7 +278,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
-	if(m_hasCheckpointFilesForSeeds){
+	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -486,6 +486,7 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__BindPlugin(SpuriousSeedAnnihilator);
 
 	m_hasCheckpointFilesForSeeds = false;
+
 }
 
 void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
@@ -515,4 +516,10 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 
 	m_workflow.initialize(m_seeds, m_virtualCommunicator, m_virtualProcessor, m_core, m_parameters,
 		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+/**
+ * Turn this on to run this code even when checkpoints exist.
+ * This should be set to false in production.
+ */
+	m_debugCode = m_parameters->hasOption("-debug-seed-filter");
+
 }

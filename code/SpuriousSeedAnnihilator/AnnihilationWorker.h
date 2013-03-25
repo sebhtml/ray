@@ -26,6 +26,11 @@
 
 #include <RayPlatform/scheduling/Worker.h>
 
+#include <stack>
+#include <vector>
+#include <set>
+using namespace std;
+
 #include <stdint.h>
 
 /**
@@ -72,6 +77,14 @@ class AnnihilationWorker: public Worker{
 	CoverageDepth m_depth;
 	bool fetchObjectMetaData(Kmer * object);
 
+	stack<int> m_depths;
+	stack<Kmer> m_vertices;
+	int m_maximumAllowedDepth;
+	int m_actualMaximumDepth;
+
+	bool m_valid;
+	set<Kmer> m_visited;
+
 public:
 	void work();
 
@@ -82,6 +95,8 @@ public:
 	void initialize(uint64_t identifier, GraphPath*seed, Parameters * parameters,
 		VirtualCommunicator * virtualCommunicator, MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 		RingAllocator * outboxAllocator);
+
+	bool isValid();
 };
 
 #endif

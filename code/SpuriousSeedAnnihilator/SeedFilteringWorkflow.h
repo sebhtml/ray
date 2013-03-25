@@ -28,6 +28,9 @@
 #include <RayPlatform/scheduling/TaskCreator.h>
 #include <RayPlatform/communication/VirtualCommunicator.h>
 
+#include <vector>
+using namespace std;
+
 /**
  * This is the workflow that will be deposited on the
  * virtual processor.
@@ -40,6 +43,11 @@ class SeedFilteringWorkflow: public TaskCreator {
 	int m_seedIndex;
 	Parameters * m_parameters;
 	vector<GraphPath>*m_seeds;
+	vector<bool> m_states;
+
+	int m_finished;
+	int m_rank;
+	int m_period;
 
 /* TODO: maybe this should be in the TaskCreator */
 	VirtualCommunicator * m_virtualCommunicator;

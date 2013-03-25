@@ -32,10 +32,33 @@
 void SeedFilteringWorkflow::initializeMethod(){
 
 	m_seedIndex=0;
+
+	m_states.resize(m_seeds->size());
+
+	for(int i=0;i<(int)m_states.size(); i++)
+		m_states[i] = true;
+
+#ifdef ASSERT
+	assert(m_states.size() == m_seeds->size());
+#endif
+
+	m_finished = 0 ;
 }
 
 /** finalize the whole thing */
 void SeedFilteringWorkflow::finalizeMethod(){
+
+	vector<GraphPath> newPaths;
+
+	for(int i=0;i< (int) m_seeds->size() ; i++){
+
+		if(!m_states[i])
+			continue;
+
+		newPaths.push_back(m_seeds->at(i));
+	}
+
+	(*m_seeds) = newPaths;
 
 	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 }
@@ -53,6 +76,9 @@ Worker*SeedFilteringWorkflow::assignNextTask(){
 	assert(m_seedIndex < (int)m_seeds->size());
 #endif
 
+	if(m_seedIndex % m_period == 0)
+		cout<<"Rank "<<m_rank<< " assignNextTask "<<m_seedIndex<< "/" << m_seeds->size()<<endl;
+
 	AnnihilationWorker*worker=new AnnihilationWorker();
 	worker->initialize(m_seedIndex, &((*m_seeds)[m_seedIndex]), m_parameters,
 		m_virtualCommunicator, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
@@ -66,7 +92,17 @@ Worker*SeedFilteringWorkflow::assignNextTask(){
 /** get the result of a worker */
 void SeedFilteringWorkflow::processWorkerResult(Worker*worker){
 
-	/* TODO: do something with the result */
+	bool result = ((AnnihilationWorker*)worker)->isValid();
+
+	int seedIndex = worker->getWorkerIdentifier();
+
+	m_states[seedIndex] = result;
+
+	if(m_finished % m_period == 0){
+		cout<<"Rank " << m_rank << " processWorkerResult "<<m_finished<<"/" <<m_seeds->size()<<endl;
+	}
+
+	m_finished++;
 }
 
 /** destroy a worker */
@@ -80,6 +116,7 @@ void SeedFilteringWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunica
 	VirtualProcessor * virtualProcessor,ComputeCore * core, Parameters * parameters,
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT){
 
+	m_rank = core->getRank();
 	m_seeds = seeds;
 	m_virtualCommunicator = virtualCommunicator;
 	m_virtualProcessor = virtualProcessor;
@@ -87,4 +124,6 @@ void SeedFilteringWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunica
 	m_parameters = parameters;
 
 	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+
+	m_period = 100;
 }
