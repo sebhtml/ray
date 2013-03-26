@@ -438,27 +438,22 @@ bool AnnihilationWorker::checkBubblePatterns(){
 		}
 	}else{
 
-// TODO: continue here
-#ifdef DEBUG_LEFT_EXPLORATION
-		int nucleotides = m_seed->size() + m_parameters->getWordSize() -1;
-		int bubbleSize = 2 * m_parameters->getWordSize() - 3;
+		if(m_isPerfectBubble){
+			cout<<"BUBBLE_HIT first=";
 
-		bool isPerfectBubble = false;
+			Kmer startingPoint;
+			int index = 0;
+			m_seed->at(index, &startingPoint);
+			cout << startingPoint.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
 
-		if(nucleotides == bubbleSize)
-			isPerfectBubble = true;
-
-		if(m_leftDirections.size() > 0 && m_rightDirections.size() > 0){
-
-			cout<<"BUBBLE_HIT ";
-
-			if(isPerfectBubble)
-				cout<<"GenuineBubble ";
-
-			cout<<"Left: " << m_leftDirections.size();
-			cout<<" Right: " << m_rightDirections.size() << endl;
-		}
+#if 0
+			cout << " grandparent= ";
+			cout << m_grandparent.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
 #endif
+
+			cout<<" LeftPaths: " << m_leftDirections.size();
+			cout<<" RightPaths: " << m_rightDirections.size() << endl;
+		}
 
 		// this is over.
 		return true;
@@ -525,6 +520,19 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 			identifier, outboxAllocator,
 			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
 			RAY_MPI_TAG_ASK_VERTEX_PATH);
+
+	int nucleotides = m_seed->size() + m_parameters->getWordSize() -1;
+	int bubbleSize = 2 * m_parameters->getWordSize() - 3;
+
+	m_isPerfectBubble = false;
+
+	if(nucleotides == bubbleSize)
+		m_isPerfectBubble = true;
+
+#ifdef DEBUG_ISSUE_136
+	if(m_isPerfectBubble)
+		cout<<"BUBBLE_ITEM"<<endl;
+#endif
 }
 
 bool AnnihilationWorker::isValid(){

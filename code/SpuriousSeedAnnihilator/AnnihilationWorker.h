@@ -106,6 +106,7 @@ class AnnihilationWorker: public Worker{
 	bool m_fetchedGrandchildDirections;
 	bool m_fetchedGrandparentReverseDirections;
 	bool m_fetchedGrandchildReverseDirections;
+	bool m_isPerfectBubble;
 
 // private methods
 

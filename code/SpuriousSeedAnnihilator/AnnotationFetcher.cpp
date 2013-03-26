@@ -108,6 +108,7 @@ bool AnnotationFetcher::fetchDirections(Kmer*kmer){
 
 			Message aMessage(message, elementsPerQuery, destination,
 				RAY_MPI_TAG_ASK_VERTEX_PATH, m_parameters->getRank());
+
 			m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
 
 			m_queryWasSent = true;

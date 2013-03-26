@@ -195,7 +195,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		m_hasCheckpointFilesForSeeds = true;
 	}
 
-	if(m_hasCheckpointFilesForSeeds){
+	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -235,6 +235,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 			}
 
 			PathHandle identifier = getPathUniqueId(m_rank, m_seedIndex);
+
 			m_buffers.addAt(destination, identifier);
 			m_buffers.addAt(destination, m_seedPosition);
 
@@ -246,6 +247,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		}else{
 
 			m_seedIndex++;
+
+			m_seedPosition = 0;
 		}
 
 	}else if(!m_buffers.isEmpty()){
@@ -260,6 +263,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 	}else{
 		m_seedIndex=0;
 		m_seedPosition=0;
+
+		cout<<"Rank "<<m_rank << " registered its seeds" << endl;
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 	}

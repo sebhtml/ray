@@ -1593,8 +1593,13 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH_REPLY(Message*message){
 
 void MessageProcessor::call_RAY_MESSAGE_TAG_PUSH_SEEDS(Message*message){
 
+#ifdef DEBUG_ISSUE_136
+	cout<< " inside call_RAY_MESSAGE_TAG_PUSH_SEEDS source= " << message->getSource() << endl;
+#endif
+
 // : activate this call
 	call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(message);
+
 	Message aMessage(NULL,0,message->getSource(),RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
 }
@@ -1612,6 +1617,13 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 	void*buffer=message->getBuffer();
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int count=message->getCount();
+
+#ifdef DEBUG_ISSUE_136
+	cout << " call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION count: " << count ;
+	cout << " elements in payload: " << count / ( KMER_U64_ARRAY_SIZE + 2 );
+	cout << endl;
+#endif
+
 	for(int i=0;i<count;i+=(KMER_U64_ARRAY_SIZE+2)){
 		Kmer vertex;
 		int pos=i;
@@ -1646,6 +1658,21 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		e->constructor(wave,progression,lower);
 
 		m_subgraph->addDirection(&vertex,e);
+
+#ifdef DEBUG_ISSUE_136
+		if(
+			vertex.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "GCTGAATGGCGTTACCGGCCTGGTTGAGTATCACGAGCATTTCAATCGCTTTTAATCTCCGGGGTTTGCAGACTGCTTAACAGCTCTGCAA"
+		||	vertex.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "TTGCAGAGCTGTTAAGCAGTCTGCAAACCCCGGAGATTAAAAGCGATTGAAATGCTCGTGATACTCAACCAGGCCGGTAACGCCATTCAGC"
+		||	rc.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "GCTGAATGGCGTTACCGGCCTGGTTGAGTATCACGAGCATTTCAATCGCTTTTAATCTCCGGGGTTTGCAGACTGCTTAACAGCTCTGCAA"
+		||	rc.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "TTGCAGAGCTGTTAAGCAGTCTGCAAACCCCGGAGATTAAAAGCGATTGAAATGCTCGTGATACTCAACCAGGCCGGTAACGCCATTCAGC"
+		){
+			cout << "[DEBUG] Adding annotation for key, region: "<<wave << " location: "<<progression << endl;
+		}
+
+		cout << " Adding annotation <annotation><region>"<<wave << "</region>";
+		cout << "<location>" << progression << "</location></annotation>" << endl;
+#endif
+
 	}
 }
 
