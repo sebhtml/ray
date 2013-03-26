@@ -53,6 +53,8 @@ class SeedFilteringWorkflow: public TaskCreator {
 	VirtualCommunicator * m_virtualCommunicator;
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
 
 public:
 
@@ -83,7 +85,10 @@ public:
 
 	void initialize(vector<GraphPath>*seeds, VirtualCommunicator*virtualCommunicator,
 		VirtualProcessor * virtualProcessor, ComputeCore * core,
-		Parameters * parameters, MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+		Parameters * parameters, MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
+	);
 };
 
 #endif

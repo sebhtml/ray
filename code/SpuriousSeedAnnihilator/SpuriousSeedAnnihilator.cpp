@@ -513,9 +513,13 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_directionsAllocator = (MyAllocator*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/directionMemoryPool.ray");
 
 	RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT");
+	RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE");
+	RAY_MPI_TAG_ASK_VERTEX_PATH = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_ASK_VERTEX_PATH");
 
 	m_workflow.initialize(m_seeds, m_virtualCommunicator, m_virtualProcessor, m_core, m_parameters,
-		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+		RAY_MPI_TAG_ASK_VERTEX_PATH
+	);
 /**
  * Turn this on to run this code even when checkpoints exist.
  * This should be set to false in production.

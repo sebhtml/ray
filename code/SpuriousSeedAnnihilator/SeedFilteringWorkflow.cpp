@@ -80,9 +80,14 @@ Worker*SeedFilteringWorkflow::assignNextTask(){
 		cout<<"Rank "<<m_rank<< " assignNextTask "<<m_seedIndex<< "/" << m_seeds->size()<<endl;
 
 	AnnihilationWorker*worker=new AnnihilationWorker();
+
 	worker->initialize(m_seedIndex, &((*m_seeds)[m_seedIndex]), m_parameters,
-		m_virtualCommunicator, RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-		m_core->getOutboxAllocator());
+		m_virtualCommunicator,
+		m_core->getOutboxAllocator(),
+		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+		RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+		RAY_MPI_TAG_ASK_VERTEX_PATH
+	);
 
 	m_seedIndex++;
 
@@ -114,7 +119,9 @@ void SeedFilteringWorkflow::destroyWorker(Worker*worker){
 
 void SeedFilteringWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunicator*virtualCommunicator,
 	VirtualProcessor * virtualProcessor,ComputeCore * core, Parameters * parameters,
-	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT){
+	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH){
 
 	m_rank = core->getRank();
 	m_seeds = seeds;
@@ -124,6 +131,8 @@ void SeedFilteringWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunica
 	m_parameters = parameters;
 
 	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT = RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
+	this->RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE = RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
+	this->RAY_MPI_TAG_ASK_VERTEX_PATH = RAY_MPI_TAG_ASK_VERTEX_PATH;
 
 	m_period = 100;
 }
