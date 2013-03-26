@@ -68,20 +68,27 @@ void AnnihilationWorker::work(){
 /*
  * This is only useful for bubbles I think. -Séb
  */
-	if(m_seed->size() > 3 * m_parameters->getWordSize()){
-		m_done = true;
+	if(m_step == STEP_CHECK_LENGTH){
+
+		if(m_seed->size() > 3 * m_parameters->getWordSize())
+			m_done = true;
+
+		m_step++;
 
 	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_LEFT){
 
-		checkDeadEndOnTheLeft();
+		if(checkDeadEndOnTheLeft())
+			m_step++;
 
 	}else if(m_step == STEP_CHECK_DEAD_END_ON_THE_RIGHT){
 
-		checkDeadEndOnTheRight();
+		if(checkDeadEndOnTheRight())
+			m_step++;
 
 	}else if(m_step == STEP_CHECK_BUBBLE_PATTERNS){
 
-		checkBubblePatterns();
+		if(checkBubblePatterns())
+			m_done = true;
 	}
 }
 
@@ -206,7 +213,7 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 
 // #define DEBUG_LEFT_EXPLORATION
 
-void AnnihilationWorker::checkDeadEndOnTheLeft(){
+bool AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 	if(!m_startedToCheckDeadEndOnTheLeft){
 
@@ -226,13 +233,13 @@ void AnnihilationWorker::checkDeadEndOnTheLeft(){
 		m_done = true;
 
 	}else{
-		m_step++;
-
-		m_attributeFetcher.reset();
+		return true;
 	}
+
+	return false;
 }
 
-void AnnihilationWorker::checkDeadEndOnTheRight(){
+bool AnnihilationWorker::checkDeadEndOnTheRight(){
 
 	if(!m_startedToCheckDeadEndOnTheRight){
 
@@ -252,16 +259,15 @@ void AnnihilationWorker::checkDeadEndOnTheRight(){
 		m_done = true;
 
 	}else{
-		m_step++;
-
-		m_attributeFetcher.reset();
-		m_fetchedFirstParent = false;
 
 #ifdef DEBUG_LEFT_EXPLORATION
 		cout << "Next is bubble check"<<endl;
 #endif
+		return true;
+
 	}
 
+	return false;
 }
 
 bool AnnihilationWorker::isDone(){
@@ -274,7 +280,9 @@ WorkerHandle AnnihilationWorker::getWorkerIdentifier(){
 	return m_identifier;
 }
 
-void AnnihilationWorker::checkBubblePatterns(){
+// TODO: skip this if the length is too short.
+bool AnnihilationWorker::checkBubblePatterns(){
+
 	if(!m_fetchedFirstParent){
 
 		Kmer startingPoint;
@@ -287,40 +295,32 @@ void AnnihilationWorker::checkBubblePatterns(){
 
 			if(m_attributeFetcher.getParents()->size() != 1){
 
-				m_done = true;
+				return true;
 			}else{
 
 				m_parent=m_attributeFetcher.getParents()->at(0);
 			}
 
-			m_attributeFetcher.reset();
 			m_fetchedFirstParent = true;
 			m_fetchedSecondParent = false;
+			m_attributeFetcher.reset();
 		}
-
-// the code path for STEP_FETCH_SECOND_PARENT is mostly identical to that of STEP_FETCH_FIRST_PARENT
-// so maybe this should be pushed in a method.
 
 	}else if(!m_fetchedSecondParent){
 
 		if(!m_attributeFetcher.fetchObjectMetaData(&m_parent)){
-			// this is not yet finished.
 		}else{
 			if(m_attributeFetcher.getParents()->size() != 1){
 
-				m_done = true;
+				return true;
 			}else{
 
 				m_grandparent=m_attributeFetcher.getParents()->at(0);
 			}
 
-			m_queryWasSent = false;
-
-			m_attributeFetcher.reset();
-
 			m_fetchedSecondParent = true;
-
-			m_initializedDirectionFetcher = false;
+			m_fetchedGrandparentDirections = false;
+			m_annotationFetcher.reset();
 
 #ifdef DEBUG_LEFT_EXPLORATION
 			cout << "Next is to fetch directions " <<endl;
@@ -328,71 +328,72 @@ void AnnihilationWorker::checkBubblePatterns(){
 		}
 	}else if(!m_fetchedGrandparentDirections){
 
-		if(!fetchDirections(&m_grandparent)){
+		if(!m_annotationFetcher.fetchDirections(&m_grandparent)){
 
 			// work a bit here
 		}else{
-			m_leftDirections = m_directions;
+			m_leftDirections = *(m_annotationFetcher.getDirections() );
 
 			m_fetchedGrandparentDirections = true;
+
+			m_fetchedFirstChild = false;
+			m_attributeFetcher.reset();
+		}
+
+	}else if(!m_fetchedFirstChild){
+
+		Kmer startingPoint;
+		int index = m_seed->size()-1;
+		m_seed->at(index, &startingPoint);
+
+		if(!m_attributeFetcher.fetchObjectMetaData(&startingPoint)){
+
+		}else{
+			if(m_attributeFetcher.getChildren()->size() != 1){
+
+				return true;
+			}else{
+
+				m_child = m_attributeFetcher.getChildren()->at(0);
+			}
+
+			m_fetchedFirstChild = true;
+			m_fetchedSecondChild = false;
+			m_attributeFetcher.reset();
+		}
+
+	}else if(!m_fetchedSecondChild){
+
+		if(!m_attributeFetcher.fetchObjectMetaData(&m_child)){
+		}else{
+			if(m_attributeFetcher.getChildren()->size() != 1){
+
+				return true;
+			}else{
+
+				m_grandchild = m_attributeFetcher.getChildren()->at(0);
+			}
+
+			m_fetchedSecondChild= true;
+			m_fetchedGrandchildDirections = false;
+			m_annotationFetcher.reset();
+
+#ifdef DEBUG_LEFT_EXPLORATION
+			cout << "Next is to fetch directions " <<endl;
+#endif
+		}
+	}else if(!m_fetchedGrandchildDirections){
+
+		if(!m_annotationFetcher.fetchDirections(&m_grandchild)){
+
+		}else{
+			m_rightDirections = *(m_annotationFetcher.getDirections() );
+
+			m_fetchedGrandchildDirections= true;
 		}
 	}else{
 
-		m_done = true;
-	}
-}
-
-bool AnnihilationWorker::fetchDirections(Kmer*kmer){
-
-	if(!m_initializedDirectionFetcher){
-
-		m_initializedDirectionFetcher =  true;
-
-		m_fetchedCount = false;
-		m_queryWasSent = false;
-
-		m_directions.clear();
-
-	}else if(!m_fetchedCount){
-
-		if(!m_queryWasSent){
-			MessageTag tag = RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
-			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(tag);
-
-#ifdef DEBUG_LEFT_EXPLORATION
-			cout << "Sending message for count" << endl;
-#endif
-
-			Rank destination = m_parameters->vertexRank(kmer);
-			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery*sizeof(MessageUnit));
-			int bufferPosition=0;
-			kmer->pack(message,&bufferPosition);
-			Message aMessage(message, elementsPerQuery,
-				destination, tag, m_rank);
-
-			m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
-
-			m_queryWasSent = true;
-
-		}else if(m_virtualCommunicator->isMessageProcessed(m_identifier)){
-			vector<MessageUnit> elements;
-			m_virtualCommunicator->getMessageResponseElements(m_identifier, &elements);
-
-			m_numberOfPaths = elements[0];
-
-			m_fetchedCount = true;
-
-#ifdef DEBUG_LEFT_EXPLORATION
-			cout<<"Paths: "<<m_numberOfPaths << endl;
-#endif
-			m_pathIndex = 0;
-
-			m_queryWasSent = false;
-		}
-	}else if(m_pathIndex < m_numberOfPaths){
-
-		m_pathIndex ++;
-	}else{
+		// this is over.
 		return true;
 	}
 
@@ -419,6 +420,7 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 
 	int stepValue = 0;
 
+	STEP_CHECK_LENGTH = stepValue++;
 	STEP_CHECK_DEAD_END_ON_THE_LEFT = stepValue ++;
 	STEP_CHECK_DEAD_END_ON_THE_RIGHT = stepValue ++;
 	STEP_CHECK_BUBBLE_PATTERNS= stepValue ++;
@@ -452,6 +454,10 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 			identifier, outboxAllocator,
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
 
+	m_annotationFetcher.initialize(parameters, virtualCommunicator,
+			identifier, outboxAllocator,
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+			RAY_MPI_TAG_ASK_VERTEX_PATH);
 }
 
 bool AnnihilationWorker::isValid(){

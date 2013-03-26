@@ -22,6 +22,7 @@
 #define _AnnihilationWorker_h
 
 #include "AttributeFetcher.h"
+#include "AnnotationFetcher.h"
 
 #include <code/plugin_SeedingData/GraphPath.h>
 #include <code/plugin_Mock/Parameters.h>
@@ -44,6 +45,7 @@ using namespace std;
 class AnnihilationWorker: public Worker{
 
 	AttributeFetcher m_attributeFetcher;
+	AnnotationFetcher m_annotationFetcher;
 
 	uint64_t m_identifier;       // TODO this should be in Worker because it's always there anyway
 	bool m_done;          // TODO this should be in Worker because it's always there anyway
@@ -54,6 +56,8 @@ class AnnihilationWorker: public Worker{
 
 	Kmer m_parent;
 	Kmer m_grandparent;
+	Kmer m_child;
+	Kmer m_grandchild;
 
 	int m_step;
 
@@ -61,6 +65,7 @@ class AnnihilationWorker: public Worker{
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
 
+	int STEP_CHECK_LENGTH;
 	int STEP_CHECK_DEAD_END_ON_THE_LEFT;
 	int STEP_CHECK_DEAD_END_ON_THE_RIGHT;
 	int STEP_CHECK_BUBBLE_PATTERNS;
@@ -92,23 +97,20 @@ class AnnihilationWorker: public Worker{
 
 	bool m_fetchedFirstParent;
 	bool m_fetchedSecondParent;
+	bool m_fetchedFirstChild;
+	bool m_fetchedSecondChild;
 
-	bool m_fetchedCount;
-	int m_pathIndex;
-	int m_numberOfPaths;
-	vector<Direction> m_directions;
 	vector<Direction> m_leftDirections;
 	vector<Direction> m_rightDirections;
-	bool m_initializedDirectionFetcher;
 	bool m_fetchedGrandparentDirections;
+	bool m_fetchedGrandchildDirections;
 
 // private methods
 
-	bool fetchDirections(Kmer*kmer);
-	void checkDeadEndOnTheLeft();
-	void checkDeadEndOnTheRight();
+	bool checkDeadEndOnTheLeft();
+	bool checkDeadEndOnTheRight();
 	bool searchGraphForNiceThings(int direction);
-	void checkBubblePatterns();
+	bool checkBubblePatterns();
 
 public:
 	void work();
