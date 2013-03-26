@@ -455,6 +455,23 @@ bool AnnihilationWorker::checkBubblePatterns(){
 			cout<<" RightPaths: " << m_rightDirections.size() << endl;
 		}
 
+		map<PathHandle,int> counts;
+
+		for(int i=0; i < (int) m_leftDirections.size() ; i ++ )
+			counts[m_leftDirections[i].getWave()]++;
+
+		for(int i=0; i < (int) m_rightDirections.size() ; i ++ )
+			counts[m_rightDirections[i].getWave()]++;
+
+		for(map<PathHandle,int>::iterator i = counts.begin() ; i != counts.end() ; i ++){
+
+			// another, longer, seed covers this case.
+			if(i->second == 2){
+
+				m_valid = false;
+			}
+		}
+
 		// this is over.
 		return true;
 	}
