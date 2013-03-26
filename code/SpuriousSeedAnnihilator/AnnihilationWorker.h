@@ -104,6 +104,8 @@ class AnnihilationWorker: public Worker{
 	vector<Direction> m_rightDirections;
 	bool m_fetchedGrandparentDirections;
 	bool m_fetchedGrandchildDirections;
+	bool m_fetchedGrandparentReverseDirections;
+	bool m_fetchedGrandchildReverseDirections;
 
 // private methods
 

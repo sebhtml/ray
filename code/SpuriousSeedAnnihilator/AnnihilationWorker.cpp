@@ -335,6 +335,28 @@ bool AnnihilationWorker::checkBubblePatterns(){
 			m_leftDirections = *(m_annotationFetcher.getDirections() );
 
 			m_fetchedGrandparentDirections = true;
+			m_fetchedGrandparentReverseDirections = false;
+			m_annotationFetcher.reset();
+		}
+	}else if(!m_fetchedGrandparentReverseDirections){
+
+		Kmer theKmer;
+		theKmer = m_grandparent.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		if(!m_annotationFetcher.fetchDirections(&theKmer)){
+
+			// work a bit here
+		}else{
+			for(int i=0;i< (int) m_annotationFetcher.getDirections()->size(); i++){
+				Direction direction;
+				direction.constructor(m_annotationFetcher.getDirections()->at(i).getWave(),
+						m_annotationFetcher.getDirections()->at(i).getProgression(),
+						true);
+
+				m_leftDirections.push_back(direction);
+			}
+
+			m_fetchedGrandparentReverseDirections= true;
 
 			m_fetchedFirstChild = false;
 			m_attributeFetcher.reset();
@@ -390,8 +412,53 @@ bool AnnihilationWorker::checkBubblePatterns(){
 			m_rightDirections = *(m_annotationFetcher.getDirections() );
 
 			m_fetchedGrandchildDirections= true;
+
+			m_fetchedGrandchildReverseDirections = false;
+			m_annotationFetcher.reset();
+		}
+	}else if(!m_fetchedGrandchildReverseDirections){
+
+		Kmer theKmer;
+		theKmer = m_grandchild.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+		if(!m_annotationFetcher.fetchDirections(&theKmer)){
+
+			// work a bit here
+		}else{
+			for(int i=0;i< (int) m_annotationFetcher.getDirections()->size(); i++){
+				Direction direction;
+				direction.constructor(m_annotationFetcher.getDirections()->at(i).getWave(),
+						m_annotationFetcher.getDirections()->at(i).getProgression(),
+						true);
+
+				m_rightDirections.push_back(direction);
+			}
+
+			m_fetchedGrandchildReverseDirections = true;
 		}
 	}else{
+
+// TODO: continue here
+#ifdef DEBUG_LEFT_EXPLORATION
+		int nucleotides = m_seed->size() + m_parameters->getWordSize() -1;
+		int bubbleSize = 2 * m_parameters->getWordSize() - 3;
+
+		bool isPerfectBubble = false;
+
+		if(nucleotides == bubbleSize)
+			isPerfectBubble = true;
+
+		if(m_leftDirections.size() > 0 && m_rightDirections.size() > 0){
+
+			cout<<"BUBBLE_HIT ";
+
+			if(isPerfectBubble)
+				cout<<"GenuineBubble ";
+
+			cout<<"Left: " << m_leftDirections.size();
+			cout<<" Right: " << m_rightDirections.size() << endl;
+		}
+#endif
 
 		// this is over.
 		return true;

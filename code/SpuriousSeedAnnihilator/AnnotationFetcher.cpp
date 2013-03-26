@@ -88,10 +88,58 @@ bool AnnotationFetcher::fetchDirections(Kmer*kmer){
 			m_pathIndex = 0;
 
 			m_queryWasSent = false;
+			m_reverseStrand = false;
 		}
 	}else if(m_pathIndex < m_numberOfPaths){
 
-		m_pathIndex ++;
+		if(!m_queryWasSent){
+
+			Kmer theKmer=*kmer;
+
+			if(m_reverseStrand)
+				theKmer = theKmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+
+			Rank destination = m_parameters->vertexRank(&theKmer);
+			int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
+			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(elementsPerQuery);
+			int outputPosition=0;
+			theKmer.pack(message,&outputPosition);
+			message[outputPosition++]=m_pathIndex;
+
+			Message aMessage(message, elementsPerQuery, destination,
+				RAY_MPI_TAG_ASK_VERTEX_PATH, m_parameters->getRank());
+			m_virtualCommunicator->pushMessage(m_identifier, &aMessage);
+
+			m_queryWasSent = true;
+
+		}else if(m_virtualCommunicator->isMessageProcessed(m_identifier)){
+
+			vector<MessageUnit> response;
+			m_virtualCommunicator->getMessageResponseElements(m_identifier, &response);
+
+			int bufferPosition=0;
+			/* skip the k-mer because we don't need it */
+			bufferPosition += kmer->getNumberOfU64();
+			PathHandle otherPathIdentifier=response[bufferPosition++];
+			int progression=response[bufferPosition++];
+
+			Direction direction;
+
+			direction.constructor(otherPathIdentifier, progression, m_reverseStrand);
+
+			m_directions.push_back(direction);
+
+			m_queryWasSent = false;
+			m_pathIndex ++;
+		}
+/*
+	}else if(!m_reverseStrand){
+
+		// fetch also reverse-complement entries.
+		m_reverseStrand = true;
+		m_pathIndex = 0;
+		m_queryWasSent = false;
+*/
 	}else{
 		return true;
 	}

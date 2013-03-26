@@ -49,6 +49,7 @@ class AnnotationFetcher{
 	int m_pathIndex;
 	int m_numberOfPaths;
 	vector<Direction> m_directions;
+	bool m_reverseStrand;
 
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
