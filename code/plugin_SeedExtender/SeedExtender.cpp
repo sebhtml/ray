@@ -1112,7 +1112,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		buffer[bufferPosition++]=flows;
 
 		m_switchMan->sendMessage(buffer,bufferPosition,m_outbox,m_parameters->getRank(),MASTER_RANK,RAY_MPI_TAG_ADD_GRAPH_PATH);
-	
+
 		// we don't need a reply for this message
 		//
 
@@ -2606,9 +2606,11 @@ void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 
 	MessageUnit*buffer=message->getBuffer();
 	Rank source=message->getSource();
-	PathHandle pathHandle=buffer[0];
-	int pathLength=buffer[1];
-	int flows=buffer[2];
+
+	int position = 0;
+	PathHandle pathHandle=buffer[position++];
+	int pathLength=buffer[position++];
+	int flows=buffer[position++];
 
 	if(!m_pathFile.is_open()){
 	
@@ -2622,7 +2624,7 @@ void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 		assert(m_pathFile.is_open());
 		#endif
 
-		m_pathFileBuffer<<"#Rank	Path	Length"<<endl;
+		m_pathFileBuffer<<"#Rank	Path	LengthInKmers	Flows"<<endl;
 	}
 
 	m_pathFileBuffer<<source<<"	"<<pathHandle<<"	"<<pathLength<<"	"<<flows<<endl;

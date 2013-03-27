@@ -1053,6 +1053,8 @@ void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 		m_rankStorage.resize(getSize());
 
+		m_seedExtender->closePathFile();
+
 		m_ed->m_EXTENSION_currentRankIsSet=true;
 
 	}else if(m_ranksThatWroteContigs==getSize()){
