@@ -479,6 +479,25 @@ bool AnnihilationWorker::checkBubblePatterns(){
 	return false;
 }
 
+bool AnnihilationWorker::getBestParent(Kmer*kmer){
+	return true;
+}
+
+bool AnnihilationWorker::getBestChild(Kmer*kmer){
+
+	return true;
+}
+
+bool AnnihilationWorker::getOtherBestChild(Kmer*kmer){
+	return true;
+
+}
+
+bool AnnihilationWorker::getOtherBestParent(Kmer*kmer){
+
+	return true;
+}
+
 /**
  * RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE
  * RAY_MPI_TAG_ASK_VERTEX_PATH

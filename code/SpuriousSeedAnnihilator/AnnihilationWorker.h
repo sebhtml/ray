@@ -115,6 +115,11 @@ class AnnihilationWorker: public Worker{
 	bool searchGraphForNiceThings(int direction);
 	bool checkBubblePatterns();
 
+	bool getOtherBestParent(Kmer*kmer);
+	bool getOtherBestChild(Kmer*kmer);
+	bool getBestChild(Kmer*kmer);
+	bool getBestParent(Kmer*kmer);
+
 public:
 	void work();
 
