@@ -210,20 +210,26 @@ void Machine::start(){
 		cout<<endl<<"**************************************************"<<endl;
     		cout<<"This program comes with ABSOLUTELY NO WARRANTY."<<endl;
     		cout<<"This is free software, and you are welcome to redistribute it"<<endl;
-    		cout<<"under certain conditions; see \"LICENSE\" for details."<<endl;
+		cout<<"under certain conditions; see \"LICENSE.txt\" for details."<<endl;
 		cout<<"**************************************************"<<endl;
 		cout<<endl;
-		cout<<"Ray Copyright (C) 2010, 2011, 2012 Sébastien Boisvert"<<endl;
+		cout<<"Ray Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert"<<endl;
 		cout<<"Centre de recherche en infectiologie de l'Université Laval"<<endl;
 		cout<<"Project funded by the Canadian Institutes of Health Research (Doctoral award 200902CGM-204212-172830 to S.B.)"<<endl;
  		cout<<"http://denovoassembler.sf.net/"<<endl<<endl;
 
-		cout<<"Reference to cite: "<<endl<<endl;
+		cout<<"References to cite: "<<endl<<endl;
+
+		cout << "Sébastien Boisvert, Frédéric Raymond, Élénie Godzaridis, François Laviolette and Jacques Corbeil." <<endl;
+		cout << "Ray Meta: scalable de novo metagenome assembly and profiling."<<endl;
+		cout<<"Genome Biology (BioMed Central Ltd)."<<endl;
+		cout<<"13:R122, Published: 22 December 2012"<<endl;
+		cout<<"http://dx.doi.org/doi:10.1186/gb-2012-13-12-r122"<<endl;
+
 		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
 		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
 		cout<<"Journal of Computational Biology (Mary Ann Liebert, Inc. publishers, New York, U.S.A.)."<<endl;
 		cout<<"November 2010, Volume 17, Issue 11, Pages 1519-1533."<<endl;
-		cout<<"doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<"http://dx.doi.org/doi:10.1089/cmb.2009.0238"<<endl;
 		cout<<endl;
 	}
