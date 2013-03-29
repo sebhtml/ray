@@ -113,6 +113,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY;
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
 
+	bool m_skip;
 	bool m_distributionIsStarted;
 	bool m_filteringIsStarted;
 	bool m_cleaningIsStarted;

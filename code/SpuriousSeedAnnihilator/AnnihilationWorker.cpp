@@ -20,6 +20,8 @@
 
 #include "AnnihilationWorker.h"
 
+//#define DEBUG_CODE_PATH
+
 #include <stack>
 using namespace std;
 
@@ -70,8 +72,14 @@ void AnnihilationWorker::work(){
  */
 	if(m_step == STEP_CHECK_LENGTH){
 
-		if(m_seed->size() > 3 * m_parameters->getWordSize())
+#ifdef DEBUG_CODE_PATH
+		cout<<"Worker " << m_identifier << " STEP_CHECK_LENGTH"<<endl;
+#endif
+
+		if(m_seed->size() > 3 * m_parameters->getWordSize()){
 			m_done = true;
+
+		}
 
 		m_step++;
 
@@ -217,8 +225,11 @@ bool AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 	if(!m_startedToCheckDeadEndOnTheLeft){
 
+#ifdef DEBUG_CODE_PATH
+		cout<<"Worker " << m_identifier << " STEP_CHECK_DEAD_END_ON_THE_LEFT"<<endl;
+#endif
 #ifdef DEBUG_LEFT_EXPLORATION
-		cout<<"Starting !"<<endl;
+		cout<<"Starting checkDeadEndOnTheLeft"<<endl;
 #endif
 
 		m_searchIsStarted = false;
@@ -232,6 +243,8 @@ bool AnnihilationWorker::checkDeadEndOnTheLeft(){
 
 		m_done = true;
 
+		return true;
+
 	}else{
 		return true;
 	}
@@ -243,8 +256,11 @@ bool AnnihilationWorker::checkDeadEndOnTheRight(){
 
 	if(!m_startedToCheckDeadEndOnTheRight){
 
+#ifdef DEBUG_CODE_PATH
+		cout<<"Worker " << m_identifier << " STEP_CHECK_DEAD_END_ON_THE_RIGHT"<<endl;
+#endif
 #ifdef DEBUG_LEFT_EXPLORATION
-		cout<<"Starting !"<<endl;
+		cout<<"Starting checkDeadEndOnTheRight"<<endl;
 #endif
 
 		m_searchIsStarted = false;
@@ -258,6 +274,7 @@ bool AnnihilationWorker::checkDeadEndOnTheRight(){
 
 		m_done = true;
 
+		return true;
 	}else{
 
 #ifdef DEBUG_LEFT_EXPLORATION
@@ -293,6 +310,9 @@ bool AnnihilationWorker::checkBubblePatterns(){
 
 		}else{
 
+#ifdef DEBUG_CODE_PATH
+			cout<<"Worker " << m_identifier << " STEP_CHECK_BUBBLE_PATTERNS"<<endl;
+#endif
 			if(m_attributeFetcher.getParents()->size() != 1){
 
 				return true;
@@ -309,6 +329,7 @@ bool AnnihilationWorker::checkBubblePatterns(){
 	}else if(!m_fetchedSecondParent){
 
 		if(!m_attributeFetcher.fetchObjectMetaData(&m_parent)){
+
 		}else{
 			if(m_attributeFetcher.getParents()->size() != 1){
 

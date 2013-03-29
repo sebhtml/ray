@@ -195,14 +195,16 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		m_hasCheckpointFilesForSeeds = true;
 	}
 
-	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
+	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || m_skip){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
 	}
 
-	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY))
+	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY)){
 		m_activeQueries--;
+		return;
+	}
 
 	#ifdef ASSERT
 	assert(m_activeQueries>=0);
@@ -243,8 +245,16 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 				m_activeQueries++;
 			}
 
+			if(m_seedPosition % 1000 == 0) {
+				cout << "Rank "<<m_rank << " registered " << m_seedIndex << "/" <<m_seeds->size();
+				cout<< " "<< m_seedPosition << "/" << (*m_seeds)[m_seedIndex].size() << endl;
+			}
+
 			m_seedPosition++;
 		}else{
+
+			if(m_seedIndex % 100 == 0)
+				cout << "Rank "<<m_rank << " registered " << m_seedIndex << "/" <<m_seeds->size() << endl;
 
 			m_seedIndex++;
 
@@ -264,6 +274,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		m_seedIndex=0;
 		m_seedPosition=0;
 
+		cout << "Rank "<<m_rank << " registered " << m_seedIndex - 1 << "/" <<m_seeds->size() << endl;
 		cout<<"Rank "<<m_rank << " registered its seeds" << endl;
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
@@ -272,7 +283,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
-	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
+	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || m_skip){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -283,7 +294,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
-	if(!m_debugCode && m_hasCheckpointFilesForSeeds){
+	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || m_skip){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -531,4 +542,5 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
  */
 	m_debugCode = m_parameters->hasOption("-debug-seed-filter");
 
+	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
 }
