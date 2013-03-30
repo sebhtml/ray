@@ -86,6 +86,7 @@ class AnnihilationWorker: public Worker{
 	stack<Kmer> m_vertices;
 	int m_maximumAllowedDepth;
 	int m_actualMaximumDepth;
+	int m_maximumDepthForExploration;
 
 	bool m_valid;
 	set<Kmer> m_visited;

@@ -115,7 +115,6 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 			m_vertices.pop();
 
 		int depth=0;
-		m_maximumAllowedDepth = 128;
 		m_actualMaximumDepth=0;
 
 		Kmer startingPoint;
@@ -164,6 +163,9 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 // working ...
 		}else if(!m_attributeFetcher.fetchObjectMetaData(&kmer)){
 
+		}else if((int)m_attributeFetcher.getDepth() > m_maximumDepthForExploration) {
+
+			return true;
 		}else{
 
 // need to pop the thing now !
@@ -590,6 +592,16 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 	if(m_isPerfectBubble)
 		cout<<"BUBBLE_ITEM"<<endl;
 #endif
+
+/*
+ * the maximum depth for dead ends.
+ */
+	m_maximumDepthForExploration = 256;
+
+/*
+ * Maximum search depth for dead ends.
+ */
+	m_maximumAllowedDepth = 128;
 }
 
 bool AnnihilationWorker::isValid(){
