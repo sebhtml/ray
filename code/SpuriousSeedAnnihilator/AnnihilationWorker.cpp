@@ -601,7 +601,7 @@ void AnnihilationWorker::initialize(uint64_t identifier,GraphPath*seed, Paramete
 /*
  * Maximum search depth for dead ends.
  */
-	m_maximumAllowedDepth = 128;
+	m_maximumAllowedDepth = m_parameters->getWordSize();
 }
 
 bool AnnihilationWorker::isValid(){
