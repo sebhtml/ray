@@ -65,6 +65,25 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LE
  * 2. Run the filter on seeds;
  * 3. Clean the seed annotations.
  *
+ * Design:
+ *
+ * SpuriousSeedAnnihilator
+ *          |
+ *          |
+ *          |
+ *    SeedFilteringWorkflow
+ *                   |
+ *                   |
+ *                   |
+ *              AnnihilationWorker
+ *              |               |
+ *              |               |
+ *              |               |
+ *     AttributeFetcher         |
+ *                              |
+ *                      AnnotationFetcher
+ *
+ *
  * \author Sébastien Boisvert
  * \see TODO put github issues here
  */
