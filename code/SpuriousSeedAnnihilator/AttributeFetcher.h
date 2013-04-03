@@ -21,8 +21,8 @@
 #ifndef _AttributeFetcher_h
 #define _AttributeFetcher_h
 
-#include <code/plugin_KmerAcademyBuilder/Kmer.h>
-#include <code/plugin_Mock/Parameters.h>
+#include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/Mock/Parameters.h>
 
 #include <RayPlatform/communication/VirtualCommunicator.h>
 #include <RayPlatform/scheduling/Worker.h>

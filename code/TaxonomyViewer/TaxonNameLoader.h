@@ -23,7 +23,7 @@
 
 #include "types.h"
 
-#include <code/plugin_Mock/constants.h>
+#include <code/Mock/constants.h>
 
 #include <RayPlatform/core/types.h>
 

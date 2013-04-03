@@ -20,9 +20,9 @@
 
 #include "SeedFilteringWorkflow.h"
 
-#include <code/plugin_SeedingData/GraphPath.h>
-#include <code/plugin_Mock/Parameters.h>
-#include <code/plugin_VerticesExtractor/GridTable.h>
+#include <code/SeedingData/GraphPath.h>
+#include <code/Mock/Parameters.h>
+#include <code/VerticesExtractor/GridTable.h>
 
 #include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/communication/VirtualCommunicator.h>

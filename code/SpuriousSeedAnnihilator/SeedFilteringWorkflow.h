@@ -21,8 +21,8 @@
 #ifndef _SeedFilteringWorkflow_h
 #define _SeedFilteringWorkflow_h
 
-#include <code/plugin_SeedingData/GraphPath.h>
-#include <code/plugin_Mock/Parameters.h>
+#include <code/SeedingData/GraphPath.h>
+#include <code/Mock/Parameters.h>
 
 #include <RayPlatform/core/ComputeCore.h>
 #include <RayPlatform/scheduling/TaskCreator.h>

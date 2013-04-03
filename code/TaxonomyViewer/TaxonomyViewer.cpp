@@ -25,7 +25,7 @@
 #include "TaxonomicTreeLoader.h"
 #include "TaxonNameLoader.h"
 
-#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+#include <code/VerticesExtractor/GridTableIterator.h>
 
 #include <RayPlatform/core/OperatingSystem.h>
 
@@ -1387,7 +1387,7 @@ void TaxonomyViewer::resolveSymbols(ComputeCore*core){
 	m_colorSet=(ColorSet*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/VirtualColorManagementUnit.ray");
 	m_timePrinter=(TimePrinter*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Timer.ray");
 
-	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/plugin_Searcher.ray");
+	m_searcher=(Searcher*)core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Searcher.ray");
 
 	m_started=false;
 

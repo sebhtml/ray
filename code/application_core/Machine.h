@@ -26,46 +26,46 @@
 /** Chapter II.  stuff related to the Ray Genome Assembler **/
 /** stuff specific to the Ray assembler that don't fit elsewhere */
 
-#include <code/plugin_Mock/common_functions.h> /* common code for all plugins */
-#include <code/plugin_Mock/Parameters.h> /* command-line parsing */
+#include <code/Mock/common_functions.h> /* common code for all plugins */
+#include <code/Mock/Parameters.h> /* command-line parsing */
 
 // also in this category is application_core/Machine.h 
 
 /** list of RayPlatform CorePlugin objects for the Ray genome software suite. */
 /* (in no particular order) */
 
-#include <code/plugin_SeedExtender/DepthFirstSearchData.h>
-#include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
-#include <code/plugin_Scaffolder/Scaffolder.h>
-#include <code/plugin_VerticesExtractor/GridTable.h>
-#include <code/plugin_Partitioner/Partitioner.h>
-#include <code/plugin_SequencesLoader/ArrayOfReads.h>
-#include <code/plugin_SeedingData/SeedingData.h>
-#include <code/plugin_SequencesIndexer/SequencesIndexer.h>
-#include <code/plugin_SeedExtender/SeedExtender.h>
-#include <code/plugin_SequencesLoader/SequencesLoader.h>
-#include <code/plugin_Library/Library.h>
-#include <code/plugin_CoverageGatherer/CoverageGatherer.h>
-#include <code/plugin_MessageProcessor/MessageProcessor.h>
-#include <code/plugin_VerticesExtractor/Vertex.h>
-#include <code/plugin_SeedExtender/OpenAssemblerChooser.h>
-#include <code/plugin_SeedExtender/BubbleData.h>
-#include <code/plugin_VerticesExtractor/VerticesExtractor.h>
-#include <code/plugin_Amos/Amos.h>
-#include <code/plugin_KmerAcademyBuilder/KmerAcademyBuilder.h>
-#include <code/plugin_EdgePurger/EdgePurger.h>
-#include <code/plugin_NetworkTest/NetworkTest.h>
-#include <code/plugin_FusionTaskCreator/FusionTaskCreator.h>
-#include <code/plugin_JoinerTaskCreator/JoinerTaskCreator.h>
-#include <code/plugin_SequencesLoader/Read.h>
-#include <code/plugin_Searcher/Searcher.h>
-#include <code/plugin_MachineHelper/MachineHelper.h>
+#include <code/SeedExtender/DepthFirstSearchData.h>
+#include <code/GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <code/Scaffolder/Scaffolder.h>
+#include <code/VerticesExtractor/GridTable.h>
+#include <code/Partitioner/Partitioner.h>
+#include <code/SequencesLoader/ArrayOfReads.h>
+#include <code/SeedingData/SeedingData.h>
+#include <code/SequencesIndexer/SequencesIndexer.h>
+#include <code/SeedExtender/SeedExtender.h>
+#include <code/SequencesLoader/SequencesLoader.h>
+#include <code/Library/Library.h>
+#include <code/CoverageGatherer/CoverageGatherer.h>
+#include <code/MessageProcessor/MessageProcessor.h>
+#include <code/VerticesExtractor/Vertex.h>
+#include <code/SeedExtender/OpenAssemblerChooser.h>
+#include <code/SeedExtender/BubbleData.h>
+#include <code/VerticesExtractor/VerticesExtractor.h>
+#include <code/Amos/Amos.h>
+#include <code/KmerAcademyBuilder/KmerAcademyBuilder.h>
+#include <code/EdgePurger/EdgePurger.h>
+#include <code/NetworkTest/NetworkTest.h>
+#include <code/FusionTaskCreator/FusionTaskCreator.h>
+#include <code/JoinerTaskCreator/JoinerTaskCreator.h>
+#include <code/SequencesLoader/Read.h>
+#include <code/Searcher/Searcher.h>
+#include <code/MachineHelper/MachineHelper.h>
 #include <code/TaxonomyViewer/TaxonomyViewer.h>
-#include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
-#include <code/plugin_GeneOntology/GeneOntology.h>
-#include <code/plugin_Mock/Mock.h>
-#include <code/plugin_Example/Example.h>
-#include <code/plugin_PathEvaluator/PathEvaluator.h>
+#include <code/GenomeNeighbourhood/GenomeNeighbourhood.h>
+#include <code/GeneOntology/GeneOntology.h>
+#include <code/Mock/Mock.h>
+#include <code/Example/Example.h>
+#include <code/PathEvaluator/PathEvaluator.h>
 #include <code/SpuriousSeedAnnihilator/SpuriousSeedAnnihilator.h>
 
 /** Chapter I. stuff pulled from RayPlatform, called The Platform hereafter */

@@ -23,15 +23,15 @@
 
 #include "Machine.h"
 
-#include <code/plugin_VerticesExtractor/GridTableIterator.h>
-#include <code/plugin_VerticesExtractor/VerticesExtractor.h>
-#include <code/plugin_SeedExtender/TipWatchdog.h>
-#include <code/plugin_SeedExtender/BubbleTool.h>
-#include <code/plugin_Mock/common_functions.h>
-#include <code/plugin_Mock/constants.h>
-#include <code/plugin_CoverageGatherer/CoverageDistribution.h>
-#include <code/plugin_SequencesLoader/Read.h>
-#include <code/plugin_SequencesLoader/Loader.h>
+#include <code/VerticesExtractor/GridTableIterator.h>
+#include <code/VerticesExtractor/VerticesExtractor.h>
+#include <code/SeedExtender/TipWatchdog.h>
+#include <code/SeedExtender/BubbleTool.h>
+#include <code/Mock/common_functions.h>
+#include <code/Mock/constants.h>
+#include <code/CoverageGatherer/CoverageDistribution.h>
+#include <code/SequencesLoader/Read.h>
+#include <code/SequencesLoader/Loader.h>
 
 #include <RayPlatform/profiling/Profiler.h>
 #include <RayPlatform/communication/Message.h>

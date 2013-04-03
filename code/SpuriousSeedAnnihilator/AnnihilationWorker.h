@@ -24,9 +24,9 @@
 #include "AttributeFetcher.h"
 #include "AnnotationFetcher.h"
 
-#include <code/plugin_SeedingData/GraphPath.h>
-#include <code/plugin_Mock/Parameters.h>
-#include <code/plugin_SeedExtender/Direction.h>
+#include <code/SeedingData/GraphPath.h>
+#include <code/Mock/Parameters.h>
+#include <code/SeedExtender/Direction.h>
 
 #include <RayPlatform/scheduling/Worker.h>
 

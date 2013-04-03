@@ -20,7 +20,7 @@
 
 #include "SpuriousSeedAnnihilator.h"
 
-#include <code/plugin_VerticesExtractor/GridTableIterator.h>
+#include <code/VerticesExtractor/GridTableIterator.h>
 
 #include <sstream>
 using namespace std;

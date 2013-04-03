@@ -21,9 +21,9 @@
 #ifndef _AnnotationFetcher_h
 #define _AnnotationFetcher_h
 
-#include <code/plugin_SeedExtender/Direction.h>
-#include <code/plugin_KmerAcademyBuilder/Kmer.h>
-#include <code/plugin_Mock/Parameters.h>
+#include <code/SeedExtender/Direction.h>
+#include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/Mock/Parameters.h>
 
 #include <RayPlatform/communication/VirtualCommunicator.h>
 #include <RayPlatform/scheduling/Worker.h>

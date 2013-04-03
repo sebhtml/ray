@@ -23,10 +23,10 @@
 
 #include "types.h"
 
-#include <code/plugin_Searcher/ColorSet.h>
-#include <code/plugin_Mock/Parameters.h>
-#include <code/plugin_VerticesExtractor/GridTable.h>
-#include <code/plugin_Searcher/Searcher.h>
+#include <code/Searcher/ColorSet.h>
+#include <code/Mock/Parameters.h>
+#include <code/VerticesExtractor/GridTable.h>
+#include <code/Searcher/Searcher.h>
 
 #include <RayPlatform/profiling/TimePrinter.h>
 #include <RayPlatform/plugins/CorePlugin.h>
