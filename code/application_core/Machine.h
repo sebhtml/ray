@@ -60,7 +60,7 @@
 #include <code/plugin_SequencesLoader/Read.h>
 #include <code/plugin_Searcher/Searcher.h>
 #include <code/plugin_MachineHelper/MachineHelper.h>
-#include <code/plugin_PhylogenyViewer/PhylogenyViewer.h>
+#include <code/TaxonomyViewer/TaxonomyViewer.h>
 #include <code/plugin_GenomeNeighbourhood/GenomeNeighbourhood.h>
 #include <code/plugin_GeneOntology/GeneOntology.h>
 #include <code/plugin_Mock/Mock.h>
@@ -160,7 +160,7 @@ class Machine : public MiniRank{
 	Partitioner m_partitioner;
 	NetworkTest m_networkTest;
 	EdgePurger m_edgePurger;
-	PhylogenyViewer m_phylogeny;
+	TaxonomyViewer m_phylogeny;
 	GeneOntology m_ontologyPlugin;
 	Example m_example;
 

@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PhylogenyViewer_h
-#define _PhylogenyViewer_h
+#ifndef _TaxonomyViewer_h
+#define _TaxonomyViewer_h
 
 #include "types.h"
 
@@ -71,23 +71,23 @@ Genome-to-Taxon.tsv  Taxon-Names.tsv  Taxon-Types.tsv  TreeOfLife-Edges.tsv
 
 
 
-__DeclarePlugin(PhylogenyViewer);
+__DeclarePlugin(TaxonomyViewer);
 
-__DeclareMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
-__DeclareSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
-__DeclareMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
-__DeclareMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+__DeclareMasterModeAdapter(TaxonomyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+__DeclareSlaveModeAdapter(TaxonomyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+__DeclareMessageTagAdapter(TaxonomyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+__DeclareMessageTagAdapter(TaxonomyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 /** 
  * a plugin to know what is present in a sample 
  * \author Sébastien Boisvert
  */
-class PhylogenyViewer: public CorePlugin{
+class TaxonomyViewer: public CorePlugin{
 
-	__AddAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
-	__AddAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
-	__AddAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
-	__AddAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+	__AddAdapter(TaxonomyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+	__AddAdapter(TaxonomyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+	__AddAdapter(TaxonomyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+	__AddAdapter(TaxonomyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 /* slave states */
 	bool m_extractedColorsForPhylogeny;

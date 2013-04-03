@@ -18,14 +18,14 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#include "PhylogeneticTreeLoader.h"
+#include "TaxonomicTreeLoader.h"
 #include "types.h"
 
 #include <assert.h>
 #include <iostream>
 using namespace std;
 
-void PhylogeneticTreeLoader::load(string file){
+void TaxonomicTreeLoader::load(string file){
 
 	m_current=0;
 	m_size=0;
@@ -64,11 +64,11 @@ void PhylogeneticTreeLoader::load(string file){
 	cout<<"File "<<file<<" has "<<m_size<<" entries"<<endl;
 }
 
-bool PhylogeneticTreeLoader::hasNext(){
+bool TaxonomicTreeLoader::hasNext(){
 	return m_current<m_size;
 }
 
-void PhylogeneticTreeLoader::getNext(TaxonIdentifier*parent,TaxonIdentifier*child){
+void TaxonomicTreeLoader::getNext(TaxonIdentifier*parent,TaxonIdentifier*child){
 
 	TaxonIdentifier l1;
 	TaxonIdentifier l2;

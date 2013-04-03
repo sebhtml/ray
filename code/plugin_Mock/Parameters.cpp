@@ -763,7 +763,7 @@ void Parameters::parseCommands(){
 
 		}else if(phylogeny.count(token)>0){
 
-			cout<<"Enabling CorePlugin 'PhylogenyViewer'"<<endl;
+			cout<<"Enabling CorePlugin 'TaxonomyViewer'"<<endl;
 
 			i++;
 			int items=m_commands.size()-i;

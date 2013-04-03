@@ -20,25 +20,25 @@
 
 //#define DEBUG_RECURSION
 
-#include "PhylogenyViewer.h"
+#include "TaxonomyViewer.h"
 #include "GenomeToTaxonLoader.h"
-#include "PhylogeneticTreeLoader.h"
+#include "TaxonomicTreeLoader.h"
 #include "TaxonNameLoader.h"
 
 #include <code/plugin_VerticesExtractor/GridTableIterator.h>
 
 #include <RayPlatform/core/OperatingSystem.h>
 
-__CreatePlugin(PhylogenyViewer);
+__CreatePlugin(TaxonomyViewer);
 
-__CreateMasterModeAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
-__CreateSlaveModeAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
-__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
-__CreateMessageTagAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+__CreateMasterModeAdapter(TaxonomyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+__CreateSlaveModeAdapter(TaxonomyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+__CreateMessageTagAdapter(TaxonomyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+__CreateMessageTagAdapter(TaxonomyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 
 //#define DEBUG_PHYLOGENY
 
-void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
+void TaxonomyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 	if(!m_started){
 
 		#ifdef DEBUG_PHYLOGENY
@@ -132,7 +132,7 @@ void PhylogenyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 	}
 }
 
-void PhylogenyViewer::copyTaxonsFromSecondaryTable(){
+void TaxonomyViewer::copyTaxonsFromSecondaryTable(){
 	int before=m_taxonsForPhylogeny.size();
 
 	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogenyMaster.begin();
@@ -143,7 +143,7 @@ void PhylogenyViewer::copyTaxonsFromSecondaryTable(){
 
 	int after=m_taxonsForPhylogeny.size();
 
-	cout<<"[PhylogenyViewer::copyTaxonsFromSecondaryTable] "<<before<<" -> "<<after<<endl;
+	cout<<"[TaxonomyViewer::copyTaxonsFromSecondaryTable] "<<before<<" -> "<<after<<endl;
 
 	#ifdef ASSERT
 	assert(m_taxonsForPhylogeny.size() == m_taxonsForPhylogenyMaster.size());
@@ -152,7 +152,7 @@ void PhylogenyViewer::copyTaxonsFromSecondaryTable(){
 	m_taxonsForPhylogenyMaster.clear();
 }
 
-void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
+void TaxonomyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 	if(!m_extractedColorsForPhylogeny){
 
 		extractColorsForPhylogeny();
@@ -212,7 +212,7 @@ void PhylogenyViewer::call_RAY_SLAVE_MODE_PHYLOGENY_MAIN(){
 	}
 }
 
-void PhylogenyViewer::sendTreeCounts(){
+void TaxonomyViewer::sendTreeCounts(){
 	if(m_messageReceived && m_countIterator==m_taxonObservations.end()){
 	
 		m_syncedTree=true;
@@ -263,7 +263,7 @@ void PhylogenyViewer::sendTreeCounts(){
 
 }
 
-void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
+void TaxonomyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
 	MessageUnit*buffer=message->getBuffer();
 
 	int count=message->getCount();
@@ -289,7 +289,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
 		message->getSource(),RAY_MPI_TAG_TAXON_OBSERVATIONS_REPLY);
 }
 
-void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
+void TaxonomyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
 	MessageUnit*buffer=message->getBuffer();
 
 	int count=message->getCount();
@@ -304,7 +304,7 @@ void PhylogenyViewer::call_RAY_MPI_TAG_TOUCH_TAXON(Message*message){
 		message->getSource(),RAY_MPI_TAG_TOUCH_TAXON_REPLY);
 }
 
-void PhylogenyViewer::loadTree(){
+void TaxonomyViewer::loadTree(){
 	
 	if(!m_parameters->hasOption("-with-taxonomy")){
 		m_loadedTree=true;
@@ -314,7 +314,7 @@ void PhylogenyViewer::loadTree(){
 
 	string treeFile=m_parameters->getTreeFile();
 
-	PhylogeneticTreeLoader loader;
+	TaxonomicTreeLoader loader;
 
 	bool growed=true;
 
@@ -368,7 +368,7 @@ void PhylogenyViewer::loadTree(){
 	m_gatheredObservations=false;
 }
 
-void PhylogenyViewer::gatherKmerObservations(){
+void TaxonomyViewer::gatherKmerObservations(){
 
 	/* set to true to use only assembled kmers */
 	bool useOnlyAssembledKmer=false;
@@ -516,7 +516,7 @@ void PhylogenyViewer::gatherKmerObservations(){
 	m_countIterator=m_taxonObservations.begin();
 }
 
-LargeCount PhylogenyViewer::getSelfCount(TaxonIdentifier taxon){
+LargeCount TaxonomyViewer::getSelfCount(TaxonIdentifier taxon){
 	if(m_taxonObservations.count(taxon)==0){
 		return 0;
 	}
@@ -524,7 +524,7 @@ LargeCount PhylogenyViewer::getSelfCount(TaxonIdentifier taxon){
 	return m_taxonObservations[taxon];
 }
 
-void PhylogenyViewer::populateRanks(map<string,LargeCount>*rankSelfObservations,
+void TaxonomyViewer::populateRanks(map<string,LargeCount>*rankSelfObservations,
 		map<string,LargeCount>*rankRecursiveObservations){
 
 	for(map<TaxonIdentifier,string>::iterator i=m_taxonNames.begin();
@@ -548,7 +548,7 @@ void PhylogenyViewer::populateRanks(map<string,LargeCount>*rankSelfObservations,
 	}
 }
 
-void PhylogenyViewer::showObservations_XML(ostream*stream){
+void TaxonomyViewer::showObservations_XML(ostream*stream){
 
 	ostringstream operationBuffer;
 
@@ -749,7 +749,7 @@ void PhylogenyViewer::showObservations_XML(ostream*stream){
 
 }
 
-LargeCount PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
+LargeCount TaxonomyViewer::getRecursiveCount(TaxonIdentifier taxon){
 
 	if(m_taxonRecursiveObservations.count(taxon)>0){
 
@@ -778,7 +778,7 @@ LargeCount PhylogenyViewer::getRecursiveCount(TaxonIdentifier taxon){
 	return count;
 }
 
-void PhylogenyViewer::showObservations(ostream*stream){
+void TaxonomyViewer::showObservations(ostream*stream){
 
 	(*stream)<<endl;
 	for(map<TaxonIdentifier,LargeCount>::iterator i=m_taxonObservations.begin();
@@ -804,7 +804,7 @@ void PhylogenyViewer::showObservations(ostream*stream){
 	(*stream)<<" k-mer observations: "<<m_unknown<<endl;
 }
 
-void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key){
+void TaxonomyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCoverage,Vertex*vertex,Kmer*key){
 	// given a list of taxon,
 	// place the kmer coverage somewhere in
 	// the tree
@@ -899,7 +899,7 @@ void PhylogenyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCove
 	}
 }
 
-TaxonIdentifier PhylogenyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxons){
+TaxonIdentifier TaxonomyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxons){
 
 	map<TaxonIdentifier,int> counts;
 
@@ -950,7 +950,7 @@ TaxonIdentifier PhylogenyViewer::findCommonAncestor(vector<TaxonIdentifier>*taxo
 	return 999999999999ULL;
 }
 
-TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
+TaxonIdentifier TaxonomyViewer::getTaxonParent(TaxonIdentifier taxon){
 	if(m_treeParents.count(taxon)>0){
 		return m_treeParents[taxon];
 	}
@@ -958,7 +958,7 @@ TaxonIdentifier PhylogenyViewer::getTaxonParent(TaxonIdentifier taxon){
 	return 999999999999ULL;
 }
 
-void PhylogenyViewer::loadTaxonNames(){
+void TaxonomyViewer::loadTaxonNames(){
 
 	if(!m_parameters->hasOption("-with-taxonomy")){
 		return;
@@ -987,7 +987,7 @@ void PhylogenyViewer::loadTaxonNames(){
 	cout<<"Rank "<<m_rank<<" loaded taxon names from "<<file<<endl;
 }
 
-string PhylogenyViewer::getTaxonName(TaxonIdentifier taxon){
+string TaxonomyViewer::getTaxonName(TaxonIdentifier taxon){
 	if(m_taxonNames.count(taxon)>0){
 		string value=m_taxonNames[taxon];
 		
@@ -1007,9 +1007,9 @@ string PhylogenyViewer::getTaxonName(TaxonIdentifier taxon){
 	return "CachingError";
 }
 
-void PhylogenyViewer::testPaths(){
+void TaxonomyViewer::testPaths(){
 	cout<<endl;
-	cout<<"[PhylogenyViewer::testPaths]"<<endl;
+	cout<<"[TaxonomyViewer::testPaths]"<<endl;
 
 	for(set<TaxonIdentifier>::iterator i=m_taxonsForPhylogeny.begin();i!=m_taxonsForPhylogeny.end();i++){
 		TaxonIdentifier taxon=*i;
@@ -1025,7 +1025,7 @@ void PhylogenyViewer::testPaths(){
 	cout<<endl;
 }
 
-void PhylogenyViewer::printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
+void TaxonomyViewer::printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
 
 	(*stream)<<"<path>"<<endl;
 	//cout<<"Taxon= "<<taxon<<endl;
@@ -1040,14 +1040,14 @@ void PhylogenyViewer::printTaxonPath_XML(TaxonIdentifier taxon,vector<TaxonIdent
 	(*stream)<<"</path>"<<endl;
 }
 
-void PhylogenyViewer::printTaxon_XML(TaxonIdentifier taxon,ostream*stream){
+void TaxonomyViewer::printTaxon_XML(TaxonIdentifier taxon,ostream*stream){
 	string name=getTaxonName(taxon);
 	string rank=getTaxonRank(taxon);
 
 	(*stream)<<"<taxon><name>"<<name<<"</name><rank>"<<rank<<"</rank><identifier>"<<taxon<<"</identifier></taxon>"<<endl;
 }
 
-string PhylogenyViewer::getTaxonRank(TaxonIdentifier taxon){
+string TaxonomyViewer::getTaxonRank(TaxonIdentifier taxon){
 	if(m_taxonRanks.count(taxon)==0){
 		return "CachingError";
 	}
@@ -1055,7 +1055,7 @@ string PhylogenyViewer::getTaxonRank(TaxonIdentifier taxon){
 	return m_taxonRanks[taxon];
 }
 
-void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
+void TaxonomyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifier>*path,ostream*stream){
 
 	//cout<<"Taxon= "<<taxon<<endl;
 
@@ -1068,7 +1068,7 @@ void PhylogenyViewer::printTaxonPath(TaxonIdentifier taxon,vector<TaxonIdentifie
 
 }
 
-void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
+void TaxonomyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIdentifier>*path){
 
 	TaxonIdentifier current=taxon;
 
@@ -1104,7 +1104,7 @@ void PhylogenyViewer::getTaxonPathFromRoot(TaxonIdentifier taxon,vector<TaxonIde
 /*
  * Loads taxons by fetching pairs in a conversion file.
  */
-void PhylogenyViewer::loadTaxons(){
+void TaxonomyViewer::loadTaxons(){
 
 	if(!m_parameters->hasOption("-with-taxonomy")){
 
@@ -1148,7 +1148,7 @@ void PhylogenyViewer::loadTaxons(){
 	m_messageReceived=true;
 }
 
-void PhylogenyViewer::sendTaxonsFromMaster(){
+void TaxonomyViewer::sendTaxonsFromMaster(){
 
 	if(m_responses == m_size && m_taxonIterator==m_taxonsForPhylogeny.end()){
 
@@ -1199,7 +1199,7 @@ void PhylogenyViewer::sendTaxonsFromMaster(){
 
 
 
-void PhylogenyViewer::sendTaxonsToMaster(){
+void TaxonomyViewer::sendTaxonsToMaster(){
 
 	if(m_messageReceived && m_taxonIterator==m_taxonsForPhylogeny.end()){
 
@@ -1245,7 +1245,7 @@ void PhylogenyViewer::sendTaxonsToMaster(){
 /**
  * here we extract the phylogeny colors
  */
-void PhylogenyViewer::extractColorsForPhylogeny(){
+void TaxonomyViewer::extractColorsForPhylogeny(){
 
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
@@ -1304,22 +1304,22 @@ void PhylogenyViewer::extractColorsForPhylogeny(){
 	m_totalNumberOfKmerObservations=m_searcher->getTotalNumberOfKmerObservations();
 }
 
-void PhylogenyViewer::registerPlugin(ComputeCore*core){
+void TaxonomyViewer::registerPlugin(ComputeCore*core){
 
 	m_plugin=core->allocatePluginHandle();
 
-	core->setPluginName(m_plugin,"PhylogenyViewer");
+	core->setPluginName(m_plugin,"TaxonomyViewer");
 	core->setPluginDescription(m_plugin,"Get a taxonomy view of the sample.");
 	core->setPluginAuthors(m_plugin,"Sébastien Boisvert");
 	core->setPluginLicense(m_plugin,"GNU General Public License version 3");
 
 	RAY_MASTER_MODE_PHYLOGENY_MAIN=core->allocateMasterModeHandle(m_plugin);
 	core->setMasterModeSymbol(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,"RAY_MASTER_MODE_PHYLOGENY_MAIN");
-	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,__GetAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN));
+	core->setMasterModeObjectHandler(m_plugin,RAY_MASTER_MODE_PHYLOGENY_MAIN,__GetAdapter(TaxonomyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN));
 
 	RAY_SLAVE_MODE_PHYLOGENY_MAIN=core->allocateSlaveModeHandle(m_plugin);
 	core->setSlaveModeSymbol(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,"RAY_SLAVE_MODE_PHYLOGENY_MAIN");
-	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,__GetAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN));
+	core->setSlaveModeObjectHandler(m_plugin,RAY_SLAVE_MODE_PHYLOGENY_MAIN,__GetAdapter(TaxonomyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN));
 
 	RAY_MPI_TAG_PHYLOGENY_MAIN=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_PHYLOGENY_MAIN,"RAY_MPI_TAG_PHYLOGENY_MAIN");
@@ -1332,7 +1332,7 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 
 	RAY_MPI_TAG_TOUCH_TAXON=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,"RAY_MPI_TAG_TOUCH_TAXON");
-	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,__GetAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON));
+	core->setMessageTagObjectHandler(m_plugin,RAY_MPI_TAG_TOUCH_TAXON,__GetAdapter(TaxonomyViewer,RAY_MPI_TAG_TOUCH_TAXON));
 
 	RAY_MPI_TAG_TOUCH_TAXON_REPLY=core->allocateMessageTagHandle(m_plugin);
 	core->setMessageTagSymbol(m_plugin,RAY_MPI_TAG_TOUCH_TAXON_REPLY,"RAY_MPI_TAG_TOUCH_TAXON_REPLY");
@@ -1360,7 +1360,7 @@ void PhylogenyViewer::registerPlugin(ComputeCore*core){
 	m_core=core;
 }
 
-void PhylogenyViewer::resolveSymbols(ComputeCore*core){
+void TaxonomyViewer::resolveSymbols(ComputeCore*core){
 
 	RAY_MASTER_MODE_PHYLOGENY_MAIN=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_PHYLOGENY_MAIN");
 	RAY_MASTER_MODE_KILL_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_RANKS");
@@ -1391,10 +1391,10 @@ void PhylogenyViewer::resolveSymbols(ComputeCore*core){
 
 	m_started=false;
 
-	__BindPlugin(PhylogenyViewer);
+	__BindPlugin(TaxonomyViewer);
 
-	__BindAdapter(PhylogenyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
-	__BindAdapter(PhylogenyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
-	__BindAdapter(PhylogenyViewer,RAY_MPI_TAG_TOUCH_TAXON);
-	__BindAdapter(PhylogenyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
+	__BindAdapter(TaxonomyViewer,RAY_MASTER_MODE_PHYLOGENY_MAIN);
+	__BindAdapter(TaxonomyViewer,RAY_SLAVE_MODE_PHYLOGENY_MAIN);
+	__BindAdapter(TaxonomyViewer,RAY_MPI_TAG_TOUCH_TAXON);
+	__BindAdapter(TaxonomyViewer,RAY_MPI_TAG_TAXON_OBSERVATIONS);
 }

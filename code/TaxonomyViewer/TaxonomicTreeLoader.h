@@ -18,8 +18,8 @@
 	see <http://www.gnu.org/licenses/>
 */
 
-#ifndef _PhylogeneticTreeLoader_h
-#define _PhylogeneticTreeLoader_h
+#ifndef _TaxonomicTreeLoader_h
+#define _TaxonomicTreeLoader_h
 
 #include "types.h"
 
@@ -37,7 +37,7 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class PhylogeneticTreeLoader{
+class TaxonomicTreeLoader{
 	
 	ifstream m_stream;
 
