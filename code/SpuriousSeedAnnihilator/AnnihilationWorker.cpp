@@ -462,7 +462,10 @@ bool AnnihilationWorker::checkBubblePatterns(){
 	}else{
 
 		if(m_isPerfectBubble){
+
+#ifdef DEBUG_CODE_PATH
 			cout<<"BUBBLE_HIT first=";
+#endif
 
 			Kmer startingPoint;
 			int index = 0;
@@ -474,8 +477,10 @@ bool AnnihilationWorker::checkBubblePatterns(){
 			cout << m_grandparent.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
 #endif
 
+#ifdef DEBUG_CODE_PATH
 			cout<<" LeftPaths: " << m_leftDirections.size();
 			cout<<" RightPaths: " << m_rightDirections.size() << endl;
+#endif
 		}
 
 		map<PathHandle,int> counts;
