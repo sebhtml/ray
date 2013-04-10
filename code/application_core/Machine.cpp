@@ -225,6 +225,7 @@ void Machine::start(){
 		cout<<"Genome Biology (BioMed Central Ltd)."<<endl;
 		cout<<"13:R122, Published: 22 December 2012"<<endl;
 		cout<<"http://dx.doi.org/doi:10.1186/gb-2012-13-12-r122"<<endl;
+		cout << endl;
 
 		cout<<"Sébastien Boisvert, François Laviolette & Jacques Corbeil."<<endl;
 		cout<<"Ray: simultaneous assembly of reads from a mix of high-throughput sequencing technologies."<<endl;
