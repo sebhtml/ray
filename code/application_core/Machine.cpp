@@ -352,6 +352,9 @@ void Machine::start(){
 		
 	}
 
+	if(m_parameters.hasOption("-verify-message-integrity")) {
+		m_computeCore.enableCheckSums();
+	}
 
 /*
  * We need to know if we must abort. All the RayPlatform
