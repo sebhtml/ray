@@ -1157,17 +1157,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 	MACRO_COLLECT_PROFILING_INFORMATION();
 
-	//cout<<"checkIfCurrentVertexIsAssembled "<<ed->m_EXTENSION_currentPosition<<endl;
-
-/*
-	if(!(ed->m_EXTENSION_currentPosition<(int)ed->m_EXTENSION_currentSeed.size())
-		&& ed->m_flowNumber==1){
-
-		checkedCurrentVertex();
-
-	}else 
-*/
-
 	if(!ed->m_EXTENSION_directVertexDone){
 		if(!ed->m_EXTENSION_VertexAssembled_requested){
 
@@ -1219,7 +1208,6 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 
 			if(m_theProcessIsRedundantByAGreaterAndMightyRank){
 				m_redundantProcessingVirtualMachineCycles++;
-
 			}
 
 			#ifdef CONFIG_DEBUG_SEED_EXTENSION
@@ -1228,11 +1216,8 @@ void SeedExtender::checkIfCurrentVertexIsAssembled(ExtensionData*ed,StaticVector
 			cout<<" position "<<ed->m_EXTENSION_currentPosition<<endl;
 			#endif
 
-			if(m_redundantProcessingVirtualMachineCycles>m_hotSkippingThreshold
-				&& !m_hotSkippingMode){
-
-				m_hotSkippingMode=true;
-				cout<<"[SeedExtender] activating Hot Skipping !"<<endl;
+			if(m_redundantProcessingVirtualMachineCycles > m_hotSkippingThreshold
+				&& m_hotSkippingMode){
 
 				ed->m_EXTENSION_extension.clear();
 				ed->m_EXTENSION_extension.setKmerLength(m_parameters->getWordSize());
@@ -1398,6 +1383,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		int progression=ed->m_EXTENSION_extension.size()-1;
 		int threshold=ed->m_EXTENSION_currentSeed.size()-m_parameters->getMaximumDistance();
 		bool getReads=false;
+
 		if(progression>=threshold)
 			getReads=true;
 
@@ -1871,16 +1857,16 @@ Chooser*chooser,OpenAssemblerChooser*oa
 
 void SeedExtender::configureTheBeautifulHotSkippingTechnology(){
 
-	//cout<<"calling configureTheBeautifulHotSkippingTechnology"<<endl;
+	m_hotSkippingThreshold = m_parameters->getMaximumDistance() * 1.1;
+	m_redundantProcessingVirtualMachineCycles = 0;
 
-	m_hotSkippingThreshold=99999999;
-	m_redundantProcessingVirtualMachineCycles=1/1000;
+	m_hotSkippingMode = false;
 
-	#ifdef ASSERT
-	assert(m_redundantProcessingVirtualMachineCycles==0x0);
-	#endif
-
-	m_hotSkippingMode=false;
+/*
+ * enable the hot skipping technology for short seeds.
+ */
+	if(m_ed->m_EXTENSION_currentSeed.size() < 3 * m_parameters->getWordSize())
+		m_hotSkippingMode = true;
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
@@ -2588,9 +2574,11 @@ void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY(Message*message){
 
 	int position=0;
 
-	(m_ed->m_EXTENSION_vertexIsAssembledResult)=(bool)incoming[position++];
-	m_theProcessIsRedundantByAGreaterAndMightyRank=(bool)incoming[position++];
+	bool isAssembled = (bool)incoming[position++];
 
+	(m_ed->m_EXTENSION_vertexIsAssembledResult) = isAssembled;
+
+	m_theProcessIsRedundantByAGreaterAndMightyRank = isAssembled;
 
 	#ifdef CONFIG_DEBUG_SEED_EXTENSION
 	if(m_theProcessIsRedundantByAGreaterAndMightyRank)
