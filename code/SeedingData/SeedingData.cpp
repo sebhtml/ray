@@ -122,19 +122,21 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 
 			SeedWorker*worker=&(m_aliveWorkers[workerId]);
 
-			if(worker->isHeadADeadEnd() && worker->isTailADeadEnd()){
+			bool isSmall = nucleotides < 4 * m_parameters->getWordSize();
+
+			if(isSmall && worker->isHeadADeadEnd() && worker->isTailADeadEnd()){
 			
 				m_skippedObjectsWithTwoDeadEnds++;
 
-			}else if(worker->isHeadADeadEnd()){
+			}else if(isSmall && worker->isHeadADeadEnd()){
 
 				m_skippedObjectsWithDeadEndForHead++;
 
-			}else if(worker->isTailADeadEnd()){
+			}else if(isSmall && worker->isTailADeadEnd()){
 
 				m_skippedObjectsWithDeadEndForTail++;
 
-			}else if(worker->isBubbleWeakComponent()){
+			}else if(isSmall && worker->isBubbleWeakComponent()){
 
 				m_skippedObjectsWithBubbleWeakComponent++;
 
