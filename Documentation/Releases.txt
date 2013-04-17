@@ -1,6 +1,4 @@
-Other releases use the git tag description for this information.
-This file is no longer being updated.
-
+Ray v2.2.0 "Cloudy Sky of Wishes" with RayPlatform v1.1.1 "Nested Droids of Luck"
 Ray v2.1.0 "Ancient Granularity of Epochs" with RayPlatform v1.1.0 "Chariot of Complexity"
 Ray v2.0.0 "Dark Astrocyte of Knowledge" with RayPlatform v1.0.3 "Gray Pylon of Wisdom"
 Ray v1.7.0 "Magical Luminary of Celestial Bodies"

@@ -426,4 +426,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.2.0-rc0
+Ray 2.2.0
