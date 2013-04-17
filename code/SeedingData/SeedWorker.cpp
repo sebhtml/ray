@@ -134,8 +134,12 @@ void SeedWorker::work(){
 			}
 		}
 	}else if(m_endChecksMode){
+		m_endChecksMode = false;
+		return;
 
+#if 0
 		performChecksOnPathEnds();
+#endif
 	}else{
 		m_finished=true;
 	}
