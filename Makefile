@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 2
-SUBLEVEL = 0
-EXTRAVERSION =
+SUBLEVEL = 1
+EXTRAVERSION = -devel
 NAME = Cloudy Sky of Wishes
 
 # Like in Linux, stuff that must be propagated to
