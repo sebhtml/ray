@@ -273,7 +273,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 	MACRO_COLLECT_PROFILING_INFORMATION();
 }
 
-int VerticesExtractor::getDefaultNumberOfBitsForBloomFilter(){
+LargeCount VerticesExtractor::getDefaultNumberOfBitsForBloomFilter(){
 
 /*
  * This is the product of these values:

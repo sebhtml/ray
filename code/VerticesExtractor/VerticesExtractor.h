@@ -114,7 +114,7 @@ StaticVector*outbox,RingAllocator*outboxAllocator,ArrayOfReads*myReads
 );
 	void call_RAY_SLAVE_MODE_ADD_EDGES();
 
-	int getDefaultNumberOfBitsForBloomFilter();
+	LargeCount getDefaultNumberOfBitsForBloomFilter();
 
 	void setReadiness();
 	
