@@ -3,11 +3,11 @@
 
 mpicxx \
 -Wall -std=c++98 -O3 -march=native -flto -fwhole-program \
- -D HAVE_LIBZ -D HAVE_LIBBZ2 -lz -lbz2 \
+ -D CONFIG_HAVE_LIBZ -D CONFIG_HAVE_LIBBZ2 -lz -lbz2 \
  -flto-report \
- -D MAXKMERLENGTH=32  \
- -D RAY_VERSION=\"2.1.0-devel\" -D RAYPLATFORM_VERSION=\"1.1.0-devel\" \
- -I. -Icode -IRayPlatform \
+ -D CONFIG_MAXKMERLENGTH=64  \
+ -D CONFIG_RAY_VERSION=\"x.y.z\" -D CONFIG_RAYPLATFORM_VERSION=\"x.y.z\" \
+ -I.  \
  $(find code/|grep .cpp$;find RayPlatform/|grep .cpp$) \
  -o Ray
 
