@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -58,13 +58,14 @@ void CoverageGatherer::writeKmers(){
 	}
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
-	FILE*kmerFile=NULL;
+	FILE* kmerFile=NULL;
+	ostringstream buffer;
 	ostringstream name;
 	name<<m_parameters->getPrefix()<<"/kmers.txt";
 	if(m_parameters->getRank()==0)
-		kmerFile=fopen(name.str().c_str(),"w"); // create empty file 
+		kmerFile=fopen(name.str().c_str(),"w"); // create empty file
 	else
-		kmerFile=fopen(name.str().c_str(),"a"); // append to file 
+		kmerFile=fopen(name.str().c_str(),"a"); // append to file
 
 	if(m_parameters->getRank()==MASTER_RANK)
 		writeHeader(kmerFile);
@@ -80,26 +81,36 @@ void CoverageGatherer::writeKmers(){
 		string kmerSequence=key.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		vector<Kmer> parents=node->getIngoingEdges(&key,m_parameters->getWordSize());
 		vector<Kmer> children=node->getOutgoingEdges(&key,m_parameters->getWordSize());
-		fprintf(kmerFile,"%s;%i;",kmerSequence.c_str(),coverage);
+
+		//fprintf(kmerFile,"%s;%i;",kmerSequence.c_str(),coverage);
+		buffer << kmerSequence << ";" << coverage << ";";
 		for(int i=0;i<(int)parents.size();i++){
 			string printableVersion=parents[i].idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 			if(i!=0)
-				fprintf(kmerFile," ");
+				buffer << " ";
+				//fprintf(kmerFile," ");
 
-			fprintf(kmerFile,"%c",printableVersion[0]);
+			//fprintf(kmerFile,"%c",printableVersion[0]);
+			buffer << printableVersion[0];
 		}
-		fprintf(kmerFile,";");
+		//fprintf(kmerFile,";");
+		buffer << ";";
 		for(int i=0;i<(int)children.size();i++){
 			string printableVersion=children[i].idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 			if(i!=0)
-				fprintf(kmerFile," ");
+				buffer << " ";
+				//fprintf(kmerFile," ");
 
-			fprintf(kmerFile,"%c",printableVersion[m_parameters->getWordSize()-1]);
+			//fprintf(kmerFile,"%c",printableVersion[m_parameters->getWordSize()-1]);
+			buffer << printableVersion[m_parameters->getWordSize()-1];
 		}
-		fprintf(kmerFile,"\n");
+		//fprintf("\n");
+		buffer << endl;
+		flushFileOperationBuffer_FILE(false, &buffer, kmerFile, CONFIG_FILE_IO_BUFFER_SIZE);
 	}
+	flushFileOperationBuffer_FILE(true, &buffer, kmerFile, CONFIG_FILE_IO_BUFFER_SIZE);
 	fclose(kmerFile);
-		
+
 	#ifdef ASSERT
 	if(n!=m_subgraph->size()){
 		cout<<"n="<<n<<" size="<<m_subgraph->size()<<endl;
@@ -136,7 +147,7 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			n++;
 			#endif
 		}
-			
+
 		#ifdef ASSERT
 		if(n!=m_subgraph->size()){
 			cout<<"Expected (from iterator)="<<n<<" Actual (->size())="<<m_subgraph->size()<<endl;
@@ -165,7 +176,7 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 		if(count!=0){
 			Message aMessage(messageContent,count,MASTER_RANK,RAY_MPI_TAG_COVERAGE_DATA,
 				m_parameters->getRank());
-			
+
 			m_outbox->push_back(&aMessage);
 			m_waiting=true;
 		}else{
