@@ -1673,14 +1673,22 @@ void Parameters::showUsage(){
 	cout<<"     Note: file format is determined with file extension."<<endl;
 	cout<<endl;
 	cout<<"     .fasta"<<endl;
+	cout<<"     .fa"<<endl;
 	cout<<"     .fasta.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fa.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
+	cout<<"     .fa.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     .fastq"<<endl;
+	cout<<"     .fq"<<endl;
 	cout<<"     .fastq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
+	cout<<"     .fq.gz (needs HAVE_LIBZ=y at compilation)"<<endl;
 	cout<<"     .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
+	cout<<"     .fq.bz2 (needs HAVE_LIBBZ2=y at compilation)"<<endl;
 	cout<<"     export.txt"<<endl;
+	cout<<"     qseq.txt"<<endl;
 	cout<<"     .sff (paired reads must be extracted manually)"<<endl;
 	cout<<"     .csfasta (color-space reads)"<<endl;
+	cout<<"     .csfa (color-space reads)"<<endl;
 
 
 	cout<<endl;

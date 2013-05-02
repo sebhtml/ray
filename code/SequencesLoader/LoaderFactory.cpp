@@ -22,7 +22,6 @@
 
 LoaderFactory::LoaderFactory() {
 
-	cout << "************************************************************************************************************************************************************************************" << endl;
 	m_loaders.push_back(&m_color);
 	m_loaders.push_back(&m_sff);
 	m_loaders.push_back(&m_fastaLoader);
@@ -42,9 +41,7 @@ LoaderFactory::LoaderFactory() {
 
 LoaderInterface* LoaderFactory::makeLoader(string fileName) {
 	vector<LoaderInterface*>::iterator iterator;
-	cout << "HERE : " << m_loaders.size()  << endl;
 	for(iterator = m_loaders.begin(); iterator != m_loaders.end(); ++iterator) {
-		cout << "Filename : " << fileName << endl;
 		if((*iterator)->checkFileType(fileName.c_str())) {
 			return *iterator;
 		}

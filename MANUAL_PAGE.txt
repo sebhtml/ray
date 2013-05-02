@@ -305,14 +305,22 @@ FILES
      Note: file format is determined with file extension.
 
      .fasta
+     .fa
      .fasta.gz (needs HAVE_LIBZ=y at compilation)
+     .fa.gz (needs HAVE_LIBZ=y at compilation)
      .fasta.bz2 (needs HAVE_LIBBZ2=y at compilation)
+     .fa.bz2 (needs HAVE_LIBBZ2=y at compilation)
      .fastq
+     .fq
      .fastq.gz (needs HAVE_LIBZ=y at compilation)
+     .fq.gz (needs HAVE_LIBZ=y at compilation)
      .fastq.bz2 (needs HAVE_LIBBZ2=y at compilation)
+     .fq.bz2 (needs HAVE_LIBBZ2=y at compilation)
      export.txt
+     qseq.txt
      .sff (paired reads must be extracted manually)
      .csfasta (color-space reads)
+     .csfa (color-space reads)
 
   Outputted files
 
@@ -426,4 +434,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.2.0
+Ray 2.2.1-devel
