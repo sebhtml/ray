@@ -21,4 +21,34 @@
 
 #include "LoaderInterface.h"
 
-/* nothing to see here */
+bool LoaderInterface::hasSuffix(const char* fileName,const char*suffix) {
+	int fileNameLength=strlen(fileName);
+        int suffixLength=strlen(suffix);
+
+        if(suffixLength>fileNameLength)
+                return false;
+
+        int delta=0;
+
+        while(delta<suffixLength) {
+                if(suffix[suffixLength-1-delta] != 
+			fileName[fileNameLength-1-delta])
+                        return false;
+                delta++;
+        }
+        return true;
+}
+
+void LoaderInterface::addExtension(const char* extension) {
+	m_extensions.push_back(extension);
+}
+
+bool LoaderInterface::checkFileType(const char* fileName) {
+	vector<string>::iterator iterator;
+	for(iterator = m_extensions.begin(); iterator != m_extensions.end(); ++iterator) {
+		if(hasSuffix(fileName, iterator->c_str())) {
+			return true;
+		}
+	}
+	return false;
+}

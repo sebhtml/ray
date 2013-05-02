@@ -44,6 +44,7 @@ class FastaGzLoader: public LoaderInterface{
 
 	FastqGzLoader m_fastqGzLoader;
 public:
+	FastaGzLoader();
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);

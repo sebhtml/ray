@@ -30,6 +30,11 @@
 #include <assert.h>
 using namespace std;
 
+ColorSpaceLoader::ColorSpaceLoader() {
+	addExtension(".csfasta");
+	addExtension(".csfa");
+}
+
 int ColorSpaceLoader::open(string file){
 	m_f=fopen(file.c_str(),"r");
 	m_size=0;

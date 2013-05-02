@@ -28,6 +28,11 @@
 #include <fstream>
 using namespace std;
 
+FastqBz2Loader::FastqBz2Loader() {
+	addExtension(".fq.bz2");
+	addExtension(".fastq.bz2");
+}
+
 int FastqBz2Loader::getSize(){
 	return m_size;
 }

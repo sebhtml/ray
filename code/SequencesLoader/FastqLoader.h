@@ -44,7 +44,7 @@ class FastqLoader: public LoaderInterface{
 	FILE*m_f;
 
 public:
-
+	FastqLoader();
 	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 	int openWithPeriod(string file,int period);
 

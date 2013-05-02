@@ -27,6 +27,11 @@
 #include <fstream>
 using namespace std;
 
+FastaBz2Loader::FastaBz2Loader() {
+	addExtension(".fa.bz2");
+	addExtension(".fasta.bz2");
+}
+
 int FastaBz2Loader::getSize(){
 	return m_fastqBz2Loader.getSize();
 }

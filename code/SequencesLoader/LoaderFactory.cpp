@@ -20,77 +20,34 @@
 
 #include "LoaderFactory.h"
 
-/*
- * TODO: check if m_type is required, if not remove it.
- */
-LoaderInterface*LoaderFactory::makeLoader(string file){
-	string csfastaExtension=".csfasta";
-	if(file.length()>=csfastaExtension.length() &&
-		file.substr(file.length()-csfastaExtension.length(),csfastaExtension.length())==csfastaExtension){
-		m_type=FORMAT_CSFASTA;
-		return &m_color;
-	}
-	if(hasSuffix(file.c_str(),".sff")){
-		m_type=FORMAT_SFF;
-		return &m_sff;
-	}
+LoaderFactory::LoaderFactory() {
 
-	if(hasSuffix(file.c_str(),".fasta")){
-		m_type=FORMAT_FASTA;
-		return &m_fastaLoader;
-	}
-
-	if(hasSuffix(file.c_str(),"export.txt")){
-		m_type=FORMAT_EXPORT;
-		return &m_export;
-	}
-
-	if(hasSuffix(file.c_str(),".fastq")){
-		m_type=FORMAT_FASTQ;
-		return &m_fastq;
-	}
+	cout << "************************************************************************************************************************************************************************************" << endl;
+	m_loaders.push_back(&m_color);
+	m_loaders.push_back(&m_sff);
+	m_loaders.push_back(&m_fastaLoader);
+	m_loaders.push_back(&m_export);
+	m_loaders.push_back(&m_fastq);
 
 	#ifdef CONFIG_HAVE_LIBZ
-	if(hasSuffix(file.c_str(),".fastq.gz")){
-		m_type=FORMAT_FASTQ_GZ;
-		return &m_fastqgz;
-	}
-
-	if(hasSuffix(file.c_str(),".fasta.gz")){
-		m_type=FORMAT_FASTA_GZ;
-		return &m_fastagz;
-	}
+	m_loaders.push_back(&m_fastqgz);
+	m_loaders.push_back(&m_fastagz);
 	#endif
 
 	#ifdef CONFIG_HAVE_LIBBZ2
-	if(hasSuffix(file.c_str(),".fastq.bz2")){
-		m_type=FORMAT_FASTQ_BZ2;
-		return &m_fastqbz2;
-	}
-
-	if(hasSuffix(file.c_str(),".fasta.bz2")){
-		m_type=FORMAT_FASTA_BZ2;
-		return &m_fastabz2;
-	}
+	m_loaders.push_back(&m_fastqbz2);
+	m_loaders.push_back(&m_fastabz2);
 	#endif
-
-	return NULL;
 }
 
-bool LoaderFactory::hasSuffix(const char*fileName,const char*suffix){
-	int fileNameLength=strlen(fileName);
-	int suffixLength=strlen(suffix);
-
-	if(suffixLength>fileNameLength)
-		return false;
-
-	int delta=0;
-
-	while(delta<suffixLength){
-		if(suffix[suffixLength-1-delta]!=fileName[fileNameLength-1-delta])
-			return false;
-		delta++;
+LoaderInterface* LoaderFactory::makeLoader(string fileName) {
+	vector<LoaderInterface*>::iterator iterator;
+	cout << "HERE : " << m_loaders.size()  << endl;
+	for(iterator = m_loaders.begin(); iterator != m_loaders.end(); ++iterator) {
+		cout << "Filename : " << fileName << endl;
+		if((*iterator)->checkFileType(fileName.c_str())) {
+			return *iterator;
+		}
 	}
-
-	return true;
+	return NULL;
 }

@@ -51,6 +51,7 @@ class SffLoader: public LoaderInterface{
 	int openSff(string file);
 
 public:
+	SffLoader();
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);

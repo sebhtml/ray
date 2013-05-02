@@ -27,6 +27,11 @@
 #include <stdlib.h>
 using namespace std;
 
+FastqLoader::FastqLoader() {
+	addExtension(".fastq");
+	addExtension(".fq");
+}
+
 int FastqLoader::open(string file){
 	return openWithPeriod(file,4);
 }

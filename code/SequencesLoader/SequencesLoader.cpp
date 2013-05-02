@@ -62,7 +62,7 @@ void SequencesLoader::registerSequence(){
 	Read*theRead=m_loader.at(m_distribution_sequence_id);
 	char read[RAY_MAXIMUM_READ_LENGTH];
 	theRead->getSeq(read,m_parameters->getColorSpaceMode(),false);
-	
+
 	//cout<<"DEBUG2 Read="<<m_distribution_sequence_id<<" color="<<m_parameters->getColorSpaceMode()<<" Seq= "<<read<<endl;
 
 	Read myRead;
@@ -99,7 +99,7 @@ void SequencesLoader::registerSequence(){
 		LargeIndex rightSequenceIdOnRank=m_parameters->getIdFromGlobalId(rightSequenceGlobalId);
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-		
+
 		(*m_myReads)[leftSequenceIdOnRank]->setLeftType();
 		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
 	}else if(m_LOADER_isRightFile){
@@ -157,7 +157,7 @@ void SequencesLoader::registerSequence(){
 		LargeIndex leftSequenceIdOnRank=m_myReads->size()-1;
 
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-		
+
 		(*m_myReads)[leftSequenceIdOnRank]->setLeftType();
 		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
 
@@ -177,7 +177,7 @@ void SequencesLoader::registerSequence(){
 		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
 		LargeIndex leftSequenceIdOnRank=m_parameters->getIdFromGlobalId(leftSequenceGlobalId);
 		int library=m_parameters->getLibrary(m_distribution_file_id);
-		
+
 		(*m_myReads)[rightSequenceIdOnRank]->setRightType();
 		(*m_myReads)[rightSequenceIdOnRank]->getPairedRead()->constructor(leftSequenceRank,leftSequenceIdOnRank,library);
 	}
@@ -273,7 +273,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
 	// count the number of sequences in all files.
 	vector<string> allFiles=(*m_parameters).getAllFiles();
-	
+
 	m_totalNumberOfSequences=0;
 	for(int i=0;i<(int)m_parameters->getNumberOfFiles();i++){
 		m_totalNumberOfSequences+=m_parameters->getNumberOfSequences(i);
@@ -281,7 +281,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
 	LargeCount sequencesPerRank=m_totalNumberOfSequences/m_size;
 	LargeIndex sequencesOnRanksBeforeThisOne=m_rank*sequencesPerRank;
-	
+
 	LargeIndex startingSequenceId=sequencesOnRanksBeforeThisOne;
 	LargeIndex endingSequenceId=startingSequenceId+sequencesPerRank-1;
 
@@ -352,7 +352,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 
 		m_loader.reset();
 	}
-	
+
 	m_loader.clear();
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEQUENCES_READY,m_rank);
 	m_outbox->push_back(&aMessage);

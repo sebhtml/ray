@@ -44,6 +44,10 @@ using namespace std;
  *  That is why here byte order is inverted.
  * */
 
+SffLoader::SffLoader() {
+	addExtension(".ssf");
+}
+
 int max(int a,int b){
 	if(a>b)
 		return a;

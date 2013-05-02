@@ -49,6 +49,7 @@ class ExportLoader: public LoaderInterface{
 	int m_size;
 	FILE*m_f;
 public:
+	ExportLoader();
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);

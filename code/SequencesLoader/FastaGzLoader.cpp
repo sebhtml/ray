@@ -28,6 +28,11 @@
 #include <stdlib.h>
 using namespace std;
 
+FastaGzLoader::FastaGzLoader() {
+	addExtension("fasta.gz");
+	addExtension("fa.gz");
+}
+
 int FastaGzLoader::open(string file){
 	return m_fastqGzLoader.openWithPeriod(file,2);
 }

@@ -27,6 +27,11 @@
 #include <stdlib.h>
 using namespace std;
 
+FastaLoaderForReads::FastaLoaderForReads() {
+	addExtension(".fasta");
+	addExtension(".fa");
+}
+
 int FastaLoaderForReads::open(string file){
 	return m_fastqLoader.openWithPeriod(file,2);
 }

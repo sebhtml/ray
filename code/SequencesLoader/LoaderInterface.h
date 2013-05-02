@@ -33,13 +33,19 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class LoaderInterface{
+class LoaderInterface {
+private:
+	vector<string> m_extensions;
+	bool hasSuffix(const char* fileName,const char* suffix);
 
 public:
 	virtual int open(string file) = 0;
 	virtual int getSize() = 0;
-	virtual void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator) = 0;
+	virtual void load(int maxToLoad,ArrayOfReads*reads,
+		MyAllocator*seqMyAllocator) = 0;
 	virtual void close() = 0;
+	bool checkFileType(const char* fileName);
+	void addExtension(const char* fileName);
 };
 
 #endif

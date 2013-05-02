@@ -43,6 +43,7 @@ class FastqBz2Loader: public LoaderInterface{
 	int m_size;
 	BzReader m_reader;
 public:
+	FastqBz2Loader();
 	int openWithPeriod(string file,int period);
 	int open(string file);
 	int getSize();

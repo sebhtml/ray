@@ -43,7 +43,7 @@ class FastaLoaderForReads: public LoaderInterface{
 
 	FastqLoader m_fastqLoader;
 public:
-
+	FastaLoaderForReads();
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);

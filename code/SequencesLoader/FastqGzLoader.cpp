@@ -33,6 +33,11 @@
 #include <stdlib.h>
 using namespace std;
 
+FastqGzLoader::FastqGzLoader() {
+	addExtension(".fastq.gz");
+	addExtension(".fq.gz");
+}
+
 int FastqGzLoader::open(string file){
 	return openWithPeriod(file,4);
 }

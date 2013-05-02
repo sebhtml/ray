@@ -27,6 +27,11 @@
 #include <stdlib.h>
 using namespace std;
 
+ExportLoader::ExportLoader() {
+	addExtension("export.txt");
+	addExtension("qseq.txt");
+}
+
 int ExportLoader::open(string file){
 	m_f=fopen(file.c_str(),"r");
 	m_size=0;

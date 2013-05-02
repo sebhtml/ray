@@ -39,18 +39,6 @@
 #include "FastaBz2Loader.h"
 #endif
 
-enum{
-FORMAT_NULL,
-FORMAT_CSFASTA,
-FORMAT_SFF,
-FORMAT_FASTA,
-FORMAT_FASTQ,
-FORMAT_FASTA_GZ,
-FORMAT_FASTQ_GZ,
-FORMAT_FASTA_BZ2,
-FORMAT_FASTQ_BZ2,
-FORMAT_EXPORT
-};
 
 /**
  *
@@ -61,13 +49,15 @@ FORMAT_EXPORT
  */
 class LoaderFactory{
 
-	int m_type;
 	SffLoader m_sff;
 	ColorSpaceLoader m_color;
-	FastqLoader m_fastq;	
-	FastaLoader m_fasta;	
+	FastqLoader m_fastq;
+	FastaLoader m_fasta;
 	FastaLoaderForReads m_fastaLoader;
 	ExportLoader m_export;
+
+	vector<LoaderInterface*> m_loaders;
+	vector<LoaderInterface*>::iterator m_it;
 
 	#ifdef CONFIG_HAVE_LIBZ
 	FastqGzLoader m_fastqgz;
@@ -79,9 +69,9 @@ class LoaderFactory{
 	FastaBz2Loader m_fastabz2;
 	#endif
 
-	bool hasSuffix(const char*fileName,const char*suffix);
 public:
-	LoaderInterface*makeLoader(string file);
+	LoaderFactory();
+	LoaderInterface* makeLoader(string file);
 };
 
 #endif

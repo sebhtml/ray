@@ -39,13 +39,14 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class ColorSpaceLoader: public LoaderInterface{
-
+class ColorSpaceLoader : public LoaderInterface{
 	ColorSpaceDecoder m_decoder;
 	FILE*m_f;
 	int m_size;
 	int m_loaded;
 public:
+
+	ColorSpaceLoader();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
 	int open(string file);
 	int getSize();

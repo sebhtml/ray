@@ -61,6 +61,7 @@ class FastqGzLoader: public LoaderInterface{
 	bool pullLineWithReadaheadTechnology(char*buffer,int maximumLength);
 
 public:
+	FastqGzLoader();
 	int openWithPeriod(string file,int period);
 	void loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator,int period);
 

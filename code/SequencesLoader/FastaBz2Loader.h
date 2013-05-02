@@ -41,6 +41,7 @@ using namespace std;
 class FastaBz2Loader: public LoaderInterface{
 	FastqBz2Loader m_fastqBz2Loader;
 public:
+	FastaBz2Loader();
 	int open(string file);
 	int getSize();
 	void load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator);
