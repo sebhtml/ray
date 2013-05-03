@@ -548,11 +548,10 @@ m_seedingData,
 		m_computeCore.run();
 	}
 
-	if(isMaster() && !m_aborted){
+	/*if(isMaster() && !m_aborted){
 		m_timePrinter.printDurations();
-
 		cout<<endl;
-	}
+	}*/
 
 /*
  * TODO: the code above should go in a plugin, not here.
