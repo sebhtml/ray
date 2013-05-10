@@ -158,7 +158,7 @@ all: Ray
 # inference rule
 %.o: %.cpp
 	$(Q)$(ECHO) "  CXX $@"
-	$(Q)$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -c $< -o $@
+	$(Q)$(MPICXX) $(CXXFLAGS) $(CONFIG_FLAGS) -I. -IRayPlatform -c $< -o $@
 
 include code/*/Makefile
 
