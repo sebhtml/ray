@@ -67,7 +67,7 @@ bool ReadAnnotation::isLower(){
 	return m_lower;
 }
 
-void ReadAnnotation::write(ofstream*f){
+void ReadAnnotation::write(ostream*f){
 	int rank=getRank();
 	int readIndex=getReadIndex();
 	int positionOnStrand=getPositionOnStrand();
@@ -78,7 +78,7 @@ void ReadAnnotation::write(ofstream*f){
 	f->write((char*)&strand,sizeof(char));
 }
 
-void ReadAnnotation::read(ifstream*f,bool isLower){
+void ReadAnnotation::read(istream*f,bool isLower){
 	int rank=0;
 	int readIndex=0;
 	int positionOnStrand=0;

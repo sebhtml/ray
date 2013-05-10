@@ -75,11 +75,11 @@ public:
 	int getForwardOffset();
 	int getReverseOffset();
 
-	void writeOffsets(ofstream*f);
-	void readOffsets(ifstream*f);
+	void writeOffsets(ostream*f);
+	void readOffsets(istream*f);
 
-	void write(ofstream*f);
-	void read(ifstream*f,MyAllocator*seqMyAllocator);
+	void write(ostream*f);
+	void read(istream*f,MyAllocator*seqMyAllocator);
 } ATTRIBUTE_PACKED;
 
 #endif

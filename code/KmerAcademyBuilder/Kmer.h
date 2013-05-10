@@ -133,8 +133,8 @@ public:
  */
 	string idToWord(int wordSize,bool color)const;
 
-	void write(ofstream*f)const;
-	void read(ifstream*f);
+	void write(ostream*f)const;
+	void read(istream*f);
 
 	void convertToString(int kmerLength,bool coloredMode,char*buffer)const;
 	double getGuanineCytosineProportion(int kmerLength,bool coloredMode)const;

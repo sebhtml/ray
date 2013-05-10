@@ -185,7 +185,7 @@ showOptions:
 # how to make Ray
 Ray: showOptions RayPlatform/libRayPlatform.a $(obj-y)
 	$(Q)$(ECHO) "  LD $@"
-	$(Q)$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o $@ $(LDFLAGS)
+	$(Q)$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o$@ $(LDFLAGS)
 	$(Q)$(ECHO) $(PREFIX) > PREFIX
 
 RayPlatform/libRayPlatform.a:

@@ -53,21 +53,25 @@ void PathEvaluator::writeCheckpointForContigPaths(){
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("ContigPaths")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ContigPaths"<<endl;
 		ofstream f(m_parameters->getCheckpointFile("ContigPaths").c_str());
+		ostringstream buffer;
+
 		int theSize=m_contigs->size();
-		f.write((char*)&theSize,sizeof(int));
+		buffer.write((char*)&theSize, sizeof(int));
 
 		/* write each path with its name and vertices */
 		for(int i=0;i<theSize;i++){
 			PathHandle name=(*m_contigNames)[i];
 			int vertices=(*m_contigs)[i].size();
-			f.write((char*)&name,sizeof(PathHandle));
-			f.write((char*)&vertices,sizeof(int));
+			buffer.write((char*)&name, sizeof(PathHandle));
+			buffer.write((char*)&vertices, sizeof(int));
 			for(int j=0;j<vertices;j++){
 				Kmer kmer;
 				(*m_contigs)[i].at(j,&kmer);
-				kmer.write(&f);
+				kmer.write(&buffer);
 			}
+			flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
+		flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
 }

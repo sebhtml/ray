@@ -15,7 +15,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 */
 
@@ -243,15 +243,18 @@ void MachineHelper::call_RAY_MASTER_MODE_SEND_COVERAGE_VALUES (){
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("CoverageDistribution")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint CoverageDistribution"<<endl;
 		ofstream f(m_parameters->getCheckpointFile("CoverageDistribution").c_str());
+		ostringstream buffer;
 		int theSize=m_coverageDistribution->size();
-		f.write((char*)&theSize,sizeof(int));
+		buffer.write((char*)&theSize, sizeof(int));
 
 		for(map<CoverageDepth,LargeCount>::iterator i=m_coverageDistribution->begin();i!=m_coverageDistribution->end();i++){
 			CoverageDepth coverage=i->first;
 			LargeCount count=i->second;
-			f.write((char*)&coverage,sizeof(CoverageDepth));
-			f.write((char*)&count,sizeof(LargeCount));
+			buffer.write((char*)&coverage, sizeof(CoverageDepth));
+			buffer.write((char*)&count, sizeof(LargeCount));
+			flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
+		flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
 
@@ -355,7 +358,7 @@ int MachineHelper::getRank(){
 	return m_parameters->getRank();
 }
 
-/** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES 
+/** actually, call_RAY_MASTER_MODE_LOAD_SEQUENCES
  * writes the AMOS file */
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_SEQUENCES(){
 
@@ -1109,14 +1112,14 @@ void MachineHelper::call_RAY_SLAVE_MODE_DIE(){
 	/** actually die */
 	(*m_alive)=false;
 
-	/** tell master that the rank died 
+	/** tell master that the rank died
  * 	obviously, this message won't be recorded in the MessagePassingInterface file...
  * 	Because of that, the middleware will do it for us.
  * 	*/
 	Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY,m_parameters->getRank());
 	m_outbox->push_back(&aMessage);
 
-	/** do nothing while dying 
+	/** do nothing while dying
  * 	the aging process takes a while -- 1024 cycles.
  * 	after that, it is death itself.
  * 	*/
@@ -1150,7 +1153,7 @@ void MachineHelper::call_RAY_MASTER_MODE_KILL_ALL_MPI_RANKS(){
  * a message.
  * For the other ones, we wait for the response of the previous.
  */
-	}else if(m_machineRank==m_parameters->getSize()-1 || 
+	}else if(m_machineRank==m_parameters->getSize()-1 ||
 	(m_inbox->size()>0 && (*m_inbox)[0]->getTag()==RAY_MPI_TAG_GOOD_JOB_SEE_YOU_SOON_REPLY)){
 
 		/**

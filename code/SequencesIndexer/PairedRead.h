@@ -47,8 +47,8 @@ public:
 	ReadHandle getUniqueId();
 	int getLibrary();
 
-	void read(ifstream*f);
-	void write(ofstream*f);
+	void read(istream*f);
+	void write(ostream*f);
 } ATTRIBUTE_PACKED;
 
 #endif

@@ -367,13 +367,15 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Sequences"<<endl;
 
 		ofstream f(m_parameters->getCheckpointFile("Sequences").c_str());
+		ostringstream buffer;
 
 		LargeCount count=m_myReads->size();
-		f.write((char*)&count,sizeof(LargeCount));
+		buffer.write((char*)&count, sizeof(LargeCount));
 		for(LargeIndex i=0;i<count;i++){
-			m_myReads->at(i)->write(&f);
+			m_myReads->at(i)->write(&buffer);
+	                flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
-
+                flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
 

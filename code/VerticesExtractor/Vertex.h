@@ -195,8 +195,8 @@ public:
 	bool isAssembled();
 	bool isAssembledByGreaterRank(Rank origin);
 
-	void write(Kmer*key,ofstream*f,int kmerLength);
-	void writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color);
+	void write(Kmer*key,ostream*f,int kmerLength);
+	void writeAnnotations(Kmer*key,ostream*f,int kmerLength,bool color);
 
 	VirtualKmerColorHandle getVirtualColor();
 

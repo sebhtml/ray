@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -66,7 +66,7 @@ void Library::call_RAY_MASTER_MODE_UPDATE_DISTANCES(){
 		/** wait for a reply */
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION_REPLY){
 			m_ranksThatReplied++;
-	
+
 			/** when everyone replied, we can proceed with the next library */
 			if(m_ranksThatReplied==m_parameters->getSize()){
 				m_currentLibrary++;
@@ -204,13 +204,13 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	}
 
 	#endif
-	
+
 	/* there is a strange bug that is avoided by waiting an
 		extra tick before doing actual stuff.
 		if we don't wait for m_outbox to be flushed, we get
 		2 messages in the outbox and something strange happens
-		
-		the bug does not happen on 
+
+		the bug does not happen on
 
 			- Mammouth Parallel II;
 			- colosse
@@ -261,7 +261,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		updateStates();
 
 		//  add one worker to active workers
-		//  reason is that those already in the pool don't communicate anymore -- 
+		//  reason is that those already in the pool don't communicate anymore --
 		//  as for they need responses.
 		if(!m_virtualCommunicator->getGlobalPushedMessageStatus()&&m_activeWorkers.empty()){
 			// there is at least one worker to start
@@ -288,7 +288,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 				}
 				m_SEEDING_i++;
 			}else{
-	
+
 				/* if there are no active workers and we failed to add
 				new workers above, then we need to flush something right
 				now
@@ -301,7 +301,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 				if(m_outbox->size()>0){
 					cout<<endl;
 					cout<<"Produced messages with forceFlush()"<<endl;
-				
+
 					cout<<"Inbox: "<<m_inbox->size()<<" Outbox: "<<m_outbox->size()<<endl;
 
 					for(int p=0;p<m_outbox->size();p++){
@@ -330,7 +330,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	if(m_completedJobs==(int)m_seedingData->m_SEEDING_seeds.size()){
 		printf("Rank %i detected %i library lengths\n",getRank(),m_detectedDistances);
 		printf("Rank %i is calculating library lengths [%i/%i] (completed)\n",getRank(),(int)m_seedingData->m_SEEDING_seeds.size(),(int)m_seedingData->m_SEEDING_seeds.size());
-		
+
 		if(mustWriteLibraryCheckpoint())
 			writeLibraryCheckpoint();
 
@@ -365,10 +365,13 @@ bool Library::mustWriteLibraryCheckpoint(){
 }
 
 void Library::writeLibraryCheckpoint(){
-	ofstream f(m_parameters->getCheckpointFile("PairedLibraries").c_str());
-	cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint PairedLibraries"<<endl;
-
+        ostringstream buffer;
+        ostringstream name;
+        name << m_parameters->getCheckpointFile("PairedLibraries").c_str();
+        FILE* file = fopen(name.str().c_str(), "w");
 	uint32_t entries=0;
+
+	cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint PairedLibraries"<<endl;
 
 // count the entries
 	for(map<int,map<int,int> >::iterator i=m_libraryDistances.begin();
@@ -377,7 +380,7 @@ void Library::writeLibraryCheckpoint(){
 		entries+=i->second.size();
 	}
 
-	f.write((char*)&entries,sizeof(uint32_t));
+	buffer.write((char*)&entries, sizeof(uint32_t));
 
 // write the entries
 
@@ -392,14 +395,14 @@ void Library::writeLibraryCheckpoint(){
 			int distance=j->first;
 			int count=j->second;
 
-			f.write((char*)&library,sizeof(uint32_t));
-			f.write((char*)&distance,sizeof(uint32_t));
-			f.write((char*)&count,sizeof(uint32_t));
-
+			buffer.write((char*)&library, sizeof(uint32_t));
+			buffer.write((char*)&distance, sizeof(uint32_t));
+			buffer.write((char*)&count, sizeof(uint32_t));
+			flushFileOperationBuffer_FILE(false, &buffer, file, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
 	}
-
-	f.close();
+	flushFileOperationBuffer_FILE(true, &buffer, file, CONFIG_FILE_IO_BUFFER_SIZE);
+	fclose(file);
 }
 
 void Library::constructor(int m_rank,StaticVector*m_outbox,RingAllocator*m_outboxAllocator,ExtensionData*m_ed,

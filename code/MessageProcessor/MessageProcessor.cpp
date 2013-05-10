@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
@@ -150,7 +150,7 @@ __CreateMessageTagAdapter(MessageProcessor, RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY);
 void MessageProcessor::call_RAY_MPI_TAG_CONTIG_INFO(Message*message){
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
 	m_scaffolder->addMasterContig(incoming[0],incoming[1]);
-	
+
 	MessageUnit*outgoingMessage=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	Message aMessage(outgoingMessage,message->getCount(),
 		message->getSource(),RAY_MPI_TAG_CONTIG_INFO_REPLY,m_rank);
@@ -188,7 +188,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SCAFFOLDING_LINKS(Message*message){
 	}
 
 	//cout<<__func__<<" "<<leftContig<<" "<<leftStrand<<" "<<rightContig<<" "<<rightStrand<<" "<<average<<" "<<number<<endl;
-	
+
 	SummarizedLink link(leftContig,leftStrand,rightContig,rightStrand,average,number,standardDeviation);
 	m_scaffolder->addMasterLink(&link);
 
@@ -319,7 +319,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 
 		#ifdef ASSERT
 		// check the padding
-		
+
 		int start=KMER_U64_ARRAY_SIZE+1;
 
 		for(int iterator=start;iterator<period;iterator++){
@@ -348,7 +348,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		if(ptr==NULL){
 			ptr=m_subgraph->getReads(&vertex);
 		}
-	
+
 		bool gotOne=false;
 
 		while(ptr!=NULL&&!gotOne){
@@ -541,7 +541,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT(Message*message
 			outgoingMessage[i+1]=node->getCoverage(&vertex);
 		}
 	}
-	
+
 	Message aMessage(outgoingMessage,count,message->getSource(),RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
 }
@@ -659,19 +659,20 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint GenomeGraph"<<endl;
 
 		ofstream f(m_parameters->getCheckpointFile("GenomeGraph").c_str());
+		ostringstream buffer;
 
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
 		LargeCount theSize=m_subgraph->size();
 
-		f.write((char*)&theSize,sizeof(LargeCount));
-
+		buffer.write((char*)&theSize, sizeof(LargeCount));
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
 			Kmer key=*(iterator.getKey());
-			node->write(&key,&f,m_parameters->getWordSize());
+			node->write(&key, &buffer, m_parameters->getWordSize());
+			flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
-
+		flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
 
@@ -697,7 +698,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		int pos=i;
 		kmerObject.unpack(incoming,&pos);
 
-/* make sure that the payload 
+/* make sure that the payload
  * is for this process and not another one...
  */
 		#ifdef ASSERT
@@ -710,12 +711,12 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		//bool isTheLowerKmer=false;
 		Kmer lowerKmer=kmerObject;
 
-/* 
- * TODO: remove call to reverseComplement, this if should never be 
+/*
+ * TODO: remove call to reverseComplement, this if should never be
  * picked up because only the lowest k-mers are sent
- * I am not sure it would work but if it does that would reduces 
- * the number of sent messages 
- * 
+ * I am not sure it would work but if it does that would reduces
+ * the number of sent messages
+ *
  * *** Anyway, the message was delivered anyway already.
  */
 		Kmer reverseComplement=kmerObject.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -756,7 +757,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 				showMemoryUsage(m_rank);
 			}
 		}
-		
+
 
 /*
  * We have a go. We insert the k-mer in the distributed
@@ -769,13 +770,13 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 		#endif
 
 /*
- * Initialize the k-mer coverage 
+ * Initialize the k-mer coverage
  * It starts at 0 if the Bloom filter
  * is disabled, 1 otherwise.
  */
 		if(m_subgraph->inserted()){
-			tmp->constructor(); 
-		
+			tmp->constructor();
+
 			CoverageDepth startingValue=0;
 
 /*
@@ -826,7 +827,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 
 
 	printf("Rank %i has %i vertices (completed)\n",m_rank,(int)m_subgraph->size());
-	
+
 	#if 0
 	m_subgraph->printStatistics();
 	#endif
@@ -973,7 +974,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 	if(m_bloomBits>0){
 		uint64_t setBits=m_bloomFilter.getNumberOfSetBits();
 		uint64_t bits=m_bloomFilter.getNumberOfBits();
-	
+
 		#ifdef ASSERT
 		assert(bits>0);
 		assert(bits==m_bloomBits);
@@ -994,7 +995,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 
 		m_bloomFilter.destructor();
 		cout<<"Rank "<<m_rank<<" destroyed its Bloom filter"<<endl;
-	
+
 	}
 
 	// complete incremental resizing, if any
@@ -1074,7 +1075,7 @@ void MessageProcessor::call_RAY_MPI_TAG_READY_TO_SEED(Message*message){
 // TODO: move checkpointing code in checkpointing.
 void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	/* read checkpoints ReadOffsets and OptimalMarkers */
-	
+
 	if(m_parameters->hasCheckpoint("OptimalMarkers") && m_parameters->hasCheckpoint("ReadOffsets")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint ReadOffsets"<<endl;
 		ifstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
@@ -1112,7 +1113,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 				marker->read(&f2,isLower);
 
 				Vertex*node=m_subgraph->find(&kmer);
-	
+
 				#ifdef ASSERT
 				if(node==NULL){
 					cout<<"Not found: "<<kmer.idToWord(m_parameters->getWordSize(),
@@ -1135,28 +1136,33 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("OptimalMarkers")){
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint ReadOffsets"<<endl;
 		ofstream f(m_parameters->getCheckpointFile("ReadOffsets").c_str());
+		ostringstream buffer;
+
 		LargeCount count=m_myReads->size();
-		f.write((char*)&count,sizeof(LargeCount));
+		buffer.write((char*)&count, sizeof(LargeCount));
+
 		for(int i=0;i<(int)m_myReads->size();i++){
-			m_myReads->at(i)->writeOffsets(&f);
+			m_myReads->at(i)->writeOffsets(&buffer);
+			flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
+		flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
-	
+
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint OptimalMarkers"<<endl;
 		ofstream f2(m_parameters->getCheckpointFile("OptimalMarkers").c_str());
-
 		GridTableIterator iterator;
 		iterator.constructor(m_subgraph,m_parameters->getWordSize(),m_parameters);
-	
+
 		count=m_subgraph->size();
-		f2.write((char*)&count,sizeof(LargeCount));
+		buffer.write((char*)&count, sizeof(LargeCount));
 
 		while(iterator.hasNext()){
 			Vertex*node=iterator.next();
 			Kmer key=*(iterator.getKey());
-			node->writeAnnotations(&key,&f2,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+			node->writeAnnotations(&key,&buffer,m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
+			flushFileOperationBuffer(false, &buffer, &f2, CONFIG_FILE_IO_BUFFER_SIZE);
 		}
-
+		flushFileOperationBuffer(true, &buffer, &f2, CONFIG_FILE_IO_BUFFER_SIZE);
 		f2.close();
 	}
 
@@ -1290,7 +1296,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 
 	vector<Kmer> outgoingEdges=node->getOutgoingEdges(&vertex,*m_wordSize);
 	vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
-	
+
 	message2[outputPosition++]=outgoingEdges.size();
 	for(int i=0;i<(int)outgoingEdges.size();i++){
 		outgoingEdges[i].pack(message2,&outputPosition);
@@ -1369,7 +1375,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SEND_SEED_LENGTHS(Message*message){
 		int number=incoming[i+1];
 		m_seedingData->m_masterSeedLengths[seedLength]+=number;
 	}
-	
+
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_SEND_SEED_LENGTHS_REPLY,m_rank);
 	m_outbox->push_back(&aMessage);
 }
@@ -1428,7 +1434,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 			cout<<"Rank="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
-		#endif 
+		#endif
 		vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
 		int outputPosition=i*5;
 		message2[outputPosition++]=ingoingEdges.size();
@@ -1521,7 +1527,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 		if(coverage==1){
 			continue;
 		}
-		
+
 		ReadAnnotation*e=(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
 
 		#ifdef ASSERT
@@ -1573,7 +1579,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
 	assert(read!=NULL);
 	#endif
 	int length=read->length();
-	
+
 	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(3*sizeof(MessageUnit));
 	int pos=0;
 	message2[pos++]=length;
@@ -1645,7 +1651,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		#endif
 
 		PathHandle wave=incoming[pos++];
-		
+
 		#ifdef ASSERT
 		if(getRankFromPathUniqueId(wave)>=m_size){
 			cout<<"Invalid rank: "<<getRankFromPathUniqueId(wave)<<" maximum is "<<m_size-1<<endl;
@@ -1694,7 +1700,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_FUSION(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_FUSION_DONE(Message*message){
-	
+
 	MessageUnit*incoming=message->getBuffer();
 	bool reductionOccured=incoming[0];
 
@@ -1824,7 +1830,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH_REPLY(Message*message){
 input: Kmer ; index
 output: Kmer ; index ; list
 
-Receives a k-mer and a first index, and returns a message containing 
+Receives a k-mer and a first index, and returns a message containing
 the k-mer, the new first index, and a list of path identifiers in the graph.
 
 */

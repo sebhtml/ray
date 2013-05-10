@@ -354,14 +354,14 @@ char codeToChar(uint8_t a,bool color){
 	return SYMBOL_A;
 }
 
-void Kmer::write(ofstream*f)const{
+void Kmer::write(ostream*f)const{
 	for(int i=0;i<getNumberOfU64();i++){
 		uint64_t a=getU64(i);
 		f->write((char*)&a,sizeof(uint64_t));
 	}
 }
 
-void Kmer::read(ifstream*f){
+void Kmer::read(istream*f){
 	for(int i=0;i<getNumberOfU64();i++){
 		uint64_t a=0;
 		f->read((char*)&a,sizeof(uint64_t));

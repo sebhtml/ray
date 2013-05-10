@@ -217,18 +217,20 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 		/* Here we write the checkpoint Partition */
 		if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Partition")){
 			ofstream f(m_parameters->getCheckpointFile("Partition").c_str());
+			ostringstream buffer;
 			cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Partition"<<endl;
 			int count=m_slaveCounts.size();
-			f.write((char*)&count,sizeof(int));
+			buffer.write((char*)&count , sizeof(int));
 
 			for(map<int,LargeCount>::iterator i=m_slaveCounts.begin();
 				i!=m_slaveCounts.end();i++){
 				int file=i->first;
 				LargeCount sequences=i->second;
-				f.write((char*)&file,sizeof(int));
-				f.write((char*)&sequences,sizeof(LargeCount));
+				buffer.write((char*)&file, sizeof(int));
+				buffer.write((char*)&sequences, sizeof(LargeCount));
+				flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 			}
-
+			flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 			f.close();
 		}
 	/** count sequences in a file */

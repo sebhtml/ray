@@ -392,25 +392,29 @@ void SpuriousSeedAnnihilator::writeCheckpointForSeeds(){
 	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("Seeds")){
 
 		ofstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+		ostringstream buffer;
+
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint Seeds"<<endl;
 		int count=(*m_seeds).size();
 
-		f.write((char*)&count,sizeof(int));
+		buffer.write((char*)&count, sizeof(int));
 
 		for(int i=0;i<(int)(*m_seeds).size();i++){
 			int length=(*m_seeds)[i].size();
-			f.write((char*)&length,sizeof(int));
+			buffer.write((char*)&length, sizeof(int));
 
 			for(int j=0;j<(int)(*m_seeds)[i].size();j++){
 				Kmer theKmer;
 				(*m_seeds)[i].at(j,&theKmer);
-				theKmer.write(&f);
+				theKmer.write(&buffer);
 
 				CoverageDepth coverageValue=0;
 				coverageValue=(*m_seeds)[i].getCoverageAt(j);
-				f.write((char*)&coverageValue,sizeof(CoverageDepth));
+				buffer.write((char*)&coverageValue, sizeof(CoverageDepth));
+				flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 			}
 		}
+                flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
 }

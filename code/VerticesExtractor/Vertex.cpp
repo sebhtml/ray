@@ -226,7 +226,7 @@ void Vertex::clearDirections(Kmer*a){
 	m_directions=NULL;
 }
 
-void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
+void Vertex::write(Kmer*key, ostream*f,int kmerLength){
 	int coverage=getCoverage(key);
 	key->write(f);
 	f->write((char*)&coverage,sizeof(int));
@@ -244,7 +244,7 @@ void Vertex::write(Kmer*key,ofstream*f,int kmerLength){
 	}
 }
 
-void Vertex::writeAnnotations(Kmer*key,ofstream*f,int kmerLength,bool color){
+void Vertex::writeAnnotations(Kmer*key,ostream*f,int kmerLength,bool color){
 	key->write(f);
 
 	Kmer complement=key->complementVertex(kmerLength,color);

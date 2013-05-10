@@ -51,8 +51,8 @@ public:
 	void setNext(ReadAnnotation*a);
 	ReadHandle getUniqueId() const;
 
-	void read(ifstream*f,bool isLower);
-	void write(ofstream*f);
+	void read(istream*f,bool isLower);
+	void write(ostream*f);
 } ATTRIBUTE_PACKED;
 
 #endif
