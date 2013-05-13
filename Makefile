@@ -93,7 +93,7 @@ CLOCK_GETTIME=n
 
 # use MPI I/O for file operations
 
-MPI_IO=n
+MPI_IO=y
 
 #######################################################################
 # Don't edit below this this point ---> .
