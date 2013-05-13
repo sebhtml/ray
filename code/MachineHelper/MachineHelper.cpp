@@ -720,7 +720,9 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS(Messa
 	requiredBytes+=testBuffer.tellp();
 	testBuffer.str("");
 
-	cout<<"Rank "<<m_parameters->getRank()<<" requires "<<requiredBytes<<" bytes for storage."<<endl;
+#ifdef CONFIG_DEBUG_OFFSETS
+	cout<<"[DEBUG] Rank "<<m_parameters->getRank()<<" requires "<<requiredBytes<<" bytes for storage."<<endl;
+#endif
 
 	MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	int bufferPosition=0;
@@ -769,6 +771,10 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
  */
 	char*fileName= const_cast<char*> ( fileNameValue );
 
+#ifdef CONFIG_DEBUG_OFFSETS
+	cout<<"[DEBUG] Rank "<<m_parameters->getRank()<< " is appending its fusions at "<<m_offsetForContigs<<endl;
+#endif
+
 #ifdef CONFIG_MPI_IO
 
 /*
@@ -792,8 +798,6 @@ void MachineHelper::call_RAY_SLAVE_MODE_SEND_EXTENSION_DATA(){
 	ofstream fp;
 	fp.open(fileName, std::ios::app);
 #endif
-
-	cout<<"Rank "<<m_parameters->getRank()<< " is appending its fusions at "<<m_offsetForContigs<<endl;
 
 	int total=0;
 
@@ -1022,6 +1026,10 @@ void MachineHelper::call_RAY_MPI_TAG_COMPUTE_REQUIRED_SPACE_FOR_EXTENSIONS_REPLY
 
 	m_rankStorage[source]=bytes;
 
+#ifdef CONFIG_DEBUG_OFFSETS
+	cout << "[DEBUG] Rank " << getRank() << " rank " << source << " needs " << bytes << " bytes" << endl;
+#endif
+
 	m_ranksThatComputedStorage++;
 
 	if(m_ranksThatComputedStorage==getSize()){
@@ -1056,6 +1064,10 @@ void MachineHelper::call_RAY_MASTER_MODE_ASK_EXTENSIONS(){
 
 		m_rankStorage.resize(getSize());
 
+		for(int i = 0; i < getSize() ; i++) {
+			m_rankStorage[i] = 0;
+		}
+
 		m_seedExtender->closePathFile();
 
 		m_ed->m_EXTENSION_currentRankIsSet=true;
@@ -1088,7 +1100,11 @@ void MachineHelper::call_RAY_MPI_TAG_ASK_EXTENSION_DATA(Message*message){
 
 	MessageUnit*buffer=message->getBuffer();
 
-	m_offsetForContigs=buffer[0];
+	m_offsetForContigs = buffer[0];
+
+#ifdef CONFIG_DEBUG_OFFSETS
+	cout << "[DEBUG] Rank " << getRank() << " call_RAY_MPI_TAG_ASK_EXTENSION_DATA received offset: " << m_offsetForContigs << endl;
+#endif
 }
 
 void MachineHelper::call_RAY_MASTER_MODE_SCAFFOLDER(){
