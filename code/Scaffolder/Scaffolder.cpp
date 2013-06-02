@@ -1624,6 +1624,9 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 
 				int columns=m_parameters->getColumns();
 				ostringstream outputBuffer;
+
+				bool isNotLastContig = m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1;
+
 				while(contigPosition<length){
 					char nucleotide=m_contigSequence[contigPosition];
 					outputBuffer<<nucleotide;
@@ -1631,10 +1634,10 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 					m_positionOnScaffold++;
 
 /*
- *
  * Only add a new line if there is something more to add.
  */
-					if(m_positionOnScaffold%columns==0 && contigPosition < length){
+					if(m_positionOnScaffold%columns==0
+					&& ( contigPosition < length || isNotLastContig)){
 						outputBuffer<<"\n";
 					}
 				}
@@ -1644,7 +1647,7 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 /*
  * Add the gap.
  */
-				if(m_contigId<(int)m_scaffoldContigs[m_scaffoldId].size()-1){
+				if(isNotLastContig){
 					int gapSize=m_scaffoldGaps[m_scaffoldId][m_contigId];
 					int i=0;
 					int columns=m_parameters->getColumns();
