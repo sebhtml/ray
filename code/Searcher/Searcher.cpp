@@ -718,12 +718,12 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		contigSummaryFile.open(summary.str().c_str(), ios_base::app);
 
-		contigSummaryFile<<"#Contig name	K-mer length	Length in k-mers";
+		contigSummaryFile<<"#Contig name	K-mer length	Contig length in k-mers";
 		contigSummaryFile<<"	Colored k-mers";
-		contigSummaryFile<<"	Proportion";
+		contigSummaryFile<<"	Proportion of colored k-mers in contig";
 		contigSummaryFile<<"	Mode k-mer coverage depth";
 		contigSummaryFile<<"	K-mer observations	Total";
-		contigSummaryFile<<"	Proportion"<<endl;
+		contigSummaryFile<<"	Proportion of k-mer observations in sample"<<endl;
 
 		// count the total
 		LargeCount total=m_totalNumberOfAssembledKmerObservations;
