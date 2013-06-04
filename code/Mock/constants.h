@@ -168,11 +168,16 @@
 /* since Lustre is not very good at caching file input/output operations
  * Ray agglomerates these operations */
 
-//#define CONFIG_FILE_IO_BUFFER_SIZE 1048576 /* 1 MB */
-//#define CONFIG_FILE_IO_BUFFER_SIZE 4194304 /* 4 MB */
-#define CONFIG_FILE_IO_BUFFER_SIZE 16777216 /* 16 MB */
-//#define CONFIG_FILE_IO_BUFFER_SIZE 33554432 /* 32 MB */
-//#define CONFIG_FILE_IO_BUFFER_SIZE 134217728 /* 128 MB */
+#define SIZE_1M 1048576
+#define SIZE_2M 2097152
+#define SIZE_4M 4194304
+#define SIZE_8M 8388608
+#define SIZE_16M 16777216
+#define SIZE_32M 33554432
+#define SIZE_64M 67108864
+#define SIZE_128M 134217728
+
+#define CONFIG_FILE_IO_BUFFER_SIZE SIZE_16M
 
 /* the identifier of a read */
 typedef uint64_t ReadHandle;

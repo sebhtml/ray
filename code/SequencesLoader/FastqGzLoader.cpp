@@ -26,7 +26,7 @@
 #define CONFIG_ZLIB_USE_READAHEAD
 
 #define CONFIG_ZLIB_MAXIMUM_READ_LENGTH 4096
-#define CONFIG_ZLIB_READAHEAD_SIZE 1048576 /* 1 MiB */
+#define CONFIG_ZLIB_READAHEAD_SIZE SIZE_4M
 
 #include <fstream>
 #include <zlib.h>

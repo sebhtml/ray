@@ -1,6 +1,6 @@
 /*
  *  Ray -- Parallel genome assemblies for parallel DNA sequencing
-    Copyright (C) 2010, 2011, 2012 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -27,9 +27,7 @@
 #include <stdlib.h>
 using namespace std;
 
-#define SIZE_4MiB 4194304
-
-#define CONFIG_FASTQ_BUFFER_SIZE SIZE_4MiB
+#define CONFIG_FASTQ_BUFFER_SIZE SIZE_4M
 
 FastqLoader::FastqLoader() {
 	addExtension(".fastq");
