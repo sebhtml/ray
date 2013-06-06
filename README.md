@@ -23,8 +23,23 @@ Ray is documented in
 - taxonomy profiling of samples (with Ray Communities)
 - gene ontology profiling of samples (with Ray Ontologies)
 
-
 see Documentation/BiologicalAbundances.txt
+
+
+# Distributors
+
+- Geeknet, Inc. http://sourceforge.net/projects/denovoassembler/
+- GitHub, Inc. https://github.com/sebhtml/ray
+- Debian (Software in the Public Interest, Inc.) http://packages.debian.org/sid/ray
+- Ubuntu (Canonical Ltd.) https://launchpad.net/ubuntu/+source/ray
+- archlinux (AUR Development Team.) https://aur.archlinux.org/packages/ray/
+- DNAnexus, Inc. https://platform.dnanexus.com/app/ray
+
+In progress:
+
+- Fedora (Red Hat, Inc.) https://bugzilla.redhat.com/show_bug.cgi?id=872783 (in progress)
+- Galaxy (Galaxy Team) http://user.list.galaxyproject.org/How-do-I-add-Ray-to-Galaxy-Central-in-the-tool-shed-td4655623.html#none 
+- BaseSpace (Illumina, Inc.)
 
 # Website
 
