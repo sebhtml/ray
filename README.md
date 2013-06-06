@@ -34,6 +34,7 @@ see Documentation/BiologicalAbundances.txt
 - Ubuntu (Canonical Ltd.) https://launchpad.net/ubuntu/+source/ray
 - archlinux (AUR Development Team.) https://aur.archlinux.org/packages/ray/
 - DNAnexus, Inc. https://platform.dnanexus.com/app/ray
+- CloudBioLinux https://github.com/chapmanb/cloudbiolinux/blob/master/cloudbio/custom/bio_nextgen.py
 
 In progress:
 
