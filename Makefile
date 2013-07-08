@@ -1,6 +1,6 @@
 VERSION = 2
-PATCHLEVEL = 2
-SUBLEVEL = 1
+PATCHLEVEL = 3
+SUBLEVEL = 0
 EXTRAVERSION = -devel
 NAME = Cloudy Sky of Wishes
 
