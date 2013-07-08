@@ -31,17 +31,20 @@ __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEED
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
 __CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+__CreateMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_MERGE_SEEDS);
 
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
 __CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
+__CreateSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_MERGE_SEEDS);
 
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
@@ -112,6 +115,21 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 	Message aMessage(messageBuffer,2*i,MASTER_RANK,
 		RAY_MESSAGE_TAG_SEND_SEED_LENGTHS, m_rank);
 	m_outbox->push_back(&aMessage);
+}
+
+ComputeCore * SpuriousSeedAnnihilator::getCore() {
+	return m_core;
+}
+
+SpuriousSeedAnnihilator * SpuriousSeedAnnihilator::getThis() {
+	return this;
+}
+
+SpuriousSeedAnnihilator * SpuriousSeedAnnihilator::getThat() {
+
+	SpuriousSeedAnnihilator * that = this;
+
+	return that;
 }
 
 /*
@@ -185,7 +203,14 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 		m_cleaningIsStarted=true;
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
-		m_core->getSwitchMan()->closeMasterMode();
+
+		if(!this->m_hasMergedSeeds){
+
+			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_MERGE_SEEDS);
+
+		} else {
+			m_core->getSwitchMan()->closeMasterMode();
+		}
 	}
 }
 
@@ -279,6 +304,38 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 	}
+}
+
+/**
+ *
+ * \see https://github.com/sebhtml/ray/issues/188
+ * \author Sébastien Boisvert
+ */
+void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_MERGE_SEEDS() {
+	// merge the seeds using arbitration
+
+	this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+
+	/*
+	 * parallel design:
+	 *
+	 * while true
+	 * 	1. register seeds
+	 * 	2. merge seeds using arbitration
+	 * 	3. clean seeds
+	 *
+	 * then, exit via the backdoor called "RAY_MASTER_MODE_PUSH_SEED_LENGTHS"
+	 *
+	 * checkpoints are saved top storage devices after this current step.
+	 */
+}
+
+void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_MERGE_SEEDS() {
+	// merge the seeds using arbitration
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message) {
+	// merge the seeds using arbitration
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
@@ -437,6 +494,10 @@ void SpuriousSeedAnnihilator::writeSeedStatistics(){
 
 /*
  * Methods to implement for the CorePlugin interface.
+ *
+ * The entry point is RAY_MASTER_MODE_REGISTER_SEEDS.
+ *
+ * The exit point is RAY_MASTER_MODE_TRIGGER_DETECTION (not here).
  */
 void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 
@@ -453,17 +514,20 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_MERGE_SEEDS);
 
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
 	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
+	__ConfigureSlaveModeHandler(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_MERGE_SEEDS);
 
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 
 	RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");
@@ -547,4 +611,6 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_debugCode = m_parameters->hasOption("-debug-seed-filter");
 
 	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
+
+	m_hasMergedSeeds = false;
 }
