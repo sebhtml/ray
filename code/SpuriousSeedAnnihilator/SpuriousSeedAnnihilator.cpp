@@ -314,7 +314,15 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_MERGE_SEEDS() {
 	// merge the seeds using arbitration
 
-	this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+	if(!m_mergingIsStarted){
+		m_core->getSwitchMan()->openMasterMode(m_core->getOutbox(),m_core->getRank());
+
+		m_mergingIsStarted = true;
+
+	}else if(m_core->getSwitchMan()->allRanksAreReady()){
+
+		this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+	}
 
 	/*
 	 * parallel design:
@@ -332,6 +340,14 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_MERGE_SEEDS() {
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_MERGE_SEEDS() {
 	// merge the seeds using arbitration
+
+	if(this->m_debug) {
+		cout << m_core->getRank() << " merging seeds now." << endl;
+	}
+
+
+
+	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(), m_core->getRank());
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message) {
@@ -554,11 +570,13 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_FILTER_SEEDS, RAY_MESSAGE_TAG_FILTER_SEEDS);
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_CLEAN_SEEDS, RAY_MESSAGE_TAG_CLEAN_SEEDS);
 	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_PUSH_SEED_LENGTHS, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
+	core->setMasterModeToMessageTagSwitch(m_plugin, RAY_MASTER_MODE_MERGE_SEEDS, RAY_MESSAGE_TAG_MERGE_SEEDS);
 
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_REGISTER_SEEDS, RAY_SLAVE_MODE_REGISTER_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_FILTER_SEEDS, RAY_SLAVE_MODE_FILTER_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_CLEAN_SEEDS, RAY_SLAVE_MODE_CLEAN_SEEDS);
 	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
+	core->setMessageTagToSlaveModeSwitch(m_plugin, RAY_MESSAGE_TAG_MERGE_SEEDS, RAY_SLAVE_MODE_MERGE_SEEDS);
 
 	m_activeQueries=0;
 
@@ -604,6 +622,12 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
 		RAY_MPI_TAG_ASK_VERTEX_PATH
 	);
+
+	m_mergingTechnology.initialize(m_seeds, m_virtualCommunicator, m_virtualProcessor, m_core, m_parameters,
+		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+		RAY_MPI_TAG_ASK_VERTEX_PATH
+	);
+
 /**
  * Turn this on to run this code even when checkpoints exist.
  * This should be set to false in production.
@@ -613,4 +637,6 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
 
 	m_hasMergedSeeds = false;
+	m_debug = true;
+	m_mergingIsStarted = false;
 }

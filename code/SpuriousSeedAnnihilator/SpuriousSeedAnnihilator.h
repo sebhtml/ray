@@ -19,6 +19,7 @@
  */
 
 #include "SeedFilteringWorkflow.h"
+#include "SeedMergingWorkflow.h"
 
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
@@ -71,25 +72,23 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS)
  * Design:
  *
  * SpuriousSeedAnnihilator
- *          |
- *          |
- *          |
- *    SeedFilteringWorkflow
- *                   |
- *                   |
- *                   |
- *              AnnihilationWorker
- *              |               |
- *              |               |
- *              |               |
- *     AttributeFetcher         |
- *                              |
- *                      AnnotationFetcher
- *
+ *          |           \---------------------------------
+ *          |                                            |
+ *          |                                            |
+ *    SeedFilteringWorkflow                          SeedMergingWorkflow
+ *                   |                                   |
+ *                   |                                   |
+ *                   |                                   |
+ *              AnnihilationWorker                    NanoMerger
+ *              |               |                     |      |
+ *              |               |                     |      |
+ *              |               |                     |      |
+ *     AttributeFetcher         |                     |  AnnotationFetcher
+ *                              |                     |
+ *                      AnnotationFetcher             |
+ *                                                  AttributeFetcher
  *
  * \author Sébastien Boisvert
- *
- * \see TODO put github issues hereS
  *
  */
 class SpuriousSeedAnnihilator: public CorePlugin {
@@ -142,6 +141,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY;
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
 
+	bool m_debug;
+	bool m_mergingIsStarted;
 	bool m_skip;
 	bool m_distributionIsStarted;
 	bool m_filteringIsStarted;
@@ -158,6 +159,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
  * VirtualProcessor via TaskCreator.
  */
 	SeedFilteringWorkflow m_workflow;
+	SeedMergingWorkflow m_mergingTechnology;
 
 	GridTable*m_subgraph;
 	MyAllocator*m_directionsAllocator;

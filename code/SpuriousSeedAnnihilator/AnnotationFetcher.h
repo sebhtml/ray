@@ -33,6 +33,7 @@ using namespace std;
 
 /**
  * This is a building block to fetch annotations.
+ * This is compatible with seeds and contigs.
  *
  * \author Sébastien Boisvert
  */

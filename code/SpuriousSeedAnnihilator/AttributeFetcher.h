@@ -34,6 +34,12 @@ using namespace std;
  * This is a building block to fetch the parents, the children
  * and the coverage of a k-mer.
  *
+ * Compatible with the API of:
+ *
+ * * VirtualCommunicator
+ * * VirtualProcessor
+ * * Ray message pool definition
+ *
  * \author Sébastien Boisvert
  */
 class AttributeFetcher{
