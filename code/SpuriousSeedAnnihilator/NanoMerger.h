@@ -21,8 +21,8 @@
 #ifndef _NanoMerger_h
 #define _NanoMerger_h
 
-#include "AttributeFetcher.h"
-#include "AnnotationFetcher.h"
+#include "GraphExplorer.h"
+#include "GraphSearchResult.h"
 
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
@@ -48,10 +48,13 @@ using namespace std;
  */
 class NanoMerger: public Worker{
 
-	AttributeFetcher m_attributeFetcher;
+	GraphSearchResult m_firstGraphSearchResult;
+	GraphSearchResult m_lastGraphSearchResult;
+
+	GraphExplorer m_explorer;
+
 	Rank m_rank;
 	RingAllocator*m_outboxAllocator;
-	AnnotationFetcher m_annotationFetcher;
 
 	uint64_t m_identifier;       // TODO this should be in Worker because it's always there anyway
 	bool m_done;          // TODO this should be in Worker because it's always there anyway
@@ -66,7 +69,7 @@ class NanoMerger: public Worker{
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH;
 
-
+/*
 	stack<int> m_depths;
 	stack<Kmer> m_vertices;
 	int m_maximumAllowedDepth;
@@ -93,9 +96,10 @@ class NanoMerger: public Worker{
 	bool m_fetchedGrandparentReverseDirections;
 	bool m_fetchedGrandchildReverseDirections;
 	bool m_isPerfectBubble;
-
+*/
 // private methods
 
+	/*
 	bool checkDeadEndOnTheLeft();
 	bool checkDeadEndOnTheRight();
 	bool searchGraphForNiceThings(int direction);
@@ -105,7 +109,9 @@ class NanoMerger: public Worker{
 	bool getOtherBestChild(Kmer*kmer);
 	bool getBestChild(Kmer*kmer);
 	bool getBestParent(Kmer*kmer);
-
+*/
+	Kmer m_first;
+	Kmer m_last;
 public:
 	void work();
 

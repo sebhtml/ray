@@ -345,9 +345,11 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_MERGE_SEEDS() {
 		cout << m_core->getRank() << " merging seeds now." << endl;
 	}
 
+	m_mergingTechnology.mainLoop();
 
-
-	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(), m_core->getRank());
+	// It is the class SeedMergingWorkflow (interface is TaskCreator) that
+	// will actually close the slave mode.
+	//m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(), m_core->getRank());
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message) {
@@ -637,6 +639,6 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
 
 	m_hasMergedSeeds = false;
-	m_debug = true;
+	m_debug = false;
 	m_mergingIsStarted = false;
 }
