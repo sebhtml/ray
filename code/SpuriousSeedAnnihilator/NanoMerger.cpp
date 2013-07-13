@@ -36,8 +36,10 @@ void NanoMerger::work(){
 
 	//m_done = true;
 
-	if(m_explorer.work())
+	if(m_explorer.work()) {
 		m_done = true;
+		//cout << "[DEBUG] NanoMerger is done" << endl;
+	}
 }
 
 bool NanoMerger::isDone(){

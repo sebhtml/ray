@@ -85,11 +85,14 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 // TODO: query also the other DNA strand for annotations
 bool GraphExplorer::work() {
 
-
-	if(m_verticesToVisit.empty()) {
+	if(m_verticesToVisit.empty())
 		m_done = true;
+
+	if(m_done)
 		return m_done;
-	}
+#ifdef ASSERT
+	assert(!m_verticesToVisit.empty());
+#endif
 
 	Kmer object = m_verticesToVisit.top();
 
@@ -99,12 +102,17 @@ bool GraphExplorer::work() {
 		m_haveAnnotations = false;
 		//cout << "[DEBUG] have attributes" << endl;
 
-	} else if(!m_haveAnnotations && m_annotationFetcher.fetchDirections(&object)) {
+	} else if(m_haveAttributes && !m_haveAnnotations && m_annotationFetcher.fetchDirections(&object)) {
 
 		m_haveAnnotations = true;
 
 		//cout << "[DEBUG] have annotations" << endl;
-	} else {
+
+	} else if(m_haveAttributes && m_haveAnnotations) {
+
+		int currentDepth = m_depths.top();
+
+		//cout << "[DEBUG] processing object now depth=" << currentDepth << " visited= " << m_visitedVertices << endl;
 
 		for(int i=0;i< (int) m_annotationFetcher.getDirections()->size(); i++){
 
@@ -116,23 +124,28 @@ bool GraphExplorer::work() {
 			}
 		}
 
-		int newDepth = m_depths.top() + 1;
+#ifdef ASSERT
+		assert(!m_depths.empty());
+#endif
+
+		int newDepth = currentDepth + 1;
 
 		m_depths.pop();
 		m_verticesToVisit.pop();
 
-		if(newDepth <= m_maximumDepth) {
+		vector<Kmer> * links = NULL;
 
-			vector<Kmer> * links = NULL;
-
-			if(m_direction == EXPLORER_LEFT)
-				links = m_attributeFetcher.getParents();
-			else if(m_direction == EXPLORER_RIGHT)
-				links = m_attributeFetcher.getChildren();
+		if(m_direction == EXPLORER_LEFT)
+			links = m_attributeFetcher.getParents();
+		else if(m_direction == EXPLORER_RIGHT)
+			links = m_attributeFetcher.getChildren();
 
 #ifdef ASSERT
-			assert(links != NULL);
+		assert(links != NULL);
 #endif
+
+		if(newDepth <= m_maximumDepth
+			&& m_visitedVertices + (int)links->size() <= m_maximumVisitedVertices) {
 
 			for(int i = 0 ; i < (int)links->size() ; i ++) {
 				Kmer nextKmer = links->at(i);
