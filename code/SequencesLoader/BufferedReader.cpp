@@ -22,8 +22,12 @@
 
 #include <code/Mock/constants.h>
 
+#include <iostream>
+using namespace std;
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef CONFIG_ASSERT
 #include <assert.h>
@@ -65,120 +69,130 @@ void BufferedReader::reset() {
  */
 char * BufferedReader::readLine(char * content, int numberOfBytes, FILE * endpoint){
 
-	return fgets(content, numberOfBytes, endpoint);
+	//cout << "[DEBUG] readLine" << endl;
 
-	char newLine = '\n';
-	int firstNewLinePosition = 0;
-	char * result = NULL;
-	char terminatingCharacter = '\0';
+	//return fgets(content, numberOfBytes, endpoint);
 
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-	cout << "[streamContent] call, m_assetCacheLength is " << m_assetCacheLength << endl;
-#endif
+	return readLineFromBuffer(content, numberOfBytes, endpoint, true);
+}
 
-	// find the first \n
-	while((m_assetCacheOffset + firstNewLinePosition) < m_assetCacheLength
-			&& m_assetCacheContent[m_assetCacheOffset + firstNewLinePosition] != newLine)
-		firstNewLinePosition ++;
+/**
+ *
+ */
+char * BufferedReader::readLineFromBuffer(char * content, int numberOfBytes, FILE * endpoint, bool retry) {
 
-	// try to stream more content if no \n was found.
-	if( (m_assetCacheContent[m_assetCacheOffset + firstNewLinePosition] != newLine
-		|| m_assetCacheLength == 0) && !feof(endpoint)) {
+	if(copyWithNewLine(content))
+		return content;
 
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-		cout << "[streamContent] trying to stream data." << endl;
-#endif
-
-		// move data on the left.
-		int source = m_assetCacheOffset;
-		int destination = 0;
-		while(source < m_assetCacheLength) {
-			m_assetCacheContent[destination] = m_assetCacheContent[source];
-			source++;
-			destination++;
-		}
-
-		m_assetCacheLength = destination;
-		m_assetCacheOffset = 0;
-
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-		cout << "[streamContent] bytes after packing: " << m_assetCacheLength << endl;
-#endif
-
-		int bytes = m_assetCacheMaximumLength;
-		bytes -= m_assetCacheLength;
-
-		// we don't care if we overwrite the \0, in fact, we want this event to happen for sure.
-		if(m_assetCacheLength > 0)
-			bytes ++;
-
-		#ifdef CONFIG_ASSERT
-		assert(bytes <= m_assetCacheMaximumLength);
-		assert(m_assetCacheMaximumLength >= 1);
-		#endif
-
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-		cout << "[streamContent] trying to read " << bytes << " bytes into ";
-		cout << hex << m_assetCacheContent << dec << " + " << m_assetCacheLength << endl;
-#endif
-
-		/*
-		cout << "[DEBUG] fread m_assetCacheContent= " << hex << (void*)m_assetCacheContent;
-		cout << dec << " m_assetCacheLength= " << m_assetCacheLength << " bytes= " << bytes;
-		cout << " endpoint= " << hex << endpoint << dec << endl;
-		*/
-
-		// stream content and append that to the asset cache content.
-		int elements = fread(m_assetCacheContent + m_assetCacheLength, sizeof(char), bytes, endpoint);
-
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-		cout << "[streamContent] " << elements << " bytes streamed." << endl;
-#endif
-
-		m_assetCacheLength += elements;
-
-		// recursive call to go outside this scope.
-		// actually we don't need the recursion here...
-		// streamContent(content, numberOfBytes, endpoint);
+	if(retry) {
+		fillBuffer(endpoint);
+		return readLineFromBuffer(content, numberOfBytes, endpoint, false);
 	}
 
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-	cout << "[streamContent] " << m_assetCacheLength << " bytes available in the asset cache";
-	cout << " m_assetCacheOffset= " << m_assetCacheOffset << endl;
-#endif
+	if(copyWithMaximumNumberOfBytes(content, numberOfBytes))
+		return content;
 
-	// copy data into the content from the client.
-	//
-	// This code manages 3 cases:
-	//
-	// case 001: the asset cache contains 0 bytes
-	// case 002: the asset cache contains x bytes, but no \n
-	// case 003: the asset cache contains x bytes, with a \n somewhere in there.
+	return NULL;
+}
 
+void BufferedReader::fillBuffer(FILE * source) {
+
+	//cout << "[DEBUG] fillBuffer " << endl;
+	moveBuffer();
+
+	char * buffer = getBuffer();
+	int bufferSize = getBufferSize();
+	int maximumBufferSize = getMaximumBufferSize();
+	int available = maximumBufferSize - bufferSize;
+
+	char * destination = buffer + bufferSize;
+
+	int elements = fread(destination, sizeof(char), available, source);
+
+	m_assetCacheLength += elements;
+}
+
+int BufferedReader::getMaximumBufferSize() {
+	return m_assetCacheMaximumLength;
+}
+
+void BufferedReader::moveBuffer() {
+	int source = m_assetCacheOffset;
 	int destination = 0;
 
-	while(m_assetCacheOffset < m_assetCacheLength) { // this condition is necessary to avoid streaming 0 bytes.
-
-		char data = m_assetCacheContent[m_assetCacheOffset];
-		content[destination] = data;
-		result = content;
-		destination ++;
-		m_assetCacheOffset ++;
-
-		if(destination + 1 == numberOfBytes // the client buffer is full, we just need to add \0
-			|| m_assetCacheOffset == m_assetCacheLength // we don't have any more data
-			|| data == newLine) { // we stop at the new line
-
-#ifdef CONFIG_FASTQ_DEBUG_MESSAGE
-			cout << "[streamContent] resulting data size is " << destination << endl;
-#endif
-
-			content[destination] = terminatingCharacter;
-			break;
-		}
+	while(source < m_assetCacheLength) {
+		m_assetCacheContent[destination] = m_assetCacheContent[source];
+		destination++;
+		source++;
 	}
 
-	return result;
+	m_assetCacheLength -= m_assetCacheOffset;
+	m_assetCacheOffset = 0;
+}
+
+char * BufferedReader::getBuffer() {
+	return m_assetCacheContent + m_assetCacheOffset;
+}
+
+int BufferedReader::getBufferSize() {
+	return m_assetCacheLength - m_assetCacheOffset;
+}
+
+int BufferedReader::findNewLine(char * sequence, int length) {
+
+	int i = 0;
+
+	while(i < length) {
+		if(sequence[i] == '\n')
+			return i;
+		i++;
+	}
+
+	return -1;
+}
+
+bool BufferedReader::copyWithNewLine(char * content) {
+
+	char * buffer = getBuffer();
+	int bufferSize = getBufferSize();
+
+	int newLinePosition = findNewLine(buffer, bufferSize);
+
+	if(newLinePosition < 0)
+		return false;
+
+	int count = newLinePosition + 1;
+
+	consumeContent(buffer, content, count);
+
+	return true;
+}
+
+bool BufferedReader::copyWithMaximumNumberOfBytes(char * content, int numberOfBytes) {
+
+	int availableBytes = getBufferSize();
+
+	if(availableBytes == 0)
+		return false;
+
+	char * buffer = getBuffer();
+
+	int count = numberOfBytes;
+
+	if(availableBytes < count)
+		count = availableBytes;
+
+	consumeContent(buffer, content, count);
+
+	return true;
+
+}
+
+void BufferedReader::consumeContent(char * buffer, char * content, int count) {
+	memcpy(content, buffer, count);
+	content[count] = '\0';
+
+	m_assetCacheOffset += count;
 }
 
 void BufferedReader::destroy() {

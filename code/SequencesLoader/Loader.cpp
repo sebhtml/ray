@@ -118,7 +118,7 @@ void Loader::clear(){
 }
 
 void Loader::loadSequences(){
-	cout << "[DEBUG] loadSequences." << endl;
+	//cout << "[DEBUG] loadSequences." << endl;
 
 	m_currentOffset += m_reads.size();
 	m_allocator.reset();
@@ -126,13 +126,13 @@ void Loader::loadSequences(){
 
 	if(m_interface==NULL) {
 
-		cout << "[DEBUG] no interface found" << endl;
+		//cout << "[DEBUG] no interface found" << endl;
 		return;
 	}
 
 	m_interface->load(m_maxToLoad,&m_reads,&m_allocator);
 
-	cout << "[DEBUG] loaded " << m_reads.size() << " entries into memory" << endl;
+	//cout << "[DEBUG] loaded " << m_reads.size() << " entries into memory" << endl;
 }
 
 void Loader::reset(){

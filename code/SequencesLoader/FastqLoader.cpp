@@ -41,7 +41,7 @@ int FastqLoader::open(string file){
 int FastqLoader::openWithPeriod(string file,int period){
 	m_f=fopen(file.c_str(),"r");
 
-	cout << "[DEBUG] counting entries" << endl;
+	//cout << "[DEBUG] counting entries" << endl;
 
 	m_lineReader.initialize();
 
@@ -51,6 +51,12 @@ int FastqLoader::openWithPeriod(string file,int period){
 	char buffer[RAY_MAXIMUM_READ_LENGTH];
 
 	while(NULL!= m_lineReader.readLine(buffer,RAY_MAXIMUM_READ_LENGTH,m_f)){
+
+		/*
+		if(m_size > 7000000)
+			//cout << "[DEBUG] buffer= " << buffer << endl;
+			*/
+
 		if(rotatingVariable==1){
 			m_size++;
 		}
@@ -58,9 +64,14 @@ int FastqLoader::openWithPeriod(string file,int period){
 		if(rotatingVariable==period){
 			rotatingVariable=0;
 		}
+
+		/*
+		if(m_size % 1000 == 0)
+			//cout << "[DEBUG] m_size= " << m_size << endl;
+			*/
 	}
 
-	cout << "[DEBUG] m_size= " << m_size << endl;
+	//cout << "[DEBUG] m_size= " << m_size << endl;
 
 	fclose(m_f);
 	m_f=fopen(file.c_str(),"r");
@@ -72,7 +83,7 @@ int FastqLoader::openWithPeriod(string file,int period){
 
 void FastqLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 
-	cout << "[DEBUG] loading fastq file maxToLoad= " << maxToLoad << endl;
+	//cout << "[DEBUG] loading fastq file maxToLoad= " << maxToLoad << endl;
 
 	loadWithPeriod(maxToLoad,reads,seqMyAllocator,4);
 }
@@ -82,7 +93,7 @@ void FastqLoader::loadWithPeriod(int maxToLoad,ArrayOfReads*reads,MyAllocator*se
 	int rotatingVariable=0;
 	int loadedSequences=0;
 
-	cout << "[DEBUG] loadWithPeriod m_loaded= " << m_loaded << " m_size= " << m_size << endl;
+	//cout << "[DEBUG] loadWithPeriod m_loaded= " << m_loaded << " m_size= " << m_size << endl;
 
 	while(loadedSequences<maxToLoad && NULL != m_lineReader.readLine(buffer,RAY_MAXIMUM_READ_LENGTH,m_f)){
 

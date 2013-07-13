@@ -41,11 +41,20 @@ class BufferedReader {
 	int m_assetCacheLength;
 	int m_assetCacheMaximumLength;
 	int m_assetCacheOffset;
-	char * streamContent(char * content, int numberOfBytes, FILE * endpoint);
-	void clearPointers();
 
+	char * readLineFromBuffer(char * content, int numberOfBytes, FILE * endpoint, bool retry);
+	void fillBuffer(FILE * source);
+	int getMaximumBufferSize();
+	void moveBuffer();
+	char * getBuffer();
+	int getBufferSize();
+	int findNewLine(char * sequence, int length);
+	bool copyWithNewLine(char * content);
+	bool copyWithMaximumNumberOfBytes(char * content, int numberOfBytes);
 
-	public:
+	void consumeContent(char * buffer, char * content, int count);
+
+public:
 
 	void reset();
 	void initialize();
