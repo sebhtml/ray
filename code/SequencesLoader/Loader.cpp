@@ -90,12 +90,14 @@ Read*Loader::at(LargeIndex i){
 	if(i>=m_currentOffset+m_reads.size()){
 		loadSequences();
 	}
+
 	#ifdef ASSERT
 	if(i>=m_currentOffset+m_reads.size()){
-		cout<<"i="<<i<<" offset="<<m_currentOffset<<" Loaded="<<m_reads.size()<<endl;
+		cout<<"i= "<<i<<" m_currentOffset= " << m_currentOffset<<" m_reads.size: " << m_reads.size()<<endl;
 	}
 	assert(i<m_currentOffset+m_reads.size());
 	#endif
+
 	return m_reads.at(i-m_currentOffset);
 }
 
@@ -116,14 +118,21 @@ void Loader::clear(){
 }
 
 void Loader::loadSequences(){
-	m_currentOffset+=m_reads.size();
+	cout << "[DEBUG] loadSequences." << endl;
+
+	m_currentOffset += m_reads.size();
 	m_allocator.reset();
 	m_reads.reset();
 
-	if(m_interface==NULL)
+	if(m_interface==NULL) {
+
+		cout << "[DEBUG] no interface found" << endl;
 		return;
+	}
 
 	m_interface->load(m_maxToLoad,&m_reads,&m_allocator);
+
+	cout << "[DEBUG] loaded " << m_reads.size() << " entries into memory" << endl;
 }
 
 void Loader::reset(){

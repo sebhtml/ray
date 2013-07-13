@@ -25,6 +25,7 @@
 #include "LoaderInterface.h"
 #include "ArrayOfReads.h"
 #include "Read.h"
+#include "BufferedReader.h"
 
 #include <RayPlatform/memory/MyAllocator.h>
 
@@ -39,19 +40,11 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class FastqLoader: public LoaderInterface{
+
+	BufferedReader m_lineReader;
 	int m_loaded;
 	int m_size;
 	FILE*m_f;
-
-/**
- * This is the buffer for storing asset cache streamed from the endpoint.
- */
-	char * m_assetCacheContent;
-	int m_assetCacheLength;
-	int m_assetCacheMaximumLength;
-	int m_assetCacheOffset;
-	char * streamContent(char * content, int numberOfBytes, FILE * endpoint);
-	void clearPointers();
 
 public:
 	FastqLoader();

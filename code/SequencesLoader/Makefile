@@ -11,6 +11,8 @@ SequencesLoader-y += code/SequencesLoader/LoaderInterface.o
 SequencesLoader-y += code/SequencesLoader/LoaderFactory.o
 SequencesLoader-y += code/SequencesLoader/SffLoader.o
 SequencesLoader-y += code/SequencesLoader/Loader.o
+SequencesLoader-y += code/SequencesLoader/BufferedReader.o
+
 SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/SequencesLoader/BzReader.o
 SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/SequencesLoader/FastqBz2Loader.o
 SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/SequencesLoader/FastaBz2Loader.o
