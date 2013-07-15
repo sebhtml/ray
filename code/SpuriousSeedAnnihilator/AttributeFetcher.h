@@ -58,15 +58,49 @@ class AttributeFetcher{
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 public:
+
+	/**
+	 * Initializes the object.
+	 *
+	 * This must be called only once.
+	 */
 	void initialize(Parameters*parameters, VirtualCommunicator*virtualCommunicator,
 			WorkerHandle identifier, RingAllocator * outboxAllocator,
 			MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
 
+	/**
+	 * Fetches the parents, the children and the coverage of a k-mer.
+	 *
+	 * @returns true ifresult is available, false if additional calls are required
+	 * for the request to complete.
+	 */
 	bool fetchObjectMetaData(Kmer * object);
+
+	/**
+	 * Resets the the object so that fetchObjectMetaData can be called on another object.
+	 *
+	 */
 	void reset();
 
+	/**
+	 * Gets the coverage depth of the submitted object
+	 *
+	 * fetchObjectMetaData must have returned true before calling this.
+	 */
 	CoverageDepth getDepth();
+
+	/**
+	 * Gets the parents of a k-mer.
+	 *
+	 * fetchObjectMetaData must have returned true before calling this.
+	 */
 	vector<Kmer>* getParents();
+
+	/**
+	 * Gets the children of a k-mer.
+	 *
+	 * fetchObjectMetaData must have returned true before calling this.
+	 */
 	vector<Kmer>* getChildren();
 };
 
