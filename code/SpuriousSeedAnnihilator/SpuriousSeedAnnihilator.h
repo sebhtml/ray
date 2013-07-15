@@ -149,6 +149,9 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	bool m_cleaningIsStarted;
 	bool m_gatheringHasStarted;
 
+	bool m_filteredSeeds;
+	bool m_mergedSeeds;
+
 	map<int,int> m_masterSeedLengths;
 	map<int,int> m_slaveSeedLengths;
 	map<int,int>::iterator m_iterator;
@@ -191,8 +194,6 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void writeCheckpointForSeeds();
 
 	bool m_debugCode;
-
-	bool m_hasMergedSeeds;
 
 	ComputeCore * getCore();
 

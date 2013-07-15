@@ -144,7 +144,19 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 
-		m_core->getSwitchMan()->closeMasterMode();
+		//m_core->getSwitchMan()->closeMasterMode();
+
+		if(!m_filteredSeeds) {
+
+			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_FILTER_SEEDS);
+
+			m_filteredSeeds = true;
+		} else if(!m_mergedSeeds) {
+
+			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_MERGE_SEEDS);
+
+			m_mergedSeeds = true;
+		}
 	}
 }
 
@@ -204,11 +216,14 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 
-		if(!this->m_hasMergedSeeds){
+		if(!this->m_mergedSeeds){
 
-			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_MERGE_SEEDS);
+			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_REGISTER_SEEDS);
 
 		} else {
+
+			// the registered handle with the API is
+			// RAY_MASTER_MODE_PUSH_SEED_LENGTHS
 			m_core->getSwitchMan()->closeMasterMode();
 		}
 	}
@@ -321,7 +336,8 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_MERGE_SEEDS() {
 
 	}else if(m_core->getSwitchMan()->allRanksAreReady()){
 
-		this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+		//this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
+		this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_CLEAN_SEEDS);
 	}
 
 	/*
@@ -638,7 +654,9 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 
 	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
 
-	m_hasMergedSeeds = false;
 	m_debug = false;
 	m_mergingIsStarted = false;
+
+	m_filteredSeeds = false;
+	m_mergedSeeds = false;
 }
