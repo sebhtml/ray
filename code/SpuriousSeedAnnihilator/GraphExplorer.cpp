@@ -78,6 +78,7 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 
 	m_seedName = getPathUniqueId(m_parameters->getRank(), seedIndex);
 	m_visitedVertices = 0;
+	m_maximumVisitedDepth = 0;
 
 	//cout << "[DEBUG] explorer is ready" << endl;
 }
@@ -88,10 +89,15 @@ bool GraphExplorer::work() {
 	if(m_verticesToVisit.empty())
 		m_done = true;
 
-	if(m_done)
+	if(m_done) {
+		cout << "[DEBUG] visited " << m_visitedVertices << endl;
+
 		return m_done;
+	}
+
 #ifdef ASSERT
 	assert(!m_verticesToVisit.empty());
+	assert(!m_depths.empty());
 #endif
 
 	Kmer object = m_verticesToVisit.top();
@@ -111,6 +117,9 @@ bool GraphExplorer::work() {
 	} else if(m_haveAttributes && m_haveAnnotations) {
 
 		int currentDepth = m_depths.top();
+
+		if(currentDepth > m_maximumVisitedDepth)
+			m_maximumVisitedDepth = currentDepth;
 
 		//cout << "[DEBUG] processing object now depth=" << currentDepth << " visited= " << m_visitedVertices << endl;
 

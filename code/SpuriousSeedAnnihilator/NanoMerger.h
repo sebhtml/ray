@@ -48,6 +48,8 @@ using namespace std;
  */
 class NanoMerger: public Worker{
 
+	bool m_startedFirst;
+	bool m_startedLast;
 	GraphSearchResult m_firstGraphSearchResult;
 	GraphSearchResult m_lastGraphSearchResult;
 

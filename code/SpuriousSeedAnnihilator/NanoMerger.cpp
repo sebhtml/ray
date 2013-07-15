@@ -36,9 +36,35 @@ void NanoMerger::work(){
 
 	//m_done = true;
 
-	if(m_explorer.work()) {
+	if(!m_startedFirst) {
+
+		m_explorer.start(m_identifier, &m_first, EXPLORER_LEFT, m_parameters,
+			m_virtualCommunicator,
+			m_outboxAllocator,
+			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH
+		);
+
+		m_startedFirst = true;
+
+	} else if(m_startedFirst && !m_startedLast && m_explorer.work()) {
+
+		cout << "[DEBUG] NanoMerger processed first, seed length is " << m_seed->size() << endl;
+
+		// now do the last one.
+		m_explorer.start(m_identifier, &m_last, EXPLORER_RIGHT, m_parameters,
+			m_virtualCommunicator,
+			m_outboxAllocator,
+			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH
+		);
+
+		m_startedLast = true;
+
+	} else if(m_startedLast && m_explorer.work()) {
+
+		cout << "[DEBUG] NanoMerger processed last, seed length is " << m_seed->size() << endl;
 		m_done = true;
-		//cout << "[DEBUG] NanoMerger is done" << endl;
 	}
 }
 
@@ -86,19 +112,14 @@ void NanoMerger::initialize(WorkerHandle identifier,GraphPath*seed, Parameters *
 	int index2 = m_seed->size() - 1;
 	m_seed->at(index2, &m_last);
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(index1 == 0);
 	assert(index2 >= 0);
 #endif
-
-	m_explorer.start(m_identifier, &m_first, EXPLORER_LEFT, m_parameters,
-		m_virtualCommunicator,
-		m_outboxAllocator,
-		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-		RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH
-	);
-
 	//cout << "[DEBUG] achieved with RayPlatform." << endl;
+
+	m_startedFirst = false;
+	m_startedLast = false;
 }
 
 

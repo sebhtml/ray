@@ -48,6 +48,8 @@ class GraphExplorer {
 	stack<Kmer> m_verticesToVisit;
 	stack<int> m_depths;
 
+	int m_maximumVisitedDepth;
+
 	AnnotationFetcher m_annotationFetcher;
 	AttributeFetcher m_attributeFetcher;
 

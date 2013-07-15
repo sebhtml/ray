@@ -96,9 +96,9 @@ void Library::readLibraryCheckpoint(){
 	uint32_t entries=0;
 	f.read((char*)&entries,sizeof(uint32_t));
 
-	#ifdef ASSERT
-	assert(m_libraryDistances.size()==0);
-	assert(m_detectedDistances==0);
+	#ifdef CONFIG_ASSERT
+	assert(m_libraryDistances.size() == 0);
+	assert(m_detectedDistances ==0);
 	#endif
 
 	while(entries--){
@@ -107,15 +107,31 @@ void Library::readLibraryCheckpoint(){
 		uint32_t distance=0;
 		uint32_t count=0;
 
+
 		f.read((char*)&library,sizeof(uint32_t));
 		f.read((char*)&distance,sizeof(uint32_t));
 		f.read((char*)&count,sizeof(uint32_t));
 
-		#ifdef ASSERT
+		if(count == 0)
+			continue;
+
+#ifdef CONFIG_ASSERT
+
+		assert(count > 0);
+#endif
+
+#ifdef CONFIG_ASSERT
 		if(m_libraryDistances.count(library)>0){
+			if(m_libraryDistances[library].count(distance) !=0 ) {
+
+				cout << "Error: expected 0, got " << m_libraryDistances[library][distance] << " for library " << library;
+				cout << " and distance " << distance << endl;
+			}
+
+
 			assert(m_libraryDistances[library].count(distance)==0);
 		}
-		#endif
+#endif
 
 		m_libraryDistances[library][distance]=count;
 
