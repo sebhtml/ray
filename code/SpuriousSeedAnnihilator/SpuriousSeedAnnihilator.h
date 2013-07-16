@@ -151,7 +151,10 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	bool m_filteredSeeds;
 	bool m_mergedSeeds;
+	bool m_initializedSeedRegistration;
 
+	int m_cleaningIterations;
+	int m_registrationIterations;
 	map<int,int> m_masterSeedLengths;
 	map<int,int> m_slaveSeedLengths;
 	map<int,int>::iterator m_iterator;

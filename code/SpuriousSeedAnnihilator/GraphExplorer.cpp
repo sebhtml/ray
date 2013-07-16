@@ -129,7 +129,19 @@ bool GraphExplorer::work() {
 
 			if(pathName != m_seedName) {
 				cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
-				cout << ", visited " << m_visitedVertices << endl;
+				cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
+				cout << endl;
+
+				cout << "[DEBUG] direction ";
+
+				if(m_direction == EXPLORER_LEFT)
+					cout << "EXPLORER_LEFT";
+				else if(m_direction == EXPLORER_RIGHT)
+					cout << "EXPLORER_RIGHT";
+
+				cout << " depth " << currentDepth;
+
+				cout << endl;
 			}
 		}
 

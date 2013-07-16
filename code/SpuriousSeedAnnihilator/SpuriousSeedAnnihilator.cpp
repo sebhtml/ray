@@ -157,6 +157,8 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_REGISTER_SEEDS(){
 
 			m_mergedSeeds = true;
 		}
+
+		m_distributionIsStarted = false;
 	}
 }
 
@@ -219,6 +221,7 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 		if(!this->m_mergedSeeds){
 
 			this->m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_REGISTER_SEEDS);
+			this->m_core->getSwitchMan()->reset();
 
 		} else {
 
@@ -226,18 +229,38 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
 			// RAY_MASTER_MODE_PUSH_SEED_LENGTHS
 			m_core->getSwitchMan()->closeMasterMode();
 		}
+
+		// anyway, the code in this score changed the fate of future cycles.
+		m_cleaningIsStarted = false;
 	}
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
+	if(!m_initializedSeedRegistration) {
+
+		cout << "call_RAY_SLAVE_MODE_REGISTER_SEEDS: initializing..." << endl;
+		m_seedIndex=0;
+		m_seedPosition=0;
+		m_initializedSeedRegistration = true;
+		m_registrationIterations++;
+		return;
+	}
+
 	if(!m_debugCode && m_parameters->hasCheckpoint("Seeds")){
 		m_hasCheckpointFilesForSeeds = true;
 	}
 
-	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || m_skip){
+	// iteration 1: for the seed elimination (skipped for small k)
+	// iteration 2: for the merging (never skipped)
+	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || (m_skip && m_registrationIterations == 1)){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
+
+		cout << "[DEBUG] skipping call_RAY_SLAVE_MODE_REGISTER_SEEDS" << endl;
+
+		m_initializedSeedRegistration = false;
+
 		return;
 	}
 
@@ -311,8 +334,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		m_activeQueries += m_buffers.flushAll(tag, m_outboxAllocator, m_outbox, m_rank);
 
 	}else{
-		m_seedIndex=0;
-		m_seedPosition=0;
+		m_initializedSeedRegistration = false;
 
 		cout << "Rank "<<m_rank << " registered " << m_seedIndex - 1 << "/" <<m_seeds->size() << endl;
 		cout<<"Rank "<<m_rank << " registered its seeds" << endl;
@@ -338,6 +360,7 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_MERGE_SEEDS() {
 
 		//this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 		this->getThis()->getThat()->getCore()->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_CLEAN_SEEDS);
+		getCore()->getSwitchMan()->reset();
 	}
 
 	/*
@@ -385,7 +408,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_FILTER_SEEDS(){
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
-	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || m_skip){
+	m_cleaningIterations ++;
+
+	// this must be skipped for the first iteration if m_skip is true
+	if((!m_debugCode && m_hasCheckpointFilesForSeeds) || (m_skip && m_cleaningIterations == 1)){
 
 		m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 		return;
@@ -432,9 +458,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
 	int bytes=m_directionsAllocator->getChunkSize() * m_directionsAllocator->getNumberOfChunks();
 
-	m_directionsAllocator->clear();
+	cout<<"Rank "<<m_rank<<" freed "<< bytes <<" bytes from the path memory pool ";
+	cout << "(chunks: " << m_directionsAllocator->getNumberOfChunks() << ")" << endl;
 
-	cout<<"Rank "<<m_rank<<" freed "<<bytes/1024<<" KiB from the path memory pool"<<endl;
+	m_directionsAllocator->clear();
 
 // Trace was here -> <s>FAIL</s>  PASS
 
@@ -577,8 +604,7 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	m_filteringIsStarted=false;
 	m_cleaningIsStarted=false;
 
-	m_seedIndex=0;
-	m_seedPosition=0;
+	m_initializedSeedRegistration = false;
 
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_REGISTER_SEEDS, RAY_MASTER_MODE_FILTER_SEEDS);
 	core->setMasterModeNextMasterMode(m_plugin, RAY_MASTER_MODE_FILTER_SEEDS, RAY_MASTER_MODE_CLEAN_SEEDS);
@@ -653,6 +679,9 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_debugCode = m_parameters->hasOption("-debug-seed-filter");
 
 	m_skip = 2 * m_parameters->getWordSize() < m_parameters->getMinimumContigLength();
+
+	m_cleaningIterations = 0;
+	m_registrationIterations = 0;
 
 	m_debug = false;
 	m_mergingIsStarted = false;
