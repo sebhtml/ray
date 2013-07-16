@@ -56,6 +56,10 @@ class GraphExplorer {
 	WorkerHandle m_key;
 	int m_direction;
 	PathHandle m_seedName;
+	int m_matchedPaths;
+
+	map<Kmer, Kmer> m_parents;
+	Kmer m_start;
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE;
@@ -73,6 +77,8 @@ class GraphExplorer {
 	int m_maximumVisitedVertices;
 	int m_visitedVertices;
 	RingAllocator*m_outboxAllocator;
+
+	void backtrackPath(vector<Kmer> * path, Kmer * vertex);
 public:
 	void start(WorkerHandle worker, Kmer * start, int direction, Parameters * parameters,
 		VirtualCommunicator * virtualCommunicator,

@@ -27,6 +27,8 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
 ) {
 
+	m_start = *start;
+
 	//cout << "[DEBUG] starting graph search with explorer technology" << endl;
 
 	m_key = key;
@@ -80,7 +82,24 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 	m_visitedVertices = 0;
 	m_maximumVisitedDepth = 0;
 
+	m_matchedPaths = 0;
+
 	//cout << "[DEBUG] explorer is ready" << endl;
+}
+
+void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
+	Kmer item = *vertex;
+
+	set<Kmer> visited;
+
+	while(visited.count(item) == 0) {
+		path->push_back(item);
+		visited.insert(item);
+
+		if(item == m_start)
+			break;
+		item = m_parents[item];
+	}
 }
 
 // TODO: query also the other DNA strand for annotations
@@ -90,7 +109,16 @@ bool GraphExplorer::work() {
 		m_done = true;
 
 	if(m_done) {
-		cout << "[DEBUG] visited " << m_visitedVertices << endl;
+		cout << "[DEBUG] completed, visited " << m_visitedVertices;
+		cout << " path " << m_seedName << " direction ";
+
+		if(m_direction == EXPLORER_LEFT)
+			cout << "EXPLORER_LEFT";
+		else
+			cout << "EXPLORER_RIGHT";
+
+		cout << " paths " << m_matchedPaths;
+		cout << endl;
 
 		return m_done;
 	}
@@ -118,6 +146,8 @@ bool GraphExplorer::work() {
 
 		int currentDepth = m_depths.top();
 
+		bool foundSomething = false;
+
 		if(currentDepth > m_maximumVisitedDepth)
 			m_maximumVisitedDepth = currentDepth;
 
@@ -130,9 +160,8 @@ bool GraphExplorer::work() {
 			if(pathName != m_seedName) {
 				cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
 				cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
-				cout << endl;
 
-				cout << "[DEBUG] direction ";
+				cout << " direction ";
 
 				if(m_direction == EXPLORER_LEFT)
 					cout << "EXPLORER_LEFT";
@@ -142,6 +171,16 @@ bool GraphExplorer::work() {
 				cout << " depth " << currentDepth;
 
 				cout << endl;
+
+				foundSomething = true;
+
+				m_matchedPaths ++;
+
+				vector<Kmer> pathToOrigin;
+
+				backtrackPath(&pathToOrigin, &object);
+
+				cout << "[DEBUG] path has length " << pathToOrigin.size() << endl;
 			}
 		}
 
@@ -169,9 +208,18 @@ bool GraphExplorer::work() {
 			&& m_visitedVertices + (int)links->size() <= m_maximumVisitedVertices) {
 
 			for(int i = 0 ; i < (int)links->size() ; i ++) {
-				Kmer nextKmer = links->at(i);
-				m_verticesToVisit.push(nextKmer);
-				m_depths.push(newDepth);
+
+				if(!foundSomething) {
+					Kmer nextKmer = links->at(i);
+
+					// TODO: check if there is not already another parent.
+					// if it is the case, select the path with the coverage
+					// that is the nearest to the one of both paths
+					m_parents[nextKmer] = object;
+
+					m_verticesToVisit.push(nextKmer);
+					m_depths.push(newDepth);
+				}
 			}
 		}
 
