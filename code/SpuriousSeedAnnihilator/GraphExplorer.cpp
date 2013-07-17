@@ -20,13 +20,14 @@
 
 #include "GraphExplorer.h"
 
-void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Parameters * parameters,
+void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 	VirtualCommunicator * virtualCommunicator,
 	RingAllocator * outboxAllocator,
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
 ) {
 
+	m_seed = seed;
 	m_start = *start;
 
 	//cout << "[DEBUG] starting graph search with explorer technology" << endl;
@@ -62,6 +63,7 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 
 	m_haveAttributes = false;
 	m_haveAnnotations = false;
+	m_haveAnnotationsReverse = false;
 
 	WorkerHandle identifier = m_key;
 
@@ -74,6 +76,12 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
 			RAY_MPI_TAG_ASK_VERTEX_PATH);
 
+	m_annotationFetcherReverse.initialize(parameters, virtualCommunicator,
+			identifier, outboxAllocator,
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
+			RAY_MPI_TAG_ASK_VERTEX_PATH);
+
+
 	m_stopAtFirstHit = true;
 
 	int seedIndex = m_key;
@@ -83,8 +91,38 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, int direction, Paramet
 	m_maximumVisitedDepth = 0;
 
 	m_matchedPaths = 0;
+	m_vertexDepths.clear();
+	m_parents.clear();
 
 	//cout << "[DEBUG] explorer is ready" << endl;
+}
+
+// TODO: use the coverage value instead of depth
+bool GraphExplorer::getBestParent(Kmer * parent, Kmer kmer) {
+
+	if(m_parents.count(kmer) == 0)
+		return false;
+
+	int bestDepth = 99999;
+	Kmer bestKmer;
+
+	for(vector<Kmer>::iterator i = m_parents[kmer].begin();
+			i != m_parents[kmer].end();
+			i++) {
+
+		Kmer theParent = *i;
+
+		int parentDepth = m_vertexDepths[theParent];
+
+		if(parentDepth < bestDepth) {
+			bestKmer = theParent;
+			bestDepth = parentDepth;
+		}
+	}
+
+	*parent = bestKmer;
+
+	return true;
 }
 
 void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
@@ -92,14 +130,59 @@ void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 
 	set<Kmer> visited;
 
-	while(visited.count(item) == 0) {
+	while(1) {
+
+		if(visited.count(item) > 0)
+			break;
+
 		path->push_back(item);
 		visited.insert(item);
 
 		if(item == m_start)
 			break;
-		item = m_parents[item];
+
+		Kmer parent;
+
+		if(!getBestParent(&parent, item))
+			break;
+
+		item = parent;
 	}
+}
+
+bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, int currentDepth, Kmer & object) {
+
+	bool foundSomething = false;
+	for(int i=0;i< (int) annotationFetcher.getDirections()->size(); i++){
+
+		PathHandle pathName = annotationFetcher.getDirections()->at(i).getWave();
+
+		if(pathName != m_seedName) {
+			cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
+			cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
+
+			cout << " direction ";
+
+			if(m_direction == EXPLORER_LEFT)
+				cout << "EXPLORER_LEFT";
+			else if(m_direction == EXPLORER_RIGHT)
+				cout << "EXPLORER_RIGHT";
+
+			cout << " depth " << currentDepth;
+
+			foundSomething = true;
+
+			m_matchedPaths ++;
+
+			vector<Kmer> pathToOrigin;
+
+			backtrackPath(&pathToOrigin, &object);
+
+			cout << " path has length " << pathToOrigin.size() << endl;
+		}
+	}
+
+	return foundSomething;
 }
 
 // TODO: query also the other DNA strand for annotations
@@ -110,7 +193,10 @@ bool GraphExplorer::work() {
 
 	if(m_done) {
 		cout << "[DEBUG] completed, visited " << m_visitedVertices;
-		cout << " path " << m_seedName << " direction ";
+		cout << " path " << m_seedName;
+		cout << " lengthInKmers " << m_seed->size();
+		cout << " direction ";
+
 
 		if(m_direction == EXPLORER_LEFT)
 			cout << "EXPLORER_LEFT";
@@ -129,6 +215,7 @@ bool GraphExplorer::work() {
 #endif
 
 	Kmer object = m_verticesToVisit.top();
+	Kmer reverseObject = object.complementVertex(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
 
 	if(!m_haveAttributes && m_attributeFetcher.fetchObjectMetaData(&object)) {
 
@@ -139,12 +226,19 @@ bool GraphExplorer::work() {
 	} else if(m_haveAttributes && !m_haveAnnotations && m_annotationFetcher.fetchDirections(&object)) {
 
 		m_haveAnnotations = true;
+		m_haveAnnotationsReverse = false;
 
+	} else if(m_haveAttributes && m_haveAnnotations && !m_haveAnnotationsReverse
+		&& m_annotationFetcherReverse.fetchDirections(&reverseObject)) {
+
+		m_haveAnnotationsReverse = true;
 		//cout << "[DEBUG] have annotations" << endl;
 
-	} else if(m_haveAttributes && m_haveAnnotations) {
+	} else if(m_haveAttributes && m_haveAnnotations && m_haveAnnotationsReverse) {
 
 		int currentDepth = m_depths.top();
+
+		m_vertexDepths[object] = currentDepth;
 
 		bool foundSomething = false;
 
@@ -153,36 +247,10 @@ bool GraphExplorer::work() {
 
 		//cout << "[DEBUG] processing object now depth=" << currentDepth << " visited= " << m_visitedVertices << endl;
 
-		for(int i=0;i< (int) m_annotationFetcher.getDirections()->size(); i++){
-
-			PathHandle pathName = m_annotationFetcher.getDirections()->at(i).getWave();
-
-			if(pathName != m_seedName) {
-				cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
-				cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
-
-				cout << " direction ";
-
-				if(m_direction == EXPLORER_LEFT)
-					cout << "EXPLORER_LEFT";
-				else if(m_direction == EXPLORER_RIGHT)
-					cout << "EXPLORER_RIGHT";
-
-				cout << " depth " << currentDepth;
-
-				cout << endl;
-
-				foundSomething = true;
-
-				m_matchedPaths ++;
-
-				vector<Kmer> pathToOrigin;
-
-				backtrackPath(&pathToOrigin, &object);
-
-				cout << "[DEBUG] path has length " << pathToOrigin.size() << endl;
-			}
-		}
+		if(processAnnotations(m_annotationFetcher, currentDepth, object))
+			foundSomething = true;
+		if(processAnnotations(m_annotationFetcherReverse, currentDepth, object))
+			foundSomething = true;
 
 #ifdef ASSERT
 		assert(!m_depths.empty());
@@ -212,10 +280,10 @@ bool GraphExplorer::work() {
 				if(!foundSomething) {
 					Kmer nextKmer = links->at(i);
 
-					// TODO: check if there is not already another parent.
+					// implemented already: check if there is not already another parent.
 					// if it is the case, select the path with the coverage
 					// that is the nearest to the one of both paths
-					m_parents[nextKmer] = object;
+					m_parents[nextKmer].push_back(object);
 
 					m_verticesToVisit.push(nextKmer);
 					m_depths.push(newDepth);
@@ -224,6 +292,7 @@ bool GraphExplorer::work() {
 		}
 
 		m_annotationFetcher.reset();
+		m_annotationFetcherReverse.reset();
 		m_attributeFetcher.reset();
 
 		m_visitedVertices ++;

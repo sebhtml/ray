@@ -38,7 +38,7 @@ void NanoMerger::work(){
 
 	if(!m_startedFirst) {
 
-		m_explorer.start(m_identifier, &m_first, EXPLORER_LEFT, m_parameters,
+		m_explorer.start(m_identifier, &m_first, m_seed, EXPLORER_LEFT, m_parameters,
 			m_virtualCommunicator,
 			m_outboxAllocator,
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
@@ -52,7 +52,7 @@ void NanoMerger::work(){
 		cout << "[DEBUG] NanoMerger processed first, seed length is " << m_seed->size() << endl;
 
 		// now do the last one.
-		m_explorer.start(m_identifier, &m_last, EXPLORER_RIGHT, m_parameters,
+		m_explorer.start(m_identifier, &m_last, m_seed, EXPLORER_RIGHT, m_parameters,
 			m_virtualCommunicator,
 			m_outboxAllocator,
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,

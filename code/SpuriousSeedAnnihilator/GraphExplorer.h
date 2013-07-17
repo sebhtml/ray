@@ -51,6 +51,7 @@ class GraphExplorer {
 	int m_maximumVisitedDepth;
 
 	AnnotationFetcher m_annotationFetcher;
+	AnnotationFetcher m_annotationFetcherReverse;
 	AttributeFetcher m_attributeFetcher;
 
 	WorkerHandle m_key;
@@ -58,7 +59,11 @@ class GraphExplorer {
 	PathHandle m_seedName;
 	int m_matchedPaths;
 
-	map<Kmer, Kmer> m_parents;
+	map<Kmer, vector<Kmer> > m_parents;
+	map<Kmer, int> m_vertexDepths;
+
+	CoverageDepth m_coverage1;
+
 	Kmer m_start;
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
@@ -67,6 +72,7 @@ class GraphExplorer {
 
 	bool m_haveAttributes;
 	bool m_haveAnnotations;
+	bool m_haveAnnotationsReverse;
 
 	bool m_stopAtFirstHit;
 	bool m_done;
@@ -77,10 +83,14 @@ class GraphExplorer {
 	int m_maximumVisitedVertices;
 	int m_visitedVertices;
 	RingAllocator*m_outboxAllocator;
+	GraphPath * m_seed;
 
 	void backtrackPath(vector<Kmer> * path, Kmer * vertex);
+	bool getBestParent(Kmer * parent, Kmer kmer);
+	bool processAnnotations(AnnotationFetcher & annotationFetcher, int currentDepth, Kmer & object);
+
 public:
-	void start(WorkerHandle worker, Kmer * start, int direction, Parameters * parameters,
+	void start(WorkerHandle worker, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 		VirtualCommunicator * virtualCommunicator,
 		RingAllocator * outboxAllocator,
 		MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
