@@ -48,11 +48,10 @@ using namespace std;
  */
 class NanoMerger: public Worker{
 
+	vector<GraphSearchResult> m_results;
 	bool m_startedFirst;
 	bool m_startedLast;
 	PathHandle m_seedName;
-	GraphSearchResult m_firstGraphSearchResult;
-	GraphSearchResult m_lastGraphSearchResult;
 
 	GraphExplorer m_explorer;
 
@@ -130,6 +129,8 @@ public:
 	);
 
 	bool isValid();
+
+	vector<GraphSearchResult> & getResults();
 };
 
 #endif

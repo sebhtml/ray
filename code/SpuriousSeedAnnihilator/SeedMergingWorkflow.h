@@ -44,6 +44,7 @@ using namespace std;
 class SeedMergingWorkflow: public TaskCreator {
 
 	vector<GraphSearchResult> m_searchResults;
+	vector<GraphSearchResult> m_remoteResults;
 
 	ComputeCore*m_core;
 	int m_seedIndex;

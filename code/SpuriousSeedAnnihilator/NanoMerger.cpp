@@ -50,17 +50,24 @@ void NanoMerger::work(){
 
 	} else if(m_startedFirst && !m_startedLast && m_explorer.work()) {
 
-#ifdef INTERNET_EXPLORER_DEBUG_PATHS
+#ifdef DEBUG_EXPLORER_PATHS
 		cout << "[DEBUG] NanoMerger processed first, seed length is " << m_seed->size() << endl;
 #endif
 
+#ifdef DEBUG_EXPLORER_PATHS
 		cout << "[DEBUG] path " << m_seedName << " EXPLORER_LEFT " << m_explorer.getSearchResults().size() << " paths found" << endl;
+#endif
+
 		if(m_explorer.getSearchResults().size() == 1) {
+
+			m_results.push_back(m_explorer.getSearchResults()[0]);
+#ifdef DEBUG_EXPLORER_PATHS
 			cout << "[DEBUG]";
 
 			m_explorer.getSearchResults()[0].print();
 
 			cout << endl;
+#endif
 		}
 
 		// now do the last one.
@@ -76,15 +83,23 @@ void NanoMerger::work(){
 
 	} else if(m_startedLast && m_explorer.work()) {
 
+#ifdef DEBUG_EXPLORER_PATHS
 		cout << "[DEBUG] path " << m_seedName << " EXPLORER_RIGHT " << m_explorer.getSearchResults().size() << " paths found" << endl;
+#endif
+
 		if(m_explorer.getSearchResults().size() == 1) {
+
+			m_results.push_back(m_explorer.getSearchResults()[0]);
+
+#ifdef DEBUG_EXPLORER_PATHS
 			cout << "[DEBUG]";
 			m_explorer.getSearchResults()[0].print();
 			cout << endl;
+#endif
 		}
 
 
-#ifdef INTERNET_EXPLORER_DEBUG_PATHS
+#ifdef DEBUG_EXPLORER_PATHS
 		cout << "[DEBUG] NanoMerger processed last, seed length is " << m_seed->size() << endl;
 #endif
 		m_done = true;
@@ -147,4 +162,6 @@ void NanoMerger::initialize(WorkerHandle identifier,GraphPath*seed, Parameters *
 	m_seedName = getPathUniqueId(m_parameters->getRank(), identifier);
 }
 
-
+vector<GraphSearchResult> & NanoMerger::getResults() {
+	return m_results;
+}

@@ -40,12 +40,14 @@ __DeclareMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS
 __DeclareMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
 __DeclareMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 __DeclareMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_MERGE_SEEDS);
+__DeclareMasterModeAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PROCESS_MERGING_ASSETS);
 
 __DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 __DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 __DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
 __DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
 __DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_MERGE_SEEDS);
+__DeclareSlaveModeAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS);
 
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
@@ -53,6 +55,7 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_CLEAN_SEEDS)
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -98,12 +101,14 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PUSH_SEED_LENGTHS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_MERGE_SEEDS);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MASTER_MODE_PROCESS_MERGING_ASSETS);
 
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_REGISTER_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_FILTER_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_CLEAN_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PUSH_SEED_LENGTHS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_MERGE_SEEDS);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS);
 
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REGISTER_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_FILTER_SEEDS);
@@ -111,6 +116,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
 
 	MasterMode RAY_MASTER_MODE_REGISTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_FILTER_SEEDS;
@@ -118,18 +124,21 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MasterMode RAY_MASTER_MODE_PUSH_SEED_LENGTHS;
 	MasterMode RAY_MASTER_MODE_TRIGGER_DETECTION;
 	MasterMode RAY_MASTER_MODE_MERGE_SEEDS;
+	MasterMode RAY_MASTER_MODE_PROCESS_MERGING_ASSETS;
 
 	SlaveMode RAY_SLAVE_MODE_REGISTER_SEEDS;
 	SlaveMode RAY_SLAVE_MODE_FILTER_SEEDS;
 	SlaveMode RAY_SLAVE_MODE_CLEAN_SEEDS;
 	SlaveMode RAY_SLAVE_MODE_PUSH_SEED_LENGTHS;
 	SlaveMode RAY_SLAVE_MODE_MERGE_SEEDS;
+	SlaveMode RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS;
 
 	MessageTag RAY_MESSAGE_TAG_REGISTER_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_FILTER_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_CLEAN_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS;
 	MessageTag RAY_MESSAGE_TAG_MERGE_SEEDS;
+	MessageTag RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS;
 
 	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY;
@@ -141,6 +150,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY;
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
 
+	bool m_processingIsStarted;
 	bool m_debug;
 	bool m_mergingIsStarted;
 	bool m_skip;
@@ -235,6 +245,11 @@ public:
 	void call_RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message);
+
+
+	void call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS();
+	void call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS();
+	void call_RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS(Message * message);
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

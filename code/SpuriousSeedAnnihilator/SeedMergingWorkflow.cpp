@@ -39,6 +39,8 @@ void SeedMergingWorkflow::initializeMethod(){
 /** finalize the whole thing */
 void SeedMergingWorkflow::finalizeMethod(){
 
+	cout << "[DEBUG] number of relations: " << m_searchResults.size() << endl;
+
 	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 }
 
@@ -76,7 +78,18 @@ Worker*SeedMergingWorkflow::assignNextTask(){
 /** get the result of a worker */
 void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 
-	//NanoMerger * theWorker = (NanoMerger*)worker;
+	NanoMerger * theWorker = (NanoMerger*)worker;
+
+	vector<GraphSearchResult> & results = theWorker->getResults();
+
+	// we must send the results now !!!A
+	// we will send at most 2 messages...
+	// here we don't send messages right away because these units are
+	// not regular.
+
+	for(int i = 0 ; i < (int) results.size() ; i ++) {
+		m_searchResults.push_back(results[i]);
+	}
 
 	if(m_finished % m_period == 0){
 		cout<<"Rank " << m_rank << " processWorkerResult "<<m_finished<<"/" <<m_seeds->size()<<endl;
@@ -90,7 +103,7 @@ void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 void SeedMergingWorkflow::destroyWorker(Worker*worker){
 
 	delete worker;
-	worker = NULL;
+	worker = NULL; // this does nothing useful
 }
 
 void SeedMergingWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunicator*virtualCommunicator,
