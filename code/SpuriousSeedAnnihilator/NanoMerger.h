@@ -50,6 +50,7 @@ class NanoMerger: public Worker{
 
 	bool m_startedFirst;
 	bool m_startedLast;
+	PathHandle m_seedName;
 	GraphSearchResult m_firstGraphSearchResult;
 	GraphSearchResult m_lastGraphSearchResult;
 

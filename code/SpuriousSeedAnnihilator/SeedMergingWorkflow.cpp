@@ -76,13 +76,14 @@ Worker*SeedMergingWorkflow::assignNextTask(){
 /** get the result of a worker */
 void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 
-	//int seedIndex = worker->getWorkerIdentifier();
+	//NanoMerger * theWorker = (NanoMerger*)worker;
 
 	if(m_finished % m_period == 0){
 		cout<<"Rank " << m_rank << " processWorkerResult "<<m_finished<<"/" <<m_seeds->size()<<endl;
 	}
 
 	m_finished++;
+
 }
 
 /** destroy a worker */

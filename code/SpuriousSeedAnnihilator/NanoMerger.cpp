@@ -42,28 +42,51 @@ void NanoMerger::work(){
 			m_virtualCommunicator,
 			m_outboxAllocator,
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH,
+			m_seedName
 		);
 
 		m_startedFirst = true;
 
 	} else if(m_startedFirst && !m_startedLast && m_explorer.work()) {
 
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 		cout << "[DEBUG] NanoMerger processed first, seed length is " << m_seed->size() << endl;
+#endif
+
+		cout << "[DEBUG] path " << m_seedName << " EXPLORER_LEFT " << m_explorer.getSearchResults().size() << " paths found" << endl;
+		if(m_explorer.getSearchResults().size() == 1) {
+			cout << "[DEBUG]";
+
+			m_explorer.getSearchResults()[0].print();
+
+			cout << endl;
+		}
 
 		// now do the last one.
 		m_explorer.start(m_identifier, &m_last, m_seed, EXPLORER_RIGHT, m_parameters,
 			m_virtualCommunicator,
 			m_outboxAllocator,
 			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH
+			RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, RAY_MPI_TAG_ASK_VERTEX_PATH,
+			m_seedName
 		);
 
 		m_startedLast = true;
 
 	} else if(m_startedLast && m_explorer.work()) {
 
+		cout << "[DEBUG] path " << m_seedName << " EXPLORER_RIGHT " << m_explorer.getSearchResults().size() << " paths found" << endl;
+		if(m_explorer.getSearchResults().size() == 1) {
+			cout << "[DEBUG]";
+			m_explorer.getSearchResults()[0].print();
+			cout << endl;
+		}
+
+
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 		cout << "[DEBUG] NanoMerger processed last, seed length is " << m_seed->size() << endl;
+#endif
 		m_done = true;
 	}
 }
@@ -120,6 +143,8 @@ void NanoMerger::initialize(WorkerHandle identifier,GraphPath*seed, Parameters *
 
 	m_startedFirst = false;
 	m_startedLast = false;
+
+	m_seedName = getPathUniqueId(m_parameters->getRank(), identifier);
 }
 
 

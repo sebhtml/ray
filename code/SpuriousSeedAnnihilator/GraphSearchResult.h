@@ -49,14 +49,16 @@ using namespace std;
  */
 class GraphSearchResult {
 
-	vector<PathHandle> m_pathNames;
+	vector<PathHandle> m_pathHandles;
+	vector<bool> m_pathOrientations; // false is normal, true is reverse
 	vector<GraphPath> m_computedPaths;
-	vector<int> m_pathStarts;
-	vector<int> m_pathEnds;
 
-	public:
+public:
 
+	bool addPathHandle(PathHandle handle, bool orientation);
+	bool addPath(GraphPath & path);
 
+	void print();
 };
 
 #endif /* GraphSearchResult_Header */

@@ -23,6 +23,7 @@
 
 #include "AttributeFetcher.h"
 #include "AnnotationFetcher.h"
+#include "GraphSearchResult.h"
 
 #include <code/Mock/Parameters.h>
 #include <code/Mock/Parameters.h>
@@ -43,7 +44,7 @@ using namespace std;
  */
 class GraphExplorer {
 
-	stack<Kmer> m_currentPath;
+	vector<GraphSearchResult> m_searchResults;
 
 	stack<Kmer> m_verticesToVisit;
 	stack<int> m_depths;
@@ -57,7 +58,6 @@ class GraphExplorer {
 	WorkerHandle m_key;
 	int m_direction;
 	PathHandle m_seedName;
-	int m_matchedPaths;
 
 	map<Kmer, vector<Kmer> > m_parents;
 	map<Kmer, int> m_vertexDepths;
@@ -94,10 +94,13 @@ public:
 		VirtualCommunicator * virtualCommunicator,
 		RingAllocator * outboxAllocator,
 		MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
+		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+		PathHandle seedName
 	);
 
 	bool work();
+
+	vector<GraphSearchResult> & getSearchResults();
 };
 
 #endif /* GraphExplorer_header */

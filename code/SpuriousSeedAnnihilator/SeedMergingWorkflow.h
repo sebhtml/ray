@@ -21,6 +21,8 @@
 #ifndef _SeedMergingWorkflow_h
 #define _SeedMergingWorkflow_h
 
+#include "GraphSearchResult.h"
+
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
 
@@ -40,6 +42,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class SeedMergingWorkflow: public TaskCreator {
+
+	vector<GraphSearchResult> m_searchResults;
 
 	ComputeCore*m_core;
 	int m_seedIndex;

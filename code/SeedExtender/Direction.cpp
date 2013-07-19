@@ -58,3 +58,11 @@ void Direction::setNext(Direction*e){
 bool Direction::isLower(){
 	return m_lower;
 }
+
+PathHandle Direction::getPathHandle() {
+	return getWave();
+}
+
+int Direction::getPosition() {
+	return getProgression();
+}

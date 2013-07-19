@@ -46,6 +46,8 @@ public:
 	Direction*getNext();
 	void setNext(Direction*e);
 	bool isLower();
+	PathHandle getPathHandle();
+	int getPosition();
 
 } ATTRIBUTE_PACKED;
 

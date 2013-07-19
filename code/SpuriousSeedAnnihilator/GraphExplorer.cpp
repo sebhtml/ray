@@ -24,7 +24,8 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 	VirtualCommunicator * virtualCommunicator,
 	RingAllocator * outboxAllocator,
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
-	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
+	MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE, MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH,
+	PathHandle seedName
 ) {
 
 	m_seed = seed;
@@ -46,9 +47,6 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 	m_done = false;
 	m_maximumDepth = 128;
 	m_maximumVisitedVertices = 1024;
-
-	while(!m_currentPath.empty())
-		m_currentPath.pop();
 
 	while(!m_verticesToVisit.empty())
 		m_verticesToVisit.pop();
@@ -84,13 +82,10 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 
 	m_stopAtFirstHit = true;
 
-	int seedIndex = m_key;
-
-	m_seedName = getPathUniqueId(m_parameters->getRank(), seedIndex);
+	m_seedName = seedName;
 	m_visitedVertices = 0;
 	m_maximumVisitedDepth = 0;
 
-	m_matchedPaths = 0;
 	m_vertexDepths.clear();
 	m_parents.clear();
 
@@ -125,17 +120,24 @@ bool GraphExplorer::getBestParent(Kmer * parent, Kmer kmer) {
 	return true;
 }
 
+/**
+ * Here, the word "parent" is context-specific. It means the parent in the
+ * course. If we use EXPLORER_LEFT, then parents are truly parents.
+ * But with EXPLORER_RIGHT, parents are in fact children.
+ */
 void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 	Kmer item = *vertex;
 
 	set<Kmer> visited;
+
+	vector<Kmer> aPath;
 
 	while(1) {
 
 		if(visited.count(item) > 0)
 			break;
 
-		path->push_back(item);
+		aPath.push_back(item);
 		visited.insert(item);
 
 		if(item == m_start)
@@ -148,6 +150,36 @@ void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 
 		item = parent;
 	}
+
+	// now the path include the source and the sink and also
+	// is in reverse order...
+
+#ifdef CONFIG_ASSERT
+	assert(aPath.size() >= 3); // source + sink + at least one stranger.
+#endif
+
+	// remove first and last
+	int position = 1;
+	while(position <= (int)aPath.size() -2) {
+		path->push_back(aPath[position++]);
+	}
+
+	aPath.clear();
+
+	// reverse to enforce the de Bruijn property
+	if(m_direction == EXPLORER_RIGHT) {
+		int firstPosition = 0;
+		int lastPosition = path->size()-1;
+
+		// while(firstPosition < lastPosition) {  error: stray ‘\302’ in program
+		while(firstPosition < lastPosition) {
+			Kmer holder = (*path)[firstPosition];
+			(*path)[firstPosition] = (*path)[lastPosition];
+			(*path)[lastPosition] = holder;
+			firstPosition ++;
+			lastPosition --;
+		}
+	}
 }
 
 bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, int currentDepth, Kmer & object) {
@@ -155,9 +187,16 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 	bool foundSomething = false;
 	for(int i=0;i< (int) annotationFetcher.getDirections()->size(); i++){
 
-		PathHandle pathName = annotationFetcher.getDirections()->at(i).getWave();
+		Direction & direction = annotationFetcher.getDirections()->at(i);
+
+		PathHandle pathName = direction.getPathHandle();
+		int position = direction.getPosition();
+		bool pathStrand = false;
+		if(position != 0)
+			pathStrand = true;
 
 		if(pathName != m_seedName) {
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
 			cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
 
@@ -169,16 +208,41 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 				cout << "EXPLORER_RIGHT";
 
 			cout << " depth " << currentDepth;
+#endif
 
 			foundSomething = true;
 
-			m_matchedPaths ++;
 
+			// here we can not use GraphPath directly because the de Bruijn property
+			// is hardly enforced in both directions
 			vector<Kmer> pathToOrigin;
 
 			backtrackPath(&pathToOrigin, &object);
 
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << " path has length " << pathToOrigin.size() << endl;
+#endif
+
+			GraphPath aPath;
+			aPath.setKmerLength(m_parameters->getWordSize());
+			for(int i = 0 ; i < (int)pathToOrigin.size() ; i++) {
+				Kmer kmer = pathToOrigin[i];
+				aPath.push_back(&kmer);
+			}
+
+			GraphSearchResult result;
+
+			if(m_direction == EXPLORER_RIGHT) {
+				result.addPathHandle(m_seedName, false);
+				result.addPath(aPath);
+				result.addPathHandle(pathName, pathStrand);
+			} else if(m_direction == EXPLORER_LEFT) {
+				result.addPathHandle(pathName, pathStrand);
+				result.addPath(aPath);
+				result.addPathHandle(m_seedName, false);
+			}
+
+			m_searchResults.push_back(result);
 		}
 	}
 
@@ -192,6 +256,8 @@ bool GraphExplorer::work() {
 		m_done = true;
 
 	if(m_done) {
+
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 		cout << "[DEBUG] completed, visited " << m_visitedVertices;
 		cout << " path " << m_seedName;
 		cout << " lengthInKmers " << m_seed->size();
@@ -203,8 +269,9 @@ bool GraphExplorer::work() {
 		else
 			cout << "EXPLORER_RIGHT";
 
-		cout << " paths " << m_matchedPaths;
+		cout << " paths " << m_searchResults.size();
 		cout << endl;
+#endif
 
 		return m_done;
 	}
@@ -303,4 +370,6 @@ bool GraphExplorer::work() {
 	return m_done;
 }
 
-
+vector<GraphSearchResult> & GraphExplorer::getSearchResults() {
+	return m_searchResults;
+}
