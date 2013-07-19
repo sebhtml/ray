@@ -48,6 +48,8 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGI
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
@@ -228,11 +230,46 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS() {
 	}
 }
 
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message) {
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message) {
+	m_messageWasReceived = true;
+}
+
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
-	cout << "[DEBUG] meh" << endl;
+	if(!m_initializedProcessing) {
+		m_entryIndex = 0;
 
-	m_core->closeSlaveModeLocally();
+		MODE_SPREAD_DATA = 99;
+		MODE_CHECK_RESULTS = 2;
+		MODE_STOP_THIS_SITUATION = 109;
+
+		m_mode = MODE_SPREAD_DATA;
+
+		m_messageWasSent = false;
+		m_messageWasReceived = false;
+
+		m_initializedProcessing = true;
+
+	}else if(m_mode == MODE_SPREAD_DATA) {
+
+		if(m_entryIndex < (int) m_mergingTechnology.getResults().size()) {
+
+			m_entryIndex ++;
+		} else {
+			m_mode = MODE_CHECK_RESULTS;
+		}
+	} else if(m_mode == MODE_CHECK_RESULTS) {
+
+		m_mode = MODE_STOP_THIS_SITUATION;
+
+	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
+
+		m_core->closeSlaveModeLocally();
+	}
+
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){
@@ -723,4 +760,6 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 
 	m_filteredSeeds = false;
 	m_mergedSeeds = false;
+
+	m_initializedProcessing = false;
 }

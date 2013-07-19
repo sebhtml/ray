@@ -56,6 +56,8 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PUSH_SEED_LE
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -117,6 +119,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 
 	MasterMode RAY_MASTER_MODE_REGISTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_FILTER_SEEDS;
@@ -149,6 +153,15 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SEND_SEED_LENGTHS;
 	MessageTag RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY;
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
+	MessageTag RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY;
+	MessageTag RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY;
+
+	int MODE_SPREAD_DATA;
+	int MODE_STOP_THIS_SITUATION;
+	int MODE_CHECK_RESULTS;
+	int m_mode;
+	bool m_initializedProcessing;
+	int m_entryIndex;
 
 	bool m_processingIsStarted;
 	bool m_debug;
@@ -207,6 +220,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void writeCheckpointForSeeds();
 
 	bool m_debugCode;
+	bool m_messageWasSent;
+	bool m_messageWasReceived;
 
 	ComputeCore * getCore();
 
@@ -250,6 +265,8 @@ public:
 	void call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS();
 	void call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS();
 	void call_RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS(Message * message);
+	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message);
+	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message);
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

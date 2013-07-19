@@ -96,6 +96,8 @@ public:
 		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
 		MessageTag RAY_MPI_TAG_ASK_VERTEX_PATH
 	);
+
+	vector<GraphSearchResult> & getResults();
 };
 
 #endif

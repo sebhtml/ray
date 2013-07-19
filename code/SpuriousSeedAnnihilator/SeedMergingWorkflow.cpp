@@ -125,3 +125,7 @@ void SeedMergingWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunicato
 
 	m_period = 100;
 }
+
+vector<GraphSearchResult> & SeedMergingWorkflow::getResults() {
+	return m_searchResults;
+}
