@@ -23,6 +23,7 @@
 #define _Kmer
 
 #include <code/Mock/constants.h>
+#include <code/Mock/CarriageableItem.h>
 
 #include <RayPlatform/core/types.h>
 
@@ -66,9 +67,10 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class Kmer{
+class Kmer : public CarriageableItem {
 	/** the actual array of uint64_t */
 	uint64_t m_u64[KMER_U64_ARRAY_SIZE];
+
 public:
 	Kmer();
 	~Kmer();
@@ -76,8 +78,12 @@ public:
 	bool isLower(Kmer*a)const;
 	void print()const;
 	void pack(MessageUnit *messageBuffer,int*messagePosition)const;
-	void unpack(MessageUnit*messageBuffer,int*messagePosition);
-	void unpack(vector<MessageUnit>*messageBuffer,int*messagePosition);
+	void unpack(const MessageUnit*messageBuffer,int*messagePosition);
+	void unpack(const vector<MessageUnit>*messageBuffer,int*messagePosition);
+
+	int load(const uint8_t * buffer);
+	int dump(uint8_t * buffer) const;
+
 	void operator=(const Kmer&b);
 	bool operator<(const Kmer&b)const;
 	bool operator!=(const Kmer&b)const;
@@ -100,7 +106,7 @@ public:
  * complement a vertex, and return another one
  */
 	Kmer complementVertex(int wordSize,bool colorSpace)const;
-	
+
 /*
  * use mini distant segments here.
  */

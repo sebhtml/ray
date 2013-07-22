@@ -95,14 +95,14 @@ void Kmer::pack(MessageUnit*messageBuffer,int*messagePosition)const{
 	}
 }
 
-void Kmer::unpack(MessageUnit*messageBuffer,int*messagePosition){
+void Kmer::unpack(const MessageUnit*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		setU64(i,messageBuffer[*messagePosition]);
 		(*messagePosition)++;
 	}
 }
 
-void Kmer::unpack(vector<MessageUnit>*messageBuffer,int*messagePosition){
+void Kmer::unpack(const vector<MessageUnit>*messageBuffer,int*messagePosition){
 	for(int i=0;i<getNumberOfU64();i++){
 		setU64(i,(*messageBuffer)[*messagePosition]);
 		(*messagePosition)++;
@@ -456,4 +456,22 @@ char Kmer::getSymbolAtPosition(int kmerLength,bool colored, int position)const{
 	char symbol=codeToChar(chunk,colored);
 
 	return symbol;
+}
+
+int Kmer::load(const uint8_t * buffer) {
+
+	int elements = 0;
+
+	unpack((MessageUnit*) buffer, &elements);
+
+	return elements * sizeof(MessageUnit);
+}
+
+int Kmer::dump(uint8_t * buffer) const {
+
+	int elements = 0;
+
+	pack((MessageUnit*)buffer, &elements);
+
+	return elements * sizeof(MessageUnit);
 }

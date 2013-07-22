@@ -574,11 +574,23 @@ void GraphPath::addBlock(){
 int GraphPath::load(const uint8_t * buffer) {
 	int position = 0;
 
+	for(int i = 0 ; i < size() ; i ++) {
+		Kmer value;
+		position += value.load(buffer);
+		push_back(&value);
+	}
+
 	return position;
 }
 
 int GraphPath::dump(uint8_t * buffer) const {
 	int position = 0;
+
+	for(int i = 0 ; i < size() ; i ++) {
+		Kmer value;
+		at(i, &value);
+		position += value.dump(buffer);
+	}
 
 	return position;
 }
