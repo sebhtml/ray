@@ -115,18 +115,18 @@ Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
 	return error;
 }
 
-uint64_t getPathUniqueId(Rank rank,int id){
+PathHandle getPathUniqueId(Rank rank,int id){
 	uint64_t a=id;
 	a=a*MAX_NUMBER_OF_MPI_PROCESSES+rank;
 	return a;
 }
 
-int getIdFromPathUniqueId(uint64_t a){
+int getIdFromPathUniqueId(PathHandle a){
 	return a/MAX_NUMBER_OF_MPI_PROCESSES;
 }
 
-Rank getRankFromPathUniqueId(uint64_t a){
-	int rank=a%MAX_NUMBER_OF_MPI_PROCESSES;
+Rank getRankFromPathUniqueId(PathHandle a){
+	Rank rank=a%MAX_NUMBER_OF_MPI_PROCESSES;
 	return rank;
 }
 

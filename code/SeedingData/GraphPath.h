@@ -23,6 +23,7 @@
 
 #include <code/Mock/constants.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/Mock/CarriageableItem.h>
 
 #include <vector>
 using namespace std;
@@ -42,7 +43,8 @@ using namespace std;
 
 #define NUMBER_OF_64_BIT_INTEGERS ( CONFIG_PATH_BLOCK_SIZE * BITS_PER_NUCLEOTIDE / sizeof(uint64_t) / BITS_PER_BYTE )
 
-class GraphPathBlock{
+class GraphPathBlock {
+
 public:
 	uint64_t m_content[NUMBER_OF_64_BIT_INTEGERS];
 };
@@ -59,7 +61,7 @@ public:
  *
  * TODO: the PathHandle should be here directly instead of being a separate instance.
  */
-class GraphPath{
+class GraphPath  : public CarriageableItem {
 
 	bool m_deleted;
 
@@ -124,6 +126,9 @@ public:
 
 	bool isDeleted();
 	void markAsDeleted();
+
+	int load(const uint8_t * buffer);
+	int dump(uint8_t * buffer) const;
 };
 
 #endif

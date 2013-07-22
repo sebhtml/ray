@@ -231,6 +231,17 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS() {
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message) {
+
+	//cout << "[DEBUG] received RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY" << endl;
+
+	uint8_t * buffer = (uint8_t*) message->getBuffer();
+
+	GraphSearchResult entry;
+	entry.load(buffer);
+
+	m_mergingTechnology.getResults().push_back(entry);
+
+	m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, message->getSource(), RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message) {
@@ -240,6 +251,9 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	if(!m_initializedProcessing) {
+
+		//cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
+
 		m_entryIndex = 0;
 
 		MODE_SPREAD_DATA = 99;
@@ -247,17 +261,63 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		MODE_STOP_THIS_SITUATION = 109;
 
 		m_mode = MODE_SPREAD_DATA;
+		m_toDistribute = m_mergingTechnology.getResults().size();
 
 		m_messageWasSent = false;
-		m_messageWasReceived = false;
 
 		m_initializedProcessing = true;
 
-	}else if(m_mode == MODE_SPREAD_DATA) {
+	} else if (m_mode == MODE_SPREAD_DATA) {
 
-		if(m_entryIndex < (int) m_mergingTechnology.getResults().size()) {
+		if(m_entryIndex < (int) m_toDistribute) {
 
-			m_entryIndex ++;
+			if(!m_messageWasSent) {
+
+				//cout << "[DEBUG] send " << m_entryIndex << endl;
+
+				uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
+				int bytes = entry.dump(messageBuffer);
+
+				int elements = bytes / sizeof(MessageUnit);
+
+				if(bytes % sizeof(MessageUnit))
+					elements ++;
+
+				// at least one rank is the current rank
+				Rank rank1 = getRankFromPathUniqueId(entry.getPathHandles()[0]);
+				Rank rank2 = getRankFromPathUniqueId(entry.getPathHandles()[1]);
+
+				Rank destination = rank1;
+
+				if(destination == m_rank)
+					destination = rank2;
+
+				//cout << "[DEBUG] destination " << destination << endl;
+
+				if(destination != m_rank) {
+					Message aMessage((MessageUnit*)messageBuffer, elements , destination, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY, m_rank);
+					m_outbox->push_back(&aMessage);
+
+					m_messageWasReceived = false;
+
+				} else {
+					// nothing to send,
+					// the local rank has both
+
+					m_messageWasReceived = true;
+				}
+
+				m_messageWasSent = true;
+
+			} else if(m_messageWasReceived) {
+
+				//cout << "[DEBUG] receive " << m_entryIndex << endl;
+
+				m_entryIndex ++;
+
+				m_messageWasSent = false;
+			}
 		} else {
 			m_mode = MODE_CHECK_RESULTS;
 		}
@@ -657,6 +717,8 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 
 	RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");

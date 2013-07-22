@@ -122,6 +122,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 
+	int m_toDistribute;
+
 	MasterMode RAY_MASTER_MODE_REGISTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_FILTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_CLEAN_SEEDS;

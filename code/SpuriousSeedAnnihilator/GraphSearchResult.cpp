@@ -23,6 +23,8 @@
 #include <iostream>
 using namespace std;
 
+#include <string.h>
+
 bool GraphSearchResult::addPathHandle(PathHandle handle, bool orientation) {
 
 	// we need a path after each handle
@@ -58,6 +60,79 @@ void GraphSearchResult::print() {
 		}
 		i++;
 	}
+}
 
+int GraphSearchResult::load(const uint8_t * buffer) {
 
+	uint32_t paths = 0;
+
+	int size = sizeof(uint32_t);
+
+	int position = 0;
+
+	memcpy(&paths, buffer + position, size);
+	position += size;
+
+	for(int i = 0 ; i < (int)paths; i++) {
+		size = sizeof(PathHandle);
+		PathHandle entry;
+		memcpy(&entry, buffer + position, size);
+		m_pathHandles.push_back(entry);
+		position += size;
+	}
+
+	for(int i = 0 ; i < (int)paths; i++) {
+		size = sizeof(bool);
+		bool strand;
+		memcpy(&strand, buffer + position, size);
+		m_pathOrientations.push_back(strand);
+		position += size;
+	}
+
+	int computedPaths = paths - 1;
+
+	for(int i = 0 ; i < computedPaths ; i ++) {
+		GraphPath aParticularPath;
+		size = aParticularPath.load(buffer + position);
+		position += size;
+	}
+
+	return position;
+}
+
+int GraphSearchResult::dump(uint8_t * buffer) const {
+
+	int position = 0;
+
+	uint32_t paths = m_pathHandles.size();
+	int size = sizeof(uint32_t);
+
+	memcpy(buffer + position, &paths, size);
+	position += size;
+
+	for(int i = 0 ; i < (int)paths ; i++) {
+		size = sizeof(PathHandle);
+		memcpy(buffer + position, &(m_pathHandles[i]), size);
+		position += size;
+	}
+
+	for(int i = 0 ; i < (int)paths ; i ++) {
+		size = sizeof(bool);
+		bool value = m_pathOrientations[i];
+		memcpy(buffer + position, &value, size);
+		position += size;
+	}
+
+	int computedPaths = paths - 1;
+
+	for(int i = 0 ; i < computedPaths ; i ++) {
+		size = m_computedPaths[i].dump(buffer + position);
+		position += size;
+	}
+
+	return position;
+}
+
+vector<PathHandle> & GraphSearchResult::getPathHandles() {
+	return m_pathHandles;
 }

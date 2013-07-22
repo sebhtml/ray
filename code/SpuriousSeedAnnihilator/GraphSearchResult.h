@@ -21,6 +21,7 @@
 #ifndef GraphSearchResult_Header
 #define GraphSearchResult_Header
 
+#include <code/Mock/CarriageableItem.h>
 #include <code/SeedingData/GraphPath.h>
 
 #include <vector>
@@ -47,7 +48,7 @@ using namespace std;
  *
  * \author Sébastien Boisvert
  */
-class GraphSearchResult {
+class GraphSearchResult: public CarriageableItem {
 
 	vector<PathHandle> m_pathHandles;
 	vector<bool> m_pathOrientations; // false is normal, true is reverse
@@ -59,6 +60,11 @@ public:
 	bool addPath(GraphPath & path);
 
 	void print();
+
+	int load(const uint8_t * buffer);
+	int dump(uint8_t * buffer) const;
+
+	vector<PathHandle> & getPathHandles();
 };
 
 #endif /* GraphSearchResult_Header */

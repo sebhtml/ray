@@ -569,3 +569,16 @@ void GraphPath::addBlock(){
 }
 
 #endif
+
+
+int GraphPath::load(const uint8_t * buffer) {
+	int position = 0;
+
+	return position;
+}
+
+int GraphPath::dump(uint8_t * buffer) const {
+	int position = 0;
+
+	return position;
+}
