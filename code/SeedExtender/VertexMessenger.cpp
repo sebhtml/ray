@@ -112,7 +112,7 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 		int processed=0;
 		while(processed<maximumMates&&m_mateIterator!=m_matesToMeet->end()){
 			ReadHandle mate=*m_mateIterator;
-			message[j+1+processed]=mate;
+			message[j+1+processed]=mate.getValue();
 			processed++;
 			m_mateIterator++;
 		}

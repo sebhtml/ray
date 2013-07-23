@@ -23,6 +23,7 @@
 
 #include <code/Mock/constants.h>
 #include <code/Mock/Parameters.h>
+#include <code/SequencesLoader/ReadHandle.h>
 
 #include <RayPlatform/communication/mpi_tags.h>
 #include <RayPlatform/communication/Message.h>
@@ -190,7 +191,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 					int readLength=result[0];
 					int forwardOffset=result[1];
 					int reverseOffset=result[2];
-					ReadHandle globalIdentifier=m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
+					ReadHandle globalIdentifier = m_parameters->getGlobalIdFromRankAndLocalId(readRank,idOnRank)+1;
 					int start=forwardOffset;
 					int theEnd=readLength-1;
 					int offset=m_mode_send_vertices_sequence_id_position;
@@ -204,10 +205,10 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 					}
 	
 					#if defined(RAY_64_BITS)
-						fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
+						fprintf(m_amosFile,"{TLE\nsrc:%li\noff:%i\nclr:%i,%i\n}\n",globalIdentifier.getValue(), offset,
 						start,theEnd);
 					#elif defined(RAY_32_BITS)
-						fprintf(m_amosFile,"{TLE\nsrc:%lli\noff:%i\nclr:%i,%i\n}\n",globalIdentifier,offset,
+						fprintf(m_amosFile,"{TLE\nsrc:%lli\noff:%i\nclr:%i,%i\n}\n",globalIdentifier.getValue(), offset,
 						start,theEnd);
 					#endif
 

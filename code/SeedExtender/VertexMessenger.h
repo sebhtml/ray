@@ -21,6 +21,7 @@
 #ifndef _VertexMessenger
 #define _VertexMessenger
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/SequencesIndexer/ReadAnnotation.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
 #include <code/Mock/Parameters.h>

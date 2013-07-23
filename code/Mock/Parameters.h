@@ -24,6 +24,8 @@
 
 #include "common_functions.h"
 
+#include <code/SequencesLoader/ReadHandle.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -202,8 +204,8 @@ public:
 	void showUsage();
 	int getReducerValue();
 
-	Rank getRankFromGlobalId(uint64_t a);
-	int getIdFromGlobalId(uint64_t a);
+	Rank getRankFromGlobalId(ReadHandle & a);
+	int getIdFromGlobalId(ReadHandle & a);
 	int getMaximumDistance();
 	uint64_t getGlobalIdFromRankAndLocalId(Rank rank,int id);
 	CoverageDepth getMaximumAllowedCoverage();

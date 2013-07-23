@@ -22,6 +22,7 @@
 #ifndef _ReadAnnotation
 #define _ReadAnnotation
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/Mock/common_functions.h>
 
 #include <fstream>

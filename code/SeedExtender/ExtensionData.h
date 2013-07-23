@@ -24,6 +24,7 @@
 
 #include "ExtensionElement.h"
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/SequencesIndexer/PairedRead.h>
 #include <code/SequencesIndexer/ReadAnnotation.h>
 #include <code/SequencesLoader/Read.h>

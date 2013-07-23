@@ -29,6 +29,7 @@
 #include <code/Library/LibraryPeakFinder.h>
 #include <code/SequencesLoader/Read.h>
 #include <code/SequencesLoader/Loader.h>
+#include <code/SequencesLoader/ReadHandle.h>
 
 #include <RayPlatform/memory/MyAllocator.h>
 #include <RayPlatform/core/OperatingSystem.h>
@@ -1833,8 +1834,10 @@ int Parameters::getReducerValue(){
 	return m_reducerPeriod;
 }
 
-Rank Parameters::getRankFromGlobalId(ReadHandle a){
+Rank Parameters::getRankFromGlobalId(ReadHandle & a){
+
 	uint64_t elementsPerRank=m_totalNumberOfSequences/m_size;
+
 	Rank rank=a/elementsPerRank;
 
 	if(rank >= m_size){
@@ -1860,7 +1863,7 @@ Rank Parameters::getRankFromGlobalId(ReadHandle a){
 	return rank;
 }
 
-int Parameters::getIdFromGlobalId(ReadHandle a){
+int Parameters::getIdFromGlobalId(ReadHandle & a){
 	int bin=getRankFromGlobalId(a);
 	LargeCount x=m_totalNumberOfSequences/m_size;
 	return a-bin*x;

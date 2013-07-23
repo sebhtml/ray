@@ -22,6 +22,7 @@
 #ifndef _PairedRead
 #define _PairedRead
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/Mock/common_functions.h>
 
 #include <fstream>

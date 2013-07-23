@@ -30,7 +30,9 @@
 #include "VertexMessenger.h"
 #include "ExtensionData.h"
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/Mock/common_functions.h>
+#include <code/Mock/constants.h>
 #include <code/Mock/Parameters.h>
 #include <code/SeedingData/GraphPath.h>
 #include <code/SeedingData/SeedingData.h>
@@ -176,7 +178,7 @@ class SeedExtender: public CorePlugin  {
 	bool m_messengerInitiated;
 	VertexMessenger m_vertexMessenger;
 
-	set<ReadHandle> m_eliminatedSeeds;
+	set<PathHandle> m_eliminatedSeeds;
 	map<int,vector<ReadHandle> >m_expiredReads;
 
 	void inspect(ExtensionData*ed,Kmer*currentVertex);

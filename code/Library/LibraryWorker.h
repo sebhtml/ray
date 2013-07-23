@@ -22,6 +22,7 @@
 #ifndef _LibraryWorker
 #define _LibraryWorker
 
+#include <code/SequencesLoader/ReadHandle.h>
 #include <code/SeedingData/SeedingData.h>
 #include <code/SeedExtender/ExtensionData.h>
 
