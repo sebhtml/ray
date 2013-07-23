@@ -931,11 +931,11 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 
 			int outputPosition=0;
 
-			buffer[outputPosition++]=m_contigNames->at(m_contigIndex);
+			buffer[outputPosition++]=m_contigNames->at(m_contigIndex).getValue();
 			buffer[outputPosition++]='F';
 			buffer[outputPosition++]=m_contigs->at(m_contigIndex).size()-1;
 
-			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getContig();
+			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getContig().getValue();
 			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getStrand();
 			buffer[outputPosition++]=m_rightNeighbours[m_neighbourIndex].getProgression();
 
@@ -991,11 +991,11 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 
 			int outputPosition=0;
 
-			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getContig();
+			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getContig().getValue();
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getStrand();
 			buffer[outputPosition++]=m_leftNeighbours[m_neighbourIndex].getProgression();
 
-			buffer[outputPosition++]=m_contigNames->at(m_contigIndex);
+			buffer[outputPosition++]=m_contigNames->at(m_contigIndex).getValue();
 			buffer[outputPosition++]='F';
 			buffer[outputPosition++]=0;
 

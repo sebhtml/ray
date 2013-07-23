@@ -23,6 +23,7 @@
 #define _NeighbourPair_h
 
 #include <code/Mock/constants.h>
+#include <code/SeedingData/PathHandle.h>
 
 #include <stdint.h> /** for uint64_t **/
 

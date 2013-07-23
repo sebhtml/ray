@@ -131,7 +131,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 				#if defined(RAY_64_BITS)
 					fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%lu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
 					m_ed->m_EXTENSION_currentPosition+1,
-					m_ed->m_EXTENSION_identifiers[m_contigId],
+					m_ed->m_EXTENSION_identifiers[m_contigId].getValue(),
 					m_parameters->getRank(),
 					seq.c_str(),
 					qlt
@@ -139,7 +139,7 @@ void Amos::call_RAY_SLAVE_MODE_AMOS(){
 				#elif defined(RAY_32_BITS)
 					fprintf(m_amosFile,"{CTG\niid:%u\neid:contig-%llu\ncom:\nSoftware: Ray, MPI rank: %i\n.\nseq:\n%s\n.\nqlt:\n%s\n.\n",
 					m_ed->m_EXTENSION_currentPosition+1,
-					m_ed->m_EXTENSION_identifiers[m_contigId],
+					m_ed->m_EXTENSION_identifiers[m_contigId].getValue(),
 					m_parameters->getRank(),
 					seq.c_str(),
 					qlt

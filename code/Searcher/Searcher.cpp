@@ -954,7 +954,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 		int bufferSize=0;
-		buffer[bufferSize++]=contigName;
+		buffer[bufferSize++]=contigName.getValue();
 		buffer[bufferSize++]=lengthInKmers;
 		buffer[bufferSize++]=m_coloredKmers;
 		buffer[bufferSize++]=mode;
@@ -1652,7 +1652,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			MessageUnit*messageBuffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			int bufferPosition=0;
 
-			messageBuffer[bufferPosition++]=contig;
+			messageBuffer[bufferPosition++]=contig.getValue();
 			messageBuffer[bufferPosition++]=strand;
 			messageBuffer[bufferPosition++]=count;
 			messageBuffer[bufferPosition++]=m_directoryIterator;
@@ -2861,7 +2861,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 				#endif
 
 				//store the contig path
-				message2[outputBufferPosition++]=path; // path identifier
+				message2[outputBufferPosition++]=path.getValue(); // path identifier
 				message2[outputBufferPosition++]=contigPosition; // path position
 				message2[outputBufferPosition++]=strand;
 

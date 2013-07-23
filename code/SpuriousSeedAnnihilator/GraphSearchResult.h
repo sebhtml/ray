@@ -21,6 +21,7 @@
 #ifndef GraphSearchResult_Header
 #define GraphSearchResult_Header
 
+#include <code/SeedingData/PathHandle.h>
 #include <code/Mock/CarriageableItem.h>
 #include <code/SeedingData/GraphPath.h>
 

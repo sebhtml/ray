@@ -426,7 +426,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 			PathHandle identifier = getPathUniqueId(m_rank, m_seedIndex);
 
-			m_buffers.addAt(destination, identifier);
+			m_buffers.addAt(destination, identifier.getValue());
 			m_buffers.addAt(destination, m_seedPosition);
 
 			if(m_buffers.flush(destination, elements, tag, m_outboxAllocator, m_outbox, m_rank,false)){

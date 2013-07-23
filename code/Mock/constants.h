@@ -179,9 +179,6 @@
 
 #define CONFIG_FILE_IO_BUFFER_SIZE SIZE_16M
 
-/* the identifier for a path in the de Bruijn graph */
-typedef uint64_t PathHandle;
-
 /* a DNA strand */
 typedef char Strand;
 

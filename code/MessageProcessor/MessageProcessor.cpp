@@ -1809,7 +1809,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_DIRECTION(Message*messa
 		message2[i+0]=coverage;
 		message2[i+1]=(paths.size()==1);
 		if(paths.size()==1){
-			message2[i+2]=paths[0].getWave();
+			message2[i+2]=paths[0].getWave().getValue();
 			message2[i+3]=paths[0].getProgression();
 		}
 		message2[i+4]=edges;
@@ -1857,7 +1857,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 		assert(firstPathId<(int)paths.size());
 		#endif
 
-		PathHandle pathId=paths[firstPathId].getWave();
+		PathHandle pathId=paths[firstPathId].getWave().getValue();
 		int progression=paths[firstPathId].getProgression();
 
 		#ifdef ASSERT
@@ -1867,7 +1867,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 		assert(getRankFromPathUniqueId(pathId)<m_size);
 		#endif
 
-		message2[outputPosition++]=pathId;
+		message2[outputPosition++]=pathId.getValue();
 		message2[outputPosition++]=progression;
 		firstPathId++;
 	}
@@ -1975,7 +1975,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 
 		Direction d=paths[indexInArray];
 		kmer.pack(message2,&outputPosition);
-		message2[outputPosition++]=d.getWave();
+		message2[outputPosition++]=d.getWave().getValue();
 
 		#ifdef ASSERT
 		Rank rank=getRankFromPathUniqueId(d.getWave());

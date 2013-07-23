@@ -121,13 +121,17 @@ void ScaffoldingAlgorithm::solve(
 
 			ScaffoldingEdge edge=j->second;
 		
+			/**
+			 * TODO This code is not clean. char should not be stored as a
+			 * uint64_t.
+			 */
 			vector<uint64_t> megaLink;
 			PathHandle leftContig=edge.getLeftContig();
-			megaLink.push_back(leftContig);
+			megaLink.push_back(leftContig.getValue());
 			char leftStrand=edge.getLeftStrand();
 			megaLink.push_back(leftStrand);
 			PathHandle rightContig=edge.getRightContig();
-			megaLink.push_back(rightContig);
+			megaLink.push_back(rightContig.getValue());
 			char rightStrand=edge.getRightStrand();
 			megaLink.push_back(rightStrand);
 			int average=edge.getGapSize();
@@ -141,8 +145,10 @@ void ScaffoldingAlgorithm::solve(
 
 	// create the graph
 	set<PathHandle> vertices;
-	map<PathHandle,map<char,vector<vector<PathHandle> > > > parents;
-	map<PathHandle,map<char,vector<vector<PathHandle> > > > children;
+
+	// TODO: fix this code, PathHandle should not be used to store a char
+	map<PathHandle,map<char,vector<vector<uint64_t> > > > parents;
+	map<PathHandle,map<char,vector<vector<uint64_t> > > > children;
 
 	for(int i=0;i<(int)megaLinks.size();i++){
 		PathHandle leftContig=megaLinks[i][0];
@@ -158,13 +164,14 @@ void ScaffoldingAlgorithm::solve(
 		char otherRightStrand='F';
 		if(rightStrand=='F')
 			otherRightStrand='R';
+
 		children[leftContig][leftStrand].push_back(megaLinks[i]);
 		parents[rightContig][rightStrand].push_back(megaLinks[i]);
 
 		vector<uint64_t> reverseLink;
-		reverseLink.push_back(rightContig);
+		reverseLink.push_back(rightContig.getValue());
 		reverseLink.push_back(otherRightStrand);
-		reverseLink.push_back(leftContig);
+		reverseLink.push_back(leftContig.getValue());
 		reverseLink.push_back(otherLeftStrand);
 		reverseLink.push_back(distance);
 
@@ -395,8 +402,8 @@ bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeT
 }
 
 void ScaffoldingAlgorithm::extractScaffolds(char state,map<PathHandle,int>*colors,PathHandle vertex,
-	map<PathHandle,map<char,vector<vector<PathHandle> > > >*parents,
-	map<PathHandle,map<char,vector<vector<PathHandle> > > >*children,set<int>*completedColours,
+	map<PathHandle,map<char,vector<vector<uint64_t> > > >*parents,
+	map<PathHandle,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours,
 
 	vector<vector<PathHandle> >*scaffoldContigs,
 	vector<vector<char> >*scaffoldStrands,

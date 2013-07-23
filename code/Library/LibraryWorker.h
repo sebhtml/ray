@@ -23,6 +23,7 @@
 #define _LibraryWorker
 
 #include <code/SequencesLoader/ReadHandle.h>
+#include <code/SeedingData/PathHandle.h>
 #include <code/SeedingData/SeedingData.h>
 #include <code/SeedExtender/ExtensionData.h>
 
@@ -59,7 +60,7 @@ class LibraryWorker : public Worker {
 
 	MyAllocator*m_allocator;
 	VirtualCommunicator*m_virtualCommunicator;
-	PathHandle m_SEEDING_i;
+	WorkerHandle m_SEEDING_i;
 	RingAllocator*m_outboxAllocator;
 	Parameters*m_parameters;
 	int m_EXTENSION_currentPosition;

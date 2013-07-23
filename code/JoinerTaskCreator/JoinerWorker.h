@@ -22,6 +22,7 @@
 #ifndef _JoinerWorker_H
 #define _JoinerWorker_H
 
+#include <code/SeedingData/PathHandle.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
 #include <code/Mock/Parameters.h>
 

@@ -23,6 +23,8 @@
 
 #include <code/Mock/constants.h>
 
+#include <code/SeedingData/PathHandle.h>
+
 #include <RayPlatform/core/types.h>
 
 #include <stdint.h>

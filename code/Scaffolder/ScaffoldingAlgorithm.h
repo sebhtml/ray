@@ -24,6 +24,8 @@
 #include "ScaffoldingEdge.h"
 #include "ScaffoldingVertex.h"
 
+#include <code/SeedingData/PathHandle.h>
+
 #include <vector>
 #include <set>
 #include <map>
@@ -59,8 +61,8 @@ public:
 
 
 	void extractScaffolds(char state,map<PathHandle,int>*colors,PathHandle vertex,
-	map<PathHandle,map<char,vector<vector<PathHandle> > > >*parents,
-	map<PathHandle,map<char,vector<vector<PathHandle> > > >*children,set<int>*completedColours,
+	map<PathHandle,map<char,vector<vector<uint64_t> > > >*parents,
+	map<PathHandle,map<char,vector<vector<uint64_t> > > >*children,set<int>*completedColours,
 
 	vector<vector<PathHandle> >*scaffoldContigs,
 	vector<vector<char> >*scaffoldStrands,

@@ -60,7 +60,9 @@ ReadAnnotation*ReadAnnotation::getNext()const{
 }
 
 ReadHandle ReadAnnotation::getUniqueId()const{
-	return getPathUniqueId(m_rank,m_readIndex);
+	PathHandle handle = getPathUniqueId(m_rank,m_readIndex);
+
+	return handle.getValue();
 }
 
 bool ReadAnnotation::isLower(){

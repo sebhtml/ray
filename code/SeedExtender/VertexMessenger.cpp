@@ -41,7 +41,7 @@ void VertexMessenger::work(){
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(3*sizeof(MessageUnit));
 		int j=0;
 		m_vertex.pack(message,&j);
-		message[j++]=m_waveId;
+		message[j++]=m_waveId.getValue();
 		message[j++]=m_wavePosition;
 		Message aMessage(message,j,m_destination,RAY_MPI_TAG_VERTEX_INFO,m_parameters->getRank());
 		m_outbox->push_back(&aMessage);

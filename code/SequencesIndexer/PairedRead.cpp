@@ -41,7 +41,9 @@ uint32_t PairedRead::getId(){
 
 /** any read has a unique distributed identifier */
 ReadHandle PairedRead::getUniqueId(){
-	return getPathUniqueId(m_rank,m_readIndex);
+	PathHandle handle = getPathUniqueId(m_rank,m_readIndex);
+
+	return handle.getValue();
 }
 
 int PairedRead::getLibrary(){

@@ -141,7 +141,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 		m_buffers.addAt(destination,vertex.getU64(i));
 	}
 
-	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i]);
+	m_buffers.addAt(destination,m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i].getValue());
 	m_buffers.addAt(destination,m_ed->m_EXTENSION_currentPosition);
 
 	if(m_buffers.flush(destination,KMER_U64_ARRAY_SIZE+2,RAY_MPI_TAG_SAVE_WAVE_PROGRESSION_WITH_REPLY,m_outboxAllocator,m_outbox,getRank(),false)){
@@ -515,7 +515,7 @@ void FusionData::finishFusions(){
 			if(!m_FUSION_pathLengthRequested){
 				Rank rankId=getRankFromPathUniqueId(pathId);
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
-				message[0]=pathId;
+				message[0]=pathId.getValue();
 	
 				#ifdef ASSERT
 				assert(rankId<m_size);
@@ -540,7 +540,7 @@ void FusionData::finishFusions(){
 				if(!m_FINISH_vertex_requested){
 					Rank rankId=getRankFromPathUniqueId(pathId);
 					MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit)*2);
-					message[0]=pathId;
+					message[0]=pathId.getValue();
 					message[1]=nextPosition;
 					Message aMessage(message,2,rankId,RAY_MPI_TAG_GET_PATH_VERTEX,getRank());
 					m_outbox->push_back(&aMessage);

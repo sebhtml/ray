@@ -30,6 +30,7 @@ see <http://www.gnu.org/licenses/>
 
 #include <code/KmerAcademyBuilder/Kmer.h>
 #include <code/SeedingData/GraphPath.h>
+#include <code/SeedingData/PathHandle.h>
 
 #include <RayPlatform/memory/allocator.h>
 #include <RayPlatform/core/slave_modes.h>

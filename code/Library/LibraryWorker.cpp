@@ -130,7 +130,7 @@ void LibraryWorker::work(){
 						bool isAutomatic=m_parameters->isAutomatic(library);
 						if(isAutomatic){
 							PathHandle uniqueReadIdentifier=getPathUniqueId(buffer[1],buffer[2]);
-							SplayNode<ReadHandle,LibraryElement>*node=m_database.find(uniqueReadIdentifier,false);
+							SplayNode<ReadHandle,LibraryElement>*node=m_database.find(uniqueReadIdentifier.getValue(),false);
 							if(node!=NULL){
 								LibraryElement*element=node->getValue();
 								int rightStrandPosition=annotation.getPositionOnStrand();

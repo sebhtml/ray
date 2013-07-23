@@ -1107,7 +1107,7 @@ Kmer *currentVertex,BubbleData*bubbleData){
 		int pathLength=ed->m_EXTENSION_extension.size();
 		int flows=ed->m_flowNumber;
 
-		buffer[bufferPosition++]=id;
+		buffer[bufferPosition++]=id.getValue();
 		buffer[bufferPosition++]=pathLength;
 		buffer[bufferPosition++]=flows;
 

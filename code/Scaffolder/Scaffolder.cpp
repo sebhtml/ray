@@ -538,7 +538,7 @@ void Scaffolder::processContig(){
 void Scaffolder::sendContigInfo(){
 	if(!m_sentContigInfo){
 		MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-		message[0]=(*m_contigNames)[m_contigId];
+		message[0]=(*m_contigNames)[m_contigId].getValue();
 		message[1]=(*m_contigs)[m_contigId].size();
 		Message aMessage(message,2,
 			MASTER_RANK,RAY_MPI_TAG_CONTIG_INFO,m_parameters->getRank());
@@ -1059,7 +1059,7 @@ void Scaffolder::processAnnotation(){
 	}else if(!m_forwardDirectionLengthRequested){
 		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		int rankId=getRankFromPathUniqueId(m_pairedForwardDirectionName);
-		buffer[0]=m_pairedForwardDirectionName;
+		buffer[0]=m_pairedForwardDirectionName.getValue();
 		Message aMessage(buffer,1,
 		rankId,
 		RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
@@ -1275,7 +1275,7 @@ Case 13. (allowed)
 	}else if(!m_reverseDirectionLengthRequested){
 		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(Kmer));
 		Rank rankId=getRankFromPathUniqueId(m_pairedReverseDirectionName);
-		buffer[0]=m_pairedReverseDirectionName;
+		buffer[0]=m_pairedReverseDirectionName.getValue();
 		Message aMessage(buffer,1,
 		rankId,RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
 		m_virtualCommunicator->pushMessage(m_workerId,&aMessage);
@@ -1459,7 +1459,7 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 			int bufferPosition=0;
-			message[bufferPosition++]=id;
+			message[bufferPosition++]=id.getValue();
 			message[bufferPosition++]=m_position;
 			Message aMessage(message,bufferPosition,
 				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK,m_parameters->getRank());
@@ -1542,7 +1542,7 @@ void Scaffolder::getContigSequenceFromKmers(PathHandle id){
 		if(!m_requestedContigChunk){
 			m_requestedContigChunk=true;
 			MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-			message[0]=id;
+			message[0]=id.getValue();
 			message[1]=m_position;
 			Message aMessage(message,2,
 				m_rankIdForContig,RAY_MPI_TAG_GET_CONTIG_CHUNK,m_parameters->getRank());

@@ -213,7 +213,7 @@ void JoinerWorker::work(){
 				PathHandle hitName=m_hitNames[m_hitIterator];
 				Rank destination=getRankFromPathUniqueId(hitName);
 
-				message[0]=hitName;
+				message[0]=hitName.getValue();
 
 				Message aMessage(message,1,destination,
 					RAY_MPI_TAG_GET_PATH_LENGTH,m_parameters->getRank());
@@ -553,7 +553,7 @@ Also, don't do it if the matching ratios are below 10%.
 
 				int destination=getRankFromPathUniqueId(hitName);
 
-				message[0]=hitName;
+				message[0]=hitName.getValue();
 				message[1]=m_hitPosition;
 
 				int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_GET_PATH_VERTEX);

@@ -18,6 +18,7 @@
 	see <http://www.gnu.org/licenses/>
 */
 
+#include <code/SeedingData/PathHandle.h>
 #include <code/Mock/constants.h>
 
 #include <RayPlatform/core/types.h>

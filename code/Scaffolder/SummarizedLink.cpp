@@ -59,9 +59,9 @@ int SummarizedLink::getCount(){
 }
 
 void SummarizedLink::pack(MessageUnit*buffer,int*position){
-	buffer[(*position)++]=getLeftContig();
+	buffer[(*position)++]=getLeftContig().getValue();
 	buffer[(*position)++]=getLeftStrand();
-	buffer[(*position)++]=getRightContig();
+	buffer[(*position)++]=getRightContig().getValue();
 	buffer[(*position)++]=getRightStrand();
 	buffer[(*position)++]=getCount();
 	buffer[(*position)++]=getAverage();
