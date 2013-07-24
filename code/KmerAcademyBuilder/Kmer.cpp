@@ -25,6 +25,8 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
+#include <ostream>
 using namespace std;
 
 #include <string.h>
@@ -308,6 +310,10 @@ void Kmer::convertToString(int kmerLength,bool color, char*buffer)const{
 	for(int p=0;p<kmerLength;p++){
 		int bitPosition=2*p;
 		int chunkId=p/32;
+
+#ifdef CONFIG_ASSERT
+		assert(chunkId < KMER_U64_ARRAY_SIZE);
+#endif
 		int bitPositionInChunk=(bitPosition%64);
 		uint64_t chunk=getU64(chunkId);
 		uint64_t j=(chunk<<(62-bitPositionInChunk))>>62; // clear the bits.
@@ -370,14 +376,17 @@ void Kmer::read(istream*f){
 }
 
 void Kmer::setU64(int i,uint64_t b){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i<KMER_U64_ARRAY_SIZE);
 	#endif
 	m_u64[i]=b;
 }
 
 uint64_t Kmer::getU64(int i)const{
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
+	if(!(i < KMER_U64_ARRAY_SIZE)) {
+		cout << "Error i " << i << " KMER_U64_ARRAY_SIZE " << i << endl;
+	}
 	assert(i<KMER_U64_ARRAY_SIZE);
 	#endif
 	return m_u64[i];
@@ -420,7 +429,7 @@ double Kmer::getGuanineCytosineProportion(int kmerLength,bool coloredMode)const{
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(kmerLength!=0);
 	#endif
 

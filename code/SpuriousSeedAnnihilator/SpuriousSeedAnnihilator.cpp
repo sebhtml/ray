@@ -433,15 +433,17 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 				m_activeQueries++;
 			}
 
+#if 0
 			if(m_seedPosition % 1000 == 0) {
 				cout << "Rank "<<m_rank << " registered " << m_seedIndex << "/" <<m_seeds->size();
 				cout<< " "<< m_seedPosition << "/" << (*m_seeds)[m_seedIndex].size() << endl;
 			}
+#endif
 
 			m_seedPosition++;
 		}else{
 
-			if(m_seedIndex % 100 == 0)
+			if(m_seedIndex % 1000 == 0)
 				cout << "Rank "<<m_rank << " registered " << m_seedIndex << "/" <<m_seeds->size() << endl;
 
 			m_seedIndex++;

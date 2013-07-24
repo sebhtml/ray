@@ -20,6 +20,8 @@
 
 #include "PathHandle.h"
 
+#include <string.h>
+
 void PathHandle::operator=(const PathHandle &b) {
 	m_value = b.m_value;
 }
@@ -107,4 +109,15 @@ uint64_t & PathHandle::getValue() {
 	return m_value;
 }
 
+int PathHandle::load(const uint8_t * buffer) {
+	int size = sizeof(uint64_t);
+	memcpy(&m_value, buffer, size);
+	return size;
+}
 
+int PathHandle::dump(uint8_t * buffer) const {
+
+	int size = sizeof(uint64_t);
+	memcpy(buffer, &m_value, size);
+	return size;
+}

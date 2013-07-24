@@ -22,15 +22,17 @@
 #ifndef PathHandleHeader
 #define PathHandleHeader
 
-#include <stdint.h>
+#include <code/Mock/CarriageableItem.h>
 
 #include <ostream>
 using namespace std;
 
+#include <stdint.h>
+
 /** 
  * the identifier for a path in the de Bruijn graph 
  */
-class PathHandle {
+class PathHandle : public CarriageableItem {
 
 	uint64_t m_value;
 
@@ -58,6 +60,10 @@ public:
 
 	const uint64_t & getValue() const;
 	uint64_t & getValue();
+
+	int load(const uint8_t * buffer);
+	int dump(uint8_t * buffer) const;
+
 };
 
 #endif

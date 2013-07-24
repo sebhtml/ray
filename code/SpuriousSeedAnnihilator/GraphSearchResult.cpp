@@ -64,29 +64,30 @@ void GraphSearchResult::print() {
 
 int GraphSearchResult::load(const uint8_t * buffer) {
 
+	int position = 0;
+
 	uint32_t paths = 0;
 
 	int size = sizeof(uint32_t);
 
-	int position = 0;
-
 	memcpy(&paths, buffer + position, size);
 	position += size;
 
+	//cout << "[DEBUG] GraphSearchResult::load paths " << paths << endl;
+
 	for(int i = 0 ; i < (int)paths; i++) {
-		size = sizeof(PathHandle);
 		PathHandle entry;
-		memcpy(&entry, buffer + position, size);
+		position += entry.load(buffer + position);
 		m_pathHandles.push_back(entry);
-		position += size;
 	}
 
 	for(int i = 0 ; i < (int)paths; i++) {
 		size = sizeof(bool);
 		bool strand;
 		memcpy(&strand, buffer + position, size);
-		m_pathOrientations.push_back(strand);
 		position += size;
+
+		m_pathOrientations.push_back(strand);
 	}
 
 	int computedPaths = paths - 1;
@@ -107,13 +108,13 @@ int GraphSearchResult::dump(uint8_t * buffer) const {
 	uint32_t paths = m_pathHandles.size();
 	int size = sizeof(uint32_t);
 
+	//cout << "[DEBUG] GraphSearchResult::dump paths " << paths << endl;
+
 	memcpy(buffer + position, &paths, size);
 	position += size;
 
 	for(int i = 0 ; i < (int)paths ; i++) {
-		size = sizeof(PathHandle);
-		memcpy(buffer + position, &(m_pathHandles[i]), size);
-		position += size;
+		position += m_pathHandles[i].dump(buffer + position);
 	}
 
 	for(int i = 0 ; i < (int)paths ; i ++) {
@@ -126,8 +127,7 @@ int GraphSearchResult::dump(uint8_t * buffer) const {
 	int computedPaths = paths - 1;
 
 	for(int i = 0 ; i < computedPaths ; i ++) {
-		size = m_computedPaths[i].dump(buffer + position);
-		position += size;
+		position += m_computedPaths[i].dump(buffer + position);
 	}
 
 	return position;

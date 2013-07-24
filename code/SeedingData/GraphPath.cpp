@@ -97,7 +97,7 @@ bool GraphPath::canBeAdded(const Kmer*object)const{
 
 void GraphPath::push_back(const Kmer*a){
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_kmerLength!=0);
 #endif
 
@@ -160,7 +160,7 @@ void GraphPath::computePeakCoverage(){
 
 	int selectedAlgorithm=ALGORITHM_STAGGERED_MEAN;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if((int)m_coverageValues.size()!=size())
 		cout<<"Error: there are "<<size()<<" objects, but only "<<m_coverageValues.size()<<" coverage values"<<endl;
 
@@ -182,10 +182,10 @@ void GraphPath::computePeakCoverage(){
 
 CoverageDepth GraphPath::getPeakCoverage()const{
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_hasPeakCoverage == true);
 	#endif
-	
+
 	return m_peakCoverage;
 }
 
@@ -248,7 +248,7 @@ void GraphPath::computePeakCoverageUsingMean(){
 		count+=frequency;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_coverageValues.size()>=1);
 	assert(count!=0);
 	assert(count>0);
@@ -316,7 +316,7 @@ void GraphPath::computePeakCoverageUsingStaggeredMean(){
 			count+=frequency;
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_coverageValues.size()>=1);
 		assert(count!=0);
 		assert(count>0);
@@ -356,7 +356,7 @@ void GraphPath::computePeakCoverageUsingStaggeredMean(){
 void GraphPath::setKmerLength(int kmerLength){
 	m_kmerLength=kmerLength;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(kmerLength!=0);
 	assert(m_kmerLength!=0);
 	#endif
@@ -366,7 +366,7 @@ void GraphPath::setKmerLength(int kmerLength){
 
 void GraphPath::writeObjectInBlock(const Kmer*a){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_kmerLength!=0);
 	#endif
 
@@ -378,18 +378,18 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 #endif
 
 	if(m_size==0){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_blocks.size()==0);
 		#endif
 
 		addBlock();
-		string sequence=a->idToWord(m_kmerLength,false);
+		string sequence=a->idToWord(m_kmerLength, false);
 
 		for(int blockPosition=0;blockPosition<m_kmerLength;blockPosition++){
-			writeSymbolInBlock(blockPosition,sequence[blockPosition]);
+			writeSymbolInBlock(blockPosition, sequence[blockPosition]);
 		}
 	}else{
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_size>=1);
 		assert(a!=NULL);
 		assert(m_kmerLength!=0);
@@ -398,14 +398,14 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 		char lastSymbol=a->getLastSymbol(m_kmerLength,false);
 		int usedSymbols=size()+m_kmerLength-1;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(usedSymbols>=m_kmerLength);
 		assert(m_blocks.size()>=1);
 		#endif
 
 		int allocatedSymbols=m_blocks.size()*getBlockSize();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(allocatedSymbols>=getBlockSize());
 		#endif
 
@@ -414,14 +414,14 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 			allocatedSymbols=m_blocks.size()*getBlockSize();
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(usedSymbols+1<=allocatedSymbols);
 		assert(allocatedSymbols>=getBlockSize());
 		#endif
 
 		int position=usedSymbols;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(position<allocatedSymbols);
 		#endif
 
@@ -430,7 +430,7 @@ void GraphPath::writeObjectInBlock(const Kmer*a){
 
 	m_size++;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	Kmer addedObject;
 	at(size()-1,&addedObject);
 
@@ -461,7 +461,7 @@ int GraphPath::getBlockSize()const{
 
 void GraphPath::readObjectInBlock(int position,Kmer*object)const{
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(position<size());
 	assert(position>=0);
 	assert(m_kmerLength!=0);
@@ -519,7 +519,7 @@ char GraphPath::readSymbolInBlock(int position)const{
 
 	uint8_t code=oldChunkValue;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(code==RAY_NUCLEOTIDE_A||code==RAY_NUCLEOTIDE_T||code==RAY_NUCLEOTIDE_C||code==RAY_NUCLEOTIDE_G);
 #endif
 
@@ -549,7 +549,7 @@ void GraphPath::writeSymbolInBlock(int position,char symbol){
 
 	m_blocks[blockNumber].m_content[positionInBlock]=oldChunkValue;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	if(readSymbolInBlock(position)!=symbol){
 		cout<<"Expected "<<symbol<<" Actual "<<readSymbolInBlock(position)<<endl;
 	}
@@ -574,11 +574,26 @@ void GraphPath::addBlock(){
 int GraphPath::load(const uint8_t * buffer) {
 	int position = 0;
 
-	for(int i = 0 ; i < size() ; i ++) {
+	uint32_t elements = 0;
+	int operationSize = sizeof(uint32_t);
+
+	memcpy(&elements, buffer + position, operationSize);
+	position += operationSize;
+
+	uint32_t kmerLength = 0;
+	memcpy(&kmerLength, buffer + position, operationSize);
+	position += operationSize;
+
+	setKmerLength(kmerLength);
+	//cout << "[DEBUG] GraphPath::load kmerLength " << kmerLength << endl;
+
+	for(int i = 0 ; i < (int)elements ; i ++) {
 		Kmer value;
-		position += value.load(buffer);
+		position += value.load(buffer + position);
 		push_back(&value);
 	}
+
+	//cout << "DEBUG] loaded " << size() << " items for GraphPath" << endl;
 
 	return position;
 }
@@ -586,11 +601,32 @@ int GraphPath::load(const uint8_t * buffer) {
 int GraphPath::dump(uint8_t * buffer) const {
 	int position = 0;
 
-	for(int i = 0 ; i < size() ; i ++) {
+	uint32_t elements = size();
+
+	int operationSize = sizeof(uint32_t);
+	memcpy(buffer + position, &elements, operationSize);
+	position += operationSize;
+
+	uint32_t kmerLength = getKmerLength();
+
+#ifdef CONFIG_ASSERT
+	assert(kmerLength > 0);
+#endif
+
+	memcpy(buffer + position, &kmerLength, operationSize);
+	position += operationSize;
+
+	//cout << "[DEBUG] GraphPath::dump kmerLength " << kmerLength << endl;
+
+	for(int i = 0 ; i < (int)elements ; i ++) {
 		Kmer value;
 		at(i, &value);
-		position += value.dump(buffer);
+		position += value.dump(buffer + position);
 	}
 
 	return position;
+}
+
+int GraphPath::getKmerLength() const {
+	return m_kmerLength;
 }

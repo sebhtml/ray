@@ -129,6 +129,8 @@ public:
 
 	int load(const uint8_t * buffer);
 	int dump(uint8_t * buffer) const;
+
+	int getKmerLength() const;
 };
 
 #endif
