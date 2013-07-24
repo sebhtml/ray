@@ -26,6 +26,12 @@
 /**
  * Interface to carry an item across a media.
  *
+ *
+ * TODO: add a dependency on the message size.
+ * TODO add the concept of part numbers
+ *
+ * \author Sébastien Boisvert
+ *
  */
 class CarriageableItem {
 

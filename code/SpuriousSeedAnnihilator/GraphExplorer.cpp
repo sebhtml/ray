@@ -20,6 +20,8 @@
 
 #include "GraphExplorer.h"
 
+//#define DEBUG_EXPLORATION_123
+
 void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 	VirtualCommunicator * virtualCommunicator,
 	RingAllocator * outboxAllocator,
@@ -88,8 +90,24 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 
 	m_vertexDepths.clear();
 	m_parents.clear();
+	m_searchResults.clear();
 
 	//cout << "[DEBUG] explorer is ready" << endl;
+
+	m_debug = false;
+
+#ifdef DEBUG_EXPLORATION_123
+	bool tryToDebug = true;
+
+	/**
+	 * DEBUG URI http://genome.ulaval.ca:10241/client/?map=3&section=0&region=254&location=1734&depth=10
+	 */
+	if(tryToDebug && start->idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "GGAATCATGAGAAGTCAGCCG") {
+		m_debug = true;
+	}
+#endif
+
+
 }
 
 // TODO: use the coverage value instead of depth
@@ -257,20 +275,22 @@ bool GraphExplorer::work() {
 
 	if(m_done) {
 
-#ifdef INTERNET_EXPLORER_DEBUG_PATHS
-		cout << "[DEBUG] completed, visited " << m_visitedVertices;
-		cout << " path " << m_seedName;
-		cout << " lengthInKmers " << m_seed->size();
-		cout << " direction ";
+#ifdef DEBUG_EXPLORATION_123
+		if(m_debug) {
+			cout << "[DEBUG] completed, visited " << m_visitedVertices;
+			cout << " path " << m_seedName;
+			cout << " lengthInKmers " << m_seed->size();
+			cout << " direction ";
 
 
-		if(m_direction == EXPLORER_LEFT)
-			cout << "EXPLORER_LEFT";
-		else
-			cout << "EXPLORER_RIGHT";
+			if(m_direction == EXPLORER_LEFT)
+				cout << "EXPLORER_LEFT";
+			else
+				cout << "EXPLORER_RIGHT";
 
-		cout << " paths " << m_searchResults.size();
-		cout << endl;
+			cout << " search results: " << m_searchResults.size();
+			cout << endl;
+		}
 #endif
 
 		return m_done;
@@ -302,6 +322,23 @@ bool GraphExplorer::work() {
 		//cout << "[DEBUG] have annotations" << endl;
 
 	} else if(m_haveAttributes && m_haveAnnotations && m_haveAnnotationsReverse) {
+
+#ifdef DEBUG_EXPLORATION_123
+		if(m_debug) {
+			cout << "[DEBUG] 8d97f6e851 vertex " << object.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
+			cout << " depth " << m_attributeFetcher.getDepth() << " children [ ";
+
+			for(int i = 0 ; i < (int) m_attributeFetcher.getChildren()->size() ; ++i) {
+
+				cout << " " << m_attributeFetcher.getChildren()->at(i).idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
+			}
+			cout << " ]";
+
+			cout << " forward annotations: " << m_annotationFetcher.getDirections()->size();
+			cout << " reverse annotations: " << m_annotationFetcherReverse.getDirections()->size();
+			cout << endl;
+		}
+#endif
 
 		int currentDepth = m_depths.top();
 

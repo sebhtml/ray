@@ -161,6 +161,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_SPREAD_DATA;
 	int MODE_STOP_THIS_SITUATION;
 	int MODE_CHECK_RESULTS;
+	int MODE_SHARE_WITH_ARBITER;
 	int m_mode;
 	bool m_initializedProcessing;
 	int m_entryIndex;
@@ -231,6 +232,11 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	SpuriousSeedAnnihilator * getThis();
 	SpuriousSeedAnnihilator * getThat();
 
+	vector<int> m_indexesToShareWithArbiter;
+
+	Rank getArbiter();
+	bool isPrimeNumber(int number);
+
 public:
 
 	SpuriousSeedAnnihilator();
@@ -269,6 +275,7 @@ public:
 	void call_RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message);
+
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

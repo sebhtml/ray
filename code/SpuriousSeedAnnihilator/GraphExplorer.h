@@ -44,6 +44,7 @@ using namespace std;
  */
 class GraphExplorer {
 
+	bool m_debug;
 	vector<GraphSearchResult> m_searchResults;
 
 	stack<Kmer> m_verticesToVisit;

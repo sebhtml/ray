@@ -323,6 +323,48 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		}
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
+		cout << "[DEBUG] m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
+		cout << "[DEBUG] scanning for duplicates" << endl;
+
+		map<PathHandle, map<PathHandle, vector<int> > > counts;
+
+		for(int i = 0 ; i < (int)m_mergingTechnology.getResults().size() ; i++) {
+			GraphSearchResult & result = m_mergingTechnology.getResults()[i];
+
+			PathHandle handle1 = result.getPathHandles()[0];
+			PathHandle handle2 = result.getPathHandles()[1];
+
+			if(handle2 < handle1) {
+				PathHandle store = handle1;
+				handle1 = handle2;
+				handle2 = store;
+			}
+
+			counts[handle1][handle2].push_back(i);
+		}
+
+		vector<GraphSearchResult> resultsToKeep;
+		for(map<PathHandle, map<PathHandle, vector<int> > >::iterator i = counts.begin();
+				i != counts.end(); ++i) {
+
+			for(map<PathHandle, vector<int> >::iterator j = i->second.begin();
+					j != i->second.end() ; j++) {
+
+				if(j->second.size() == 2) {
+					cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
+					cout << " and " << j->first << endl;
+
+					m_indexesToShareWithArbiter.push_back(j->second[0]);
+					m_indexesToShareWithArbiter.push_back(j->second[1]);
+				}
+			}
+		}
+
+		m_mode = MODE_SHARE_WITH_ARBITER;
+
+	} else if(m_mode == MODE_SHARE_WITH_ARBITER) {
+
+		// synchronize indexes in m_indexesToShareWithArbiter
 		m_mode = MODE_STOP_THIS_SITUATION;
 
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
@@ -662,6 +704,26 @@ void SpuriousSeedAnnihilator::writeCheckpointForSeeds(){
                 flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
 		f.close();
 	}
+}
+
+bool SpuriousSeedAnnihilator::isPrimeNumber(int number) {
+
+	for(int i = 2 ; i < number ; ++i) {
+
+		if(number % i == 0)
+			return false;
+	}
+
+	return true;
+}
+
+Rank SpuriousSeedAnnihilator::getArbiter() {
+	int rank = m_parameters->getSize();
+
+	while(rank > 0 && !isPrimeNumber(rank))
+		rank--;
+
+	return rank;
 }
 
 void SpuriousSeedAnnihilator::writeSeedStatistics(){
