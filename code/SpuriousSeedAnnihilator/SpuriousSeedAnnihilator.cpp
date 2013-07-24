@@ -256,9 +256,12 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		m_entryIndex = 0;
 
-		MODE_SPREAD_DATA = 99;
-		MODE_CHECK_RESULTS = 2;
-		MODE_STOP_THIS_SITUATION = 109;
+		int value = 0;
+		MODE_SPREAD_DATA = value++;
+		MODE_CHECK_RESULTS = value++;
+		MODE_STOP_THIS_SITUATION = value++;
+		MODE_SHARE_WITH_ARBITER = value ++;
+		MODE_WAIT_FOR_ARBITER = value++;
 
 		m_mode = MODE_SPREAD_DATA;
 		m_toDistribute = m_mergingTechnology.getResults().size();
@@ -266,8 +269,36 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		m_messageWasSent = false;
 
 		m_initializedProcessing = true;
+		m_synced = 0;
+		m_mustAdviseRanks = false;
 
-	} else if (m_mode == MODE_SPREAD_DATA) {
+		return;
+	}
+
+	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER)) {
+		m_synced ++;
+
+		if(m_synced == m_core->getSize()) {
+			cout << "[DEBUG] arbiter will advise" << endl;
+			m_mustAdviseRanks = true;
+			m_rankToAdvise = 0;
+		}
+	}
+
+	if(m_mustAdviseRanks) {
+		if(m_rankToAdvise < m_core->getSize()) {
+
+			this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, m_rankToAdvise, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
+			m_rankToAdvise ++;
+		} else {
+			m_synced = 0;
+			m_mustAdviseRanks = false;
+
+			cout << "[DEBUG] everybody received the arbiter advise" << endl;
+		}
+	}
+
+	if (m_mode == MODE_SPREAD_DATA) {
 
 		if(m_entryIndex < (int) m_toDistribute) {
 
@@ -319,8 +350,16 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 				m_messageWasSent = false;
 			}
 		} else {
-			m_mode = MODE_CHECK_RESULTS;
+			Rank arbiter = getArbiter();
+
+			this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+			m_mode = MODE_WAIT_FOR_ARBITER;
 		}
+	} else if(m_mode == MODE_WAIT_FOR_ARBITER) {
+
+		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL))
+			m_mode = MODE_CHECK_RESULTS;
+
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
 		cout << "[DEBUG] m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
@@ -760,6 +799,9 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
+	RAY_MESSAGE_TAG_ARBITER_SIGNAL = m_core->allocateMessageTagHandle(m_plugin);
+	RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER = m_core->allocateMessageTagHandle(m_plugin);
+
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_CLEAN_SEEDS);
@@ -888,4 +930,5 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_mergedSeeds = false;
 
 	m_initializedProcessing = false;
+
 }

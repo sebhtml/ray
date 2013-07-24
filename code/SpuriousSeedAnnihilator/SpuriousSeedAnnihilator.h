@@ -162,6 +162,11 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_STOP_THIS_SITUATION;
 	int MODE_CHECK_RESULTS;
 	int MODE_SHARE_WITH_ARBITER;
+	int MODE_WAIT_FOR_ARBITER;
+	Rank m_rankToAdvise;
+
+	bool m_mustAdviseRanks;
+	int m_synced;
 	int m_mode;
 	bool m_initializedProcessing;
 	int m_entryIndex;
@@ -192,6 +197,9 @@ class SpuriousSeedAnnihilator: public CorePlugin {
  */
 	SeedFilteringWorkflow m_workflow;
 	SeedMergingWorkflow m_mergingTechnology;
+
+	MessageTag RAY_MESSAGE_TAG_ARBITER_SIGNAL;
+	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
 
 	GridTable*m_subgraph;
 	MyAllocator*m_directionsAllocator;
