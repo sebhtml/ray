@@ -1,5 +1,16 @@
-The distributed storage engine used by Ray is a distributed sparse hash table that
-uses these features:
+3 types of objects are distributed:
+
+- input sequence reads, the key is the ReadHandle. A read handle is a global
+  integer
+- graph vertices, the key is the DNA sequence (2-bit). hashing is used to find
+  the owner
+- paths. the key is a PathHandle. a path handle contains a rank and a local
+  identifier
+
+
+
+The distributed storage engine used by Ray is a distributed sparse hash table
+(from RayPlatform) that uses these features:
 
 - incremental resizing
 - double hashing
