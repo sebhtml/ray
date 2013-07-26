@@ -454,11 +454,12 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		m_seedPosition=0;
 		m_initializedSeedRegistration = true;
 		m_registrationIterations++;
-		return;
-	}
 
-	if(!m_debugCode && m_parameters->hasCheckpoint("Seeds")){
-		m_hasCheckpointFilesForSeeds = true;
+		if(!m_debugCode && m_parameters->hasCheckpoint("Seeds")){
+			m_hasCheckpointFilesForSeeds = true;
+		}
+
+		return;
 	}
 
 	// iteration 1: for the seed elimination (skipped for small k)
