@@ -20,7 +20,7 @@
 
 #include "GraphExplorer.h"
 
-//#define DEBUG_EXPLORATION_123
+#define DEBUG_EXPLORATION_123
 
 void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 	VirtualCommunicator * virtualCommunicator,
@@ -102,8 +102,12 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 	/**
 	 * DEBUG URI http://genome.ulaval.ca:10241/client/?map=3&section=0&region=254&location=1734&depth=10
 	 */
-	if(tryToDebug && start->idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == "GGAATCATGAGAAGTCAGCCG") {
+
+	//const char * key1 = "GGAATCATGAGAAGTCAGCCG";
+	const char * key1 = "AAATCCCTCTTTTTACAATTG";
+	if(tryToDebug && start->idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == key1) {
 		m_debug = true;
+		cout << "[DEBUG] 8d97f6e851 BEGIN" << endl;
 	}
 #endif
 
@@ -213,7 +217,12 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 		if(position != 0)
 			pathStrand = true;
 
-		if(pathName != m_seedName) {
+		// the self path will always be found at depth 0
+		// Streptococcus pneumoniae has a lot of these loops where a seeds touch itself via
+		// a short 2X-coverage region.
+		// This was seen in Ray Cloud Browser.
+
+		if(currentDepth != 0) {
 #ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
 			cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
