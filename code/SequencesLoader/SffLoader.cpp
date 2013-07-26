@@ -33,7 +33,7 @@
 #include <stdlib.h>
 using namespace std;
 
-/** TODO: this code will fail on big-endian systems 
+/** TODO: this code will fail on big-endian systems
  *
  *  SFF files are stored as big-endian
  *
@@ -150,10 +150,18 @@ int SffLoader::openSff(string file){
 	return EXIT_SUCCESS;
 }
 
-// see manual http://sequence.otago.ac.nz/download/GS_FLX_Software_Manual.pdf,
-// page 445-448
-// or 
-// http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
+
+/**
+ * SFF specification:
+ *
+ * \see manual http://sequence.otago.ac.nz/download/GS_FLX_Software_Manual.pdf, page 445-448
+ *
+ * \see http://blog.malde.org/index.php/2008/11/14/454-sequencing-and-parsing-the-sff-binary-format/
+ *
+ * \see Section "13.3.8 Standard Flowgram Files (.sff)"
+ * Genome Sequencer, Data Analysis Software Manual, Software Version 2.0.00, October 2008, page 528
+ * http://sequence.otago.ac.nz/download/GS_FLX_Software_Manual.pdf
+ */
 void SffLoader::load(int maxToLoad,ArrayOfReads*reads,MyAllocator*seqMyAllocator){
 
 	int loadedSequences=0;

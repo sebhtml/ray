@@ -36,7 +36,7 @@ using namespace std;
 
 /**
  * This class allows one to use SFF file directly.
- * see http://454.com
+ * \see http://454.com
  * \author Sébastien Boisvert
  */
 class SffLoader: public LoaderInterface{
