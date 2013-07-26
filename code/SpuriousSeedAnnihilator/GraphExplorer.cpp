@@ -87,6 +87,7 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 	m_seedName = seedName;
 	m_visitedVertices = 0;
 	m_maximumVisitedDepth = 0;
+	m_searchDepthForFirstResult = -1;
 
 	m_vertexDepths.clear();
 	m_parents.clear();
@@ -104,7 +105,8 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 	 */
 
 	//const char * key1 = "GGAATCATGAGAAGTCAGCCG";
-	const char * key1 = "AAATCCCTCTTTTTACAATTG";
+	//const char * key1 = "AAATCCCTCTTTTTACAATTG";
+	const char * key1 = "TTTCGTGAAAAAAGTTAACAA";
 	if(tryToDebug && start->idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == key1) {
 		m_debug = true;
 		cout << "[DEBUG] 8d97f6e851 BEGIN" << endl;
@@ -286,8 +288,10 @@ bool GraphExplorer::work() {
 
 #ifdef DEBUG_EXPLORATION_123
 		if(m_debug) {
-			cout << "[DEBUG] completed, visited " << m_visitedVertices;
+			cout << "[DEBUG] 8d97f6e851 completed, m_visitedVertices " << m_visitedVertices;
 			cout << " path " << m_seedName;
+			cout << " m_searchDepthForFirstResult " << m_searchDepthForFirstResult;
+			cout << " m_maximumVisitedDepth " << m_maximumVisitedDepth;
 			cout << " lengthInKmers " << m_seed->size();
 			cout << " direction ";
 
@@ -365,6 +369,9 @@ bool GraphExplorer::work() {
 		if(processAnnotations(m_annotationFetcherReverse, currentDepth, object))
 			foundSomething = true;
 
+		if(foundSomething && m_searchDepthForFirstResult < 0)
+			m_searchDepthForFirstResult = currentDepth;
+
 #ifdef ASSERT
 		assert(!m_depths.empty());
 #endif
@@ -418,4 +425,21 @@ bool GraphExplorer::work() {
 
 vector<GraphSearchResult> & GraphExplorer::getSearchResults() {
 	return m_searchResults;
+}
+
+/**
+ * \see http://stackoverflow.com/questions/13639535/what-are-the-naming-conventions-of-functions-that-return-boolean
+ */
+bool GraphExplorer::isValid() const {
+
+	if(m_searchResults.size() != 1)
+		return false;
+
+	if(m_visitedVertices >= m_maximumVisitedVertices)
+		return false;
+
+	if(m_maximumVisitedDepth >= m_maximumDepth)
+		return false;
+
+	return true;
 }

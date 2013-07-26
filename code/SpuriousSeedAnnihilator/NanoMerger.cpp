@@ -58,7 +58,7 @@ void NanoMerger::work(){
 		cout << "[DEBUG] path " << m_seedName << " EXPLORER_LEFT " << m_explorer.getSearchResults().size() << " paths found" << endl;
 #endif
 
-		if(m_explorer.getSearchResults().size() == 1) {
+		if(m_explorer.isValid() && m_explorer.getSearchResults().size() == 1) {
 
 			m_results.push_back(m_explorer.getSearchResults()[0]);
 #ifdef DEBUG_EXPLORER_PATHS
@@ -87,7 +87,7 @@ void NanoMerger::work(){
 		cout << "[DEBUG] path " << m_seedName << " EXPLORER_RIGHT " << m_explorer.getSearchResults().size() << " paths found" << endl;
 #endif
 
-		if(m_explorer.getSearchResults().size() == 1) {
+		if(m_explorer.isValid() && m_explorer.getSearchResults().size() == 1) {
 
 			m_results.push_back(m_explorer.getSearchResults()[0]);
 

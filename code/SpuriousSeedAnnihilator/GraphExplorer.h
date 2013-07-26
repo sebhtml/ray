@@ -44,6 +44,7 @@ using namespace std;
  */
 class GraphExplorer {
 
+	int m_searchDepthForFirstResult;
 	bool m_debug;
 	vector<GraphSearchResult> m_searchResults;
 
@@ -102,6 +103,8 @@ public:
 	bool work();
 
 	vector<GraphSearchResult> & getSearchResults();
+
+	bool isValid() const ;
 };
 
 #endif /* GraphExplorer_header */
