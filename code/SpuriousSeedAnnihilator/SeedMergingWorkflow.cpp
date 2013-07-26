@@ -82,12 +82,39 @@ void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 
 	vector<GraphSearchResult> & results = theWorker->getResults();
 
+	bool runTransaction = true;
+
+	if(results.size() == 2) {
+
+		// make sure this is not something like
+		//
+		// A001 --------B
+		// |            /
+		// A100 --------
+		//
+		// with repeats, both ends of A could link to B...
+
+		set<PathHandle> observations;
+
+		for(int i = 0 ; i < (int) results.size() ; i++) {
+			GraphSearchResult & result = results[i];
+
+			observations.insert(result.getPathHandles()[0]);
+			observations.insert(result.getPathHandles()[1]);
+		}
+
+		if(observations.size() != 3)
+			runTransaction = false;
+	}
+
 	// we must send the results now !!!A
 	// we will send at most 2 messages...
 	// here we don't send messages right away because these units are
 	// not regular.
 
 	for(int i = 0 ; i < (int) results.size() ; i ++) {
+		if(!runTransaction)
+			break;
 		m_searchResults.push_back(results[i]);
 	}
 
@@ -96,7 +123,6 @@ void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 	}
 
 	m_finished++;
-
 }
 
 /** destroy a worker */

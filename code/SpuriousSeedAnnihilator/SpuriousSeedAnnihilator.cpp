@@ -368,6 +368,12 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		map<PathHandle, map<PathHandle, vector<int> > > counts;
 
 		for(int i = 0 ; i < (int)m_mergingTechnology.getResults().size() ; i++) {
+
+			// there were no local hits...
+			// so let it fail
+			if(m_toDistribute == 0)
+				break;
+
 			GraphSearchResult & result = m_mergingTechnology.getResults()[i];
 
 			PathHandle handle1 = result.getPathHandles()[0];

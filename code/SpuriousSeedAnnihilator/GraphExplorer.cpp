@@ -106,7 +106,9 @@ void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int 
 
 	//const char * key1 = "GGAATCATGAGAAGTCAGCCG";
 	//const char * key1 = "AAATCCCTCTTTTTACAATTG";
-	const char * key1 = "TTTCGTGAAAAAAGTTAACAA";
+	//const char * key1 = "TTTCGTGAAAAAAGTTAACAA";
+	const char * key1 = "ATAATAAGAGTTATCATCTCC"; // \see http://genome.ulaval.ca:10241/client/?map=3&section=0&region=480&location=0&depth=10&zoom=0.8088851319448179
+
 	if(tryToDebug && start->idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode()) == key1) {
 		m_debug = true;
 		cout << "[DEBUG] 8d97f6e851 BEGIN" << endl;
