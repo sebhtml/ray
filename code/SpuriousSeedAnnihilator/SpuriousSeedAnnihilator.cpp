@@ -18,6 +18,7 @@
  *  see <http://www.gnu.org/licenses/>
  */
 
+
 #include "SpuriousSeedAnnihilator.h"
 
 #include <code/VerticesExtractor/GridTableIterator.h>
@@ -260,7 +261,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		MODE_SPREAD_DATA = value++;
 		MODE_CHECK_RESULTS = value++;
 		MODE_STOP_THIS_SITUATION = value++;
-		MODE_SHARE_WITH_ARBITER = value ++;
+		MODE_SHARE_WITH_LINKED_ACTORS = value ++;
 		MODE_WAIT_FOR_ARBITER = value++;
 
 		m_mode = MODE_SPREAD_DATA;
@@ -388,7 +389,6 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			counts[handle1][handle2].push_back(i);
 		}
 
-		vector<GraphSearchResult> resultsToKeep;
 		for(map<PathHandle, map<PathHandle, vector<int> > >::iterator i = counts.begin();
 				i != counts.end(); ++i) {
 
@@ -399,18 +399,179 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 					cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
 					cout << " and " << j->first << endl;
 
-					m_indexesToShareWithArbiter.push_back(j->second[0]);
-					m_indexesToShareWithArbiter.push_back(j->second[1]);
+					//m_indexesToShareWithArbiter.push_back(j->second[0]);
+					//m_indexesToShareWithArbiter.push_back(j->second[1]);
+
+					int index = j->second[0];
+					GraphSearchResult & gossip = m_mergingTechnology.getResults()[index];
+					m_gossips.push_back(gossip);
+					m_gossipIndex.insert(gossip.toString());
+
+					// at least one rank is the current rank
+					Rank rank1 = getRankFromPathUniqueId(gossip.getPathHandles()[0]);
+					Rank rank2 = getRankFromPathUniqueId(gossip.getPathHandles()[1]);
+
+					if(rank1 != m_rank)
+						m_linkedActorsForGossip.insert(rank1);
+					if(rank2 != m_rank)
+						m_linkedActorsForGossip.insert(rank2);
 				}
+			}
+
+		}
+
+		m_mergingTechnology.getResults().clear();
+
+		m_hasNewGossips = true;
+		m_lastGossipingEventTime = time(NULL);
+
+		cout << "[DEBUG] gossiping begins..." << endl;
+
+		m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
+
+	} else if(m_mode == MODE_SHARE_WITH_LINKED_ACTORS) {
+
+		// find a information that was not shared with a given actor
+		// this is a good-enough implementation
+		// this is like a gossip algorithm, but here the pairs are not randomly
+		// selected, they are obtained from the relationships computed
+		// in the de Bruijn graph.
+
+		m_mode = MODE_STOP_THIS_SITUATION; // remove this
+		return; // remove this
+
+		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
+			Message * message = m_inbox->at(0);
+
+			GraphSearchResult gossip;
+			int position = 0;
+			uint8_t * buffer = (uint8_t*) message->getBuffer();
+
+			int bytes = gossip.load(buffer + position);
+			position += bytes;
+
+			// first check if the gossip is already known.
+			// this implementation is good enough, but it could
+			// use an index.
+
+			string key = gossip.toString();
+
+			bool found = m_gossipIndex.count(key) > 0;
+
+			if(found)
+				return;
+
+			// yay we got new gossip to share !!!
+			m_gossips.push_back(gossip);
+			m_gossipIndex.insert(key);
+			m_lastGossipingEventTime = time(NULL);
+
+			// we could also update the m_gossipStatus
+			// because we know that message->getSource() has this gossip
+			// already.
+			// But anyway, it does not change much to the algorithm...
+			// update: source has gossip already.
+			//
+			// also important, gossipIndex values are local and not global to
+			// all ranks
+			//
+
+			Rank actor = message->getSource();
+			int gossipIndex = m_gossips.size() - 1;
+
+#ifdef CONFIG_ASSERT
+			assert(m_linkedActorsForGossip.count(actor) > 0);
+			assert(gossipIndex < (int)m_gossips.size());
+			assert(actor >= 0);
+			assert(actor < m_core->getSize());
+#endif
+
+			m_gossipStatus[gossipIndex].insert(actor);
+
+			// we have new gossip, so this is important to store.
+			m_hasNewGossips = true;
+
+			cout << "[DEBUG] Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+			return;
+		}
+
+		/**
+		 *
+		 * We wait a specific amount of time before stopping the
+		 * gossip process.
+		 *
+		 * This code will fail if the process receives a SIGSTOP
+		 *
+		 * TODO  or if the process is not scheduled during too many seconds.
+		 */
+
+		if(!m_hasNewGossips) {
+
+			// check delay and latency
+			time_t currentTime = time(NULL);
+
+			int minimumWaitTime = 10; // seconds
+			int distance = currentTime - m_lastGossipingEventTime;
+
+			if(distance < minimumWaitTime)
+				return;
+
+			cout << "[DEBUG] Rank " << m_rank << " gossips have spreaded." << endl;
+
+			m_gossipStatus.clear();
+			m_linkedActorsForGossip.clear();
+
+			// synchronize indexes in m_indexesToShareWithArbiter
+			m_mode = MODE_STOP_THIS_SITUATION;
+			return;
+		}
+
+		for(int gossipIndex = 0 ; gossipIndex < (int)m_gossips.size() ; ++gossipIndex) {
+
+			if(m_gossipStatus[gossipIndex].size() == m_linkedActorsForGossip.size())
+				continue;
+
+			// attempt to share gossip with linked actors
+			// find an actor that does not have the gossip already
+			for(set<Rank>::iterator i = m_linkedActorsForGossip.begin() ; i != m_linkedActorsForGossip.end() ; ++i) {
+				Rank actor = *i;
+
+				bool gossipStatus = m_gossipStatus[gossipIndex].count(actor) > 0;
+
+				if(gossipStatus)
+					continue;
+
+				// we found a gossip that needs to be shared with actor <actor>
+
+				m_lastGossipingEventTime = time(NULL);
+
+				uint8_t*messageBuffer = (uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+				int bytes = 0;
+				GraphSearchResult & gossip = m_gossips[gossipIndex];
+				bytes += gossip.dump(messageBuffer);
+
+				int units = bytes / sizeof(MessageUnit);
+
+				if(bytes % sizeof(MessageUnit))
+					units ++;
+
+				string key = gossip.toString();
+
+				Message aMessage((MessageUnit*)messageBuffer, units, actor,
+					RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
+				m_outbox->push_back(&aMessage);
+
+				m_gossipStatus[gossipIndex].insert(actor);
+				cout << "[DEBUG] Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+				return;
 			}
 		}
 
-		m_mode = MODE_SHARE_WITH_ARBITER;
+		// at this point, we tried every gossip and they are all synchronized.
 
-	} else if(m_mode == MODE_SHARE_WITH_ARBITER) {
-
-		// synchronize indexes in m_indexesToShareWithArbiter
-		m_mode = MODE_STOP_THIS_SITUATION;
+		m_hasNewGossips = false;
 
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
 
@@ -808,6 +969,8 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 
 	RAY_MESSAGE_TAG_ARBITER_SIGNAL = m_core->allocateMessageTagHandle(m_plugin);
 	RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER = m_core->allocateMessageTagHandle(m_plugin);
+
+	RAY_MESSAGE_TAG_SEED_GOSSIP = m_core->allocateMessageTagHandle(m_plugin);
 
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);

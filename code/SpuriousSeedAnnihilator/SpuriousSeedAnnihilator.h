@@ -18,6 +18,8 @@
  *  see <http://www.gnu.org/licenses/>
  */
 
+#define GOSSIP_ALGORITHM_FOR_SEEDS "Godzy algorithm v13.0.7"
+
 #include "SeedFilteringWorkflow.h"
 #include "SeedMergingWorkflow.h"
 
@@ -157,11 +159,14 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS;
 	MessageTag RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY;
 	MessageTag RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY;
+	MessageTag RAY_MESSAGE_TAG_ARBITER_SIGNAL;
+	MessageTag RAY_MESSAGE_TAG_SEED_GOSSIP;
+	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
 
 	int MODE_SPREAD_DATA;
 	int MODE_STOP_THIS_SITUATION;
 	int MODE_CHECK_RESULTS;
-	int MODE_SHARE_WITH_ARBITER;
+	int MODE_SHARE_WITH_LINKED_ACTORS;
 	int MODE_WAIT_FOR_ARBITER;
 	Rank m_rankToAdvise;
 
@@ -198,9 +203,6 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	SeedFilteringWorkflow m_workflow;
 	SeedMergingWorkflow m_mergingTechnology;
 
-	MessageTag RAY_MESSAGE_TAG_ARBITER_SIGNAL;
-	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
-
 	GridTable*m_subgraph;
 	MyAllocator*m_directionsAllocator;
 
@@ -234,13 +236,21 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	bool m_messageWasSent;
 	bool m_messageWasReceived;
 
+#ifdef GOSSIP_ALGORITHM_FOR_SEEDS
+	vector<GraphSearchResult> m_gossips;
+	bool m_hasNewGossips;
+	time_t m_lastGossipingEventTime;
+	set<string> m_gossipIndex;
+	map<int, set<Rank> > m_gossipStatus;
+	set<Rank> m_linkedActorsForGossip;
+#endif /* GOSSIP_ALGORITHM_FOR_SEEDS */
+
 	ComputeCore * getCore();
 
 	/* some useless methods. */
 	SpuriousSeedAnnihilator * getThis();
 	SpuriousSeedAnnihilator * getThat();
 
-	vector<int> m_indexesToShareWithArbiter;
 
 	Rank getArbiter();
 	bool isPrimeNumber(int number);

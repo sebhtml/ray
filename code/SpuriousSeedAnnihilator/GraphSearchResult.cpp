@@ -21,6 +21,8 @@
 #include "GraphSearchResult.h"
 
 #include <iostream>
+#include <sstream>
+#include <string>
 using namespace std;
 
 #include <string.h>
@@ -135,4 +137,22 @@ int GraphSearchResult::dump(uint8_t * buffer) const {
 
 vector<PathHandle> & GraphSearchResult::getPathHandles() {
 	return m_pathHandles;
+}
+
+string GraphSearchResult::toString() const {
+
+	ostringstream value;
+
+	if(m_pathHandles.size() != 2)
+		return "Error-not-implemented";
+
+	PathHandle path1 = m_pathHandles[0];
+	PathHandle path2 = m_pathHandles[1];
+
+	if(path1 < path2)
+		value << path1 << "-" << path2;
+	else
+		value << path2 << "-" << path1;
+
+	return value.str();
 }

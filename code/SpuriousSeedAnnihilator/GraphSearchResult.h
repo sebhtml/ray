@@ -66,6 +66,8 @@ public:
 	int dump(uint8_t * buffer) const;
 
 	vector<PathHandle> & getPathHandles();
+
+	string toString() const;
 };
 
 #endif /* GraphSearchResult_Header */
