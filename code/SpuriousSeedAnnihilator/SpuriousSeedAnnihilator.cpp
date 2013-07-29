@@ -437,7 +437,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		// selected, they are obtained from the relationships computed
 		// in the de Bruijn graph.
 
-#if 1
+#if 0
 		m_mode = MODE_STOP_THIS_SITUATION; // remove this
 		return; // remove this
 #endif
@@ -549,13 +549,18 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 				m_lastGossipingEventTime = time(NULL);
 
 				uint8_t*messageBuffer = (uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-				int bytes = 0;
-				GraphSearchResult & gossip = m_gossips[gossipIndex];
-				bytes += gossip.dump(messageBuffer);
 
-				int units = bytes / sizeof(MessageUnit);
+#ifdef ASSERT_CONFIG
+				assert( messageBuffer != NULL );
+#endif /* ASSERT_CONFIG */
 
-				if(bytes % sizeof(MessageUnit))
+				int position = 0;
+				GraphSearchResult & gossip =  /*&*/ m_gossips[gossipIndex];
+				position += gossip.dump(messageBuffer + position);
+
+				int units = position / sizeof(MessageUnit);
+
+				if(position % sizeof(MessageUnit))
 					units ++;
 
 				string key = gossip.toString();
@@ -612,7 +617,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 	if(!m_initializedSeedRegistration) {
 
-		cout << "call_RAY_SLAVE_MODE_REGISTER_SEEDS: initializing..." << endl;
+		cout << "[DEBUG] call_RAY_SLAVE_MODE_REGISTER_SEEDS: initializing..." << endl;
 		m_seedIndex=0;
 		m_seedPosition=0;
 		m_initializedSeedRegistration = true;
