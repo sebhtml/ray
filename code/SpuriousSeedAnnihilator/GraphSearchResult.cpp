@@ -97,6 +97,7 @@ int GraphSearchResult::load(const uint8_t * buffer) {
 	for(int i = 0 ; i < computedPaths ; i ++) {
 		GraphPath aParticularPath;
 		size = aParticularPath.load(buffer + position);
+		m_computedPaths.push_back(aParticularPath);
 		position += size;
 	}
 
@@ -129,6 +130,16 @@ int GraphSearchResult::dump(uint8_t * buffer) const {
 	int computedPaths = paths - 1;
 
 	for(int i = 0 ; i < computedPaths ; i ++) {
+#ifdef CONFIG_ASSERT
+		if(i >= m_computedPaths.size()) {
+			cout << "Error i " << i << " m_computedPaths.size() ";
+			cout << m_computedPaths.size() << " computedPaths " << computedPaths << endl;
+		}
+
+		assert(i >= 0);
+		assert(i < m_computedPaths.size());
+#endif /* CONFIG_ASSERT */
+
 		position += m_computedPaths[i].dump(buffer + position);
 	}
 
