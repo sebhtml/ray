@@ -126,8 +126,11 @@ class SeedingData : public CorePlugin{
 	time_t m_last;
 
 	void loadCheckpoint();
+
+	void writeCheckpoints();
 public:
 
+	// TODO: move these attributes in the private zone
 	map<int,int> m_masterSeedLengths;
 	map<int,int> m_slaveSeedLengths;
 

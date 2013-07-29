@@ -67,8 +67,8 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 	}
 
 	if(!m_checkedCheckpoint){
-		if(m_parameters->hasCheckpoint("Seeds")){
-			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint Seeds exists, not computing seeds."<<endl;
+		if(m_parameters->hasCheckpoint("SimpleSeeds")){
+			cout<<"Rank "<<m_parameters->getRank()<<": checkpoint SimpleSeeds exists, not computing seeds."<<endl;
 			(*m_mode)=RAY_SLAVE_MODE_DO_NOTHING;
 			Message aMessage(NULL,0,MASTER_RANK,RAY_MPI_TAG_SEEDING_IS_OVER,getRank());
 			m_outbox->push_back(&aMessage);
@@ -125,7 +125,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			bool isSmall = nucleotides < 4 * m_parameters->getWordSize();
 
 			if(isSmall && worker->isHeadADeadEnd() && worker->isTailADeadEnd()){
-			
+
 				m_skippedObjectsWithTwoDeadEnds++;
 
 			}else if(isSmall && worker->isHeadADeadEnd()){
@@ -145,7 +145,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				#ifdef SHOW_DISCOVERIES
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				#endif
-				
+
 				#ifdef ASSERT
 				assert(seed->size()>0);
 				#endif
@@ -177,12 +177,12 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					GraphPath*theSeed=seed;
 
 					theSeed->computePeakCoverage();
-		
+
 					CoverageDepth peakCoverage=theSeed->getPeakCoverage();
 
 					if(verbose)
 						cout<<"Got a seed, peak coverage: "<<peakCoverage;
-	
+
 					/* ignore the seed if it has too much coverage. */
 					if(peakCoverage >= m_minimumSeedCoverageDepth
 						&& peakCoverage <= m_parameters->getMaximumSeedCoverage()){
@@ -191,13 +191,13 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 							cout<<", adding seed."<<endl;
 
 						m_SEEDING_seeds.push_back(*theSeed);
-		
+
 						m_eligiblePaths++;
 					}else{
 
 						if(verbose)
 							cout<<", ignoring seed."<<endl;
-			
+
 						m_skippedNotEnoughCoverage++;
 					}
 				}else{
@@ -303,6 +303,12 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 		// sort the seeds by length
 		std::sort(m_SEEDING_seeds.begin(),
 			m_SEEDING_seeds.end(),myComparator_sort);
+
+		/**************************************************************
+		 * Write down the SimpleSeeds checkpoint now.
+		 **********************************************************************/
+
+		writeCheckpoints();
 	}
 }
 
@@ -411,9 +417,9 @@ void SeedingData::call_RAY_SLAVE_MODE_SEND_SEED_LENGTHS(){
 }
 
 void SeedingData::loadCheckpoint(){
-	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Seeds"<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint SimpleSeeds"<<endl;
 
-	ifstream f(m_parameters->getCheckpointFile("Seeds").c_str());
+	ifstream f(m_parameters->getCheckpointFile("SimpleSeeds").c_str());
 	int n=0;
 	f.read((char*)&n,sizeof(int));
 	for(int i=0;i<n;i++){
@@ -436,9 +442,47 @@ void SeedingData::loadCheckpoint(){
 
 		m_SEEDING_seeds.push_back(seed);
 	}
-	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint Seeds"<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<n<<" seeds from checkpoint SimpleSeeds"<<endl;
 	f.close();
 }
+
+void SeedingData::writeCheckpoints(){
+
+	/* write the Seeds checkpoint */
+	if(m_parameters->writeCheckpoints() && !m_parameters->hasCheckpoint("SimpleSeeds")){
+
+		ofstream f(m_parameters->getCheckpointFile("SimpleSeeds").c_str());
+		ostringstream buffer;
+
+		cout<<"Rank "<<m_parameters->getRank()<<" is writing checkpoint SimpleSeeds"<<endl;
+
+		vector<GraphPath> * seeds = & m_SEEDING_seeds;
+
+		int count=(*seeds).size();
+
+		buffer.write((char*)&count, sizeof(int));
+
+		for(int i=0;i<(int)(*seeds).size();i++){
+			int length=(*seeds)[i].size();
+			buffer.write((char*)&length, sizeof(int));
+
+			for(int j=0;j<(int)(*seeds)[i].size();j++){
+				Kmer theKmer;
+				(*seeds)[i].at(j,&theKmer);
+				theKmer.write(&buffer);
+
+				CoverageDepth coverageValue=0;
+				coverageValue=(*seeds)[i].getCoverageAt(j);
+				buffer.write((char*)&coverageValue, sizeof(CoverageDepth));
+				flushFileOperationBuffer(false, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
+			}
+		}
+                flushFileOperationBuffer(true, &buffer, &f, CONFIG_FILE_IO_BUFFER_SIZE);
+		f.close();
+	}
+}
+
+
 
 void SeedingData::registerPlugin(ComputeCore*core){
 

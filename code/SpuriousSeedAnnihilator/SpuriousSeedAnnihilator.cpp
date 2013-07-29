@@ -437,8 +437,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		// selected, they are obtained from the relationships computed
 		// in the de Bruijn graph.
 
+#if 1
 		m_mode = MODE_STOP_THIS_SITUATION; // remove this
 		return; // remove this
+#endif
 
 		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
 			Message * message = m_inbox->at(0);
