@@ -22,6 +22,7 @@
 
 #include "SeedFilteringWorkflow.h"
 #include "SeedMergingWorkflow.h"
+#include "SeedGossipSolver.h"
 
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
@@ -125,6 +126,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 
 	int m_toDistribute;
+	SeedGossipSolver m_seedGossipSolver;
 
 	MasterMode RAY_MASTER_MODE_REGISTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_FILTER_SEEDS;
@@ -168,6 +170,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_CHECK_RESULTS;
 	int MODE_SHARE_WITH_LINKED_ACTORS;
 	int MODE_WAIT_FOR_ARBITER;
+	int MODE_EVALUATE_GOSSIPS;
 	Rank m_rankToAdvise;
 
 	bool m_mustAdviseRanks;

@@ -263,6 +263,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		MODE_STOP_THIS_SITUATION = value++;
 		MODE_SHARE_WITH_LINKED_ACTORS = value ++;
 		MODE_WAIT_FOR_ARBITER = value++;
+		MODE_EVALUATE_GOSSIPS = value++;
 
 		m_mode = MODE_SPREAD_DATA;
 		m_toDistribute = m_mergingTechnology.getResults().size();
@@ -525,7 +526,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			m_linkedActorsForGossip.clear();
 
 			// synchronize indexes in m_indexesToShareWithArbiter
-			m_mode = MODE_STOP_THIS_SITUATION;
+			m_mode = MODE_EVALUATE_GOSSIPS;
 			return;
 		}
 
@@ -579,6 +580,36 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		// at this point, we tried every gossip and they are all synchronized.
 
 		m_hasNewGossips = false;
+
+	} else if(m_mode == MODE_EVALUATE_GOSSIPS) {
+
+		/**
+		 * Here, we do that in batch.
+		 */
+
+		m_seedGossipSolver.setInput(&m_gossips);
+		m_seedGossipSolver.compute();
+
+		vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
+
+		cout << "[DEBUG] Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
+		cout << "[DEBUG] solution has " << solution.size() << " entries !" << endl;
+
+		/**
+		 * Now, the actor needs to check how many of its seeds are in the solution.
+		 * The actor effectively loses ownership for any of these seeds in the solution.
+		 *
+		 * The actor can keep the seeds not in the solution.
+		 *
+		 * After that, the seeds in the solution need to be assigned ownership.
+		 * For the first implementation, the ownership will be based on actors associated
+		 * with the seeds in the solution.
+		 *
+		 * For instance, for the result A-B-C where A is owned by 0, B by 1 and C by 2. Then this
+		 * A-B-C solution will be owned by 0, 1 or 2.
+		 */
+
+		m_mode = MODE_STOP_THIS_SITUATION;
 
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
 
