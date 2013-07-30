@@ -131,13 +131,13 @@ int GraphSearchResult::dump(uint8_t * buffer) const {
 
 	for(int i = 0 ; i < computedPaths ; i ++) {
 #ifdef CONFIG_ASSERT
-		if(i >= m_computedPaths.size()) {
+		if(i >= (int)m_computedPaths.size()) {
 			cout << "Error i " << i << " m_computedPaths.size() ";
 			cout << m_computedPaths.size() << " computedPaths " << computedPaths << endl;
 		}
 
 		assert(i >= 0);
-		assert(i < m_computedPaths.size());
+		assert(i < (int)m_computedPaths.size());
 #endif /* CONFIG_ASSERT */
 
 		position += m_computedPaths[i].dump(buffer + position);
