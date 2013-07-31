@@ -55,6 +55,8 @@ class GraphSearchResult: public CarriageableItem {
 	vector<bool> m_pathOrientations; // false is normal, true is reverse
 	vector<GraphPath> m_computedPaths;
 
+	bool hasPath(PathHandle & handle);
+
 public:
 
 	bool addPathHandle(PathHandle handle, bool orientation);

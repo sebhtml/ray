@@ -185,6 +185,9 @@ vector<bool> & GraphSearchResult::getPathOrientations() {
  */
 void GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path) {
 
+#ifdef CONFIG_ASSERT
+	assert(!hasPath(handle));
+#endif
 	m_pathHandles.insert(m_pathHandles.begin(), handle);
 	m_pathOrientations.insert(m_pathOrientations.begin(), strand);
 	m_computedPaths.insert(m_computedPaths.begin(), path);
@@ -192,9 +195,26 @@ void GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, Grap
 
 void GraphSearchResult::addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path) {
 
+#ifdef CONFIG_ASSERT
+	assert(!hasPath(handle));
+#endif
+
 	m_pathHandles.push_back(handle);
 	m_pathOrientations.push_back(strand);
 	m_computedPaths.push_back(path);
+}
+
+bool GraphSearchResult::hasPath(PathHandle & handle) {
+	for(vector<PathHandle>::iterator i = m_pathHandles.begin() ;
+			i != m_pathHandles.end() ; ++i) {
+
+		PathHandle & otherHandle = *i;
+
+		if(otherHandle == handle)
+			return true;
+	}
+
+	return false;
 }
 
 vector<GraphPath> & GraphSearchResult::getComputedPaths() {
@@ -218,7 +238,7 @@ void GraphSearchResult::reverseContent() {
 	}
 
 	// reverse strands
-	
+
 	for(int i = 0 ; i < (int) m_pathOrientations.size() ; ++i) {
 		m_pathOrientations[i] = !m_pathOrientations[i];
 	}

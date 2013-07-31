@@ -49,6 +49,8 @@ class SeedGossipSolver {
 	bool hasFreeGossip() const;
 	GraphSearchResult & getFreeGossip();
 
+	void printSolution();
+
 public:
 
 	SeedGossipSolver();

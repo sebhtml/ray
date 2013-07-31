@@ -66,6 +66,77 @@ void SeedGossipSolver::compute() {
 
 		m_solution.push_back(workingCopy);
 	}
+
+	printSolution();
+}
+
+void SeedGossipSolver::printSolution() {
+	cout << "Solution has: " << m_solution.size() << " entries" << endl;
+	cout << "Initial gossips: " << m_gossips->size() << endl;
+	cout << "Objects: " << m_index.size() << endl;
+
+	cout << "edges: " << endl;
+
+	int iterator = 0;
+	for(vector<GraphSearchResult>::iterator i = m_gossips->begin();
+			i != m_gossips->end() ; ++i) {
+		cout << "[DEBUG] gossip:" << iterator++ << " ";
+		(*i).print();
+
+		cout << endl;
+	}
+
+	int objectsInSolution = 0;
+
+	map<PathHandle, vector<int> > summary;
+
+	cout << "solution" << endl;
+
+	for(int i = 0 ; i < (int) m_solution.size() ; ++i) {
+		cout << "[DEBUG] @" << i << " ";
+
+		int total = m_solution[i].getPathHandles().size();
+		cout << total << " ... ";
+		m_solution[i].print();
+		cout << endl;
+
+		objectsInSolution += total;
+
+		vector<PathHandle> & handles = m_solution[i].getPathHandles();
+
+		for(vector<PathHandle>::iterator j = handles.begin() ;
+				j!= handles.end() ; ++j) {
+
+			PathHandle & handle = *j;
+			summary[handle].push_back(i);
+		}
+	}
+
+	cout << "[DEBUG] list of GraphSearchResult entries" << endl;
+
+	for(map<PathHandle, vector<int> >::iterator i = summary.begin();
+			i!= summary.end() ; ++i) {
+
+		vector<int> & matches = i->second;
+
+		if(matches.size() != 1) {
+			cout << "[DEBUG] " << i->first << " is in ";
+
+			for(vector<int>::iterator j = matches.begin();
+					j != matches.end() ; ++j){
+				cout << " " << *j;
+			}
+			cout << endl;
+/*
+			cout << "[DEBUG] first gossip that contains the path: ";
+			m_solution.at(matches[0]).print();
+			cout << endl;
+			*/
+		}
+	}
+
+	cout << "[DEBUG] objects found in solution ...... " << endl;
+	cout << objectsInSolution << endl;
 }
 
 /**
@@ -74,7 +145,7 @@ void SeedGossipSolver::compute() {
 bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 
 	// take the two paths, and look for them in the index
-	
+
 	vector<PathHandle> & handles = partialSolution.getPathHandles();
 	vector<bool> & orientations = partialSolution.getPathOrientations();
 
@@ -93,19 +164,18 @@ bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 	 */
 	if(m_index.count(leftPath) > 0) {
 		vector<int> & positions = m_index[leftPath];
-		
+
 		for(int i = 0 ; i < (int) positions.size() ; ++i) {
 			int index = positions[i];
 			if(m_processedEntries.count(index) > 0)
 				continue;
 
-			cout << "[DEBUG] found a edge on the left" << endl;
+			//cout << "[DEBUG] found a edge on the left" << endl;
 
 			GraphSearchResult & edge = m_gossips->at(index);
 
 			PathHandle & leftGossipPath = edge.getPathHandles()[0];
 			PathHandle & rightGossipPath = edge.getPathHandles()[1];
-			GraphPath & path = edge.getComputedPaths()[0];
 
 			bool leftGossipStrand = edge.getPathOrientations()[0];
 			bool rightGossipStrand = edge.getPathOrientations()[1];
@@ -123,16 +193,20 @@ bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 			//           ********---********---**********
 			//             pathx
 			//             strandx
+
 			if(rightGossipStrand == leftStrand
 					&& rightGossipPath == leftPath) {
 
-				cout << "[DEBUG] Case 1.1 direct match on the left" << endl;
+				//cout << "[DEBUG] Case 1.1 direct match on the left" << endl;
+
+				GraphPath & path = edge.getComputedPaths()[0];
 
 				partialSolution.addPathOnLeftSide(leftGossipPath, leftGossipStrand, path);
 				m_processedEntries.insert(index);
 
 				return true;
 
+			// Case 1.2
 			// Same as Case 1.1, but we need to rotate the edge.
 			} else if(leftGossipStrand == !leftStrand
 					&& leftGossipPath == leftPath) {
@@ -144,7 +218,7 @@ bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 				assert(rotatedEdge.getPathOrientations()[1] == leftStrand);
 #endif
 
-				cout << "[DEBUG] Case 1.2 reverse match on the left" << endl;
+				//cout << "[DEBUG] Case 1.2 reverse match on the left" << endl;
 
 				partialSolution.addPathOnLeftSide(rotatedEdge.getPathHandles()[0],
 						rotatedEdge.getPathOrientations()[0],
@@ -159,9 +233,78 @@ bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 
 	int rightIndex = handles.size() - 1;
 	PathHandle & rightPath = handles[rightIndex];
+	bool rightStrand = orientations[rightIndex];
 
+	/**
+	 *
+	 *     *********--*********--**********---  ???????
+	 *
+	 */
 	if(m_index.count(rightPath) > 0) {
-		//vector<int> & positions = m_index[rightPath];
+		vector<int> & positions = m_index[rightPath];
+
+		for(int i = 0 ; i < (int) positions.size() ; ++i) {
+			int index = positions[i];
+			if(m_processedEntries.count(index) > 0)
+				continue;
+
+			//cout << "[DEBUG] found a edge on the right" << endl;
+
+			GraphSearchResult & edge = m_gossips->at(index);
+
+			PathHandle & leftGossipPath = edge.getPathHandles()[0];
+			PathHandle & rightGossipPath = edge.getPathHandles()[1];
+
+			bool leftGossipStrand = edge.getPathOrientations()[0];
+			bool rightGossipStrand = edge.getPathOrientations()[1];
+
+			// Case 2.1
+			// easy match
+			//
+			//            edge
+			//
+			//                                      ******---*******
+			//                                       pathx
+			//                                      strandx
+			//
+			//             partialSolution
+			//           ********---********---**********
+			//                                       pathx
+			//                                      strandx
+			if(leftGossipStrand == rightStrand 
+					&& leftGossipPath == rightPath) {
+
+				//cout << "[DEBUG] Case 2.1 direct match on the right" << endl;
+
+				GraphPath & path = edge.getComputedPaths()[0];
+				partialSolution.addPathOnRightSide(rightGossipPath, rightGossipStrand, path);
+				m_processedEntries.insert(index);
+
+				return true;
+
+			// Case 2.2
+			// Same as Case 2.1, but we need to rotate the edge.
+			} else if(rightGossipStrand == !rightStrand
+					&& rightGossipPath == rightPath) {
+
+				GraphSearchResult rotatedEdge = edge;
+				rotatedEdge.reverseContent();
+
+#ifdef CONFIG_ASSERT
+				assert(rotatedEdge.getPathOrientations()[0] == rightStrand);
+				assert(rotatedEdge.getPathHandles()[0] == rightPath);
+#endif
+
+				//cout << "[DEBUG] Case 2.2 reverse match on the right" << endl;
+
+				partialSolution.addPathOnRightSide(rotatedEdge.getPathHandles()[1],
+						rotatedEdge.getPathOrientations()[1],
+						rotatedEdge.getComputedPaths()[0]);
+				m_processedEntries.insert(index);
+
+				return true;
+			}
+		}
 
 	}
 
