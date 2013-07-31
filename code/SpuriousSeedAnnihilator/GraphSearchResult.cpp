@@ -167,3 +167,7 @@ string GraphSearchResult::toString() const {
 
 	return value.str();
 }
+
+bool GraphSearchResult::hasData() const {
+	return m_pathHandles.size() > 0;
+}

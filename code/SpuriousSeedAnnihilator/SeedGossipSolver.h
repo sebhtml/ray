@@ -26,6 +26,7 @@
 #include <code/SeedingData/PathHandle.h>
 
 #include <map>
+#include <set>
 #include <vector>
 using namespace std;
 
@@ -40,6 +41,13 @@ class SeedGossipSolver {
 	map<PathHandle, vector<GraphSearchResult*> > m_index;
 	vector<GraphSearchResult> * m_gossips;
 	vector<GraphSearchResult> m_solution;
+	set<int> m_processedEntries;
+	GraphSearchResult m_dummy;
+
+	bool expand(GraphSearchResult & partialSolution);
+
+	bool hasFreeGossip() const;
+	GraphSearchResult & getFreeGossip();
 
 public:
 

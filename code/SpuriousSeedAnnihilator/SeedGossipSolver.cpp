@@ -45,10 +45,56 @@ void SeedGossipSolver::setInput(vector<GraphSearchResult> * gossips) {
 	}
 }
 
+/**
+ * scoping is everything
+ */
 void SeedGossipSolver::compute() {
-	map<int, bool> processedEntries;
 
+	while(hasFreeGossip()) {
 
+		GraphSearchResult & entry = getFreeGossip();
+
+		GraphSearchResult workingCopy = entry;
+
+		while(expand(workingCopy)) {
+		}
+
+		m_solution.push_back(workingCopy);
+	}
+}
+
+/**
+ * TODO implement this method
+ */
+bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
+
+	// take the two paths, and look for them in the index
+	return false;
+}
+
+bool SeedGossipSolver::hasFreeGossip() const {
+	return m_processedEntries.size() == m_gossips->size();
+}
+
+GraphSearchResult & SeedGossipSolver::getFreeGossip() {
+	for(int i = 0 ; i < (int) m_gossips->size() ; ++i) {
+		bool used = m_processedEntries.count(i) > 0;
+
+		if(used)
+			continue;
+
+		GraphSearchResult & entry = m_gossips->at(i);
+
+#ifdef CONFIG_ASSERT
+		assert(m_processedEntries.count(i) == 0);
+#endif ////////// CONFIG_ASSERT
+
+		m_processedEntries.insert(i);
+
+		return entry;
+	}
+
+	return m_dummy;
 }
 
 vector<GraphSearchResult> & SeedGossipSolver::getSolution() {
@@ -59,6 +105,7 @@ void SeedGossipSolver::destroy() {
 	m_solution.clear();
 	m_index.clear();
 	m_gossips = NULL;
+	m_processedEntries.clear();
 }
 
 bool SeedGossipSolver::hasPathHandle(PathHandle & pathHandle) {

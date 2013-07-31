@@ -68,6 +68,8 @@ public:
 	vector<PathHandle> & getPathHandles();
 
 	string toString() const;
+
+	bool hasData() const;
 };
 
 #endif /* GraphSearchResult_Header */
