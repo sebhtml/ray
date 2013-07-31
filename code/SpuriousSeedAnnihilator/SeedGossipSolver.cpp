@@ -20,6 +20,8 @@
 
 #include "SeedGossipSolver.h"
 
+#include <iostream>
+using namespace std;
 
 SeedGossipSolver::SeedGossipSolver() {
 
@@ -33,10 +35,10 @@ void SeedGossipSolver::setInput(vector<GraphSearchResult> * gossips) {
 		PathHandle & path1 = element.getPathHandles()[0];
 		PathHandle & path2 = element.getPathHandles()[1];
 
-		m_index[path1].push_back(&element);
+		m_index[path1].push_back(i);
 
 		if(path1 != path2)
-			m_index[path2].push_back(&element);
+			m_index[path2].push_back(i);
 
 #ifdef CONFIG_ASSERT
 		assert(path1 != path2);
@@ -49,6 +51,9 @@ void SeedGossipSolver::setInput(vector<GraphSearchResult> * gossips) {
  * scoping is everything
  */
 void SeedGossipSolver::compute() {
+
+	cout << "[DEBUG] computing solution..." << endl;
+	cout << "[DEBUG] index size " << m_index.size() << endl;
 
 	while(hasFreeGossip()) {
 
@@ -69,11 +74,102 @@ void SeedGossipSolver::compute() {
 bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 
 	// take the two paths, and look for them in the index
+	
+	vector<PathHandle> & handles = partialSolution.getPathHandles();
+	vector<bool> & orientations = partialSolution.getPathOrientations();
+
+#ifdef CONFIG_ASSERT
+	assert(handles.size() >= 2);
+#endif
+
+	int leftIndex = 0;
+	PathHandle & leftPath = handles[leftIndex];
+	bool leftStrand = orientations[leftIndex];
+
+	/**
+	 *
+	 *     ???    *********--*********--**********
+	 *
+	 */
+	if(m_index.count(leftPath) > 0) {
+		vector<int> & positions = m_index[leftPath];
+		
+		for(int i = 0 ; i < (int) positions.size() ; ++i) {
+			int index = positions[i];
+			if(m_processedEntries.count(index) > 0)
+				continue;
+
+			cout << "[DEBUG] found a edge on the left" << endl;
+
+			GraphSearchResult & edge = m_gossips->at(index);
+
+			PathHandle & leftGossipPath = edge.getPathHandles()[0];
+			PathHandle & rightGossipPath = edge.getPathHandles()[1];
+			GraphPath & path = edge.getComputedPaths()[0];
+
+			bool leftGossipStrand = edge.getPathOrientations()[0];
+			bool rightGossipStrand = edge.getPathOrientations()[1];
+
+			// Case 1.1
+			// easy match
+			//
+			//            edge
+			//
+			//  ******---*******
+			//             pathx
+			//             strandx
+			//
+			//             partialSolution
+			//           ********---********---**********
+			//             pathx
+			//             strandx
+			if(rightGossipStrand == leftStrand
+					&& rightGossipPath == leftPath) {
+
+				cout << "[DEBUG] Case 1.1 direct match on the left" << endl;
+
+				partialSolution.addPathOnLeftSide(leftGossipPath, leftGossipStrand, path);
+				m_processedEntries.insert(index);
+
+				return true;
+
+			// Same as Case 1.1, but we need to rotate the edge.
+			} else if(leftGossipStrand == !leftStrand
+					&& leftGossipPath == leftPath) {
+
+				GraphSearchResult rotatedEdge = edge;
+				rotatedEdge.reverseContent();
+
+#ifdef CONFIG_ASSERT
+				assert(rotatedEdge.getPathOrientations()[1] == leftStrand);
+#endif
+
+				cout << "[DEBUG] Case 1.2 reverse match on the left" << endl;
+
+				partialSolution.addPathOnLeftSide(rotatedEdge.getPathHandles()[0],
+						rotatedEdge.getPathOrientations()[0],
+						rotatedEdge.getComputedPaths()[0]);
+				m_processedEntries.insert(index);
+
+				return true;
+			}
+		}
+
+	}
+
+	int rightIndex = handles.size() - 1;
+	PathHandle & rightPath = handles[rightIndex];
+
+	if(m_index.count(rightPath) > 0) {
+		//vector<int> & positions = m_index[rightPath];
+
+	}
+
 	return false;
 }
 
 bool SeedGossipSolver::hasFreeGossip() const {
-	return m_processedEntries.size() == m_gossips->size();
+	return m_processedEntries.size() != m_gossips->size();
 }
 
 GraphSearchResult & SeedGossipSolver::getFreeGossip() {

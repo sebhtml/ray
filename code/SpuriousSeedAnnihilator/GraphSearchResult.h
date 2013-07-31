@@ -66,8 +66,18 @@ public:
 	int dump(uint8_t * buffer) const;
 
 	vector<PathHandle> & getPathHandles();
+	vector<bool> & getPathOrientations();
+	vector<GraphPath> & getComputedPaths();
+
+	void addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path);
+	void addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path);
 
 	string toString() const;
+
+	/**
+	 * Rotate the object to obtain a reverse-complement.
+	 */
+	void reverseContent();
 
 	bool hasData() const;
 };

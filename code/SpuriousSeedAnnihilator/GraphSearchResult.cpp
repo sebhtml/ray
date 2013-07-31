@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 using namespace std;
 
 #include <string.h>
@@ -170,4 +171,55 @@ string GraphSearchResult::toString() const {
 
 bool GraphSearchResult::hasData() const {
 	return m_pathHandles.size() > 0;
+}
+
+vector<bool> & GraphSearchResult::getPathOrientations() {
+	return m_pathOrientations;
+}
+
+/**
+ * TODO implement this with something that is not a vector that allows push_front.
+ * std::list has that.
+ *
+ * it seems that vector has insert(), but it is linear in complexity...
+ */
+void GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path) {
+
+	m_pathHandles.insert(m_pathHandles.begin(), handle);
+	m_pathOrientations.insert(m_pathOrientations.begin(), strand);
+	m_computedPaths.insert(m_computedPaths.begin(), path);
+}
+
+void GraphSearchResult::addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path) {
+
+	m_pathHandles.push_back(handle);
+	m_pathOrientations.push_back(strand);
+	m_computedPaths.push_back(path);
+}
+
+vector<GraphPath> & GraphSearchResult::getComputedPaths() {
+	return m_computedPaths;
+}
+
+void GraphSearchResult::reverseContent() {
+
+	// reverse the order
+	reverse(m_pathHandles.begin(), m_pathHandles.end());
+	reverse(m_pathOrientations.begin(), m_pathOrientations.end());
+	reverse(m_computedPaths.begin(), m_computedPaths.end());
+
+	// reverse each computed path
+	for(int i = 0 ; i < (int) m_computedPaths.size() ; ++i) {
+		GraphPath newPath;
+		GraphPath & oldPath = m_computedPaths[i];
+		newPath.setKmerLength(oldPath.getKmerLength());
+
+		oldPath.reverseContent(newPath);
+	}
+
+	// reverse strands
+	
+	for(int i = 0 ; i < (int) m_pathOrientations.size() ; ++i) {
+		m_pathOrientations[i] = !m_pathOrientations[i];
+	}
 }

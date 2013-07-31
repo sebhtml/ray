@@ -38,7 +38,7 @@ using namespace std;
  */
 class SeedGossipSolver {
 
-	map<PathHandle, vector<GraphSearchResult*> > m_index;
+	map<PathHandle, vector<int> > m_index;
 	vector<GraphSearchResult> * m_gossips;
 	vector<GraphSearchResult> m_solution;
 	set<int> m_processedEntries;

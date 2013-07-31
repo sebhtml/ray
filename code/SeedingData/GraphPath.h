@@ -59,7 +59,10 @@ public:
  * \author co-designer: The Ray committee of wise people (E. God.)
  * \date updated 2012-06-21 for the release of v2.0.0
  *
- * TODO: the PathHandle should be here directly instead of being a separate instance.
+ * the PathHandle should be here directly instead of being a separate instance.
+ * \date 2013-07-31 PathHandle is now a class on its own.
+ *
+ * \author Sébastien Boisvert
  */
 class GraphPath  : public CarriageableItem {
 
@@ -131,6 +134,12 @@ public:
 	int dump(uint8_t * buffer) const;
 
 	int getKmerLength() const;
+
+	/**
+	 * Put the reversed content
+	 * in another object.
+	 */
+	void reverseContent(GraphPath & newPath) const;
 };
 
 #endif

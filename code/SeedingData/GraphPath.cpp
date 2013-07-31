@@ -630,3 +630,27 @@ int GraphPath::dump(uint8_t * buffer) const {
 int GraphPath::getKmerLength() const {
 	return m_kmerLength;
 }
+
+void GraphPath::reverseContent(GraphPath & newPath) const {
+
+#ifdef CONFIG_ASSERT
+	assert(newPath.size() == 0);
+#endif
+
+	for(int i = size() - 1 ; i >= 0 ; --i) {
+		Kmer element;
+		at(i, &element);
+
+		// the false here drops support for colored data (SOLiD)
+		// anyway who cares
+
+		Kmer newElement = element.complementVertex(getKmerLength(), false);
+		newPath.push_back(&newElement);
+	}
+
+#ifdef CONFIG_ASSERT
+	assert(size() == newPath.size());
+	assert(getKmerLength() == newPath.getKmerLength());
+#endif
+
+}

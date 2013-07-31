@@ -397,8 +397,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 					j != i->second.end() ; j++) {
 
 				if(j->second.size() == 2) {
-					cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
-					cout << " and " << j->first << endl;
+					//cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
+					//cout << " and " << j->first << endl;
 
 					//m_indexesToShareWithArbiter.push_back(j->second[0]);
 					//m_indexesToShareWithArbiter.push_back(j->second[1]);
@@ -494,7 +494,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			// we have new gossip, so this is important to store.
 			m_hasNewGossips = true;
 
-			cout << "[DEBUG] Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+			//cout << "[DEBUG] Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 			return;
 		}
@@ -571,7 +571,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 				m_outbox->push_back(&aMessage);
 
 				m_gossipStatus[gossipIndex].insert(actor);
-				cout << "[DEBUG] Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+				//cout << "[DEBUG] Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 				return;
 			}
