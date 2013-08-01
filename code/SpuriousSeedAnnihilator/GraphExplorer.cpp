@@ -218,7 +218,10 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 		PathHandle pathName = direction.getPathHandle();
 		int position = direction.getPosition();
 		bool pathStrand = false;
-		if(position != 0)
+
+		if(m_direction == EXPLORER_RIGHT && position != 0)
+			pathStrand = true;
+		else if(m_direction == EXPLORER_LEFT && position == 0)
 			pathStrand = true;
 
 		// the self path will always be found at depth 0
