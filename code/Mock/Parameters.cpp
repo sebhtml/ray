@@ -93,9 +93,6 @@ Parameters::Parameters(){
 	/** use the new NovaEngine (TM) */
 	m_options.insert("-use-NovaEngine");
 
-	/** the default is to not use a default value */
-	m_degree=2;
-
 	m_checkpointDirectory="Checkpoints";
 	m_hasCheckpointDirectory=false;
 
@@ -991,7 +988,68 @@ void Parameters::constructor(int argc,char**argv,int rank,int size,
 	}else{
 		loadCommandsFromArguments(argc,argv);
 	}
+
+	setDefaultRoutingOptions();
+
 	parseCommands();
+}
+
+void Parameters::setDefaultRoutingOptions() {
+
+	//cout << "[DEBUG] setDefaultRoutingOptions m_size " << m_size << endl;
+
+/**
+ * if the empty string is passed to the RayPlatform API,
+ * the debruijn model is used.
+ * however, the polytope model is better.
+ */
+	m_connectionType = "debruijn";
+
+/** the default is to not use a default value */
+	m_degree=2;
+
+	// preconfigure with a degree of 2
+	// or at least try to configure...
+
+	/*
+	 * Vertices:= Radix^Dimension
+	 *
+	 * Degree:= (Radix-1)*Dimension
+	 */
+
+	// we want the biggest radix possible
+
+	int actualVertices = getSize();
+
+	int radix = actualVertices - 1;
+
+	while(1) {
+
+		bool foundSolution = false;
+
+		for(int dimension = 2 ; dimension < 32 ; ++dimension) {
+
+			int computedVertices = (int)pow(radix, dimension);
+
+			if(computedVertices == actualVertices) {
+				int degree = (radix - 1) * dimension;
+
+				m_connectionType = "polytope";
+				m_degree = degree;
+
+				foundSolution = true;
+				break;
+			}
+		}
+
+		radix--;
+
+		if(radix == 1)
+			break;
+
+		if(foundSolution)
+			break;
+	}
 }
 
 int Parameters::getRank(){

@@ -160,6 +160,9 @@ class Parameters{
 
 	bool isValidInteger(const char*textMessage);
 	string getLibraryGlobalFile();
+
+	void setDefaultRoutingOptions();
+
 public:
 	Parameters();
 	string getReceivedMessagesFile();
