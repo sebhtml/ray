@@ -127,6 +127,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	int m_toDistribute;
 	SeedGossipSolver m_seedGossipSolver;
+	vector<GraphSearchResult> m_newSeedBluePrints;
 
 	MasterMode RAY_MASTER_MODE_REGISTER_SEEDS;
 	MasterMode RAY_MASTER_MODE_FILTER_SEEDS;

@@ -178,6 +178,7 @@ void SpuriousSeedAnnihilator::writeSingleSeedFile(){
 
 		for(int i=0;i<(int)(*m_seeds).size();i++){
 			PathHandle id=getPathUniqueId(m_parameters->getRank(),i);
+
 			f<<">RaySeed-"<<id<<endl;
 
 			f<<addLineBreaks(convertToString(&((*m_seeds)[i]),
@@ -253,7 +254,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	if(!m_initializedProcessing) {
 
-		//cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
+		cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
 
 		m_entryIndex = 0;
 
@@ -306,7 +307,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 			if(!m_messageWasSent) {
 
-				//cout << "[DEBUG] send " << m_entryIndex << endl;
+				cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
 
 				uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 				GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
@@ -326,7 +327,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 				if(destination == m_rank)
 					destination = rank2;
 
-				//cout << "[DEBUG] destination " << destination << endl;
+				cout << "[DEBUG] MODE_SPREAD_DATA destination " << destination << endl;
 
 				if(destination != m_rank) {
 					Message aMessage((MessageUnit*)messageBuffer, elements , destination, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY, m_rank);
@@ -345,7 +346,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 			} else if(m_messageWasReceived) {
 
-				//cout << "[DEBUG] receive " << m_entryIndex << endl;
+				cout << "[DEBUG] MODE_SPREAD_DATA receive " << m_entryIndex << endl;
 
 				m_entryIndex ++;
 
@@ -359,13 +360,17 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		}
 	} else if(m_mode == MODE_WAIT_FOR_ARBITER) {
 
-		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL))
+		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
+
+			cout << "[DEBUG] arbiter advises to continue" << endl;
+
 			m_mode = MODE_CHECK_RESULTS;
+		}
 
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
-		cout << "[DEBUG] m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
-		cout << "[DEBUG] scanning for duplicates" << endl;
+		cout << "[DEBUG] MODE_CHECK_RESULTS m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
+		cout << "[DEBUG] MODE_CHECK_RESULTS scanning for duplicates" << endl;
 
 		map<PathHandle, map<PathHandle, vector<int> > > counts;
 
@@ -398,7 +403,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 				if(j->second.size() == 2) {
 					cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
-					cout << " and " << j->first << endl;
+					//cout << " and " << j->first << endl;
 
 					//m_indexesToShareWithArbiter.push_back(j->second[0]);
 					//m_indexesToShareWithArbiter.push_back(j->second[1]);
@@ -426,7 +431,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		m_hasNewGossips = true;
 		m_lastGossipingEventTime = time(NULL);
 
-		cout << "[DEBUG] gossiping begins..." << endl;
+		cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
 
 		m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
 
@@ -494,7 +499,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			// we have new gossip, so this is important to store.
 			m_hasNewGossips = true;
 
-			cout << "[DEBUG] Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+			cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 			return;
 		}
@@ -520,7 +525,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			if(distance < minimumWaitTime)
 				return;
 
-			cout << "[DEBUG] Rank " << m_rank << " gossips have spreaded." << endl;
+			cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
 
 			m_gossipStatus.clear();
 			m_linkedActorsForGossip.clear();
@@ -572,7 +577,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 				m_gossipStatus[gossipIndex].insert(actor);
 
-				cout << "[DEBUG] Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+				cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 				return;
 			}
@@ -593,8 +598,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
 
-		cout << "[DEBUG] Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
-		cout << "[DEBUG] solution has " << solution.size() << " entries !" << endl;
+		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
+		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
 
 		/**
 		 * Now, the actor needs to check how many of its seeds are in the solution.
@@ -610,6 +615,83 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		 * A-B-C solution will be owned by 0, 1 or 2.
 		 */
 
+		// current seeds are stored in m_seeds
+		// new seeds are in solution;
+		// to make this a generalized process, let's add the seeds that are not in the solution
+		// in a new solution
+
+		set<PathHandle> localPathsInSolution;
+
+		for(vector<GraphSearchResult>::iterator i = solution.begin();
+				i != solution.end() ; ++i) {
+
+			GraphSearchResult & result = *i;
+			vector<PathHandle> & handles = result.getPathHandles();
+
+			for(vector<PathHandle>::iterator j = handles.begin() ; j != handles.end() ; ++j) {
+
+				PathHandle & thePath = *j;
+				localPathsInSolution.insert(thePath);
+			}
+		}
+
+		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS " << solution.size() << " entries need an owner." << endl;
+
+		for(vector<GraphSearchResult>::iterator i = solution.begin() ;
+				i!= solution.end() ; ++i) {
+
+			GraphSearchResult & entry = *i;
+
+			PathHandle & firstHandle = entry.getPathHandles()[0];
+			PathHandle & lastHandle = entry.getPathHandles()[entry.getPathHandles().size()-1];
+
+			// this algorithm is stupid because it does not enforce
+			// load balancing.
+			//
+			// TODO: implement a true load balancing algorithme here...
+
+			PathHandle & smallest = firstHandle;
+			if(lastHandle < firstHandle)
+				smallest = lastHandle;
+
+			Rank owner = getRankFromPathUniqueId(smallest);
+
+			if(owner == m_core->getRank()) {
+				m_newSeedBluePrints.push_back(entry);
+			}
+		}
+
+		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " claimed ownership for " << m_newSeedBluePrints.size();
+		cout << " before merging its own assets in the pool." << endl;
+
+		// this needs to run after trimming those short seeds with dead-ends
+
+		// add local seeds that are not in the local solution
+		// a local seeds can't be in a remote solution if it is in
+		// the local solution anyway
+		for(int i = 0 ; i < (int) m_seeds->size() ; ++i) {
+
+			PathHandle identifier = getPathUniqueId(m_parameters->getRank(), i);
+
+			if(localPathsInSolution.count(identifier) == 0) {
+
+				GraphSearchResult result;
+				result.addPathHandle(identifier, false);
+
+				m_newSeedBluePrints.push_back(result);
+			}
+		}
+
+		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " will assume ownership for " << m_newSeedBluePrints.size();
+		cout << " objects, had " << m_seeds->size() << " before merging" << endl;
+
+		int index = 0;
+		for(vector<GraphSearchResult>::iterator i = m_newSeedBluePrints.begin() ;
+				i != m_newSeedBluePrints.end() ; ++i) {
+			cout << "[DEBUG] OWNED OBJECT @" << index++ << " ";
+			(*i).print();
+			cout << endl;
+		}
 		m_mode = MODE_STOP_THIS_SITUATION;
 
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
