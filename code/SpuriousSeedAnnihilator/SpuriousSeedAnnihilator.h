@@ -61,6 +61,7 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS)
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -124,6 +125,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 
 	int m_toDistribute;
 	SeedGossipSolver m_seedGossipSolver;
@@ -259,6 +261,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	Rank getArbiter();
 	bool isPrimeNumber(int number);
 
+	void initializeMergingProcess();
+
 public:
 
 	SpuriousSeedAnnihilator();
@@ -283,6 +287,7 @@ public:
 	void call_RAY_SLAVE_MODE_CLEAN_SEEDS();
 	void call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS();
 	void call_RAY_SLAVE_MODE_MERGE_SEEDS();
+	void call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS();
 
 	void call_RAY_MESSAGE_TAG_REGISTER_SEEDS(Message*message);
 	void call_RAY_MESSAGE_TAG_FILTER_SEEDS(Message*message);
@@ -290,14 +295,11 @@ public:
 	void call_RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message);
-
-
-	void call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS();
 	void call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS();
 	void call_RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message);
-
+	void call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message * message);
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

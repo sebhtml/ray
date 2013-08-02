@@ -51,6 +51,7 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEND_SEED_LEN
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
@@ -234,7 +235,7 @@ void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS() {
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message) {
 
-	cout << "[DEBUG] received RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY" << endl;
+	//cout << "[DEBUG] received RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY" << endl;
 
 	uint8_t * buffer = (uint8_t*) message->getBuffer();
 
@@ -250,11 +251,26 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(
 	m_messageWasReceived = true;
 }
 
-void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message * message) {
 
+	initializeMergingProcess();
+
+	m_synced ++;
+
+	//cout << "[DEBUG] recv RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER m_synced " << m_synced << endl;
+
+	if(m_synced == m_core->getSize()) {
+		//cout << "[DEBUG] arbiter will advise" << endl;
+
+		m_mustAdviseRanks = true;
+		m_rankToAdvise = 0;
+	}
+}
+
+void SpuriousSeedAnnihilator::initializeMergingProcess() {
 	if(!m_initializedProcessing) {
 
-		cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
+		//cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
 
 		m_entryIndex = 0;
 
@@ -275,18 +291,14 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		m_synced = 0;
 		m_mustAdviseRanks = false;
 
-		return;
+		// we can not return here because we could lose a message
+		//return;
 	}
+}
 
-	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER)) {
-		m_synced ++;
+void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
-		if(m_synced == m_core->getSize()) {
-			cout << "[DEBUG] arbiter will advise" << endl;
-			m_mustAdviseRanks = true;
-			m_rankToAdvise = 0;
-		}
-	}
+	initializeMergingProcess();
 
 	if(m_mustAdviseRanks) {
 		if(m_rankToAdvise < m_core->getSize()) {
@@ -297,7 +309,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			m_synced = 0;
 			m_mustAdviseRanks = false;
 
-			cout << "[DEBUG] everybody received the arbiter advise" << endl;
+			//cout << "[DEBUG] everybody received the arbiter advise" << endl;
 		}
 	}
 
@@ -307,7 +319,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 			if(!m_messageWasSent) {
 
-				cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
+				//cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
 
 				uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 				GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
@@ -327,7 +339,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 				if(destination == m_rank)
 					destination = rank2;
 
-				cout << "[DEBUG] MODE_SPREAD_DATA destination " << destination << endl;
+				//cout << "[DEBUG] MODE_SPREAD_DATA destination " << destination << endl;
 
 				if(destination != m_rank) {
 					Message aMessage((MessageUnit*)messageBuffer, elements , destination, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY, m_rank);
@@ -346,7 +358,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 			} else if(m_messageWasReceived) {
 
-				cout << "[DEBUG] MODE_SPREAD_DATA receive " << m_entryIndex << endl;
+				//cout << "[DEBUG] MODE_SPREAD_DATA receive " << m_entryIndex << endl;
 
 				m_entryIndex ++;
 
@@ -356,21 +368,24 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			Rank arbiter = getArbiter();
 
 			this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+
+			//cout << "[DEBUG] saying hello to arbiter " << arbiter << " with RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER" << endl;
+
 			m_mode = MODE_WAIT_FOR_ARBITER;
 		}
 	} else if(m_mode == MODE_WAIT_FOR_ARBITER) {
 
 		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
 
-			cout << "[DEBUG] arbiter advises to continue" << endl;
+			//cout << "[DEBUG] arbiter advises to continue" << endl;
 
 			m_mode = MODE_CHECK_RESULTS;
 		}
 
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
-		cout << "[DEBUG] MODE_CHECK_RESULTS m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
-		cout << "[DEBUG] MODE_CHECK_RESULTS scanning for duplicates" << endl;
+		//cout << "[DEBUG] MODE_CHECK_RESULTS m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
+		//cout << "[DEBUG] MODE_CHECK_RESULTS scanning for duplicates" << endl;
 
 		map<PathHandle, map<PathHandle, vector<int> > > counts;
 
@@ -402,7 +417,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 					j != i->second.end() ; j++) {
 
 				if(j->second.size() == 2) {
-					cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
+					//cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
 					//cout << " and " << j->first << endl;
 
 					//m_indexesToShareWithArbiter.push_back(j->second[0]);
@@ -431,7 +446,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		m_hasNewGossips = true;
 		m_lastGossipingEventTime = time(NULL);
 
-		cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
+		//cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
 
 		m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
 
@@ -499,7 +514,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			// we have new gossip, so this is important to store.
 			m_hasNewGossips = true;
 
-			cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 			return;
 		}
@@ -525,7 +540,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 			if(distance < minimumWaitTime)
 				return;
 
-			cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
+			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
 
 			m_gossipStatus.clear();
 			m_linkedActorsForGossip.clear();
@@ -577,7 +592,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 				m_gossipStatus[gossipIndex].insert(actor);
 
-				cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+				//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
 
 				return;
 			}
@@ -598,7 +613,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
 
-		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
+		//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
 		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
 
 		/**
@@ -731,7 +746,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 
 	if(!m_initializedSeedRegistration) {
 
-		cout << "[DEBUG] call_RAY_SLAVE_MODE_REGISTER_SEEDS: initializing..." << endl;
+		//cout << "[DEBUG] call_RAY_SLAVE_MODE_REGISTER_SEEDS: initializing..." << endl;
+
 		m_seedIndex=0;
 		m_seedPosition=0;
 		m_initializedSeedRegistration = true;
@@ -1116,6 +1132,7 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 
 	RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");
