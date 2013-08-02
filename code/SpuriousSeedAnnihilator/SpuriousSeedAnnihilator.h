@@ -170,6 +170,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	int MODE_SPREAD_DATA;
 	int MODE_STOP_THIS_SITUATION;
+	int MODE_REBUILD_SEED_ASSETS;
 	int MODE_CHECK_RESULTS;
 	int MODE_SHARE_WITH_LINKED_ACTORS;
 	int MODE_WAIT_FOR_ARBITER;
@@ -213,6 +214,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MyAllocator*m_directionsAllocator;
 
 	vector<GraphPath>*m_seeds;
+	vector<GraphPath> m_newSeeds;
+
 	Parameters*m_parameters;
 
 	int m_seedIndex;
@@ -257,12 +260,18 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	SpuriousSeedAnnihilator * getThis();
 	SpuriousSeedAnnihilator * getThat();
 
+	int m_pathIndex;
+	int m_location;
 
 	Rank getArbiter();
 	bool isPrimeNumber(int number);
 
 	void initializeMergingProcess();
-
+	void spreadAcquiredData();
+	void shareWithLinkedActors();
+	void checkResults();
+	void evaluateGossips();
+	void rebuildSeedAssets();
 public:
 
 	SpuriousSeedAnnihilator();

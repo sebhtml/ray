@@ -22,7 +22,7 @@
 #ifndef PathHandleHeader
 #define PathHandleHeader
 
-#include <code/Mock/CarriageableItem.h>
+#include <RayPlatform/store/CarriageableItem.h>
 
 #include <ostream>
 using namespace std;

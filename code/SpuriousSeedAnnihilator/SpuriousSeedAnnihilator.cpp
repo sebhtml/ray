@@ -110,6 +110,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 
 	int i=0;
 
+	cout << "[DEBUG] call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS preparing payload." << endl;
+
 	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
 		int length=m_iterator->first;
 		int count=m_iterator->second;
@@ -281,6 +283,7 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		MODE_SHARE_WITH_LINKED_ACTORS = value ++;
 		MODE_WAIT_FOR_ARBITER = value++;
 		MODE_EVALUATE_GOSSIPS = value++;
+		MODE_REBUILD_SEED_ASSETS = value++;
 
 		m_mode = MODE_SPREAD_DATA;
 		m_toDistribute = m_mergingTechnology.getResults().size();
@@ -294,6 +297,295 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		// we can not return here because we could lose a message
 		//return;
 	}
+}
+
+void SpuriousSeedAnnihilator::spreadAcquiredData() {
+
+	if(m_entryIndex < (int) m_toDistribute) {
+
+		if(!m_messageWasSent) {
+
+			//cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
+
+			uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
+			int bytes = entry.dump(messageBuffer);
+
+			int elements = bytes / sizeof(MessageUnit);
+
+			if(bytes % sizeof(MessageUnit))
+				elements ++;
+
+			// at least one rank is the current rank
+			Rank rank1 = getRankFromPathUniqueId(entry.getPathHandles()[0]);
+			Rank rank2 = getRankFromPathUniqueId(entry.getPathHandles()[1]);
+
+			Rank destination = rank1;
+
+			if(destination == m_rank)
+				destination = rank2;
+
+			//cout << "[DEBUG] MODE_SPREAD_DATA destination " << destination << endl;
+
+			if(destination != m_rank) {
+				Message aMessage((MessageUnit*)messageBuffer, elements , destination, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY, m_rank);
+				m_outbox->push_back(&aMessage);
+
+				m_messageWasReceived = false;
+
+			} else {
+				// nothing to send,
+				// the local rank has both
+
+				m_messageWasReceived = true;
+			}
+
+			m_messageWasSent = true;
+
+		} else if(m_messageWasReceived) {
+
+			//cout << "[DEBUG] MODE_SPREAD_DATA receive " << m_entryIndex << endl;
+
+			m_entryIndex ++;
+
+			m_messageWasSent = false;
+		}
+	} else {
+		Rank arbiter = getArbiter();
+
+		this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+
+		//cout << "[DEBUG] saying hello to arbiter " << arbiter << " with RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER" << endl;
+
+		m_mode = MODE_WAIT_FOR_ARBITER;
+	}
+
+}
+
+void SpuriousSeedAnnihilator::checkResults() {
+	//cout << "[DEBUG] MODE_CHECK_RESULTS m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
+	//cout << "[DEBUG] MODE_CHECK_RESULTS scanning for duplicates" << endl;
+
+	map<PathHandle, map<PathHandle, vector<int> > > counts;
+
+	for(int i = 0 ; i < (int)m_mergingTechnology.getResults().size() ; i++) {
+
+		// there were no local hits...
+		// so let it fail
+		if(m_toDistribute == 0)
+			break;
+
+		GraphSearchResult & result = m_mergingTechnology.getResults()[i];
+
+		PathHandle handle1 = result.getPathHandles()[0];
+		PathHandle handle2 = result.getPathHandles()[1];
+
+		if(handle2 < handle1) {
+			PathHandle store = handle1;
+			handle1 = handle2;
+			handle2 = store;
+		}
+
+		counts[handle1][handle2].push_back(i);
+	}
+
+	for(map<PathHandle, map<PathHandle, vector<int> > >::iterator i = counts.begin();
+			i != counts.end(); ++i) {
+
+		for(map<PathHandle, vector<int> >::iterator j = i->second.begin();
+				j != i->second.end() ; j++) {
+
+			if(j->second.size() == 2) {
+				//cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
+				//cout << " and " << j->first << endl;
+
+				//m_indexesToShareWithArbiter.push_back(j->second[0]);
+				//m_indexesToShareWithArbiter.push_back(j->second[1]);
+
+				int index = j->second[0];
+				GraphSearchResult & gossip = m_mergingTechnology.getResults()[index];
+				m_gossips.push_back(gossip);
+				m_gossipIndex.insert(gossip.toString());
+
+				// at least one rank is the current rank
+				Rank rank1 = getRankFromPathUniqueId(gossip.getPathHandles()[0]);
+				Rank rank2 = getRankFromPathUniqueId(gossip.getPathHandles()[1]);
+
+				if(rank1 != m_rank)
+					m_linkedActorsForGossip.insert(rank1);
+				if(rank2 != m_rank)
+					m_linkedActorsForGossip.insert(rank2);
+			}
+		}
+
+	}
+
+	m_mergingTechnology.getResults().clear();
+
+	m_hasNewGossips = true;
+	m_lastGossipingEventTime = time(NULL);
+
+	//cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
+
+	m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
+
+
+}
+
+void SpuriousSeedAnnihilator::shareWithLinkedActors() {
+
+	// find a information that was not shared with a given actor
+	// this is a good-enough implementation
+	// this is like a gossip algorithm, but here the pairs are not randomly
+	// selected, they are obtained from the relationships computed
+	// in the de Bruijn graph.
+
+	/*
+	m_mode = MODE_STOP_THIS_SITUATION; // remove this
+	return; // remove this
+	*/
+
+
+	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
+		Message * message = m_inbox->at(0);
+
+		GraphSearchResult gossip;
+		int position = 0;
+		uint8_t * buffer = (uint8_t*) message->getBuffer();
+
+		int bytes = gossip.load(buffer + position);
+		position += bytes;
+
+		// first check if the gossip is already known.
+		// this implementation is good enough, but it could
+		// use an index.
+
+		string key = gossip.toString();
+
+		bool found = m_gossipIndex.count(key) > 0;
+
+		if(found)
+			return;
+
+		// yay we got new gossip to share !!!
+		m_gossips.push_back(gossip);
+		m_gossipIndex.insert(key);
+		m_lastGossipingEventTime = time(NULL);
+
+		// we could also update the m_gossipStatus
+		// because we know that message->getSource() has this gossip
+		// already.
+		// But anyway, it does not change much to the algorithm...
+		// update: source has gossip already.
+		//
+		// also important, gossipIndex values are local and not global to
+		// all ranks
+		//
+
+		Rank actor = message->getSource();
+		int gossipIndex = m_gossips.size() - 1;
+
+#ifdef CONFIG_ASSERT
+		assert(m_linkedActorsForGossip.count(actor) > 0);
+		assert(gossipIndex < (int)m_gossips.size());
+		assert(actor >= 0);
+		assert(actor < m_core->getSize());
+#endif
+
+		m_gossipStatus[gossipIndex].insert(actor);
+
+		// we have new gossip, so this is important to store.
+		m_hasNewGossips = true;
+
+		//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+		return;
+	}
+
+	/**
+	 *
+	 * We wait a specific amount of time before stopping the
+	 * gossip process.
+	 *
+	 * This code will fail if the process receives a SIGSTOP
+	 *
+	 * TODO  or if the process is not scheduled during too many seconds.
+	 */
+
+	if(!m_hasNewGossips) {
+
+		// check delay and latency
+		time_t currentTime = time(NULL);
+
+		int minimumWaitTime = 10; // seconds
+		int distance = currentTime - m_lastGossipingEventTime;
+
+		if(distance < minimumWaitTime)
+			return;
+
+		//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
+
+		m_gossipStatus.clear();
+		m_linkedActorsForGossip.clear();
+
+		// synchronize indexes in m_indexesToShareWithArbiter
+		m_mode = MODE_EVALUATE_GOSSIPS;
+		return;
+	}
+
+	for(int gossipIndex = 0 ; gossipIndex < (int)m_gossips.size() ; ++gossipIndex) {
+
+		if(m_gossipStatus[gossipIndex].size() == m_linkedActorsForGossip.size())
+			continue;
+
+		// attempt to share gossip with linked actors
+		// find an actor that does not have the gossip already
+		for(set<Rank>::iterator i = m_linkedActorsForGossip.begin() ; i != m_linkedActorsForGossip.end() ; ++i) {
+			Rank actor = *i;
+
+			bool gossipStatus = m_gossipStatus[gossipIndex].count(actor) > 0;
+
+			if(gossipStatus)
+				continue;
+
+			// we found a gossip that needs to be shared with actor <actor>
+
+			m_lastGossipingEventTime = time(NULL);
+
+			uint8_t*messageBuffer = (uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+#ifdef ASSERT_CONFIG
+			assert( messageBuffer != NULL );
+#endif /* ASSERT_CONFIG */
+
+			int position = 0;
+			GraphSearchResult & gossip =  /*&*/ m_gossips[gossipIndex];
+			position += gossip.dump(messageBuffer + position);
+
+			int units = position / sizeof(MessageUnit);
+
+			if(position % sizeof(MessageUnit))
+				units ++;
+
+			string key = gossip.toString();
+
+			Message aMessage((MessageUnit*)messageBuffer, units, actor,
+				RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
+			m_outbox->push_back(&aMessage);
+
+			m_gossipStatus[gossipIndex].insert(actor);
+
+			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+			return;
+		}
+	}
+
+	// at this point, we tried every gossip and they are all synchronized.
+
+	m_hasNewGossips = false;
+
+
 }
 
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
@@ -315,64 +607,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	if (m_mode == MODE_SPREAD_DATA) {
 
-		if(m_entryIndex < (int) m_toDistribute) {
+		spreadAcquiredData();
 
-			if(!m_messageWasSent) {
-
-				//cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
-
-				uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-				GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
-				int bytes = entry.dump(messageBuffer);
-
-				int elements = bytes / sizeof(MessageUnit);
-
-				if(bytes % sizeof(MessageUnit))
-					elements ++;
-
-				// at least one rank is the current rank
-				Rank rank1 = getRankFromPathUniqueId(entry.getPathHandles()[0]);
-				Rank rank2 = getRankFromPathUniqueId(entry.getPathHandles()[1]);
-
-				Rank destination = rank1;
-
-				if(destination == m_rank)
-					destination = rank2;
-
-				//cout << "[DEBUG] MODE_SPREAD_DATA destination " << destination << endl;
-
-				if(destination != m_rank) {
-					Message aMessage((MessageUnit*)messageBuffer, elements , destination, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY, m_rank);
-					m_outbox->push_back(&aMessage);
-
-					m_messageWasReceived = false;
-
-				} else {
-					// nothing to send,
-					// the local rank has both
-
-					m_messageWasReceived = true;
-				}
-
-				m_messageWasSent = true;
-
-			} else if(m_messageWasReceived) {
-
-				//cout << "[DEBUG] MODE_SPREAD_DATA receive " << m_entryIndex << endl;
-
-				m_entryIndex ++;
-
-				m_messageWasSent = false;
-			}
-		} else {
-			Rank arbiter = getArbiter();
-
-			this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
-
-			//cout << "[DEBUG] saying hello to arbiter " << arbiter << " with RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER" << endl;
-
-			m_mode = MODE_WAIT_FOR_ARBITER;
-		}
 	} else if(m_mode == MODE_WAIT_FOR_ARBITER) {
 
 		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
@@ -384,336 +620,177 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
-		//cout << "[DEBUG] MODE_CHECK_RESULTS m_toDistribute " << m_toDistribute << " now -> " << m_mergingTechnology.getResults().size() << endl;
-		//cout << "[DEBUG] MODE_CHECK_RESULTS scanning for duplicates" << endl;
-
-		map<PathHandle, map<PathHandle, vector<int> > > counts;
-
-		for(int i = 0 ; i < (int)m_mergingTechnology.getResults().size() ; i++) {
-
-			// there were no local hits...
-			// so let it fail
-			if(m_toDistribute == 0)
-				break;
-
-			GraphSearchResult & result = m_mergingTechnology.getResults()[i];
-
-			PathHandle handle1 = result.getPathHandles()[0];
-			PathHandle handle2 = result.getPathHandles()[1];
-
-			if(handle2 < handle1) {
-				PathHandle store = handle1;
-				handle1 = handle2;
-				handle2 = store;
-			}
-
-			counts[handle1][handle2].push_back(i);
-		}
-
-		for(map<PathHandle, map<PathHandle, vector<int> > >::iterator i = counts.begin();
-				i != counts.end(); ++i) {
-
-			for(map<PathHandle, vector<int> >::iterator j = i->second.begin();
-					j != i->second.end() ; j++) {
-
-				if(j->second.size() == 2) {
-					//cout << "[DEBUG] MODE_CHECK_RESULTS got a symmetric relation between " << i->first;
-					//cout << " and " << j->first << endl;
-
-					//m_indexesToShareWithArbiter.push_back(j->second[0]);
-					//m_indexesToShareWithArbiter.push_back(j->second[1]);
-
-					int index = j->second[0];
-					GraphSearchResult & gossip = m_mergingTechnology.getResults()[index];
-					m_gossips.push_back(gossip);
-					m_gossipIndex.insert(gossip.toString());
-
-					// at least one rank is the current rank
-					Rank rank1 = getRankFromPathUniqueId(gossip.getPathHandles()[0]);
-					Rank rank2 = getRankFromPathUniqueId(gossip.getPathHandles()[1]);
-
-					if(rank1 != m_rank)
-						m_linkedActorsForGossip.insert(rank1);
-					if(rank2 != m_rank)
-						m_linkedActorsForGossip.insert(rank2);
-				}
-			}
-
-		}
-
-		m_mergingTechnology.getResults().clear();
-
-		m_hasNewGossips = true;
-		m_lastGossipingEventTime = time(NULL);
-
-		//cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
-
-		m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
+		checkResults();
 
 	} else if(m_mode == MODE_SHARE_WITH_LINKED_ACTORS) {
 
-		// find a information that was not shared with a given actor
-		// this is a good-enough implementation
-		// this is like a gossip algorithm, but here the pairs are not randomly
-		// selected, they are obtained from the relationships computed
-		// in the de Bruijn graph.
-
-#if 0
-		m_mode = MODE_STOP_THIS_SITUATION; // remove this
-		return; // remove this
-#endif
-
-		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
-			Message * message = m_inbox->at(0);
-
-			GraphSearchResult gossip;
-			int position = 0;
-			uint8_t * buffer = (uint8_t*) message->getBuffer();
-
-			int bytes = gossip.load(buffer + position);
-			position += bytes;
-
-			// first check if the gossip is already known.
-			// this implementation is good enough, but it could
-			// use an index.
-
-			string key = gossip.toString();
-
-			bool found = m_gossipIndex.count(key) > 0;
-
-			if(found)
-				return;
-
-			// yay we got new gossip to share !!!
-			m_gossips.push_back(gossip);
-			m_gossipIndex.insert(key);
-			m_lastGossipingEventTime = time(NULL);
-
-			// we could also update the m_gossipStatus
-			// because we know that message->getSource() has this gossip
-			// already.
-			// But anyway, it does not change much to the algorithm...
-			// update: source has gossip already.
-			//
-			// also important, gossipIndex values are local and not global to
-			// all ranks
-			//
-
-			Rank actor = message->getSource();
-			int gossipIndex = m_gossips.size() - 1;
-
-#ifdef CONFIG_ASSERT
-			assert(m_linkedActorsForGossip.count(actor) > 0);
-			assert(gossipIndex < (int)m_gossips.size());
-			assert(actor >= 0);
-			assert(actor < m_core->getSize());
-#endif
-
-			m_gossipStatus[gossipIndex].insert(actor);
-
-			// we have new gossip, so this is important to store.
-			m_hasNewGossips = true;
-
-			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
-
-			return;
-		}
-
-		/**
-		 *
-		 * We wait a specific amount of time before stopping the
-		 * gossip process.
-		 *
-		 * This code will fail if the process receives a SIGSTOP
-		 *
-		 * TODO  or if the process is not scheduled during too many seconds.
-		 */
-
-		if(!m_hasNewGossips) {
-
-			// check delay and latency
-			time_t currentTime = time(NULL);
-
-			int minimumWaitTime = 10; // seconds
-			int distance = currentTime - m_lastGossipingEventTime;
-
-			if(distance < minimumWaitTime)
-				return;
-
-			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
-
-			m_gossipStatus.clear();
-			m_linkedActorsForGossip.clear();
-
-			// synchronize indexes in m_indexesToShareWithArbiter
-			m_mode = MODE_EVALUATE_GOSSIPS;
-			return;
-		}
-
-		for(int gossipIndex = 0 ; gossipIndex < (int)m_gossips.size() ; ++gossipIndex) {
-
-			if(m_gossipStatus[gossipIndex].size() == m_linkedActorsForGossip.size())
-				continue;
-
-			// attempt to share gossip with linked actors
-			// find an actor that does not have the gossip already
-			for(set<Rank>::iterator i = m_linkedActorsForGossip.begin() ; i != m_linkedActorsForGossip.end() ; ++i) {
-				Rank actor = *i;
-
-				bool gossipStatus = m_gossipStatus[gossipIndex].count(actor) > 0;
-
-				if(gossipStatus)
-					continue;
-
-				// we found a gossip that needs to be shared with actor <actor>
-
-				m_lastGossipingEventTime = time(NULL);
-
-				uint8_t*messageBuffer = (uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
-
-#ifdef ASSERT_CONFIG
-				assert( messageBuffer != NULL );
-#endif /* ASSERT_CONFIG */
-
-				int position = 0;
-				GraphSearchResult & gossip =  /*&*/ m_gossips[gossipIndex];
-				position += gossip.dump(messageBuffer + position);
-
-				int units = position / sizeof(MessageUnit);
-
-				if(position % sizeof(MessageUnit))
-					units ++;
-
-				string key = gossip.toString();
-
-				Message aMessage((MessageUnit*)messageBuffer, units, actor,
-					RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
-				m_outbox->push_back(&aMessage);
-
-				m_gossipStatus[gossipIndex].insert(actor);
-
-				//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
-
-				return;
-			}
-		}
-
-		// at this point, we tried every gossip and they are all synchronized.
-
-		m_hasNewGossips = false;
+		shareWithLinkedActors();
 
 	} else if(m_mode == MODE_EVALUATE_GOSSIPS) {
 
-		/**
-		 * Here, we do that in batch.
-		 */
+		evaluateGossips();
 
-		m_seedGossipSolver.setInput(&m_gossips);
-		m_seedGossipSolver.compute();
+	} else if(m_mode == MODE_REBUILD_SEED_ASSETS) {
 
-		vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
-
-		//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
-		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
-
-		/**
-		 * Now, the actor needs to check how many of its seeds are in the solution.
-		 * The actor effectively loses ownership for any of these seeds in the solution.
-		 *
-		 * The actor can keep the seeds not in the solution.
-		 *
-		 * After that, the seeds in the solution need to be assigned ownership.
-		 * For the first implementation, the ownership will be based on actors associated
-		 * with the seeds in the solution.
-		 *
-		 * For instance, for the result A-B-C where A is owned by 0, B by 1 and C by 2. Then this
-		 * A-B-C solution will be owned by 0, 1 or 2.
-		 */
-
-		// current seeds are stored in m_seeds
-		// new seeds are in solution;
-		// to make this a generalized process, let's add the seeds that are not in the solution
-		// in a new solution
-
-		set<PathHandle> localPathsInSolution;
-
-		for(vector<GraphSearchResult>::iterator i = solution.begin();
-				i != solution.end() ; ++i) {
-
-			GraphSearchResult & result = *i;
-			vector<PathHandle> & handles = result.getPathHandles();
-
-			for(vector<PathHandle>::iterator j = handles.begin() ; j != handles.end() ; ++j) {
-
-				PathHandle & thePath = *j;
-				localPathsInSolution.insert(thePath);
-			}
-		}
-
-		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS " << solution.size() << " entries need an owner." << endl;
-
-		for(vector<GraphSearchResult>::iterator i = solution.begin() ;
-				i!= solution.end() ; ++i) {
-
-			GraphSearchResult & entry = *i;
-
-			PathHandle & firstHandle = entry.getPathHandles()[0];
-			PathHandle & lastHandle = entry.getPathHandles()[entry.getPathHandles().size()-1];
-
-			// this algorithm is stupid because it does not enforce
-			// load balancing.
-			//
-			// TODO: implement a true load balancing algorithme here...
-
-			PathHandle & smallest = firstHandle;
-			if(lastHandle < firstHandle)
-				smallest = lastHandle;
-
-			Rank owner = getRankFromPathUniqueId(smallest);
-
-			if(owner == m_core->getRank()) {
-				m_newSeedBluePrints.push_back(entry);
-			}
-		}
-
-		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " claimed ownership for " << m_newSeedBluePrints.size();
-		cout << " before merging its own assets in the pool." << endl;
-
-		// this needs to run after trimming those short seeds with dead-ends
-
-		// add local seeds that are not in the local solution
-		// a local seeds can't be in a remote solution if it is in
-		// the local solution anyway
-		for(int i = 0 ; i < (int) m_seeds->size() ; ++i) {
-
-			PathHandle identifier = getPathUniqueId(m_parameters->getRank(), i);
-
-			if(localPathsInSolution.count(identifier) == 0) {
-
-				GraphSearchResult result;
-				result.addPathHandle(identifier, false);
-
-				m_newSeedBluePrints.push_back(result);
-			}
-		}
-
-		cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " will assume ownership for " << m_newSeedBluePrints.size();
-		cout << " objects, had " << m_seeds->size() << " before merging" << endl;
-
-		int index = 0;
-		for(vector<GraphSearchResult>::iterator i = m_newSeedBluePrints.begin() ;
-				i != m_newSeedBluePrints.end() ; ++i) {
-			cout << "[DEBUG] OWNED OBJECT @" << index++ << " ";
-			(*i).print();
-			cout << endl;
-		}
-		m_mode = MODE_STOP_THIS_SITUATION;
+		rebuildSeedAssets();
 
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
 
 		m_core->closeSlaveModeLocally();
 	}
 
+}
+
+void SpuriousSeedAnnihilator::rebuildSeedAssets() {
+
+	if(!m_initialized) {
+
+		m_seedIndex = 0;
+		m_pathIndex = 0;
+		m_location = 0;
+
+		m_initialized = true;
+
+	} else if(m_seedIndex < (int)m_newSeedBluePrints.size()) {
+
+		/*
+		if(!m_pushedMock) {
+			GraphPath newPath;
+			newPath.setKmerLength(m_parameters->getWordSize());
+			m_newSeeds.push_back(newPath);
+			m_pushedMock = true;
+			m_messageWasSent = false;
+			m_messageWasReceived = false;
+
+			m_hasLength = false;
+		}else if(!m_hasLength) {
+			if(!m_messageWasSent) {
+
+
+			} else if(m_inbox.hasMessage(RAY_MESSAGE_TAG_GET_SEED_LENGTH_REPLY)) {
+
+			}
+		}
+		*/
+
+		m_seedIndex++;
+	} else {
+
+		m_mode = MODE_STOP_THIS_SITUATION;
+
+		m_initialized = false;
+		m_seedIndex = 0;
+		m_pathIndex = 0;
+		m_location = 0;
+	}
+}
+
+void SpuriousSeedAnnihilator::evaluateGossips() {
+	/**
+	 * Here, we do that in batch.
+	 */
+
+	m_seedGossipSolver.setInput(&m_gossips);
+	m_seedGossipSolver.compute();
+
+	vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
+
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
+	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
+
+	/**
+	 * Now, the actor needs to check how many of its seeds are in the solution.
+	 * The actor effectively loses ownership for any of these seeds in the solution.
+	 *
+	 * The actor can keep the seeds not in the solution.
+	 *
+	 * After that, the seeds in the solution need to be assigned ownership.
+	 * For the first implementation, the ownership will be based on actors associated
+	 * with the seeds in the solution.
+	 *
+	 * For instance, for the result A-B-C where A is owned by 0, B by 1 and C by 2. Then this
+	 * A-B-C solution will be owned by 0, 1 or 2.
+	 */
+
+	// current seeds are stored in m_seeds
+	// new seeds are in solution;
+	// to make this a generalized process, let's add the seeds that are not in the solution
+	// in a new solution
+
+	set<PathHandle> localPathsInSolution;
+
+	for(vector<GraphSearchResult>::iterator i = solution.begin();
+			i != solution.end() ; ++i) {
+
+		GraphSearchResult & result = *i;
+		vector<PathHandle> & handles = result.getPathHandles();
+
+		for(vector<PathHandle>::iterator j = handles.begin() ; j != handles.end() ; ++j) {
+
+			PathHandle & thePath = *j;
+			localPathsInSolution.insert(thePath);
+		}
+	}
+
+	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS " << solution.size() << " entries need an owner." << endl;
+
+	for(vector<GraphSearchResult>::iterator i = solution.begin() ;
+			i!= solution.end() ; ++i) {
+
+		GraphSearchResult & entry = *i;
+
+		PathHandle & firstHandle = entry.getPathHandles()[0];
+		PathHandle & lastHandle = entry.getPathHandles()[entry.getPathHandles().size()-1];
+
+		// this algorithm is stupid because it does not enforce
+		// load balancing.
+		//
+		// TODO: implement a true load balancing algorithme here...
+
+		PathHandle & smallest = firstHandle;
+		if(lastHandle < firstHandle)
+			smallest = lastHandle;
+
+		Rank owner = getRankFromPathUniqueId(smallest);
+
+		if(owner == m_core->getRank()) {
+			m_newSeedBluePrints.push_back(entry);
+		}
+	}
+
+	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " claimed ownership for " << m_newSeedBluePrints.size();
+	cout << " before merging its own assets in the pool." << endl;
+
+	// this needs to run after trimming those short seeds with dead-ends
+
+	// add local seeds that are not in the local solution
+	// a local seeds can't be in a remote solution if it is in
+	// the local solution anyway
+	for(int i = 0 ; i < (int) m_seeds->size() ; ++i) {
+
+		PathHandle identifier = getPathUniqueId(m_parameters->getRank(), i);
+
+		if(localPathsInSolution.count(identifier) == 0) {
+
+			GraphSearchResult result;
+			result.addPathHandle(identifier, false);
+
+			m_newSeedBluePrints.push_back(result);
+		}
+	}
+
+	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " will assume ownership for " << m_newSeedBluePrints.size();
+	cout << " objects, had " << m_seeds->size() << " before merging" << endl;
+
+	int index = 0;
+	for(vector<GraphSearchResult>::iterator i = m_newSeedBluePrints.begin() ;
+			i != m_newSeedBluePrints.end() ; ++i) {
+		cout << "[DEBUG] OWNED OBJECT @" << index++ << " ";
+		(*i).print();
+		cout << endl;
+	}
+
+	m_mode = MODE_REBUILD_SEED_ASSETS;
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MASTER_MODE_CLEAN_SEEDS(){

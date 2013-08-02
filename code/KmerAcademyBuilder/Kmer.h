@@ -23,7 +23,8 @@
 #define _Kmer
 
 #include <code/Mock/constants.h>
-#include <code/Mock/CarriageableItem.h>
+
+#include <RayPlatform/store/CarriageableItem.h>
 
 #include <RayPlatform/core/types.h>
 

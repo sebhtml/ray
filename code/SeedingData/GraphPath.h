@@ -23,7 +23,8 @@
 
 #include <code/Mock/constants.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
-#include <code/Mock/CarriageableItem.h>
+
+#include <RayPlatform/store/CarriageableItem.h>
 
 #include <vector>
 using namespace std;
