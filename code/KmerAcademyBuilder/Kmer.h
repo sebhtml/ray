@@ -84,6 +84,7 @@ public:
 
 	int load(const uint8_t * buffer);
 	int dump(uint8_t * buffer) const;
+	int getRequiredNumberOfBytes() const;
 
 	void operator=(const Kmer&b);
 	bool operator<(const Kmer&b)const;

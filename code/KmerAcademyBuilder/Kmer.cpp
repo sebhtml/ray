@@ -53,7 +53,8 @@ Kmer::Kmer(){
 Kmer::~Kmer(){
 }
 
-int Kmer::getNumberOfU64()const{
+int Kmer::getNumberOfU64() const {
+
 	return KMER_U64_ARRAY_SIZE;
 }
 
@@ -483,4 +484,8 @@ int Kmer::dump(uint8_t * buffer) const {
 	pack((MessageUnit*)buffer, &elements);
 
 	return elements * sizeof(MessageUnit);
+}
+
+int Kmer::getRequiredNumberOfBytes() const {
+	return getNumberOfU64() * sizeof(MessageUnit);
 }

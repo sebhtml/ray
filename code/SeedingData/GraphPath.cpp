@@ -654,3 +654,36 @@ void GraphPath::reverseContent(GraphPath & newPath) const {
 #endif
 
 }
+
+int GraphPath::getRequiredNumberOfBytes() const {
+
+	int position = 0;
+
+	uint32_t elements = size();
+
+	int operationSize = sizeof(uint32_t);
+	//memcpy(buffer + position, &elements, operationSize);
+	position += operationSize;
+
+	uint32_t kmerLength = getKmerLength();
+
+#ifdef CONFIG_ASSERT
+	assert(kmerLength > 0);
+#endif
+
+	//memcpy(buffer + position, &kmerLength, operationSize);
+	position += operationSize;
+
+	//cout << "[DEBUG] GraphPath::dump kmerLength " << kmerLength << endl;
+
+	for(int i = 0 ; i < (int)elements ; i ++) {
+		Kmer value;
+		at(i, &value);
+		//position += value.dump(buffer + position);
+		position += value.getRequiredNumberOfBytes();
+	}
+
+	return position;
+
+
+}

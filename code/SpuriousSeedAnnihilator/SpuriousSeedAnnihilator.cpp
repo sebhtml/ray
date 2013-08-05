@@ -654,7 +654,7 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 	for(int i = 0 ; i  < (int)m_seeds->size() ; ++i) {
 
-		//GraphPath & seed = m_seeds->at(i);
+		GraphPath & seed = m_seeds->at(i);
 
 		PathHandle handle = getPathUniqueId(m_core->getRank(), i);
 
@@ -669,8 +669,10 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 		string keyObject = key.str();
 
 		// obviously content is just a test...
-		int bytes = 8;
-		char content[16];
+
+		int bytes = seed.getRequiredNumberOfBytes();
+		char * content  = keyValueStore.allocateMemory(bytes);
+		seed.dump((uint8_t*)content);
 
 		keyValueStore.insert(keyObject.c_str(), keyObject.length(),
 				content, bytes);

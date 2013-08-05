@@ -133,6 +133,7 @@ public:
 
 	int load(const uint8_t * buffer);
 	int dump(uint8_t * buffer) const;
+	int getRequiredNumberOfBytes() const;
 
 	int getKmerLength() const;
 
@@ -141,6 +142,7 @@ public:
 	 * in another object.
 	 */
 	void reverseContent(GraphPath & newPath) const;
+
 };
 
 #endif
