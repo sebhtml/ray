@@ -284,6 +284,7 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		MODE_WAIT_FOR_ARBITER = value++;
 		MODE_EVALUATE_GOSSIPS = value++;
 		MODE_REBUILD_SEED_ASSETS = value++;
+		MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE = value++;
 
 		m_mode = MODE_SPREAD_DATA;
 		m_toDistribute = m_mergingTechnology.getResults().size();
@@ -529,7 +530,9 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 		m_linkedActorsForGossip.clear();
 
 		// synchronize indexes in m_indexesToShareWithArbiter
-		m_mode = MODE_EVALUATE_GOSSIPS;
+		//m_mode = MODE_EVALUATE_GOSSIPS;
+		m_mode = MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
+
 		return;
 	}
 
@@ -626,6 +629,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		shareWithLinkedActors();
 
+	} else if(m_mode == MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE) {
+
+		pushDataInKeyValueStore();
+
 	} else if(m_mode == MODE_EVALUATE_GOSSIPS) {
 
 		evaluateGossips();
@@ -639,6 +646,38 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		m_core->closeSlaveModeLocally();
 	}
 
+}
+
+void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
+
+	KeyValueStore & keyValueStore = m_core->getKeyValueStore();
+
+	for(int i = 0 ; i  < (int)m_seeds->size() ; ++i) {
+
+		//GraphPath & seed = m_seeds->at(i);
+
+		PathHandle handle = getPathUniqueId(m_core->getRank(), i);
+
+		ostringstream key;
+
+		// something like
+		//
+		// /seeds/joe
+
+		key << "/seeds/" << handle;
+
+		string keyObject = key.str();
+
+		// obviously content is just a test...
+		int bytes = 8;
+		char content[16];
+
+		keyValueStore.insert(keyObject.c_str(), keyObject.length(),
+				content, bytes);
+	}
+
+
+	m_mode = MODE_EVALUATE_GOSSIPS;
 }
 
 void SpuriousSeedAnnihilator::rebuildSeedAssets() {

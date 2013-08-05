@@ -171,6 +171,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_SPREAD_DATA;
 	int MODE_STOP_THIS_SITUATION;
 	int MODE_REBUILD_SEED_ASSETS;
+	int MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
 	int MODE_CHECK_RESULTS;
 	int MODE_SHARE_WITH_LINKED_ACTORS;
 	int MODE_WAIT_FOR_ARBITER;
@@ -272,6 +273,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void checkResults();
 	void evaluateGossips();
 	void rebuildSeedAssets();
+	void pushDataInKeyValueStore();
+
 public:
 
 	SpuriousSeedAnnihilator();
