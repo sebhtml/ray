@@ -468,7 +468,7 @@ char Kmer::getSymbolAtPosition(int kmerLength,bool colored, int position)const{
 	return symbol;
 }
 
-int Kmer::load(const uint8_t * buffer) {
+int Kmer::load(const char * buffer) {
 
 	int elements = 0;
 
@@ -477,7 +477,7 @@ int Kmer::load(const uint8_t * buffer) {
 	return elements * sizeof(MessageUnit);
 }
 
-int Kmer::dump(uint8_t * buffer) const {
+int Kmer::dump(char * buffer) const {
 
 	int elements = 0;
 

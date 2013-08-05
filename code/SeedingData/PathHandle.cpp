@@ -109,15 +109,20 @@ uint64_t & PathHandle::getValue() {
 	return m_value;
 }
 
-int PathHandle::load(const uint8_t * buffer) {
+int PathHandle::load(const char * buffer) {
 	int size = sizeof(uint64_t);
 	memcpy(&m_value, buffer, size);
 	return size;
 }
 
-int PathHandle::dump(uint8_t * buffer) const {
+int PathHandle::dump(char * buffer) const {
 
 	int size = sizeof(uint64_t);
 	memcpy(buffer, &m_value, size);
 	return size;
+}
+
+
+int PathHandle::getRequiredNumberOfBytes() const {
+	return sizeof(uint64_t);
 }

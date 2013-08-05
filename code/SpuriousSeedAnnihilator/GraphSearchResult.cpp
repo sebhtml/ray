@@ -65,7 +65,7 @@ void GraphSearchResult::print() {
 	}
 }
 
-int GraphSearchResult::load(const uint8_t * buffer) {
+int GraphSearchResult::load(const char * buffer) {
 
 	int position = 0;
 
@@ -105,7 +105,7 @@ int GraphSearchResult::load(const uint8_t * buffer) {
 	return position;
 }
 
-int GraphSearchResult::dump(uint8_t * buffer) const {
+int GraphSearchResult::dump(char * buffer) const {
 
 	int position = 0;
 
@@ -242,4 +242,11 @@ void GraphSearchResult::reverseContent() {
 	for(int i = 0 ; i < (int) m_pathOrientations.size() ; ++i) {
 		m_pathOrientations[i] = !m_pathOrientations[i];
 	}
+}
+
+/**
+ * TODO not implemented...
+ */
+int GraphSearchResult::getRequiredNumberOfBytes() const {
+	return 0;
 }

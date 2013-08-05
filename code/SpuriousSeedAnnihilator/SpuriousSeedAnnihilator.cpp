@@ -239,7 +239,7 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Messag
 
 	//cout << "[DEBUG] received RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY" << endl;
 
-	uint8_t * buffer = (uint8_t*) message->getBuffer();
+	char * buffer = (char *) message->getBuffer();
 
 	GraphSearchResult entry;
 	entry.load(buffer);
@@ -308,7 +308,7 @@ void SpuriousSeedAnnihilator::spreadAcquiredData() {
 
 			//cout << "[DEBUG] MODE_SPREAD_DATA send " << m_entryIndex << endl;
 
-			uint8_t*messageBuffer=(uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			char *messageBuffer=(char *)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 			GraphSearchResult & entry = m_mergingTechnology.getResults()[m_entryIndex];
 			int bytes = entry.dump(messageBuffer);
 
@@ -452,7 +452,7 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		GraphSearchResult gossip;
 		int position = 0;
-		uint8_t * buffer = (uint8_t*) message->getBuffer();
+		char * buffer = (char *) message->getBuffer();
 
 		int bytes = gossip.load(buffer + position);
 		position += bytes;
@@ -555,7 +555,7 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 			m_lastGossipingEventTime = time(NULL);
 
-			uint8_t*messageBuffer = (uint8_t*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+			char *messageBuffer = (char *)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 #ifdef ASSERT_CONFIG
 			assert( messageBuffer != NULL );
@@ -662,7 +662,7 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 		// something like
 		//
-		// /seeds/joe
+		// /seeds/1000012.dat
 
 		key << "/seeds/" << handle;
 
@@ -672,12 +672,11 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 		int bytes = seed.getRequiredNumberOfBytes();
 		char * content  = keyValueStore.allocateMemory(bytes);
-		seed.dump((uint8_t*)content);
+		seed.dump((char*)content);
 
 		keyValueStore.insert(keyObject.c_str(), keyObject.length(),
 				content, bytes);
 	}
-
 
 	m_mode = MODE_EVALUATE_GOSSIPS;
 }

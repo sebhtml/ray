@@ -65,8 +65,9 @@ public:
 
 	void print();
 
-	int load(const uint8_t * buffer);
-	int dump(uint8_t * buffer) const;
+	int load(const char * buffer);
+	int dump(char * buffer) const;
+	int getRequiredNumberOfBytes() const;
 
 	vector<PathHandle> & getPathHandles();
 	vector<bool> & getPathOrientations();

@@ -571,7 +571,7 @@ void GraphPath::addBlock(){
 #endif
 
 
-int GraphPath::load(const uint8_t * buffer) {
+int GraphPath::load(const char * buffer) {
 	int position = 0;
 
 	uint32_t elements = 0;
@@ -598,7 +598,7 @@ int GraphPath::load(const uint8_t * buffer) {
 	return position;
 }
 
-int GraphPath::dump(uint8_t * buffer) const {
+int GraphPath::dump(char * buffer) const {
 	int position = 0;
 
 	uint32_t elements = size();

@@ -82,8 +82,8 @@ public:
 	void unpack(const MessageUnit*messageBuffer,int*messagePosition);
 	void unpack(const vector<MessageUnit>*messageBuffer,int*messagePosition);
 
-	int load(const uint8_t * buffer);
-	int dump(uint8_t * buffer) const;
+	int load(const char * buffer);
+	int dump(char * buffer) const;
 	int getRequiredNumberOfBytes() const;
 
 	void operator=(const Kmer&b);

@@ -114,7 +114,7 @@ public:
 	void at(int i,Kmer*value)const;
 
 	CoverageDepth getCoverageAt(int i)const;
-	
+
 	void push_back(const Kmer*a);
 	void getVertices(vector<Kmer>*value)const;
 	void clear();
@@ -131,8 +131,8 @@ public:
 	bool isDeleted();
 	void markAsDeleted();
 
-	int load(const uint8_t * buffer);
-	int dump(uint8_t * buffer) const;
+	int load(const char * buffer);
+	int dump(char * buffer) const;
 	int getRequiredNumberOfBytes() const;
 
 	int getKmerLength() const;
