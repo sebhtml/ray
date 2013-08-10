@@ -23,6 +23,8 @@
 
 #include <code/VerticesExtractor/GridTableIterator.h>
 
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <sstream>
 using namespace std;
 
@@ -710,7 +712,6 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 	}
 
 
-
 	sendMessageToArbiter();
 	m_nextMode = MODE_EVALUATE_GOSSIPS;
 
@@ -721,8 +722,10 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
-	string testKey = "/seeds/115000022";
-	Rank testRank = 22;
+	//string testKey = "/seeds/115000022";
+	string testKey = "/seeds/19";
+	//Rank testRank = 22;
+	Rank testRank = 19;
 
 	if(!m_initialized) {
 
@@ -764,9 +767,12 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 		int valueLength = 0;
 		m_core->getKeyValueStore().getLocalStringKey(testKey, &value, &valueLength);
 
+		uint32_t signature = computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)valueLength);
+
 		cout << "[DEBUG] Rank " << m_core->getRank() << " downloaded key ";
 		cout << testKey << " from " << testRank;
-		cout << ", value length is " << valueLength << " bytes" << endl;
+		cout << ", value length is " << valueLength << " bytes ";
+		cout << " CRC32= " << signature << endl;
 
 		m_mode = MODE_STOP_THIS_SITUATION;
 
