@@ -51,9 +51,11 @@ void SeedGossipSolver::setInput(vector<GraphSearchResult> * gossips) {
  * scoping is everything
  */
 void SeedGossipSolver::compute() {
-
+/*
 	cout << "[DEBUG] computing solution..." << endl;
 	cout << "[DEBUG] index size " << m_index.size() << endl;
+	*/
+
 
 	while(hasFreeGossip()) {
 
@@ -71,12 +73,17 @@ void SeedGossipSolver::compute() {
 }
 
 void SeedGossipSolver::printSolution() {
+
+#if 0
 	cout << "Solution has: " << m_solution.size() << " entries" << endl;
 	cout << "Initial gossips: " << m_gossips->size() << endl;
 	cout << "Objects: " << m_index.size() << endl;
 
 	cout << "edges: " << endl;
+#endif
 
+
+#if 0
 	int iterator = 0;
 	for(vector<GraphSearchResult>::iterator i = m_gossips->begin();
 			i != m_gossips->end() ; ++i) {
@@ -85,6 +92,7 @@ void SeedGossipSolver::printSolution() {
 
 		cout << endl;
 	}
+#endif
 
 	int objectsInSolution = 0;
 
@@ -93,7 +101,7 @@ void SeedGossipSolver::printSolution() {
 	cout << "solution" << endl;
 
 	for(int i = 0 ; i < (int) m_solution.size() ; ++i) {
-		cout << "[DEBUG] @" << i << " ";
+		//cout << "[DEBUG] @" << i << " ";
 
 		int total = m_solution[i].getPathHandles().size();
 		cout << total << " ... ";
@@ -112,7 +120,7 @@ void SeedGossipSolver::printSolution() {
 		}
 	}
 
-	cout << "[DEBUG] list of GraphSearchResult entries" << endl;
+	//cout << "[DEBUG] list of GraphSearchResult entries" << endl;
 
 	for(map<PathHandle, vector<int> >::iterator i = summary.begin();
 			i!= summary.end() ; ++i) {
@@ -120,7 +128,7 @@ void SeedGossipSolver::printSolution() {
 		vector<int> & matches = i->second;
 
 		if(matches.size() != 1) {
-			cout << "[DEBUG] " << i->first << " is in ";
+			//cout << "[DEBUG] " << i->first << " is in ";
 
 			for(vector<int>::iterator j = matches.begin();
 					j != matches.end() ; ++j){
@@ -135,7 +143,7 @@ void SeedGossipSolver::printSolution() {
 		}
 	}
 
-	cout << "[DEBUG] objects found in solution ...... " << endl;
+	//cout << "[DEBUG] objects found in solution ...... " << endl;
 	cout << objectsInSolution << endl;
 }
 

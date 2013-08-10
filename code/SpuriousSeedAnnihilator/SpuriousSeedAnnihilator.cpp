@@ -110,7 +110,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS(){
 
 	int i=0;
 
-	cout << "[DEBUG] call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS preparing payload." << endl;
+	//cout << "[DEBUG] call_RAY_SLAVE_MODE_PUSH_SEED_LENGTHS preparing payload." << endl;
 
 	while(i<maximumPairs && m_iterator!=m_slaveSeedLengths.end()){
 		int length=m_iterator->first;
@@ -352,15 +352,25 @@ void SpuriousSeedAnnihilator::spreadAcquiredData() {
 			m_messageWasSent = false;
 		}
 	} else {
-		Rank arbiter = getArbiter();
 
-		this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
-
-		//cout << "[DEBUG] saying hello to arbiter " << arbiter << " with RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER" << endl;
-
-		m_mode = MODE_WAIT_FOR_ARBITER;
+		sendMessageToArbiter();
+		m_nextMode = MODE_CHECK_RESULTS;
 	}
 
+}
+
+void SpuriousSeedAnnihilator::sendMessageToArbiter() {
+
+#ifdef DEBUG_SEED_MERGING
+	cout << "[DEBUG] Rank " << m_core->getRank() << " sendMessageToArbiter// " << endl;
+#endif
+
+	Rank arbiter = getArbiter();
+	this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, arbiter, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+
+	//cout << "[DEBUG] saying hello to arbiter " << arbiter << " with RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER" << endl;
+
+	m_mode = MODE_WAIT_FOR_ARBITER;
 }
 
 void SpuriousSeedAnnihilator::checkResults() {
@@ -449,6 +459,14 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
 		Message * message = m_inbox->at(0);
+
+		int availableUnits = message->getCount();
+
+		// if the message is empty, we have nothing to do.
+		// this is likely because the object was too large
+		// to be transported.
+		if(availableUnits == 0)
+			return;
 
 		GraphSearchResult gossip;
 		int position = 0;
@@ -563,7 +581,16 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 			int position = 0;
 			GraphSearchResult & gossip =  /*&*/ m_gossips[gossipIndex];
-			position += gossip.dump(messageBuffer + position);
+
+			int requiredBytes = gossip.getRequiredNumberOfBytes();
+
+			int availableBytes = MAXIMUM_MESSAGE_SIZE_IN_BYTES - position;
+
+			if(availableBytes < requiredBytes) {
+				cout << "Error, object is too large to be transported." << endl;
+			} else {
+				position += gossip.dump(messageBuffer + position);
+			}
 
 			int units = position / sizeof(MessageUnit);
 
@@ -618,7 +645,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 			//cout << "[DEBUG] arbiter advises to continue" << endl;
 
-			m_mode = MODE_CHECK_RESULTS;
+			m_mode = m_nextMode;
 		}
 
 	} else if(m_mode == MODE_CHECK_RESULTS) {
@@ -674,22 +701,39 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 		char * content  = keyValueStore.allocateMemory(bytes);
 		seed.dump((char*)content);
 
-		keyValueStore.insert(keyObject.c_str(), keyObject.length(),
-				content, bytes);
+		if(!(keyValueStore.insertLocalKey(keyObject.c_str(), keyObject.length(),
+				content, bytes))) {
+
+			// failed to insert key
+			// we should catch the error...
+		}
 	}
 
-	m_mode = MODE_EVALUATE_GOSSIPS;
+
+
+	sendMessageToArbiter();
+	m_nextMode = MODE_EVALUATE_GOSSIPS;
+
+#ifdef DEBUG_SEED_MERGING
+	cout << "[DEBUG] wait before evaluating gossips..." << endl;
+#endif
 }
 
 void SpuriousSeedAnnihilator::rebuildSeedAssets() {
+
+	string testKey = "/seeds/115000022";
+	Rank testRank = 22;
 
 	if(!m_initialized) {
 
 		m_seedIndex = 0;
 		m_pathIndex = 0;
 		m_location = 0;
-
 		m_initialized = true;
+
+	} else if(!m_core->getKeyValueStore().pullRemoteStringKey(testKey, testRank)) {
+
+		// working hard to download the blob...
 
 	} else if(m_seedIndex < (int)m_newSeedBluePrints.size()) {
 
@@ -716,6 +760,14 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 		m_seedIndex++;
 	} else {
 
+		char * value = NULL;
+		int valueLength = 0;
+		m_core->getKeyValueStore().getLocalStringKey(testKey, &value, &valueLength);
+
+		cout << "[DEBUG] Rank " << m_core->getRank() << " downloaded key ";
+		cout << testKey << " from " << testRank;
+		cout << ", value length is " << valueLength << " bytes" << endl;
+
 		m_mode = MODE_STOP_THIS_SITUATION;
 
 		m_initialized = false;
@@ -736,7 +788,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 	vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
 
 	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
-	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
 
 	/**
 	 * Now, the actor needs to check how many of its seeds are in the solution.
@@ -772,7 +824,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		}
 	}
 
-	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS " << solution.size() << " entries need an owner." << endl;
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS " << solution.size() << " entries need an owner." << endl;
 
 	for(vector<GraphSearchResult>::iterator i = solution.begin() ;
 			i!= solution.end() ; ++i) {
@@ -798,8 +850,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		}
 	}
 
-	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " claimed ownership for " << m_newSeedBluePrints.size();
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " claimed ownership for " << m_newSeedBluePrints.size();
+
+#ifdef DEBUG_SEED_MERGING
 	cout << " before merging its own assets in the pool." << endl;
+#endif
 
 	// this needs to run after trimming those short seeds with dead-ends
 
@@ -819,9 +874,10 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		}
 	}
 
-	cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " will assume ownership for " << m_newSeedBluePrints.size();
-	cout << " objects, had " << m_seeds->size() << " before merging" << endl;
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_core->getRank() << " will assume ownership for " << m_newSeedBluePrints.size();
+	//cout << " objects, had " << m_seeds->size() << " before merging" << endl;
 
+#if 0
 	int index = 0;
 	for(vector<GraphSearchResult>::iterator i = m_newSeedBluePrints.begin() ;
 			i != m_newSeedBluePrints.end() ; ++i) {
@@ -829,6 +885,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		(*i).print();
 		cout << endl;
 	}
+#endif
 
 	m_mode = MODE_REBUILD_SEED_ASSETS;
 }

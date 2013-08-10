@@ -181,6 +181,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	bool m_mustAdviseRanks;
 	int m_synced;
 	int m_mode;
+	int m_nextMode;
 	bool m_initializedProcessing;
 	int m_entryIndex;
 
@@ -274,6 +275,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void evaluateGossips();
 	void rebuildSeedAssets();
 	void pushDataInKeyValueStore();
+	void sendMessageToArbiter();
 
 public:
 
