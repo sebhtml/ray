@@ -289,6 +289,7 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE = value++;
 
 		m_mode = MODE_SPREAD_DATA;
+
 		m_toDistribute = m_mergingTechnology.getResults().size();
 
 		m_messageWasSent = false;
@@ -645,7 +646,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
 
-			//cout << "[DEBUG] arbiter advises to continue" << endl;
+			cout << "[DEBUG] arbiter advises to continue" << endl;
 
 			m_mode = m_nextMode;
 		}
@@ -664,6 +665,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	} else if(m_mode == MODE_EVALUATE_GOSSIPS) {
 
+		cout << "DEBUG Calling evaluateGossips" << endl;
 		evaluateGossips();
 
 	} else if(m_mode == MODE_REBUILD_SEED_ASSETS) {
@@ -677,6 +679,20 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 }
 
+void SpuriousSeedAnnihilator::getSeedKey(PathHandle & handle, string & keyObject) {
+
+	ostringstream key;
+
+	// something like
+	//
+	// /seeds/1000012
+
+	key << "/seeds/" << handle;
+
+	keyObject = key.str();
+
+}
+
 void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 	for(int i = 0 ; i  < (int)m_seeds->size() ; ++i) {
@@ -685,15 +701,8 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 		PathHandle handle = getPathUniqueId(m_core->getRank(), i);
 
-		ostringstream key;
-
-		// something like
-		//
-		// /seeds/1000012
-
-		key << "/seeds/" << handle;
-
-		string keyObject = key.str();
+		string keyObject;
+		getSeedKey(handle, keyObject);
 
 		// obviously content is just a test...
 
@@ -720,11 +729,15 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
+	//cout << "DEBUG rebuildSeedAssets" << endl;
+
 	//string testKey = "/seeds/115000022";
 	//Rank testRank = 22;
 
+	/*
 	string testKey = "/seeds/19";
 	Rank testRank = 19;
+	*/
 
 	/*
 	string testKey = "/seeds/60000001";
@@ -733,40 +746,82 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 	if(!m_initialized) {
 
+		cout << "DEBUG rebuildSeedAssets initializing..." << endl;
+
 		m_seedIndex = 0;
 		m_pathIndex = 0;
 		m_location = 0;
+
+		/*
+		 * This was for testing purposes.
+		 *
+		 * The API of RayPlatform works great.
+		 */
+		//m_core->getKeyValueStore().pullRemoteKey(testKey, testRank, m_request);
+
 		m_initialized = true;
 
-		m_core->getKeyValueStore().pullRemoteKey(testKey, testRank, m_request);
-
+	/*
 	} else if(!m_core->getKeyValueStore().test(m_request)) {
+	*/
 
 	} else if(m_seedIndex < (int)m_newSeedBluePrints.size()) {
 
-		/*
-		if(!m_pushedMock) {
-			GraphPath newPath;
-			newPath.setKmerLength(m_parameters->getWordSize());
-			m_newSeeds.push_back(newPath);
-			m_pushedMock = true;
-			m_messageWasSent = false;
-			m_messageWasReceived = false;
+#if 0
+		m_seedIndex ++;
+		return;
+#endif
 
-			m_hasLength = false;
-		}else if(!m_hasLength) {
+		vector<PathHandle> & pathHandles = m_newSeedBluePrints[m_seedIndex].getPathHandles();
+
+		if(m_pathIndex < (int)pathHandles.size()) {
+
+			string key = "";
+			PathHandle & handle = pathHandles[m_pathIndex];
+			getSeedKey(handle, key);
+			Rank rank = getRankFromPathUniqueId(handle);
+
 			if(!m_messageWasSent) {
 
+				cout << "[DEBUG] downloading key " << key << " from rank " << rank;
+				cout << endl;
 
-			} else if(m_inbox.hasMessage(RAY_MESSAGE_TAG_GET_SEED_LENGTH_REPLY)) {
+				m_core->getKeyValueStore().pullRemoteKey(key, rank, m_request);
 
+				m_messageWasSent = true;
+
+			} else if(m_core->getKeyValueStore().test(m_request)) {
+
+				/*
+				 * The transfer is completed.
+				 */
+
+
+				char * value = NULL;
+				int size = 0;
+				m_core->getKeyValueStore().getLocalKey(key, value, size);
+
+				cout << "[DEBUG] transfer is now completed for key " << key << " ";
+				cout << " " << size << " bytes" << endl;
+
+				m_pathIndex ++;
+				m_messageWasSent = false;
 			}
-		}
-		*/
 
-		m_seedIndex++;
+		} else {
+			m_seedIndex++;
+
+			m_pathIndex = 0;
+		}
+
 	} else {
 
+#if 0
+		/**
+		 *
+		 * This code was useful to test the transport of
+		 * data.
+		 */
 		char * value = NULL;
 		int valueLength = 0;
 		m_core->getKeyValueStore().getLocalKey(testKey, &value, &valueLength);
@@ -776,18 +831,17 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 		cout << testKey << " from " << testRank;
 		cout << ", value length is " << valueLength << " bytes ";
 
-#if 0
 		cout << " CRC32= 0-3999 .. ";
 		cout << computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)4000);
 
 		cout << " CRC32= 4000- .. ";
 		cout << computeCyclicRedundancyCode32((uint8_t*) value + 4000, (uint32_t)valueLength - 4000);
-#endif
 
 		cout << " CRC32= ";
 		cout << computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)valueLength);
 
 		cout << endl;
+#endif
 
 		m_mode = MODE_STOP_THIS_SITUATION;
 
@@ -799,6 +853,9 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 }
 
 void SpuriousSeedAnnihilator::evaluateGossips() {
+
+	cout << "[DEBUG] evaluateGossips" << endl;
+
 	/**
 	 * Here, we do that in batch.
 	 */
@@ -907,6 +964,8 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		cout << endl;
 	}
 #endif
+
+	cout << "DEBUG next = MODE_REBUILD_SEED_ASSETS" << endl;
 
 	m_mode = MODE_REBUILD_SEED_ASSETS;
 }

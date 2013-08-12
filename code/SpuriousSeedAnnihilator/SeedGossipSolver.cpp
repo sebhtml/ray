@@ -74,6 +74,8 @@ void SeedGossipSolver::compute() {
 
 void SeedGossipSolver::printSolution() {
 
+	cout << "DEBUG [printSolution]" << endl;
+
 #if 0
 	cout << "Solution has: " << m_solution.size() << " entries" << endl;
 	cout << "Initial gossips: " << m_gossips->size() << endl;
@@ -122,26 +124,26 @@ void SeedGossipSolver::printSolution() {
 
 	//cout << "[DEBUG] list of GraphSearchResult entries" << endl;
 
+#if 0
 	for(map<PathHandle, vector<int> >::iterator i = summary.begin();
 			i!= summary.end() ; ++i) {
 
 		vector<int> & matches = i->second;
 
 		if(matches.size() != 1) {
-			//cout << "[DEBUG] " << i->first << " is in ";
+			cout << "[DEBUG] " << i->first << " is in ";
 
 			for(vector<int>::iterator j = matches.begin();
 					j != matches.end() ; ++j){
 				cout << " " << *j;
 			}
 			cout << endl;
-/*
 			cout << "[DEBUG] first gossip that contains the path: ";
 			m_solution.at(matches[0]).print();
 			cout << endl;
-			*/
 		}
 	}
+#endif
 
 	//cout << "[DEBUG] objects found in solution ...... " << endl;
 	cout << objectsInSolution << endl;

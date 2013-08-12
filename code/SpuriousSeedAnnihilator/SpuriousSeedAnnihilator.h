@@ -279,6 +279,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void pushDataInKeyValueStore();
 	void sendMessageToArbiter();
 
+	void getSeedKey(PathHandle & handle, string & keyObject);
 public:
 
 	SpuriousSeedAnnihilator();
