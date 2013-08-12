@@ -679,8 +679,6 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
-	KeyValueStore & keyValueStore = m_core->getKeyValueStore();
-
 	for(int i = 0 ; i  < (int)m_seeds->size() ; ++i) {
 
 		GraphPath & seed = m_seeds->at(i);
@@ -691,7 +689,7 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 		// something like
 		//
-		// /seeds/1000012.dat
+		// /seeds/1000012
 
 		key << "/seeds/" << handle;
 
@@ -700,17 +698,17 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 		// obviously content is just a test...
 
 		int bytes = seed.getRequiredNumberOfBytes();
-		char * content  = keyValueStore.allocateMemory(bytes);
-		seed.dump((char*)content);
+		char * content  = m_core->getKeyValueStore().allocateMemory(bytes);
+		seed.dump(content);
 
-		if(!(keyValueStore.insertLocalKey(keyObject.c_str(), keyObject.length(),
-				content, bytes))) {
+		if(!(m_core->getKeyValueStore().insertLocalKey(keyObject, content, bytes))) {
 
 			// failed to insert key
 			// we should catch the error...
+			//
+			// For example, it will return false if the key is already there.
 		}
 	}
-
 
 	sendMessageToArbiter();
 	m_nextMode = MODE_EVALUATE_GOSSIPS;
@@ -723,9 +721,15 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 	//string testKey = "/seeds/115000022";
-	string testKey = "/seeds/19";
 	//Rank testRank = 22;
+
+	string testKey = "/seeds/19";
 	Rank testRank = 19;
+
+	/*
+	string testKey = "/seeds/60000001";
+	Rank testRank = 1;
+	*/
 
 	if(!m_initialized) {
 
@@ -734,9 +738,9 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 		m_location = 0;
 		m_initialized = true;
 
-	} else if(!m_core->getKeyValueStore().pullRemoteStringKey(testKey, testRank)) {
+		m_core->getKeyValueStore().pullRemoteKey(testKey, testRank, m_request);
 
-		// working hard to download the blob...
+	} else if(!m_core->getKeyValueStore().test(m_request)) {
 
 	} else if(m_seedIndex < (int)m_newSeedBluePrints.size()) {
 
@@ -765,14 +769,25 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 		char * value = NULL;
 		int valueLength = 0;
-		m_core->getKeyValueStore().getLocalStringKey(testKey, &value, &valueLength);
+		m_core->getKeyValueStore().getLocalKey(testKey, &value, &valueLength);
 
-		uint32_t signature = computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)valueLength);
 
 		cout << "[DEBUG] Rank " << m_core->getRank() << " downloaded key ";
 		cout << testKey << " from " << testRank;
 		cout << ", value length is " << valueLength << " bytes ";
-		cout << " CRC32= " << signature << endl;
+
+#if 0
+		cout << " CRC32= 0-3999 .. ";
+		cout << computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)4000);
+
+		cout << " CRC32= 4000- .. ";
+		cout << computeCyclicRedundancyCode32((uint8_t*) value + 4000, (uint32_t)valueLength - 4000);
+#endif
+
+		cout << " CRC32= ";
+		cout << computeCyclicRedundancyCode32((uint8_t*) value, (uint32_t)valueLength);
+
+		cout << endl;
 
 		m_mode = MODE_STOP_THIS_SITUATION;
 

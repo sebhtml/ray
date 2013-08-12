@@ -204,6 +204,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	map<int,int> m_slaveSeedLengths;
 	map<int,int>::iterator m_iterator;
 
+	KeyValueStoreRequest m_request;
+
 /*
  * The workflow implements the TaskCreator interface so that it's possible for a 
  * single CorePlugin to implement several workflows that use VirtualCommunicator and
