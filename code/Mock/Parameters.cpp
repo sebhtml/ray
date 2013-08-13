@@ -30,6 +30,7 @@
 #include <code/SequencesLoader/Read.h>
 #include <code/SequencesLoader/Loader.h>
 #include <code/SequencesLoader/ReadHandle.h>
+#include <code/SequencesLoader/SequenceFileDetector.h>
 
 #include <RayPlatform/memory/MyAllocator.h>
 #include <RayPlatform/core/OperatingSystem.h>
@@ -122,7 +123,7 @@ int Parameters::getWordSize(){
 void Parameters::loadCommandsFromFile(char*file){
 
 	// first, load the configuration into a stream
-	
+
 	ostringstream content;
 	#define __BLOCK_SIZE 4096
 
@@ -194,7 +195,7 @@ void Parameters::loadCommandsFromFile(char*file){
 
 		m_commands.push_back(token);
 	}
-	
+
 }
 
 void Parameters::loadCommandsFromArguments(int argc,char**argv){
@@ -246,7 +247,7 @@ void Parameters::parseCommands(){
 	pairedReadsCommands.insert("LoadPairedEndReads");
 	pairedReadsCommands.insert("-LoadPairedEndReads");
 	pairedReadsCommands.insert("--LoadPairedEndReads");
-	
+
 	set<string> interleavedCommands;
 	interleavedCommands.insert("-i");
 
@@ -267,7 +268,7 @@ void Parameters::parseCommands(){
 	outputFileCommands.insert("-o");
 	outputFileCommands.insert("-OutputFile");
 	outputFileCommands.insert("--OutputFile");
-	
+
 	set<string> memoryMappedFileCommands;
 	memoryMappedFileCommands.insert("-MemoryPrefix");
 
@@ -335,6 +336,9 @@ void Parameters::parseCommands(){
 	set<string> maximumSeedCoverage;
 	maximumSeedCoverage.insert("-use-maximum-seed-coverage");
 
+	set<string> detectSequenceFiles;
+	detectSequenceFiles.insert("-detect-sequence-files");
+
 	vector<set<string> > toAdd;
 	toAdd.push_back(checkpoints);
 	toAdd.push_back(coloringOneColor);
@@ -356,7 +360,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(reduceMemoryUsage);
 	toAdd.push_back(memoryMappedFileCommands);
 	toAdd.push_back(connectionType);
-	toAdd.push_back(showMemory);	
+	toAdd.push_back(showMemory);
 	toAdd.push_back(debugBubbles);
 	toAdd.push_back(runProfiler);
 	toAdd.push_back(showContext);
@@ -364,6 +368,7 @@ void Parameters::parseCommands(){
 	toAdd.push_back(writeKmers);
 	toAdd.push_back(colorSpaceMode);
 	toAdd.push_back(maximumSeedCoverage);
+	toAdd.push_back(detectSequenceFiles);
 
 	for(int i=0;i<(int)toAdd.size();i++){
 		for(set<string>::iterator j=toAdd[i].begin();j!=toAdd[i].end();j++){
@@ -375,8 +380,55 @@ void Parameters::parseCommands(){
 
 	bool providedMemoryPrefix=false;
 
+	// expand user command
+
+	vector<string> & extraCommands = m_commands;
+
 	for(int i=0;i<(int)m_commands.size();i++){
 		string token=m_commands[i];
+
+		if(detectSequenceFiles.count(token) > 0) {
+
+			i++;
+			int items = m_commands.size() - i;
+
+			if(items < 1) {
+				if(m_rank == MASTER_RANK)
+					cout << "Error: " << token << " needs 1 item, you provided " << items << endl;
+
+				m_error = true;
+				return;
+			}
+			string directory = m_commands[i];
+
+			SequenceFileDetector sequenceFileDetector;
+			sequenceFileDetector.detectSequenceFiles(directory);
+
+			for(int i = 0 ; i < (int)sequenceFileDetector.getLeftFiles().size() ; ++i) {
+
+				string & leftFile = sequenceFileDetector.getLeftFiles()[i];
+				string & rightFile = sequenceFileDetector.getRightFiles()[i];
+
+				extraCommands.push_back("LoadPairedEndReads");
+				extraCommands.push_back(leftFile);
+				extraCommands.push_back(rightFile);
+			}
+
+			for(int i = 0; i < (int)sequenceFileDetector.getSingleFiles().size() ; ++i) {
+
+				string & singleFile = sequenceFileDetector.getSingleFiles()[i];
+
+				extraCommands.push_back("LoadSingleEndReads");
+				extraCommands.push_back(singleFile);
+			}
+		}
+	}
+
+	// now parse the commands.
+
+	for(int i=0;i<(int)m_commands.size();i++){
+		string token=m_commands[i];
+
 		if(singleReadsCommands.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -398,6 +450,8 @@ void Parameters::parseCommands(){
 				cout<<"-s (single sequences)"<<endl;
 				cout<<" Sequences: "<<token<<endl;
 			}
+
+
 		}else if(memoryMappedFileCommands.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -582,7 +636,7 @@ void Parameters::parseCommands(){
 			m_singleEndReadsFile.push_back(left);
 			i++;
 			token=m_commands[i];
-			
+
 			// add right file
 			string right=token;
 			int rightFile=m_singleEndReadsFile.size();
@@ -614,7 +668,7 @@ void Parameters::parseCommands(){
 
 				if(!isValidInteger(m_commands[i+1].c_str())
 					|| !isValidInteger(m_commands[i+2].c_str())){
-					
+
 					if(m_rank==MASTER_RANK){
 						cout<<"Warning: invalid integer values for distances, you provided: -p ";
 						cout<<left<<" "<<right<<" "<<m_commands[i+1];
@@ -684,7 +738,7 @@ void Parameters::parseCommands(){
 
 			m_reducerIsActivated=true;
 			m_reducerPeriod=1000000;
-			
+
 			if(items==1){
 				m_reducerPeriod=atoi(m_commands[i+1].c_str());
 			}
@@ -730,7 +784,7 @@ void Parameters::parseCommands(){
 			token=m_commands[i];
 			m_peakCoverage=atoi(token.c_str());
 			m_providedPeakCoverage=true;
-	
+
 		}else if(connectionType.count(token)>0){
 			i++;
 			int items=m_commands.size()-i;
@@ -898,7 +952,7 @@ void Parameters::parseCommands(){
 	maximumLibraryIndex--;
 
 	int maximumNumberOfFiles=(maximumLibraryIndex+1)*2;
-	
+
 	assert((int)m_singleEndReadsFile.size()<=maximumNumberOfFiles);
 	#endif
 
@@ -943,7 +997,7 @@ void Parameters::writeCommandFile(){
 	cout<<endl;
 
 	cout<<"k-mer length: "<<m_wordSize<<endl;
-	
+
 	ostringstream rayRuntime;
 	rayRuntime<<getPrefix()<<"RayVersion.txt";
 	ofstream f2(rayRuntime.str().c_str());
@@ -1221,14 +1275,14 @@ void Parameters::computeAverageDistances(){
 		vector<int> deviations;
 		LibraryPeakFinder finder;
 		finder.findPeaks(&x,&y,&averages,&deviations);
-	
+
 		for(int i=0;i<(int)averages.size();i++)
 			addLibraryData(library,averages[i],deviations[i]);
 
 		#ifdef WRITE_LIBRARY_OBSERVATIONS
 		f<<"</data></library>"<<endl;
 		#endif
-	}	
+	}
 
 	#ifdef WRITE_LIBRARY_OBSERVATIONS
 	f<<"</libraryData>"<<endl;
@@ -1290,7 +1344,7 @@ void Parameters::addLibraryData(int library,int average,int deviation){
 
 	m_libraryAverageLength[library].push_back(average);
 	m_libraryDeviation[library].push_back(deviation);
-	
+
 	int distance=average+4*deviation;
 	if(distance>m_maximumDistance){
 		m_maximumDistance=distance;
@@ -1406,6 +1460,8 @@ void Parameters::showUsage(){
 	cout<<endl;
 	cout<<basicSpaces<<"mpiexec -n 80 Ray Ray.conf # with commands in a file"<<endl;
 	cout<<endl;
+	cout<<basicSpaces<<"mpiexec -n 80 Ray -k 31 -detect-sequence-files SampleDirectory # auto-detection"<<endl;
+	cout<<endl;
 
 #ifdef CONFIG_MINI_RANKS
 	cout<<basicSpaces<<"mpiexec -n 10 Ray -mini-ranks-per-rank 7 Ray.conf # with mini-ranks"<<endl;
@@ -1472,9 +1528,16 @@ void Parameters::showUsage(){
 
 
 	cout<<"  Inputs"<<endl;
+	cout << endl;
+
+	showOption("-detect-sequence-files SampleDirectory", "Detects files in a directory automatically.");
+	showOptionDescription("This option can generate these commands automatically for you: LoadPairedEndReads (-p) and LoadSingleEndReads (-s)");
+
 	cout<<endl;
 	showOption("-p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]","Provides two files containing paired-end reads.");
 	showOptionDescription("averageOuterDistance and standardDeviation are automatically computed if not provided.");
+	showOptionDescription("LoadPairedEndReads is equivalent to -p");
+
 	cout<<endl;
 	showOption("-i interleavedSequenceFile [averageOuterDistance standardDeviation]","Provides one file containing interleaved paired-end reads.");
 
@@ -1482,6 +1545,7 @@ void Parameters::showUsage(){
 	cout<<endl;
 
 	showOption("-s sequenceFile","Provides a file containing single-end reads.");
+	showOptionDescription("LoadSingleEndReads is equivalent to -s");
 	cout<<endl;
 
 	cout<<"  Outputs"<<endl;
@@ -1491,7 +1555,7 @@ void Parameters::showUsage(){
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;
-	
+
 	showOption("-disable-recycling","Disables read recycling during the assembly");
 	showOptionDescription("reads will be set free in 3 cases:");
 	showOptionDescription("1. the distance did not match for a pair");
@@ -1536,7 +1600,7 @@ void Parameters::showUsage(){
 	text<<"Default is "<<"auto"<<" bits (adaptive), 0 bits disables the Bloom filter.";
 	showOptionDescription(text.str());
 	cout<<endl;
-	
+
 	text.str("");
 	text<<"Default value: "<<__DEFAULT_BUCKETS;
 	showOption("-hash-table-buckets buckets","Sets the initial number of buckets. Must be a power of 2 !");
@@ -1556,7 +1620,7 @@ void Parameters::showUsage(){
 	text<<"Default value: "<< __DEFAULT_LOAD_FACTOR_THRESHOLD<<", must be >= 0.5 and < 1";
 	showOptionDescription(text.str());
 	cout<<endl;
-	
+
 	showOption("-hash-table-verbosity","Activates verbosity for the distributed storage engine");
 	cout<<endl;
 
@@ -1583,7 +1647,7 @@ void Parameters::showUsage(){
 	showOptionDescription("OntologyTerms.txt is fetched from http://geneontology.org");
 	showOptionDescription("Annotations.txt is a 2-column file (EMBL_CDS handle	&	gene ontology identifier)");
 	showOptionDescription("See Documentation/GeneOntology.txt");
-	
+
 
 	cout<<"  Other outputs"<<endl;
 	cout<<endl;
@@ -1793,7 +1857,7 @@ void Parameters::showUsage(){
 	cout<<"         The resulting file is not utilised by Ray."<<endl;
 	cout<<"         The resulting file is very large."<<endl;
 	cout<<endl;
-	
+
 	cout<<"  Assembly steps"<<endl;
 	cout<<endl;
 	cout<<"     RayOutput/SeedLengthDistribution.txt"<<endl;

@@ -20,4 +20,6 @@ SequencesLoader-$(CONFIG_HAVE_LIBBZ2) += code/SequencesLoader/FastaBz2Loader.o
 SequencesLoader-$(CONFIG_HAVE_LIBZ) += code/SequencesLoader/FastqGzLoader.o
 SequencesLoader-$(CONFIG_HAVE_LIBZ) += code/SequencesLoader/FastaGzLoader.o
 
+SequencesLoader-y += code/SequencesLoader/SequenceFileDetector.o
+
 obj-y += $(SequencesLoader-y)

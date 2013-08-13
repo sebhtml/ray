@@ -6,6 +6,8 @@ SYNOPSIS
 
        mpiexec -n 80 Ray Ray.conf # with commands in a file
 
+       mpiexec -n 80 Ray -k 31 -detect-sequence-files SampleDirectory # auto-detection
+
        mpiexec -n 10 Ray -mini-ranks-per-rank 7 Ray.conf # with mini-ranks
 
 DESCRIPTION:
@@ -60,9 +62,14 @@ DESCRIPTION:
 
   Inputs
 
+       -detect-sequence-files SampleDirectory
+              Detects files in a directory automatically.
+              This option can generate these commands automatically for you: LoadPairedEndReads (-p) and LoadSingleEndReads (-s)
+
        -p leftSequenceFile rightSequenceFile [averageOuterDistance standardDeviation]
               Provides two files containing paired-end reads.
               averageOuterDistance and standardDeviation are automatically computed if not provided.
+              LoadPairedEndReads is equivalent to -p
 
        -i interleavedSequenceFile [averageOuterDistance standardDeviation]
               Provides one file containing interleaved paired-end reads.
@@ -70,6 +77,7 @@ DESCRIPTION:
 
        -s sequenceFile
               Provides a file containing single-end reads.
+              LoadSingleEndReads is equivalent to -s
 
   Outputs
 
@@ -434,4 +442,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.2.1-devel
+Ray 2.3.0-devel
