@@ -235,6 +235,9 @@ void GraphSearchResult::reverseContent() {
 		newPath.setKmerLength(oldPath.getKmerLength());
 
 		oldPath.reverseContent(newPath);
+
+		// don't forget to set the new path as well.
+		m_computedPaths[i] = newPath;
 	}
 
 	// reverse strands

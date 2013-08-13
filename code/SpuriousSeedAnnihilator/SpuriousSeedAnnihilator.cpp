@@ -881,6 +881,7 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 			++ metaSeedIndex) {
 
 #if 1
+		cout << "[DEBUG] ***" << endl;
 		cout << "DEBUG generateNewSeeds metaSeedIndex= " << metaSeedIndex << endl;
 		cout << " blueprint ";
 		m_newSeedBluePrints[metaSeedIndex].print();
