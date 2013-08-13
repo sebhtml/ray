@@ -287,6 +287,8 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		MODE_EVALUATE_GOSSIPS = value++;
 		MODE_REBUILD_SEED_ASSETS = value++;
 		MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE = value++;
+		MODE_GENERATE_NEW_SEEDS = value++;
+		MODE_CLEAN_KEY_VALUE_STORE = value++;
 
 		m_mode = MODE_SPREAD_DATA;
 
@@ -672,6 +674,14 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		rebuildSeedAssets();
 
+	} else if(m_mode == MODE_GENERATE_NEW_SEEDS) {
+
+		generateNewSeeds();
+
+	} else if(m_mode == MODE_CLEAN_KEY_VALUE_STORE) {
+
+		cleanKeyValueStore();
+
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
 
 		m_core->closeSlaveModeLocally();
@@ -774,6 +784,7 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 		vector<PathHandle> & pathHandles = m_newSeedBluePrints[m_seedIndex].getPathHandles();
 
+
 		if(m_pathIndex < (int)pathHandles.size()) {
 
 			string key = "";
@@ -782,6 +793,10 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 			Rank rank = getRankFromPathUniqueId(handle);
 
 			if(!m_messageWasSent) {
+
+				cout << "DEBUG downloading keys for this blueprint: " << endl;
+				m_newSeedBluePrints[m_seedIndex].print();
+				cout << endl;
 
 				cout << "[DEBUG] downloading key " << key << " from rank " << rank;
 				cout << endl;
@@ -843,13 +858,112 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 		cout << endl;
 #endif
 
-		m_mode = MODE_STOP_THIS_SITUATION;
+		sendMessageToArbiter();
+		m_nextMode = MODE_GENERATE_NEW_SEEDS;
 
-		m_initialized = false;
-		m_seedIndex = 0;
-		m_pathIndex = 0;
-		m_location = 0;
 	}
+}
+
+void SpuriousSeedAnnihilator::generateNewSeeds() {
+
+	m_initialized = false;
+	m_seedIndex = 0;
+	m_pathIndex = 0;
+	m_location = 0;
+
+	// we have everything we need in the key-value store now.
+
+	int oldCount = m_seeds->size();
+
+	m_seeds->clear();
+
+	for(int metaSeedIndex = 0 ; metaSeedIndex < (int) m_newSeedBluePrints.size() ;
+			++ metaSeedIndex) {
+
+#if 1
+		cout << "DEBUG generateNewSeeds metaSeedIndex= " << metaSeedIndex << endl;
+		cout << " blueprint ";
+		m_newSeedBluePrints[metaSeedIndex].print();
+		cout << endl;
+#endif
+
+		GraphPath emptyPath;
+		emptyPath.setKmerLength(m_parameters->getWordSize());
+
+		vector<PathHandle> & handles = m_newSeedBluePrints[metaSeedIndex].getPathHandles();
+		vector<bool> & orientations = m_newSeedBluePrints[metaSeedIndex].getPathOrientations();
+		vector<GraphPath> & gaps = m_newSeedBluePrints[metaSeedIndex].getComputedPaths();
+
+		for(int pathHandleIndex = 0 ;
+				pathHandleIndex < (int) handles.size(); ++ pathHandleIndex) {
+
+			PathHandle & handle = handles[pathHandleIndex];
+			bool orientation = orientations[pathHandleIndex];
+
+			char * value = NULL;
+			int valueSize = 0;
+
+			string key = "";
+			getSeedKey(handle, key);
+
+			m_core->getKeyValueStore().getLocalKey(key, value, valueSize);
+
+#if 0
+			cout << "DEBUG generateNewSeeds getLocalKey on key " << key << " -> " << valueSize << " bytes";
+#endif
+
+			GraphPath seedPath;
+			seedPath.load(value);
+
+			if(orientation) {
+				GraphPath newPath;
+				seedPath.reverseContent(newPath);
+				seedPath = newPath;
+			}
+
+#if 1
+			cout << "DEBUG append path " << pathHandleIndex << " " << handle;
+			cout << " container " << emptyPath.size() << " object " << seedPath.size() << endl;
+#endif
+
+
+			emptyPath.appendPath(seedPath);
+
+			// if it is not the last one, append the gap
+			// too
+			if(pathHandleIndex != (int) handles.size() -1) {
+
+				GraphPath & gapPath = gaps[pathHandleIndex];
+
+#if 1
+				cout << "DEBUG append gap path ";
+				cout << "container " << emptyPath.size() << " object " << gapPath.size() << endl;
+#endif
+				emptyPath.appendPath(gapPath);
+			}
+		}
+
+		// add the new longer seed...
+
+		m_seeds->push_back(emptyPath);
+	}
+
+	// rebuild seeds here for real
+
+	int newCount = m_seeds->size();
+
+	cout << "Rank " << m_core->getRank() << " merged its seeds: " << oldCount << " seeds -> ";
+	cout << newCount << " seeds" << endl;
+
+	sendMessageToArbiter();
+	m_nextMode = MODE_CLEAN_KEY_VALUE_STORE;
+}
+
+void SpuriousSeedAnnihilator::cleanKeyValueStore() {
+
+	m_core->getKeyValueStore().clear();
+
+	m_mode = MODE_STOP_THIS_SITUATION;
 }
 
 void SpuriousSeedAnnihilator::evaluateGossips() {
@@ -893,6 +1007,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 			i != solution.end() ; ++i) {
 
 		GraphSearchResult & result = *i;
+
+		cout << "DEBUG inspecting solution entry" << endl;
+		result.print();
+		cout << endl;
+
 		vector<PathHandle> & handles = result.getPathHandles();
 
 		for(vector<PathHandle>::iterator j = handles.begin() ; j != handles.end() ; ++j) {
@@ -909,6 +1028,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 
 		GraphSearchResult & entry = *i;
 
+
+		cout << "DEBUG inspecting again this solution entry" << endl;
+		entry.print();
+		cout << endl;
+
 		PathHandle & firstHandle = entry.getPathHandles()[0];
 		PathHandle & lastHandle = entry.getPathHandles()[entry.getPathHandles().size()-1];
 
@@ -917,7 +1041,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		//
 		// TODO: implement a true load balancing algorithme here...
 
-		PathHandle & smallest = firstHandle;
+		PathHandle smallest = firstHandle;
 		if(lastHandle < firstHandle)
 			smallest = lastHandle;
 
@@ -925,6 +1049,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 
 		if(owner == m_core->getRank()) {
 			m_newSeedBluePrints.push_back(entry);
+
+			// The bug is here already for the blueprint
+			cout << "DEBUG adding this blueprint:" << endl;
+			entry.print();
+			cout << endl;
 		}
 	}
 

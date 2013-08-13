@@ -637,6 +637,8 @@ void GraphPath::reverseContent(GraphPath & newPath) const {
 	assert(newPath.size() == 0);
 #endif
 
+	newPath.setKmerLength(getKmerLength());
+
 	for(int i = size() - 1 ; i >= 0 ; --i) {
 		Kmer element;
 		at(i, &element);
@@ -652,6 +654,17 @@ void GraphPath::reverseContent(GraphPath & newPath) const {
 	assert(size() == newPath.size());
 	assert(getKmerLength() == newPath.getKmerLength());
 #endif
+
+}
+
+void GraphPath::appendPath(const GraphPath & path) {
+
+	for(int i = 0 ; i < (int) path.size() ; ++i) {
+		Kmer element;
+		path.at(i, &element);
+
+		push_back(&element);
+	}
 
 }
 

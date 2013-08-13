@@ -143,6 +143,7 @@ public:
 	 */
 	void reverseContent(GraphPath & newPath) const;
 
+	void appendPath(const GraphPath & path);
 };
 
 #endif

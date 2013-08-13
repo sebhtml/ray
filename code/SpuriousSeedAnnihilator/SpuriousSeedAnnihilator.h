@@ -176,6 +176,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_SHARE_WITH_LINKED_ACTORS;
 	int MODE_WAIT_FOR_ARBITER;
 	int MODE_EVALUATE_GOSSIPS;
+	int MODE_CLEAN_KEY_VALUE_STORE;
+	int MODE_GENERATE_NEW_SEEDS;
 	Rank m_rankToAdvise;
 
 	bool m_mustAdviseRanks;
@@ -280,6 +282,10 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	void sendMessageToArbiter();
 
 	void getSeedKey(PathHandle & handle, string & keyObject);
+
+	void generateNewSeeds();
+	void cleanKeyValueStore();
+
 public:
 
 	SpuriousSeedAnnihilator();
