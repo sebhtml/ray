@@ -26,6 +26,7 @@
 #include <RayPlatform/cryptography/crypto.h>
 
 #include <sstream>
+#include <algorithm>
 using namespace std;
 
 __CreatePlugin(SpuriousSeedAnnihilator);
@@ -868,6 +869,7 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 	}
 }
 
+
 void SpuriousSeedAnnihilator::generateNewSeeds() {
 
 	m_initialized = false;
@@ -956,6 +958,13 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 	// rebuild seeds here for real
 
 	int newCount = m_seeds->size();
+
+	// sort the seeds by length
+	vector<GraphPath> & seeds = (*m_seeds);
+
+	std::sort(seeds.begin(),
+		seeds.end(), comparePaths);
+
 
 	cout << "Rank " << m_core->getRank() << " merged its seeds: " << oldCount << " seeds -> ";
 	cout << newCount << " seeds" << endl;

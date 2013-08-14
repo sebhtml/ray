@@ -146,4 +146,6 @@ public:
 	void appendPath(const GraphPath & path);
 };
 
+bool comparePaths(const GraphPath & a,const GraphPath & b);
+
 #endif

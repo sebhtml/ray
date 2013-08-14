@@ -43,9 +43,6 @@ __CreateSlaveModeAdapter(SeedingData,RAY_SLAVE_MODE_SEND_SEED_LENGTHS);
  * TODO: port this with the VirtualProcessor framework.
  */
 
-bool myComparator_sort(const GraphPath & a,const GraphPath & b){
-	return a.size()>b.size();
-}
 
 void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 	if(!m_initiatedIterator){
@@ -302,7 +299,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 
 		// sort the seeds by length
 		std::sort(m_SEEDING_seeds.begin(),
-			m_SEEDING_seeds.end(),myComparator_sort);
+			m_SEEDING_seeds.end(), comparePaths);
 
 		/**************************************************************
 		 * Write down the SimpleSeeds checkpoint now.

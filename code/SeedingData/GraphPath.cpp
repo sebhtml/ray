@@ -700,3 +700,7 @@ int GraphPath::getRequiredNumberOfBytes() const {
 
 
 }
+
+bool comparePaths(const GraphPath & a,const GraphPath & b){
+	return a.size()>b.size();
+}
