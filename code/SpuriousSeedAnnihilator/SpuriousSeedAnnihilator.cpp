@@ -55,6 +55,8 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_MERGE_SEEDS);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
+
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
@@ -283,6 +285,7 @@ void SpuriousSeedAnnihilator::initializeMergingProcess() {
 		MODE_SPREAD_DATA = value++;
 		MODE_CHECK_RESULTS = value++;
 		MODE_STOP_THIS_SITUATION = value++;
+		MODE_GATHER_COVERAGE_VALUES = value++;
 		MODE_SHARE_WITH_LINKED_ACTORS = value ++;
 		MODE_WAIT_FOR_ARBITER = value++;
 		MODE_EVALUATE_GOSSIPS = value++;
@@ -683,6 +686,10 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		cleanKeyValueStore();
 
+	} else if(m_mode == MODE_GATHER_COVERAGE_VALUES) {
+
+		gatherCoverageValues();
+
 	} else if(m_mode == MODE_STOP_THIS_SITUATION) {
 
 		m_core->closeSlaveModeLocally();
@@ -952,6 +959,8 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 
 		// add the new longer seed...
 
+		emptyPath.reserveSpaceForCoverage();
+
 		m_seeds->push_back(emptyPath);
 	}
 
@@ -977,7 +986,182 @@ void SpuriousSeedAnnihilator::cleanKeyValueStore() {
 
 	m_core->getKeyValueStore().clear();
 
-	m_mode = MODE_STOP_THIS_SITUATION;
+	m_seedIndex = 0;
+	m_seedPosition = 0;
+	m_mode = MODE_GATHER_COVERAGE_VALUES;
+}
+
+void SpuriousSeedAnnihilator::gatherCoverageValues() {
+
+	/*
+	 * We need to gather coverage values here.
+	 *
+	 * The message tag is RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE.
+	 *
+	 * For each kmer we put in the message, we will receive a coverage value.
+	 *
+	 * For this, we will use a workflow.
+	 */
+
+	if(m_inbox->hasMessage(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY)) {
+
+		Message * message = m_inbox->at(0);
+
+		Rank source = message->getSource();
+
+		MessageUnit * buffer = message->getBuffer();
+
+		int count = message->getCount();
+
+		for(int i = 0 ; i < count ; ++i) {
+
+			int seedIndex = m_buffersForPaths->getAt(source, i);
+			int positionIndex = m_buffersForPositions->getAt(source, i);
+
+#ifdef CONFIG_ASSERT
+			assert(seedIndex < (int) m_seeds->size());
+			assert(positionIndex < (int) m_seeds->at(seedIndex).size());
+#endif
+
+			CoverageDepth coverage = buffer[i];
+
+#ifdef CONFIG_ASSERT
+			assert(coverage > 0);
+#endif
+
+			GraphPath & seed = m_seeds->at(seedIndex);
+
+			seed.setCoverageValueAt(positionIndex, coverage);
+
+#if 0
+			cout << "[DEBUG] gatherCoverageValues operation: SetCoverage(path: " << seedIndex;
+			cout << " position: " << positionIndex << " value: " << coverage << endl;
+#endif
+		}
+
+		// we don't need to clear the buffers for m_buffersForMessages because
+		// the flush (or flushAll) call did that for us
+		m_buffersForPaths->reset(source);
+		m_buffersForPositions->reset(source);
+		m_pendingMessages--;
+	}
+
+	if(m_pendingMessages)
+		return;
+
+	if(m_seedIndex < (int)m_seeds->size()) {
+
+		GraphPath & seed = m_seeds->at(m_seedIndex);
+
+		if(m_seedPosition < seed.size()) {
+
+			if(m_seedIndex == 0 && m_seedPosition == 0) {
+
+				m_buffersForMessages = new BufferedData();
+				m_buffersForPaths = new BufferedData();
+				m_buffersForPositions = new BufferedData();
+
+				m_buffersForMessages->constructor(m_core->getSize(),
+						MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+						"/dev/memory-for-messages", m_parameters->showMemoryAllocations(), KMER_U64_ARRAY_SIZE);
+
+				m_buffersForPaths->constructor(m_core->getSize(),
+						MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+						"/dev/memory-for-paths", m_parameters->showMemoryAllocations(), KMER_U64_ARRAY_SIZE);
+
+				m_buffersForPositions->constructor(m_core->getSize(),
+						MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
+						"/dev/memory-for-positions", m_parameters->showMemoryAllocations(), KMER_U64_ARRAY_SIZE);
+
+				m_pendingMessages = 0;
+			}
+
+			Kmer kmer;
+			seed.at(m_seedPosition, &kmer);
+
+			Rank rankToFlush = kmer.vertexRank(m_parameters->getSize(),m_parameters->getWordSize(),
+				m_parameters->getColorSpaceMode());
+
+			for(int i=0;i<KMER_U64_ARRAY_SIZE;i++){
+				m_buffersForMessages->addAt(rankToFlush, kmer.getU64(i));
+				m_buffersForPaths->addAt(rankToFlush, m_seedIndex);
+				m_buffersForPositions->addAt(rankToFlush, m_seedPosition);
+			}
+
+			if(m_buffersForMessages->flush(rankToFlush, KMER_U64_ARRAY_SIZE, RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,
+				m_outboxAllocator, m_outbox,
+				m_rank, false)){
+
+				m_pendingMessages++;
+			}
+
+			// do something with this kmer now...
+			// possibly use BufferedData
+
+			m_seedPosition ++;
+		} else {
+			m_seedIndex ++;
+			m_seedPosition = 0;
+		}
+	} else if (!m_buffersForMessages->isEmpty()) {
+
+		// flush the remaining bits
+		m_pendingMessages += m_buffersForMessages->flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,
+			m_outboxAllocator, m_outbox, m_rank);
+
+	} else {
+
+		m_buffersForMessages->clear();
+		m_buffersForPaths->clear();
+		m_buffersForPositions->clear();
+
+		m_buffersForMessages = NULL;
+		m_buffersForPaths = NULL;
+		m_buffersForPositions = NULL;
+
+		for(int i = 0 ; i < (int)m_seeds->size() ; ++i) {
+			m_seeds->at(i).computePeakCoverage();
+		}
+		m_mode = MODE_STOP_THIS_SITUATION;
+	}
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION(Message*message) {
+
+	void*buffer=message->getBuffer();
+	Rank source=message->getSource();
+	MessageUnit*incoming=(MessageUnit*)buffer;
+	int count=message->getCount();
+	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(count*sizeof(MessageUnit));
+
+	for(int i=0;i<count;i+= (KMER_U64_ARRAY_SIZE + 1)){
+
+		int position = incoming[i];
+		Kmer vertex;
+		int bufferPosition=i;
+		vertex.unpack(incoming + 1, &bufferPosition);
+
+		Vertex*node=m_subgraph->find(&vertex);
+
+		// if it is not there, then it has a coverage of 0
+		CoverageDepth coverage=0;
+
+		if(node!=NULL){
+			coverage=node->getCoverage(&vertex);
+
+			#ifdef CONFIG_ASSERT
+			assert(coverage!=0);
+			#endif
+		}
+
+		message2[i] = position;
+		message2[i + 1] = coverage;
+	}
+
+	Message aMessage(message2, count, source,
+		RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY, m_rank);
+
+	m_outbox->push_back(&aMessage);
 }
 
 void SpuriousSeedAnnihilator::evaluateGossips() {
@@ -1434,6 +1618,8 @@ void SpuriousSeedAnnihilator::writeCheckpointForSeeds(){
 
 		buffer.write((char*)&count, sizeof(int));
 
+		// TODO: don't store coverage in seed checkpoints...
+
 		for(int i=0;i<(int)(*m_seeds).size();i++){
 			int length=(*m_seeds)[i].size();
 			buffer.write((char*)&length, sizeof(int));
@@ -1537,9 +1723,13 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 
 	RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");
+
+	RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY = m_core->allocateMessageTagHandle(m_plugin);
+
 
 	m_outboxAllocator = m_core->getOutboxAllocator();
 	m_outbox = m_core->getOutbox() ;
@@ -1601,6 +1791,8 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	RAY_MESSAGE_TAG_PUSH_SEEDS = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS");
 	RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MESSAGE_TAG_PUSH_SEEDS_REPLY");
 	RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_IS_DONE_SENDING_SEED_LENGTHS");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE");
+	RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY = m_core->getMessageTagFromSymbol(m_plugin, "RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY");
 
 	int elements = m_virtualCommunicator->getElementsPerQuery(RAY_MESSAGE_TAG_PUSH_SEEDS);
 
@@ -1623,6 +1815,7 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 		RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT, RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE,
 		RAY_MPI_TAG_ASK_VERTEX_PATH
 	);
+
 
 /**
  * Turn this on to run this code even when checkpoints exist.

@@ -165,6 +165,13 @@ void GraphPath::computePeakCoverage(){
 		cout<<"Error: there are "<<size()<<" objects, but only "<<m_coverageValues.size()<<" coverage values"<<endl;
 
 	assert((int)m_coverageValues.size() == size());
+
+	for(int i = 0 ; i < (int)size() ; ++i) {
+
+		CoverageDepth coverage = getCoverageAt(i);
+
+		assert(coverage > 0);
+	}
 	#endif
 
 	// the default is to use the weighted mean algorithm 
@@ -703,4 +710,30 @@ int GraphPath::getRequiredNumberOfBytes() const {
 
 bool comparePaths(const GraphPath & a,const GraphPath & b){
 	return a.size()>b.size();
+}
+
+
+void GraphPath::setCoverageValueAt(int position, CoverageDepth value) {
+
+#ifdef CONFIG_ASSERT
+	assert((int)m_coverageValues.size() == size());
+	assert(position < size());
+#endif
+
+	m_coverageValues[position] = value;
+}
+
+void GraphPath::reserveSpaceForCoverage() {
+
+	m_coverageValues.reserve(size());
+
+	for(int i = 0 ; i < (int) size() ; ++i) {
+
+		addCoverageValue(0);
+
+	}
+
+	for(int i = 0 ; i < (int)size() ; ++i) {
+		setCoverageValueAt(i, 0);
+	}
 }

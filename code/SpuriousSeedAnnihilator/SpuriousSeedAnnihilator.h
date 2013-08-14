@@ -62,6 +62,7 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_PROCESS_MERG
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -126,6 +127,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 
 	int m_toDistribute;
 	SeedGossipSolver m_seedGossipSolver;
@@ -145,6 +147,12 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	SlaveMode RAY_SLAVE_MODE_PUSH_SEED_LENGTHS;
 	SlaveMode RAY_SLAVE_MODE_MERGE_SEEDS;
 	SlaveMode RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS;
+
+	MessageTag RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION;
+	MessageTag RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY;
+
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
+	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY;
 
 	MessageTag RAY_MESSAGE_TAG_REGISTER_SEEDS;
 	MessageTag RAY_MESSAGE_TAG_FILTER_SEEDS;
@@ -169,6 +177,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
 
 	int MODE_SPREAD_DATA;
+	int MODE_GATHER_COVERAGE_VALUES;
 	int MODE_STOP_THIS_SITUATION;
 	int MODE_REBUILD_SEED_ASSETS;
 	int MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
@@ -266,6 +275,13 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	SpuriousSeedAnnihilator * getThis();
 	SpuriousSeedAnnihilator * getThat();
 
+	// stuff to gather coverage values
+
+	BufferedData * m_buffersForMessages;
+	BufferedData * m_buffersForPaths;
+	BufferedData * m_buffersForPositions;
+	int m_pendingMessages;
+
 	int m_pathIndex;
 	int m_location;
 
@@ -285,6 +301,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 
 	void generateNewSeeds();
 	void cleanKeyValueStore();
+	void gatherCoverageValues();
 
 public:
 
@@ -304,6 +321,7 @@ public:
 	void call_RAY_MASTER_MODE_CLEAN_SEEDS();
 	void call_RAY_MASTER_MODE_PUSH_SEED_LENGTHS();
 	void call_RAY_MASTER_MODE_MERGE_SEEDS();
+	void call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS();
 
 	void call_RAY_SLAVE_MODE_REGISTER_SEEDS();
 	void call_RAY_SLAVE_MODE_FILTER_SEEDS();
@@ -318,11 +336,12 @@ public:
 	void call_RAY_MESSAGE_TAG_PUSH_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_SEND_SEED_LENGTHS(Message*message);
 	void call_RAY_MESSAGE_TAG_MERGE_SEEDS(Message*message);
-	void call_RAY_MASTER_MODE_PROCESS_MERGING_ASSETS();
 	void call_RAY_MESSAGE_TAG_PROCESS_MERGING_ASSETS(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY(Message * message);
 	void call_RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY(Message * message);
 	void call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message * message);
+
+	void call_RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION(Message * message);
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

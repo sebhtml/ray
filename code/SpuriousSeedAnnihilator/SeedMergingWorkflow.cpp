@@ -150,6 +150,7 @@ void SeedMergingWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunicato
 	this->RAY_MPI_TAG_ASK_VERTEX_PATH = RAY_MPI_TAG_ASK_VERTEX_PATH;
 
 	m_period = 100;
+
 }
 
 vector<GraphSearchResult> & SeedMergingWorkflow::getResults() {

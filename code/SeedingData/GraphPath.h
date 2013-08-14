@@ -120,6 +120,9 @@ public:
 	void clear();
 
 	void addCoverageValue(CoverageDepth value);
+	void setCoverageValueAt(int position, CoverageDepth value);
+	void reserveSpaceForCoverage();
+
 	CoverageDepth getPeakCoverage()const;
 	void resetCoverageValues();
 
