@@ -23,6 +23,8 @@
 #include <iostream>
 using namespace std;
 
+//#define DEBUG_MODE
+
 SeedGossipSolver::SeedGossipSolver() {
 
 }
@@ -74,7 +76,7 @@ void SeedGossipSolver::compute() {
 
 void SeedGossipSolver::printSolution() {
 
-	cout << "DEBUG [printSolution]" << endl;
+	//cout << "DEBUG [printSolution]" << endl;
 
 #if 0
 	cout << "Solution has: " << m_solution.size() << " entries" << endl;
@@ -100,15 +102,18 @@ void SeedGossipSolver::printSolution() {
 
 	map<PathHandle, vector<int> > summary;
 
-	cout << "solution" << endl;
+	//cout << "solution" << endl;
 
 	for(int i = 0 ; i < (int) m_solution.size() ; ++i) {
 		//cout << "[DEBUG] @" << i << " ";
 
 		int total = m_solution[i].getPathHandles().size();
+
+#if 0
 		cout << total << " ... ";
 		m_solution[i].print();
 		cout << endl;
+#endif
 
 		objectsInSolution += total;
 
@@ -145,8 +150,10 @@ void SeedGossipSolver::printSolution() {
 	}
 #endif
 
+#if 0
 	//cout << "[DEBUG] objects found in solution ...... " << endl;
 	cout << objectsInSolution << endl;
+#endif
 }
 
 /**

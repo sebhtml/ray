@@ -648,7 +648,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
 
-			cout << "[DEBUG] arbiter advises to continue" << endl;
+			//cout << "[DEBUG] arbiter advises to continue" << endl;
 
 			m_mode = m_nextMode;
 		}
@@ -667,7 +667,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	} else if(m_mode == MODE_EVALUATE_GOSSIPS) {
 
-		cout << "DEBUG Calling evaluateGossips" << endl;
+		//cout << "DEBUG Calling evaluateGossips" << endl;
 		evaluateGossips();
 
 	} else if(m_mode == MODE_REBUILD_SEED_ASSETS) {
@@ -756,7 +756,7 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 	if(!m_initialized) {
 
-		cout << "DEBUG rebuildSeedAssets initializing..." << endl;
+		//cout << "DEBUG rebuildSeedAssets initializing..." << endl;
 
 		m_seedIndex = 0;
 		m_pathIndex = 0;
@@ -794,12 +794,14 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 
 			if(!m_messageWasSent) {
 
+#if 0
 				cout << "DEBUG downloading keys for this blueprint: " << endl;
 				m_newSeedBluePrints[m_seedIndex].print();
 				cout << endl;
 
 				cout << "[DEBUG] downloading key " << key << " from rank " << rank;
 				cout << endl;
+#endif
 
 				m_core->getKeyValueStore().pullRemoteKey(key, rank, m_request);
 
@@ -816,8 +818,10 @@ void SpuriousSeedAnnihilator::rebuildSeedAssets() {
 				int size = 0;
 				m_core->getKeyValueStore().getLocalKey(key, value, size);
 
+#if 0
 				cout << "[DEBUG] transfer is now completed for key " << key << " ";
 				cout << " " << size << " bytes" << endl;
+#endif
 
 				m_pathIndex ++;
 				m_messageWasSent = false;
@@ -880,7 +884,7 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 	for(int metaSeedIndex = 0 ; metaSeedIndex < (int) m_newSeedBluePrints.size() ;
 			++ metaSeedIndex) {
 
-#if 1
+#if 0
 		cout << "[DEBUG] ***" << endl;
 		cout << "DEBUG generateNewSeeds metaSeedIndex= " << metaSeedIndex << endl;
 		cout << " blueprint ";
@@ -922,7 +926,7 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 				seedPath = newPath;
 			}
 
-#if 1
+#if 0
 			cout << "DEBUG append path " << pathHandleIndex << " " << handle;
 			cout << " container " << emptyPath.size() << " object " << seedPath.size() << endl;
 #endif
@@ -936,7 +940,7 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 
 				GraphPath & gapPath = gaps[pathHandleIndex];
 
-#if 1
+#if 0
 				cout << "DEBUG append gap path ";
 				cout << "container " << emptyPath.size() << " object " << gapPath.size() << endl;
 #endif
@@ -969,7 +973,9 @@ void SpuriousSeedAnnihilator::cleanKeyValueStore() {
 
 void SpuriousSeedAnnihilator::evaluateGossips() {
 
+#if 0
 	cout << "[DEBUG] evaluateGossips" << endl;
+#endif
 
 	/**
 	 * Here, we do that in batch.
@@ -1009,9 +1015,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 
 		GraphSearchResult & result = *i;
 
+#if 0
 		cout << "DEBUG inspecting solution entry" << endl;
 		result.print();
 		cout << endl;
+#endif
 
 		vector<PathHandle> & handles = result.getPathHandles();
 
@@ -1029,10 +1037,11 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 
 		GraphSearchResult & entry = *i;
 
-
+#if 0
 		cout << "DEBUG inspecting again this solution entry" << endl;
 		entry.print();
 		cout << endl;
+#endif
 
 		PathHandle & firstHandle = entry.getPathHandles()[0];
 		PathHandle & lastHandle = entry.getPathHandles()[entry.getPathHandles().size()-1];
@@ -1051,10 +1060,12 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 		if(owner == m_core->getRank()) {
 			m_newSeedBluePrints.push_back(entry);
 
+#if 0
 			// The bug is here already for the blueprint
 			cout << "DEBUG adding this blueprint:" << endl;
 			entry.print();
 			cout << endl;
+#endif
 		}
 	}
 
@@ -1095,7 +1106,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 	}
 #endif
 
-	cout << "DEBUG next = MODE_REBUILD_SEED_ASSETS" << endl;
+	//cout << "DEBUG next = MODE_REBUILD_SEED_ASSETS" << endl;
 
 	m_mode = MODE_REBUILD_SEED_ASSETS;
 }

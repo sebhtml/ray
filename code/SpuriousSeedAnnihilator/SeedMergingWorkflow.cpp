@@ -39,7 +39,7 @@ void SeedMergingWorkflow::initializeMethod(){
 /** finalize the whole thing */
 void SeedMergingWorkflow::finalizeMethod(){
 
-	cout << "[DEBUG] number of relations: " << m_searchResults.size() << endl;
+	//cout << "[DEBUG] number of relations: " << m_searchResults.size() << endl;
 
 	m_core->getSwitchMan()->closeSlaveModeLocally(m_core->getOutbox(),m_core->getRank());
 }
