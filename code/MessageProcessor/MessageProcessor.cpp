@@ -797,7 +797,10 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
  */
 		CoverageDepth oldCoverage=tmp->getCoverage(&kmerObject);
 		CoverageDepth newCoverage=oldCoverage+1;
-		tmp->setCoverage(&kmerObject,newCoverage);
+
+		// avoid integer overflow on data type CoverageDepth
+		if(newCoverage > oldCoverage)
+			tmp->setCoverage(&kmerObject,newCoverage);
 	}
 
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_VERTICES_DATA_REPLY,m_rank);
