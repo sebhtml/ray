@@ -87,7 +87,7 @@ class GraphExplorer {
 	RingAllocator*m_outboxAllocator;
 	GraphPath * m_seed;
 
-	void backtrackPath(vector<Kmer> * path, Kmer * vertex);
+	bool backtrackPath(vector<Kmer> * path, Kmer * vertex);
 	bool getBestParent(Kmer * parent, Kmer kmer);
 	bool processAnnotations(AnnotationFetcher & annotationFetcher, int currentDepth, Kmer & object);
 

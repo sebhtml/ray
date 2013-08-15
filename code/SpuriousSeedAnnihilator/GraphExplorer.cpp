@@ -151,7 +151,7 @@ bool GraphExplorer::getBestParent(Kmer * parent, Kmer kmer) {
  * course. If we use EXPLORER_LEFT, then parents are truly parents.
  * But with EXPLORER_RIGHT, parents are in fact children.
  */
-void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
+bool GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 	Kmer item = *vertex;
 
 	set<Kmer> visited;
@@ -181,7 +181,13 @@ void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 	// is in reverse order...
 
 #ifdef CONFIG_ASSERT
-	assert(aPath.size() >= 3); // source + sink + at least one stranger.
+	if(!(aPath.size() >= 3)) {
+		cout << "DEBUG Warning, backtrackPath yielded (expected >= 3)";
+		cout << aPath.size() << " " << aPath.size() << endl;
+
+		return false;
+	}
+	//assert(aPath.size() >= 3); // source + sink + at least one stranger.
 #endif
 
 	// remove first and last
@@ -206,6 +212,8 @@ void GraphExplorer::backtrackPath(vector<Kmer> * path, Kmer * vertex) {
 			lastPosition --;
 		}
 	}
+
+	return true;
 }
 
 bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, int currentDepth, Kmer & object) {
@@ -251,7 +259,15 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 			// is hardly enforced in both directions
 			vector<Kmer> pathToOrigin;
 
-			backtrackPath(&pathToOrigin, &object);
+			if(!backtrackPath(&pathToOrigin, &object)) {
+				cout << "DEBUG Warning backtrackPath failed ";
+				cout << " m_seedName " << m_seedName << " ";
+				cout << " pathName " << pathName << endl;
+
+				foundSomething = false;
+
+				continue;
+			}
 
 #ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << " path has length " << pathToOrigin.size() << endl;
