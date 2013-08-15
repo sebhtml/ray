@@ -239,6 +239,11 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 
 		if(currentDepth != 0) {
 #ifdef INTERNET_EXPLORER_DEBUG_PATHS
+
+			if(pathName == m_seedName) {
+				continue;
+			}
+
 			cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
 			cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
 
@@ -252,7 +257,6 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 			cout << " depth " << currentDepth;
 #endif
 
-			foundSomething = true;
 
 
 			// here we can not use GraphPath directly because the de Bruijn property
@@ -264,10 +268,11 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 				cout << " m_seedName " << m_seedName << " ";
 				cout << " pathName " << pathName << endl;
 
-				foundSomething = false;
-
 				continue;
 			}
+
+			// we found something !
+			foundSomething = true;
 
 #ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << " path has length " << pathToOrigin.size() << endl;
