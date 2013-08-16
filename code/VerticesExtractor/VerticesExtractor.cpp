@@ -283,7 +283,23 @@ LargeCount VerticesExtractor::getDefaultNumberOfBitsForBloomFilter(){
  * * Number of strands (2);
  * * Number of directions in one dimension (2);
  */
-	return m_myReads->size() * m_parameters->getWordSize() * 2 * 2;
+
+	int numberOfErrorsPerRead = 4;
+
+	int erroneousKmersPerError = m_parameters->getWordSize() * 2 * 2;
+
+	// the formula below is completely arbitrary.
+	// for serious cases, you should do an initial run
+	// and then you should modify -bloom-filter-bits
+
+	// furthermore, this formula does not consider
+	// the true kmers in the genome
+
+	int numberOfLocalReads = m_myReads->size();
+
+	int bits = numberOfErrorsPerRead * erroneousKmersPerError * numberOfLocalReads;
+
+	return bits;
 }
 
 void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*graph,
