@@ -465,17 +465,46 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	return; // remove this
 	*/
 
+	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY)) {
+
+		m_activeQueries --;
+
+#ifdef CONFIG_ASSERT
+		assert(m_activeQueries >= 0);
+#endif // CONFIG_ASSERT
+	}
+
+	/*
+	 * Add a messaging regulator here.
+	 */
+	int maximumActiveQueries =16;
+
+	if(m_core->getSize() / 2 < maximumActiveQueries)
+		maximumActiveQueries = m_core->getSize() / 2;
+
+	if(maximumActiveQueries < 2)
+		maximumActiveQueries = 2;
 
 	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
 		Message * message = m_inbox->at(0);
+
+		// send the response now because the return
+		// statements below are evil.
+		// anyway, RayPlatform will only send the message in
+		// its sendMessages() call in its main loop so
+		// it does not change anything whatsoever.
+
+		this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, message->getSource(),
+			RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
 
 		int availableUnits = message->getCount();
 
 		// if the message is empty, we have nothing to do.
 		// this is likely because the object was too large
 		// to be transported.
-		if(availableUnits == 0)
+		if(availableUnits == 0) {
 			return;
+		}
 
 		GraphSearchResult gossip;
 		int position = 0;
@@ -492,8 +521,9 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		bool found = m_gossipIndex.count(key) > 0;
 
-		if(found)
+		if(found) {
 			return;
+		}
 
 		// yay we got new gossip to share !!!
 		m_gossips.push_back(gossip);
@@ -542,6 +572,9 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 	if(!m_hasNewGossips) {
 
+		if(m_activeQueries > 0)
+			return;
+
 		// check delay and latency
 		time_t currentTime = time(NULL);
 
@@ -562,6 +595,13 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		return;
 	}
+
+	// at this point, we have messages of type
+	// RAY_MESSAGE_TAG_SEED_GOSSIP to send.
+
+	// \\ messaging regulator
+	if(m_activeQueries >= maximumActiveQueries)
+		return;
 
 	for(int gossipIndex = 0 ; gossipIndex < (int)m_gossips.size() ; ++gossipIndex) {
 
@@ -611,6 +651,8 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 			Message aMessage((MessageUnit*)messageBuffer, units, actor,
 				RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
 			m_outbox->push_back(&aMessage);
+
+			m_activeQueries ++;
 
 			m_gossipStatus[gossipIndex].insert(actor);
 
@@ -1699,6 +1741,10 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 
 	RAY_MESSAGE_TAG_SEED_GOSSIP = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEED_GOSSIP, "RAY_MESSAGE_TAG_SEED_GOSSIP");
+
+	RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY = m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY,
+			"RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY");
 
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
