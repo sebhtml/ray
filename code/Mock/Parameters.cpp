@@ -487,6 +487,7 @@ void Parameters::parseCommands(){
 			m_hasCheckpointDirectory=true;
 
 			cout<<"Rank "<<m_rank<<" checkpoint directory: "<<m_checkpointDirectory;
+			cout << endl;
 
 			if(m_rank==MASTER_RANK){
 
