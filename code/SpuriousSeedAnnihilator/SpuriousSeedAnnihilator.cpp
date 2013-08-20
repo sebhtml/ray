@@ -1695,9 +1695,10 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
 	RAY_MESSAGE_TAG_ARBITER_SIGNAL = m_core->allocateMessageTagHandle(m_plugin);
-	RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER = m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_ARBITER_SIGNAL, "RAY_MESSAGE_TAG_ARBITER_SIGNAL");
 
 	RAY_MESSAGE_TAG_SEED_GOSSIP = m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEED_GOSSIP, "RAY_MESSAGE_TAG_SEED_GOSSIP");
 
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
@@ -1729,6 +1730,8 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY, "RAY_MESSAGE_TAG_SEND_SEED_LENGTHS_REPLY");
 
 	RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY = m_core->allocateMessageTagHandle(m_plugin);
+	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY,
+			"RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION_REPLY");
 
 
 	m_outboxAllocator = m_core->getOutboxAllocator();
