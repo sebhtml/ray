@@ -8,5 +8,6 @@ SpuriousSeedAnnihilator-y += code/SpuriousSeedAnnihilator/SeedMergingWorkflow.o
 SpuriousSeedAnnihilator-y += code/SpuriousSeedAnnihilator/GraphExplorer.o
 SpuriousSeedAnnihilator-y += code/SpuriousSeedAnnihilator/GraphSearchResult.o
 SpuriousSeedAnnihilator-y += code/SpuriousSeedAnnihilator/SeedGossipSolver.o
+SpuriousSeedAnnihilator-y += code/SpuriousSeedAnnihilator/GossipAssetManager.o
 
 obj-y += $(SpuriousSeedAnnihilator-y)

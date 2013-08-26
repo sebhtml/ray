@@ -23,6 +23,7 @@
 #include "SeedFilteringWorkflow.h"
 #include "SeedMergingWorkflow.h"
 #include "SeedGossipSolver.h"
+#include "GossipAssetManager.h"
 
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
@@ -177,6 +178,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY;
 	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
 
+	GossipAssetManager m_gossipAssetManager;
+
 	int MODE_SPREAD_DATA;
 	int MODE_GATHER_COVERAGE_VALUES;
 	int MODE_STOP_THIS_SITUATION;
@@ -262,10 +265,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	bool m_messageWasReceived;
 
 #ifdef GOSSIP_ALGORITHM_FOR_SEEDS
-	vector<GraphSearchResult> m_gossips;
 	bool m_hasNewGossips;
 	time_t m_lastGossipingEventTime;
-	set<string> m_gossipIndex;
 	map<int, set<Rank> > m_gossipStatus;
 	set<Rank> m_linkedActorsForGossip;
 #endif /* GOSSIP_ALGORITHM_FOR_SEEDS */

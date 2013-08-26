@@ -424,8 +424,8 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 				int index = j->second[0];
 				GraphSearchResult & gossip = m_mergingTechnology.getResults()[index];
-				m_gossips.push_back(gossip);
-				m_gossipIndex.insert(gossip.toString());
+
+				m_gossipAssetManager.addGossip(gossip);
 
 				// at least one rank is the current rank
 				Rank rank1 = getRankFromPathUniqueId(gossip.getPathHandles()[0]);
@@ -519,15 +519,16 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		string key = gossip.toString();
 
-		bool found = m_gossipIndex.count(key) > 0;
+		bool found = m_gossipAssetManager.hasAsset(key);
 
 		if(found) {
 			return;
 		}
 
+
 		// yay we got new gossip to share !!!
-		m_gossips.push_back(gossip);
-		m_gossipIndex.insert(key);
+		m_gossipAssetManager.addGossip(gossip);
+
 		m_lastGossipingEventTime = time(NULL);
 
 		// we could also update the m_gossipStatus
@@ -540,12 +541,14 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 		// all ranks
 		//
 
+		vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+
 		Rank actor = message->getSource();
-		int gossipIndex = m_gossips.size() - 1;
+		int gossipIndex = gossips.size() - 1;
 
 #ifdef CONFIG_ASSERT
 		assert(m_linkedActorsForGossip.count(actor) > 0);
-		assert(gossipIndex < (int)m_gossips.size());
+		assert(gossipIndex < (int)gossips.size());
 		assert(actor >= 0);
 		assert(actor < m_core->getSize());
 #endif
@@ -603,7 +606,9 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	if(m_activeQueries >= maximumActiveQueries)
 		return;
 
-	for(int gossipIndex = 0 ; gossipIndex < (int)m_gossips.size() ; ++gossipIndex) {
+	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+
+	for(int gossipIndex = 0 ; gossipIndex < (int)gossips.size() ; ++gossipIndex) {
 
 		if(m_gossipStatus[gossipIndex].size() == m_linkedActorsForGossip.size())
 			continue;
@@ -629,7 +634,7 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 #endif /* ASSERT_CONFIG */
 
 			int position = 0;
-			GraphSearchResult & gossip =  /*&*/ m_gossips[gossipIndex];
+			GraphSearchResult & gossip =  /*&*/ gossips[gossipIndex];
 
 			int requiredBytes = gossip.getRequiredNumberOfBytes();
 
@@ -1216,12 +1221,14 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 	 * Here, we do that in batch.
 	 */
 
-	m_seedGossipSolver.setInput(&m_gossips);
+	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+
+	m_seedGossipSolver.setInput(&gossips);
 	m_seedGossipSolver.compute();
 
 	vector<GraphSearchResult> & solution = m_seedGossipSolver.getSolution();
 
-	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << m_gossips.size() << endl;
+	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS Rank " << m_rank << " gossip count: " << gossips.size() << endl;
 	//cout << "[DEBUG] MODE_EVALUATE_GOSSIPS solution has " << solution.size() << " entries !" << endl;
 
 	/**
