@@ -427,14 +427,16 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 				m_gossipAssetManager.addGossip(gossip);
 
+				// tell the manager that the current rank has its own copy already !
+
+				m_gossipAssetManager.registerRemoteGossip(gossip, m_rank);
+
+#if 0
 				// at least one rank is the current rank
 				Rank rank1 = getRankFromPathUniqueId(gossip.getPathHandles()[0]);
 				Rank rank2 = getRankFromPathUniqueId(gossip.getPathHandles()[1]);
+#endif
 
-				if(rank1 != m_rank)
-					m_linkedActorsForGossip.insert(rank1);
-				if(rank2 != m_rank)
-					m_linkedActorsForGossip.insert(rank2);
 			}
 		}
 
@@ -449,6 +451,9 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 	m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
 
+	m_messagesSentForGossiping = 0;
+
+	m_initialGossips = m_gossipAssetManager.getGossips().size();
 
 }
 
@@ -517,9 +522,9 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 		// this implementation is good enough, but it could
 		// use an index.
 
-		string key = gossip.toString();
+		//string key = gossip.toString();
 
-		bool found = m_gossipAssetManager.hasAsset(key);
+		bool found = m_gossipAssetManager.hasGossip(gossip);
 
 		if(found) {
 			return;
@@ -541,19 +546,34 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 		// all ranks
 		//
 
-		vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+		vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
 
 		Rank actor = message->getSource();
 		int gossipIndex = gossips.size() - 1;
 
 #ifdef CONFIG_ASSERT
-		assert(m_linkedActorsForGossip.count(actor) > 0);
 		assert(gossipIndex < (int)gossips.size());
 		assert(actor >= 0);
 		assert(actor < m_core->getSize());
 #endif
 
-		m_gossipStatus[gossipIndex].insert(actor);
+		// register the remote copy to avoid sending it back ot this source
+		// since the information came from there in the first place, at least
+		// for the current rank
+		m_gossipAssetManager.registerRemoteGossip(gossip, actor);
+
+		// also, advise the asset manager that the current rank has its own
+		// copy too !
+		//
+
+		m_gossipAssetManager.registerRemoteGossip(gossip, m_rank);
+
+#ifdef CONFIG_ASSERT
+		assert(m_core->getRank() == m_rank);
+		assert(m_core->getRank() == message->getDestination());
+#endif // CONFIG_ASSERT
+
+		//m_gossipStatus[gossipIndex].insert(actor);
 
 		// we have new gossip, so this is important to store.
 		m_hasNewGossips = true;
@@ -589,12 +609,17 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank " << m_rank << " gossips have spreaded." << endl;
 
-		m_gossipStatus.clear();
-		m_linkedActorsForGossip.clear();
+		//m_gossipStatus.clear();
 
 		// synchronize indexes in m_indexesToShareWithArbiter
 		//m_mode = MODE_EVALUATE_GOSSIPS;
 		m_mode = MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
+
+		cout << "Rank " << m_core->getRank() << ": gossiping generated " << m_messagesSentForGossiping;
+		cout << " messages";
+		cout << " (gossips: " << m_initialGossips;
+		cout << " ---> " << m_gossipAssetManager.getGossips().size();
+		cout << ")" << endl;
 
 		return;
 	}
@@ -606,65 +631,68 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	if(m_activeQueries >= maximumActiveQueries)
 		return;
 
-	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+	// pick up a gossip and throw it at someone !
+	if(m_gossipAssetManager.hasGossipToShare()) {
 
-	for(int gossipIndex = 0 ; gossipIndex < (int)gossips.size() ; ++gossipIndex) {
+		GraphSearchResult dummyGossip;
+		Rank destination = 0;
 
-		if(m_gossipStatus[gossipIndex].size() == m_linkedActorsForGossip.size())
-			continue;
+		m_gossipAssetManager.getGossipToShare(dummyGossip, destination);
 
-		// attempt to share gossip with linked actors
-		// find an actor that does not have the gossip already
-		for(set<Rank>::iterator i = m_linkedActorsForGossip.begin() ; i != m_linkedActorsForGossip.end() ; ++i) {
-			Rank actor = *i;
+		// we found a gossip that needs to be shared with actor <actor>
 
-			bool gossipStatus = m_gossipStatus[gossipIndex].count(actor) > 0;
+		m_lastGossipingEventTime = time(NULL);
 
-			if(gossipStatus)
-				continue;
-
-			// we found a gossip that needs to be shared with actor <actor>
-
-			m_lastGossipingEventTime = time(NULL);
-
-			char *messageBuffer = (char *)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+		char *messageBuffer = (char *)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
 #ifdef ASSERT_CONFIG
-			assert( messageBuffer != NULL );
+		assert( messageBuffer != NULL );
 #endif /* ASSERT_CONFIG */
 
-			int position = 0;
-			GraphSearchResult & gossip =  /*&*/ gossips[gossipIndex];
+		int position = 0;
+		GraphSearchResult & gossip =  dummyGossip;
 
-			int requiredBytes = gossip.getRequiredNumberOfBytes();
+		Rank & actor = destination;
 
-			int availableBytes = MAXIMUM_MESSAGE_SIZE_IN_BYTES - position;
+		int requiredBytes = gossip.getRequiredNumberOfBytes();
 
-			if(availableBytes < requiredBytes) {
-				cout << "Error, object is too large to be transported." << endl;
-			} else {
-				position += gossip.dump(messageBuffer + position);
-			}
+		int availableBytes = MAXIMUM_MESSAGE_SIZE_IN_BYTES - position;
 
-			int units = position / sizeof(MessageUnit);
-
-			if(position % sizeof(MessageUnit))
-				units ++;
-
-			string key = gossip.toString();
-
-			Message aMessage((MessageUnit*)messageBuffer, units, actor,
-				RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
-			m_outbox->push_back(&aMessage);
-
-			m_activeQueries ++;
-
-			m_gossipStatus[gossipIndex].insert(actor);
-
-			//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
-
-			return;
+		if(availableBytes < requiredBytes) {
+			// TODO: these objects should be transported with the RayPlatform key-value store.
+			// the RayPlatform key-value store does not have any size limitation.
+			cout << "Warning: object is too large to be transported, skipping." << endl;
+		} else {
+			position += gossip.dump(messageBuffer + position);
 		}
+
+		int units = position / sizeof(MessageUnit);
+
+		if(position % sizeof(MessageUnit))
+			units ++;
+
+
+		Message aMessage((MessageUnit*)messageBuffer, units, actor,
+			RAY_MESSAGE_TAG_SEED_GOSSIP, m_rank);
+		m_outbox->push_back(&aMessage);
+
+		m_activeQueries ++;
+
+		// tell the asset manager that there is not a remote copy for this asset...
+		// we need to this becasue we don't want to send it back later
+		// in the execution to this remote actor.
+		m_gossipAssetManager.registerRemoteGossip(gossip, actor);
+
+		// m_gossipStatus[gossipIndex].insert(actor);
+
+#if 0
+		string key = gossip.toString();
+		cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
+#endif
+
+		m_messagesSentForGossiping ++;
+
+		return;
 	}
 
 	// at this point, we tried every gossip and they are all synchronized.
@@ -1221,7 +1249,7 @@ void SpuriousSeedAnnihilator::evaluateGossips() {
 	 * Here, we do that in batch.
 	 */
 
-	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getAssets();
+	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
 
 	m_seedGossipSolver.setInput(&gossips);
 	m_seedGossipSolver.compute();

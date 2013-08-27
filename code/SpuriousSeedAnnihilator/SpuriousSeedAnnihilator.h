@@ -18,7 +18,7 @@
  *  see <http://www.gnu.org/licenses/>
  */
 
-#define GOSSIP_ALGORITHM_FOR_SEEDS "Godzy algorithm v13.0.7"
+#define GOSSIP_ALGORITHM_FOR_SEEDS "THOR synchronization algorithm v15.2.1" // see also GossipAssetManager
 
 #include "SeedFilteringWorkflow.h"
 #include "SeedMergingWorkflow.h"
@@ -179,6 +179,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	MessageTag RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER;
 
 	GossipAssetManager m_gossipAssetManager;
+	int m_initialGossips;
+	int m_messagesSentForGossiping;
 
 	int MODE_SPREAD_DATA;
 	int MODE_GATHER_COVERAGE_VALUES;

@@ -24,6 +24,7 @@
 #include "GraphSearchResult.h"
 
 #include <vector>
+#include <map>
 #include <set>
 using namespace std;
 
@@ -32,12 +33,27 @@ using namespace std;
  *
  * It also knows which gossip needs to be sent somewhere.
  *
+ * This class dynamically computes the preference list for a gossip
+ * (the preference list of a gossip contains its primary actors).
+ *
+ *
  * \author Sébastien Boisvert
  */
 class GossipAssetManager {
 	vector<GraphSearchResult> m_gossips;
 
-	set<string> m_gossipIndex;
+	map<string, int> m_gossipIndex;
+
+	map<int, set<Rank> > m_remoteGossipOwners;
+	map<int, set<Rank> > m_futureRemoteGossipOwners;
+
+	vector<set<int> > m_gossipClusters;
+
+	map<PathHandle, int> m_pathToClusterTable;
+
+
+	void classifyGossip(GraphSearchResult & gossip);
+	bool scheduleTransportation(int gossipIndex, Rank destination);
 
 public:
 	void addGossip(GraphSearchResult & gossip);
@@ -46,9 +62,12 @@ public:
 
 	void getGossipToShare(GraphSearchResult & gossip, Rank & destination);
 
-	vector<GraphSearchResult> & getAssets();
+	vector<GraphSearchResult> & getGossips();
 
-	bool hasAsset(const string & key) const;
+	bool hasGossip(const GraphSearchResult & gossip) const;
+
+	void registerRemoteGossip(GraphSearchResult & gossip, Rank & destination);
+	bool scheduleGossipTransportation(GraphSearchResult & gossip, Rank & destination);
 };
 
 #endif
