@@ -278,6 +278,9 @@ DESCRIPTION:
               Checks message data reliability for any non-empty message.
               add '-D CONFIG_SSE_4_2' in the Makefile to use hardware instruction (SSE 4.2)
 
+       -write-scheduling-data
+              Writes RayPlatform scheduling information to RayOutput/Scheduling/
+
        -run-profiler
               Runs the profiler as the code runs. By default, only show granularity warnings.
               Running the profiler increases running times.

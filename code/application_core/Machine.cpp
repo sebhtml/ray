@@ -15,7 +15,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt)
 	see <http://www.gnu.org/licenses/>
 */
 
@@ -173,7 +173,7 @@ void Machine::start(){
 	if(m_aborted)
 		return;
 
-	// TODO: move this in plugin Searcher 
+	// TODO: move this in plugin Searcher
 	m_searcher.constructor(&m_parameters,m_outbox,&m_timePrinter,m_switchMan,m_virtualCommunicator,m_inbox,
 		m_outboxAllocator,&m_subgraph);
 
@@ -338,7 +338,7 @@ void Machine::start(){
 	// options are loaded from here
 	// plus the directory exists now
 	if(m_parameters.hasOption("-route-messages")){
- 
+
 		ostringstream routingPrefix;
 		routingPrefix<<m_parameters.getPrefix()<<"/Routing/";
 
@@ -525,12 +525,16 @@ m_seedingData,
 	&m_numberOfRanksWithCoverageData,&m_seedExtender,
 	m_switchMan->getMasterModePointer(),&m_isFinalFusion,&m_si);
 
+	bool mustWriteSchedulingInformation = m_parameters.hasOption("-write-scheduling-data");
+
 /*
  * Create the Scheduling before calling run().
  * run() is like a barrier.
  */
 	// log ticks
-	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
+	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK
+			&& mustWriteSchedulingInformation){
+
 		ostringstream scheduling;
 		scheduling<<m_parameters.getPrefix()<<"/Scheduling/";
 		createDirectory(scheduling.str().c_str());
@@ -570,7 +574,8 @@ m_seedingData,
 		cout<<endl;
 	}
 
-	if(!oldDirectoryExists && !m_aborted){
+	if(!oldDirectoryExists && !m_aborted
+			&& mustWriteSchedulingInformation){
 
 		ostringstream masterTicks;
 		masterTicks<<m_parameters.getPrefix()<<"/Scheduling/"<<m_parameters.getRank()<<".MasterTicks.txt";
@@ -635,7 +640,7 @@ void Machine::showRayVersionShort(){
 
 /*
 content
-	cout<<"option"; 
+	cout<<"option";
 	#ifdef option
 	cout<<"y";
 	#else
@@ -644,16 +649,16 @@ content
 	cout<<endl;
 
 list
- FORCE_PACKING 
- ASSERT 
- CONFIG_HAVE_LIBZ 
- HAVE_LIBBZ2 
- CONFIG_PROFILER_COLLECT 
- CONFIG_CLOCK_GETTIME 
- __linux__ 
- _MSC_VER 
- __GNUC__ 
- RAY_32_BITS 
+ FORCE_PACKING
+ ASSERT
+ CONFIG_HAVE_LIBZ
+ HAVE_LIBBZ2
+ CONFIG_PROFILER_COLLECT
+ CONFIG_CLOCK_GETTIME
+ __linux__
+ _MSC_VER
+ __GNUC__
+ RAY_32_BITS
  RAY_64_BITS
 
 for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2

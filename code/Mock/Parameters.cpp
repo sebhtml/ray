@@ -1767,6 +1767,8 @@ void Parameters::showUsage(){
 	showOptionDescription("add '-D CONFIG_SSE_4_2' in the Makefile to use hardware instruction (SSE 4.2)");
 	cout<<endl;
 
+	showOption("-write-scheduling-data", "Writes RayPlatform scheduling information to RayOutput/Scheduling/");
+	cout<<endl;
 
 	showOption("-run-profiler","Runs the profiler as the code runs. By default, only show granularity warnings.");
 	showOptionDescription("Running the profiler increases running times.");
