@@ -1770,6 +1770,9 @@ void Parameters::showUsage(){
 	showOption("-write-scheduling-data", "Writes RayPlatform scheduling information to RayOutput/Scheduling/");
 	cout<<endl;
 
+	showOption("-write-plugin-data", "Writes data for plugins registered with the RayPlatform API to RayOutput/Plugins");
+	cout<<endl;
+
 	showOption("-run-profiler","Runs the profiler as the code runs. By default, only show granularity warnings.");
 	showOptionDescription("Running the profiler increases running times.");
 	cout<<endl;

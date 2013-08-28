@@ -281,6 +281,9 @@ DESCRIPTION:
        -write-scheduling-data
               Writes RayPlatform scheduling information to RayOutput/Scheduling/
 
+       -write-plugin-data
+              Writes data for plugins registered with the RayPlatform API to RayOutput/Plugins
+
        -run-profiler
               Runs the profiler as the code runs. By default, only show granularity warnings.
               Running the profiler increases running times.

@@ -400,13 +400,17 @@ void Machine::start(){
 	// write a report about plugins
 	if(!oldDirectoryExists && m_parameters.getRank()==MASTER_RANK){
 
-		ostringstream directory;
-		directory<<m_parameters.getPrefix()<<"/Plugins";
+		bool mustWritePluginData = m_parameters.hasOption("-write-plugin-data");
 
-		string file=directory.str();
-		createDirectory(file.c_str());
+		if(mustWritePluginData) {
+			ostringstream directory;
+			directory<<m_parameters.getPrefix()<<"/Plugins";
+
+			string file=directory.str();
+			createDirectory(file.c_str());
 	
-		m_computeCore.printPlugins(file);
+			m_computeCore.printPlugins(file);
+		}
 
 		// write the version of RayPlatform
 		
