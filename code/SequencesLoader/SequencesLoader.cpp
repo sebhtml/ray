@@ -201,6 +201,9 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 	m_loader.constructor(m_parameters->getMemoryPrefix().c_str(),m_parameters->showMemoryAllocations(),
 		m_rank);
 
+	char * seq = (char *) __Malloc(RAY_MAXIMUM_READ_LENGTH * sizeof(char), "CodePath/-amos", false);
+	char * qlt = (char *) __Malloc(RAY_MAXIMUM_READ_LENGTH * sizeof(char), "CodePath/-amos", false);
+
 	for(m_distribution_file_id=0;m_distribution_file_id<(int)allFiles.size();
 		m_distribution_file_id++){
 
@@ -212,11 +215,9 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 
 		// write Reads in AMOS format.
 		if(rank==MASTER_RANK&&m_parameters->useAmos()){
-			char qlt[20000];
 			for(LargeIndex i=0;i<m_loader.size();i++){
 				ReadHandle iid=m_distribution_currentSequenceId;
 				m_distribution_currentSequenceId++;
-				char seq[4000];
 				m_loader.at(i)->getSeq(seq,m_parameters->getColorSpaceMode(),true);
 				#ifdef ASSERT
 				assert(seq!=NULL);
@@ -237,6 +238,10 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 		}
 		m_loader.reset();
 	}
+
+	__Free(qlt, "/CodePath/-amos", false);
+	__Free(seq, "/CodePath/-amos", false);
+
 	m_loader.clear();
 	if(m_parameters->useAmos()){
 		fclose(fp);
