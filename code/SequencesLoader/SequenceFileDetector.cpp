@@ -28,22 +28,64 @@
 #include <set>
 using namespace std;
 
-void SequenceFileDetector::detectSequenceFiles(string & directory) {
+SequenceFileDetector::SequenceFileDetector() {
 
-	bool hasSeparator = false;
-	char directorySeparator = '/';
+	m_directorySeparator = '/';
 
 #ifdef _WIN32
-	directorySeparator = '\\';
+	m_directorySeparator = '\\';
 #endif
 
-	if(directory[directory.length()-1] == directorySeparator)
-		hasSeparator = true;
+}
+
+// TODO: this code does not detect loops...
+void SequenceFileDetector::gatherAllFiles(string & root, vector<string> & rawFiles) {
+
+#if 0
+	cout << "DEBUG SequenceFileDetector::gatherAllFiles ";
+	cout << root << endl;
+#endif
+
+	// explore the directory
+	if(isDirectory(root)) {
+
+		vector<string>  entries;
+		getDirectoryFiles(root, entries);
+
+		for(vector<string>::iterator i = entries.begin() ;
+				i != entries.end() ; ++i) {
+
+			string & entry = *i;
+
+			// skip self and parent
+			if(entry == "." || entry == "..")
+				continue;
+
+			ostringstream path;
+			path << root;
+
+			if(root[root.length()-1] != m_directorySeparator)
+				path << m_directorySeparator;
+
+			path << entry;
+
+			string aPath = path.str();
+
+			gatherAllFiles(aPath, rawFiles);
+		}
+
+	// add the file directly...
+	} else {
+
+		rawFiles.push_back(root);
+	}
+}
+
+void SequenceFileDetector::detectSequenceFiles(string & directory) {
 
 	// read files
 	vector<string> rawFiles;
-
-	getDirectoryFiles(directory, rawFiles);
+	gatherAllFiles(directory, rawFiles);
 
 	vector<string> files;
 
@@ -65,6 +107,9 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		if(consumedFiles.count(i) > 0)
 			continue;
 
+		int bestMatch = -1;
+		int bestScore = 999;
+
 		for(int j = 0 ; j < (int) files.size() ; ++j) {
 
 			if(consumedFiles.count(j) > 0)
@@ -76,10 +121,54 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			string & file1 = files[i];
 			string & file2 = files[j];
 
-			int mismatches = 0;
-
 			int position1 = 0;
 			int position2 = 0;
+
+			// find the last m_directorySeparator
+
+			int positionForFile1 = 0;
+			while(positionForFile1 < (int)file1.length()) {
+				if(file1[positionForFile1] == m_directorySeparator)
+					position1 = positionForFile1;
+
+				positionForFile1 ++;
+			}
+
+			int positionForFile2 = 0;
+			while(positionForFile2 < (int)file2.length()) {
+				if(file2[positionForFile2] == m_directorySeparator)
+					position2 = positionForFile2;
+
+				positionForFile2 ++;
+			}
+
+			// the files must be in the same directory
+			if(position1 != position2)
+				continue;
+
+			// compute mismatches before the last separator
+
+			int mismatches = 0;
+
+			int positionBefore1 = 0;
+			int positionBefore2 = 0;
+
+			while(positionBefore1 < position1 && positionBefore2 < position2) {
+
+				if(file1[positionBefore1] != file2[positionBefore2])
+					mismatches++;
+
+				positionBefore1 ++;
+				positionBefore2 ++;
+			}
+
+			// skip because they are not in the same directory
+			if(mismatches != 0)
+				continue;
+#if 0
+			cout << "DEBUG position1 " << position1 << " position2 " << position2 << endl;
+#endif
+			mismatches = 0;
 
 			while(position1 < (int)file1.length() && position2 < (int)file2.length()) {
 
@@ -87,29 +176,31 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 					mismatches++;
 			}
 
-			if(mismatches <= 2) {
-
-				ostringstream file1WithPath;
-				file1WithPath << directory;
-			       
-				if(!hasSeparator)
-					file1WithPath << directorySeparator;
-
-				file1WithPath << file1;
-				m_leftFiles.push_back(file1WithPath.str());
-
-				ostringstream file2WithPath;
-				file2WithPath << directory;
-			       
-				if(!hasSeparator)
-					file2WithPath << directorySeparator;
-
-				file2WithPath << file2;
-				m_rightFiles.push_back(file2WithPath.str());
-
-				consumedFiles.insert(i);
-				consumedFiles.insert(j);
+			if(bestMatch < 0) {
+				bestMatch = j;
+				bestScore = mismatches;
 			}
+
+			if(mismatches < bestScore) {
+				bestMatch = j;
+				bestScore = mismatches;
+			}
+		}
+
+		if(bestScore <= 2) {
+
+			string & file1 = files[i];
+			string & file2 = files[bestMatch];
+
+#if 0
+			cout << "DEBUG matching files " << file1 << " and " << file2 << endl;
+#endif
+
+			m_leftFiles.push_back(file1);
+			m_rightFiles.push_back(file2);
+
+			consumedFiles.insert(i);
+			consumedFiles.insert(bestMatch);
 		}
 
 	}
@@ -121,13 +212,6 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		continue;
 
 		string & file = files[i];
-
-		ostringstream fileWithPath;
-		fileWithPath << directory;
-
-		if(!hasSeparator) {
-			fileWithPath << directorySeparator;
-		}
 
 		m_singleFiles.push_back(file);
 		consumedFiles.insert(i);

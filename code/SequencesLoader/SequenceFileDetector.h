@@ -32,12 +32,21 @@
  */
 class SequenceFileDetector {
 
+	char m_directorySeparator;
+
 	vector<string> m_leftFiles;
 	vector<string> m_rightFiles;
 	vector<string> m_singleFiles;
 
+	void gatherAllFiles(string & root, vector<string> & rawFiles);
+
 public:
 
+	SequenceFileDetector();
+
+	/**
+	 * Detect all supported files in a directory, recursively.
+	 */
 	void detectSequenceFiles(string & directory);
 	vector<string> & getLeftFiles();
 	vector<string> & getRightFiles();
