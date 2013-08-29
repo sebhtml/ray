@@ -79,6 +79,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 	/** a peer finished sending file counts */
 	}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()== RAY_MPI_TAG_REQUEST_FILE_ENTRY_COUNTS_REPLY){
 		m_ranksDoneSending++;
+
 		/** all peers have finished */
 		if(m_ranksDoneSending==m_parameters->getSize()){
 
@@ -132,7 +133,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 
 				totalSequences+=entries;
 			}
-			
+
 			partitionStream.close();
 
 			f2<<endl;
@@ -159,7 +160,7 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 				if(i==m_parameters->getSize()-1){
 					last=totalSequences-1;
 				}
-				
+
 				LargeCount count=last-first+1;
 
 				f3<<i<<"\t"<<first<<"\t"<<last<<"\t"<<count<<endl;
@@ -167,9 +168,71 @@ void Partitioner::call_RAY_MASTER_MODE_COUNT_FILE_ENTRIES(){
 			f3.close();
 			cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<fileName2.str()<<endl;
 
+			// check if the number of sequences is valid
+			// if not, abort the mission !!!
+			if(!checkIfPairedFilesAreValid()) {
+
+				m_core->getSwitchMan()->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+				return;
+			}
+
 			m_switchMan->closeMasterMode();
 		}
 	}
+}
+
+bool Partitioner::checkIfPairedFilesAreValid() {
+
+	int numberOfFiles = m_parameters->getNumberOfFiles();
+
+	map<int, vector<int> > libraries;
+
+	for(int file = 0 ; file < numberOfFiles ; ++ file) {
+
+		if(m_parameters->isLeftFile(file)
+				|| m_parameters->isRightFile(file)) {
+
+			int library = m_parameters->getLibrary(file);
+
+			libraries[library].push_back(file);
+		}
+	}
+
+	for(map<int, vector<int> >::iterator i = libraries.begin();
+		i != libraries.end(); ++i) {
+
+#ifdef CONFIG_ASSERT
+		assert(i->second.size() == 2);
+#endif
+
+		int file1 = i->second[0];
+		int file2 = i->second[1];
+
+		int count1 = m_parameters->getNumberOfSequences(file1);
+		int count2 = m_parameters->getNumberOfSequences(file2);
+
+		bool verbose = true;
+
+		if(count1 != count2) {
+
+			if(verbose) {
+				string name1 = m_parameters->getFile(file1);
+				string name2 = m_parameters->getFile(file2);
+
+				cout << endl;
+				cout << "Rank " << m_core->getRank() << " : Error, ";
+				cout << name1 << " contains " << count1 << " sequences";
+				cout << " and ";
+				cout << name2 << " contains " << count2 << " sequences";
+				cout << " (must be the same)" << endl;
+				cout << endl;
+			}
+
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
@@ -179,7 +242,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 		m_currentFileToCount=0;
 		m_currentlySendingCounts=false;
 		m_sentCount=false;
-		
+
 		/* possibly read the checkpoint */
 		if(m_parameters->hasCheckpoint("Partition")){
 			ifstream f(m_parameters->getCheckpointFile("Partition").c_str());
@@ -196,7 +259,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 				assert(file>=0);
 				assert(m_slaveCounts.count(file)==0);
 				#endif
-			
+
 				m_slaveCounts[file]=sequences;
 
 				#ifdef ASSERT
@@ -290,6 +353,7 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 void Partitioner::registerPlugin(ComputeCore*core){
 	PluginHandle plugin=core->allocatePluginHandle();
 	m_plugin=plugin;
+	m_core = core;
 
 	core->setPluginName(plugin,"Partitioner");
 	core->setPluginDescription(plugin,"A plugin that counts sequences in files in parallel");
@@ -325,6 +389,9 @@ void Partitioner::registerPlugin(ComputeCore*core){
 }
 
 void Partitioner::resolveSymbols(ComputeCore*core){
+
+	RAY_MASTER_MODE_KILL_ALL_MPI_RANKS=core->getMasterModeFromSymbol(m_plugin,"RAY_MASTER_MODE_KILL_ALL_MPI_RANKS");
+
 	RAY_SLAVE_MODE_DO_NOTHING=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_DO_NOTHING");
 	RAY_SLAVE_MODE_COUNT_FILE_ENTRIES=core->getSlaveModeFromSymbol(m_plugin,"RAY_SLAVE_MODE_COUNT_FILE_ENTRIES");
 

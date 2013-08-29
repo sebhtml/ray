@@ -62,7 +62,7 @@ class Partitioner :  public CorePlugin{
 	SlaveMode RAY_SLAVE_MODE_COUNT_FILE_ENTRIES;
 	SlaveMode RAY_SLAVE_MODE_DO_NOTHING;
 
-
+	MasterMode RAY_MASTER_MODE_KILL_ALL_MPI_RANKS;
 
 	SwitchMan*m_switchMan;
 
@@ -100,6 +100,9 @@ class Partitioner :  public CorePlugin{
 	Parameters*m_parameters;
 
 	/** --- */
+
+
+	bool checkIfPairedFilesAreValid();
 
 public:
 	void constructor(RingAllocator*outboxAllocator,StaticVector*inbox,StaticVector*outbox,Parameters*parameters,
