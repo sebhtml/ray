@@ -81,6 +81,21 @@ void SequenceFileDetector::gatherAllFiles(string & root, vector<string> & rawFil
 	}
 }
 
+string SequenceFileDetector::replaceString(const string & templateString, const string & oldString,
+		const string & newString) {
+
+	int position = templateString.find(oldString);
+
+	if(position < 0)
+		return templateString;
+
+	string mutableString = templateString;
+
+	string result = mutableString.replace(position, oldString.length(), newString);
+
+	return result;
+}
+
 void SequenceFileDetector::detectSequenceFiles(string & directory) {
 
 	// read files
@@ -99,7 +114,27 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			files.push_back(file);
 	}
 
+	// build an index
+
+	map<string, int> fileIndex;
+
+	for(int i = 0 ; i < (int) files.size() ; ++i) {
+
+		string & fileName = files[i];
+
+		fileIndex[fileName] = i;
+	}
+
 	set<int> consumedFiles;
+
+	/**
+	 * Options for the matching algorithm
+	 */
+	bool enableSmartMatchingMode = true;
+	bool enableBestHitMatchingMode = true;
+	int configurationMaximumHits = 1;
+	int configurationMinimumScore = 0;
+	int configurationMaximumScore = 2;
 
 	// detect pairs
 	for(int i = 0 ; i < (int) files.size() ; ++i){
@@ -107,10 +142,94 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		if(consumedFiles.count(i) > 0)
 			continue;
 
+		// First, try to match the files using pairing rules.
+		//
+		// _R1_ + _R2_
+		// _R2_ + _R1_
+		// _1.fa + _2.fa
+		// _2.fa + _1.fa
+
+		// first, replace the _R1_ with _R2_
+		string & file1 = files[i];
+		string newFile = replaceString(file1, "_R1_", "_R2_");
+
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+
+			int index2 = fileIndex[newFile];
+
+			if(consumedFiles.count(index2) == 0) {
+				m_leftFiles.push_back(file1);
+				m_rightFiles.push_back(newFile);
+				consumedFiles.insert(i);
+				consumedFiles.insert(index2);
+
+				continue;
+			}
+		}
+
+		// try to replace the _R2_ with _R1_
+		file1 = files[i];
+		newFile = replaceString(file1, "_R2_", "_R1_");
+
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+
+			int index2 = fileIndex[newFile];
+
+			if(consumedFiles.count(index2) == 0) {
+				m_leftFiles.push_back(newFile);
+				m_rightFiles.push_back(file1);
+				consumedFiles.insert(i);
+				consumedFiles.insert(index2);
+
+				continue;
+			}
+		}
+
+		// replace the _1.fa with _2.fa
+		file1 = files[i];
+		newFile = replaceString(file1, "_1.fa", "_2.fa");
+
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+
+			int index2 = fileIndex[newFile];
+
+			if(consumedFiles.count(index2) == 0) {
+				m_leftFiles.push_back(file1);
+				m_rightFiles.push_back(newFile);
+				consumedFiles.insert(i);
+				consumedFiles.insert(index2);
+
+				continue;
+			}
+		}
+
+		// try to replace the _2.fa with _1.fa
+		file1 = files[i];
+		newFile = replaceString(file1, "_2.fa", "_1.fa");
+
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+
+			int index2 = fileIndex[newFile];
+
+			if(consumedFiles.count(index2) == 0) {
+
+				m_leftFiles.push_back(newFile);
+				m_rightFiles.push_back(file1);
+				consumedFiles.insert(i);
+				consumedFiles.insert(index2);
+
+				continue;
+			}
+		}
+
 		int bestMatch = -1;
 		int bestScore = 999;
+		int withBestMatch = 0;
 
 		for(int j = 0 ; j < (int) files.size() ; ++j) {
+
+			if(!enableBestHitMatchingMode)
+				break;
 
 			if(consumedFiles.count(j) > 0)
 				continue;
@@ -118,7 +237,6 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			if(i == j)
 				continue;
 
-			string & file1 = files[i];
 			string & file2 = files[j];
 
 			int position1 = 0;
@@ -179,15 +297,23 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			if(bestMatch < 0) {
 				bestMatch = j;
 				bestScore = mismatches;
+
+				withBestMatch = 1;
 			}
 
 			if(mismatches < bestScore) {
 				bestMatch = j;
 				bestScore = mismatches;
+				withBestMatch = 1;
+			} else if(mismatches == bestScore) {
+
+				withBestMatch ++;
 			}
 		}
 
-		if(bestScore <= 2) {
+		if(bestScore > configurationMinimumScore
+				&& bestScore <= configurationMaximumScore
+				&& withBestMatch <= configurationMaximumHits) {
 
 			string & file1 = files[i];
 			string & file2 = files[bestMatch];

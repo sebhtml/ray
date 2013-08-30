@@ -40,6 +40,9 @@ class SequenceFileDetector {
 
 	void gatherAllFiles(string & root, vector<string> & rawFiles);
 
+	string replaceString(const string & templateString, const string & oldString,
+			const string & newString);
+
 public:
 
 	SequenceFileDetector();
