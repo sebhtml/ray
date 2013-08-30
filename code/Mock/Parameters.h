@@ -163,6 +163,7 @@ class Parameters{
 
 	void setDefaultRoutingOptions();
 
+	void writeSmartCommand();
 public:
 	Parameters();
 	string getReceivedMessagesFile();
