@@ -153,9 +153,14 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		string & file1 = files[i];
 		string newFile = replaceString(file1, "_R1_", "_R2_");
 
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+				&& newFile != file1) {
 
 			int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+			assert(i != index2);
+#endif // CONFIG_ASSERT
 
 			if(consumedFiles.count(index2) == 0) {
 				m_leftFiles.push_back(file1);
@@ -171,9 +176,14 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		file1 = files[i];
 		newFile = replaceString(file1, "_R2_", "_R1_");
 
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+				&& newFile != file1) {
 
 			int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+			assert(i != index2);
+#endif // CONFIG_ASSERT
 
 			if(consumedFiles.count(index2) == 0) {
 				m_leftFiles.push_back(newFile);
@@ -189,9 +199,14 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		file1 = files[i];
 		newFile = replaceString(file1, "_1.fa", "_2.fa");
 
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+				&& newFile != file1) {
 
 			int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+			assert(i != index2);
+#endif // CONFIG_ASSERT
 
 			if(consumedFiles.count(index2) == 0) {
 				m_leftFiles.push_back(file1);
@@ -207,9 +222,14 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		file1 = files[i];
 		newFile = replaceString(file1, "_2.fa", "_1.fa");
 
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0) {
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+				&& newFile != file1) {
 
 			int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+			assert(i != index2);
+#endif // CONFIG_ASSERT
 
 			if(consumedFiles.count(index2) == 0) {
 
