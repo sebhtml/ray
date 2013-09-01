@@ -66,6 +66,7 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -133,6 +134,7 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
 
 	int m_toDistribute;
 	SeedGossipSolver m_seedGossipSolver;
@@ -198,6 +200,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	int MODE_CLEAN_KEY_VALUE_STORE;
 	int MODE_GENERATE_NEW_SEEDS;
 	Rank m_rankToAdvise;
+
+	bool m_messageWasSentToArbiter;
 
 	bool m_mustAdviseRanks;
 	int m_synced;
@@ -351,6 +355,7 @@ public:
 
 	void call_RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION(Message * message);
 
+	void call_RAY_MESSAGE_TAG_ARBITER_SIGNAL(Message * message);
 	void call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message*message);
 	void call_RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY(Message*message);
 };

@@ -58,7 +58,7 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
-
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
 }
@@ -373,7 +373,8 @@ void SpuriousSeedAnnihilator::spreadAcquiredData() {
 void SpuriousSeedAnnihilator::sendMessageToArbiter() {
 
 #ifdef DEBUG_SEED_MERGING
-	cout << "[DEBUG] Rank " << m_core->getRank() << " sendMessageToArbiter// " << endl;
+	cout << "[DEBUG] Rank " << m_core->getRank() << " sendMessageToArbiter ";
+	cout << " m_mode = " << m_mode << endl;
 #endif
 
 	Rank arbiter = getArbiter();
@@ -461,6 +462,7 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 	m_initialGossips = m_gossipAssetManager.getGossips().size();
 
+	m_messageWasSentToArbiter = false;
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message * message) {
@@ -612,7 +614,7 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	 * TODO  or if the process is not scheduled during too many seconds.
 	 */
 
-	if(!m_hasNewGossips) {
+	if(!m_hasNewGossips && !m_messageWasSentToArbiter) {
 
 		// we don't care about the response because
 		// the rank does not have anything to send...
@@ -637,13 +639,25 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		// synchronize indexes in m_indexesToShareWithArbiter
 		//m_mode = MODE_EVALUATE_GOSSIPS;
-		m_mode = MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
+		//m_mode = MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
 
 		cout << "Rank " << m_core->getRank() << ": gossiping generated " << m_messagesSentForGossiping;
 		cout << " messages";
 		cout << " (gossips: " << m_initialGossips;
 		cout << " ---> " << m_gossipAssetManager.getGossips().size();
 		cout << ")" << endl;
+
+		int currentMode = m_mode;
+		sendMessageToArbiter();
+
+		// remain in the current mode to be able to send the messages correctly
+		// for incoming new gossips
+		m_mode = currentMode;
+		m_nextMode = MODE_SHARE_PUSH_DATA_IN_KEY_VALUE_STORE;
+
+		//cout << "DEBUG call sendMessageToArbiter for m_messageWasSentToArbiter" << endl;
+
+		m_messageWasSentToArbiter = true;
 
 		return;
 	}
@@ -726,6 +740,14 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 }
 
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_ARBITER_SIGNAL(Message * message) {
+
+	//cout << "[DEBUG] arbiter advises to continue with m_mode <- ";
+	//cout << m_nextMode << endl;
+
+	m_mode = m_nextMode;
+}
+
 void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 
 	initializeMergingProcess();
@@ -748,13 +770,6 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 		spreadAcquiredData();
 
 	} else if(m_mode == MODE_WAIT_FOR_ARBITER) {
-
-		if(m_inbox->hasMessage(RAY_MESSAGE_TAG_ARBITER_SIGNAL)) {
-
-			//cout << "[DEBUG] arbiter advises to continue" << endl;
-
-			m_mode = m_nextMode;
-		}
 
 	} else if(m_mode == MODE_CHECK_RESULTS) {
 
@@ -838,6 +853,8 @@ void SpuriousSeedAnnihilator::pushDataInKeyValueStore() {
 
 	sendMessageToArbiter();
 	m_nextMode = MODE_EVALUATE_GOSSIPS;
+
+	//cout << "DEBUG m_nextMode <- MODE_EVALUATE_GOSSIPS " << MODE_EVALUATE_GOSSIPS << endl;
 
 #ifdef DEBUG_SEED_MERGING
 	cout << "[DEBUG] wait before evaluating gossips..." << endl;
@@ -1079,9 +1096,17 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 
 	sendMessageToArbiter();
 	m_nextMode = MODE_CLEAN_KEY_VALUE_STORE;
+
+	//cout << "DEBUG m_nextMode = MODE_CLEAN_KEY_VALUE_STORE ";
+
+	cout << MODE_CLEAN_KEY_VALUE_STORE << endl;
 }
 
 void SpuriousSeedAnnihilator::cleanKeyValueStore() {
+
+#if 0
+	cout << "DEBUG Cleaning RKV store" << endl;
+#endif
 
 	m_core->getKeyValueStore().clear();
 
@@ -1795,11 +1820,9 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	core->setPluginAuthors(plugin,"Sébastien Boisvert");
 	core->setPluginLicense(plugin,"GNU General Public License version 3");
 
-	RAY_MESSAGE_TAG_ARBITER_SIGNAL = m_core->allocateMessageTagHandle(m_plugin);
-	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_ARBITER_SIGNAL, "RAY_MESSAGE_TAG_ARBITER_SIGNAL");
-
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
 	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
 
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);
