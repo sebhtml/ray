@@ -56,6 +56,8 @@ __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIM
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 __CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
+__CreateMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
 
 
 SpuriousSeedAnnihilator::SpuriousSeedAnnihilator(){
@@ -425,6 +427,10 @@ void SpuriousSeedAnnihilator::checkResults() {
 				int index = j->second[0];
 				GraphSearchResult & gossip = m_mergingTechnology.getResults()[index];
 
+				// it is not clear how the gossip could already be there...
+				if(m_gossipAssetManager.hasGossip(gossip))
+					continue;
+
 				m_gossipAssetManager.addGossip(gossip);
 
 				// tell the manager that the current rank has its own copy already !
@@ -457,6 +463,118 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 }
 
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message * message) {
+
+	//Message * message = m_inbox->at(0);
+
+	if(m_mode != MODE_SHARE_WITH_LINKED_ACTORS) {
+
+		cout << "Error: received RAY_MESSAGE_TAG_SEED_GOSSIP outside ";
+		cout << "MODE_SHARE_WITH_LINKED_ACTORS" << endl;
+	}
+
+	// send the response now because the return
+	// statements below are evil.
+	// anyway, RayPlatform will only send the message in
+	// its sendMessages() call in its main loop so
+	// it does not change anything whatsoever.
+
+	this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, message->getSource(),
+		RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
+
+	int availableUnits = message->getCount();
+
+	// if the message is empty, we have nothing to do.
+	// this is likely because the object was too large
+	// to be transported.
+	if(availableUnits == 0) {
+		return;
+	}
+
+	GraphSearchResult gossip;
+	int position = 0;
+	char * buffer = (char *) message->getBuffer();
+
+	int bytes = gossip.load(buffer + position);
+	position += bytes;
+
+	// first check if the gossip is already known.
+	// this implementation is good enough, but it could
+	// use an index.
+
+	//string key = gossip.toString();
+
+	bool found = m_gossipAssetManager.hasGossip(gossip);
+
+	if(found) {
+		return;
+	}
+
+
+	// yay we got new gossip to share !!!
+	m_gossipAssetManager.addGossip(gossip);
+
+	m_lastGossipingEventTime = time(NULL);
+
+	// we could also update the m_gossipStatus
+	// because we know that message->getSource() has this gossip
+	// already.
+	// But anyway, it does not change much to the algorithm...
+	// update: source has gossip already.
+	//
+	// also important, gossipIndex values are local and not global to
+	// all ranks
+	//
+
+	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
+
+	Rank actor = message->getSource();
+	int gossipIndex = gossips.size() - 1;
+
+#ifdef CONFIG_ASSERT
+	assert(gossipIndex < (int)gossips.size());
+	assert(actor >= 0);
+	assert(actor < m_core->getSize());
+#endif
+
+	// register the remote copy to avoid sending it back ot this source
+	// since the information came from there in the first place, at least
+	// for the current rank
+	m_gossipAssetManager.registerRemoteGossip(gossip, actor);
+
+	// also, advise the asset manager that the current rank has its own
+	// copy too !
+	//
+
+	m_gossipAssetManager.registerRemoteGossip(gossip, m_rank);
+
+#ifdef CONFIG_ASSERT
+	assert(m_core->getRank() == m_rank);
+	assert(m_core->getRank() == message->getDestination());
+#endif // CONFIG_ASSERT
+
+	//m_gossipStatus[gossipIndex].insert(actor);
+
+	// we have new gossip, so this is important to store.
+	m_hasNewGossips = true;
+
+	//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
+
+	//return;
+}
+
+void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY(Message * message) {
+
+	m_activeQueries --;
+
+#ifdef CONFIG_ASSERT
+	assert(m_activeQueries >= 0);
+#endif // CONFIG_ASSERT
+
+	m_lastGossipingEventTime = time(NULL);
+}
+
+
 void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 	// find a information that was not shared with a given actor
@@ -470,15 +588,6 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	return; // remove this
 	*/
 
-	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY)) {
-
-		m_activeQueries --;
-
-#ifdef CONFIG_ASSERT
-		assert(m_activeQueries >= 0);
-#endif // CONFIG_ASSERT
-	}
-
 	/*
 	 * Add a messaging regulator here.
 	 */
@@ -490,98 +599,8 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	if(maximumActiveQueries < 2)
 		maximumActiveQueries = 2;
 
-	if(m_inbox->hasMessage(RAY_MESSAGE_TAG_SEED_GOSSIP)) {
-		Message * message = m_inbox->at(0);
-
-		// send the response now because the return
-		// statements below are evil.
-		// anyway, RayPlatform will only send the message in
-		// its sendMessages() call in its main loop so
-		// it does not change anything whatsoever.
-
-		this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, message->getSource(),
-			RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
-
-		int availableUnits = message->getCount();
-
-		// if the message is empty, we have nothing to do.
-		// this is likely because the object was too large
-		// to be transported.
-		if(availableUnits == 0) {
-			return;
-		}
-
-		GraphSearchResult gossip;
-		int position = 0;
-		char * buffer = (char *) message->getBuffer();
-
-		int bytes = gossip.load(buffer + position);
-		position += bytes;
-
-		// first check if the gossip is already known.
-		// this implementation is good enough, but it could
-		// use an index.
-
-		//string key = gossip.toString();
-
-		bool found = m_gossipAssetManager.hasGossip(gossip);
-
-		if(found) {
-			return;
-		}
-
-
-		// yay we got new gossip to share !!!
-		m_gossipAssetManager.addGossip(gossip);
-
-		m_lastGossipingEventTime = time(NULL);
-
-		// we could also update the m_gossipStatus
-		// because we know that message->getSource() has this gossip
-		// already.
-		// But anyway, it does not change much to the algorithm...
-		// update: source has gossip already.
-		//
-		// also important, gossipIndex values are local and not global to
-		// all ranks
-		//
-
-		vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
-
-		Rank actor = message->getSource();
-		int gossipIndex = gossips.size() - 1;
-
-#ifdef CONFIG_ASSERT
-		assert(gossipIndex < (int)gossips.size());
-		assert(actor >= 0);
-		assert(actor < m_core->getSize());
-#endif
-
-		// register the remote copy to avoid sending it back ot this source
-		// since the information came from there in the first place, at least
-		// for the current rank
-		m_gossipAssetManager.registerRemoteGossip(gossip, actor);
-
-		// also, advise the asset manager that the current rank has its own
-		// copy too !
-		//
-
-		m_gossipAssetManager.registerRemoteGossip(gossip, m_rank);
-
-#ifdef CONFIG_ASSERT
-		assert(m_core->getRank() == m_rank);
-		assert(m_core->getRank() == message->getDestination());
-#endif // CONFIG_ASSERT
-
-		//m_gossipStatus[gossipIndex].insert(actor);
-
-		// we have new gossip, so this is important to store.
-		m_hasNewGossips = true;
-
-		//cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " received gossip gossip:" << key << " from rank rank:" << actor << endl;
-
-		return;
-	}
+	// for correctness, use 1
+	maximumActiveQueries = 1;
 
 	/**
 	 *
@@ -594,6 +613,11 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	 */
 
 	if(!m_hasNewGossips) {
+
+		// we don't care about the response because
+		// the rank does not have anything to send...
+		//if(m_activeQueries > 0)
+			//m_activeQueries = 0;
 
 		if(m_activeQueries > 0)
 			return;
@@ -1774,12 +1798,8 @@ void SpuriousSeedAnnihilator::registerPlugin(ComputeCore*core){
 	RAY_MESSAGE_TAG_ARBITER_SIGNAL = m_core->allocateMessageTagHandle(m_plugin);
 	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_ARBITER_SIGNAL, "RAY_MESSAGE_TAG_ARBITER_SIGNAL");
 
-	RAY_MESSAGE_TAG_SEED_GOSSIP = m_core->allocateMessageTagHandle(m_plugin);
-	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEED_GOSSIP, "RAY_MESSAGE_TAG_SEED_GOSSIP");
-
-	RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY = m_core->allocateMessageTagHandle(m_plugin);
-	m_core->setMessageTagSymbol(m_plugin, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY,
-			"RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY");
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
+	__ConfigureMessageTagHandler(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
 
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_REGISTER_SEEDS);
 	__ConfigureMasterModeHandler(SpuriousSeedAnnihilator, RAY_MASTER_MODE_FILTER_SEEDS);

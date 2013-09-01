@@ -73,8 +73,8 @@ public:
 	vector<bool> & getPathOrientations();
 	vector<GraphPath> & getComputedPaths();
 
-	void addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path);
-	void addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path);
+	bool addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path);
+	bool addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path);
 
 	string toString() const;
 

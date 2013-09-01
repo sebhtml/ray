@@ -64,6 +64,8 @@ __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXI
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 __DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
+__DeclareMessageTagAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
 
 #ifndef _SpuriousSeedAnnihilator_h
 #define _SpuriousSeedAnnihilator_h
@@ -129,6 +131,8 @@ class SpuriousSeedAnnihilator: public CorePlugin {
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_GATHER_PROXIMITY_ENTRY_REPLY);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER);
 	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP);
+	__AddAdapter(SpuriousSeedAnnihilator, RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY);
 
 	int m_toDistribute;
 	SeedGossipSolver m_seedGossipSolver;
@@ -346,6 +350,9 @@ public:
 	void call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message * message);
 
 	void call_RAY_MESSAGE_TAG_REQUEST_VERTEX_COVERAGE_WITH_POSITION(Message * message);
+
+	void call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message*message);
+	void call_RAY_MESSAGE_TAG_SEED_GOSSIP_REPLY(Message*message);
 };
 
 #endif /* _SpuriousSeedAnnihilator_h */

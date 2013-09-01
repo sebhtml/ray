@@ -183,7 +183,11 @@ vector<bool> & GraphSearchResult::getPathOrientations() {
  *
  * it seems that vector has insert(), but it is linear in complexity...
  */
-void GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path) {
+bool GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, GraphPath & path) {
+
+	// don't add an already added bit
+	if(hasPath(handle))
+		return false;
 
 #ifdef CONFIG_ASSERT
 	assert(!hasPath(handle));
@@ -191,9 +195,15 @@ void GraphSearchResult::addPathOnLeftSide(PathHandle & handle, bool strand, Grap
 	m_pathHandles.insert(m_pathHandles.begin(), handle);
 	m_pathOrientations.insert(m_pathOrientations.begin(), strand);
 	m_computedPaths.insert(m_computedPaths.begin(), path);
+
+	return true;
 }
 
-void GraphSearchResult::addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path) {
+bool GraphSearchResult::addPathOnRightSide(PathHandle & handle, bool strand, GraphPath & path) {
+
+	// don't add an already added bit
+	if(hasPath(handle))
+		return false;
 
 #ifdef CONFIG_ASSERT
 	assert(!hasPath(handle));
@@ -202,6 +212,8 @@ void GraphSearchResult::addPathOnRightSide(PathHandle & handle, bool strand, Gra
 	m_pathHandles.push_back(handle);
 	m_pathOrientations.push_back(strand);
 	m_computedPaths.push_back(path);
+
+	return true;
 }
 
 bool GraphSearchResult::hasPath(PathHandle & handle) {

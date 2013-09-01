@@ -176,6 +176,8 @@ bool SeedGossipSolver::expand(GraphSearchResult & partialSolution) {
 
 	/**
 	 *
+	 * add on the left.
+	 *
 	 *     ???    *********--*********--**********
 	 *
 	 */

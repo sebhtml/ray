@@ -102,10 +102,41 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 
 		m_pathToClusterTable[path1] = clusterIndex;
 
-	// step 3.4: path1 has 1 match and path2 has 1 match
+	// case 3.4 both path have match in the same cluster
+	} else if(m_pathToClusterTable.count(path1) > 0
+			&& m_pathToClusterTable.count(path2) > 0
+			&& m_pathToClusterTable[path1] == m_pathToClusterTable[path2]) {
+
+		int clusterIndexForPath1 = m_pathToClusterTable[path1];
+		int clusterIndexForPath2 = m_pathToClusterTable[path2];
+
+		// it is the same cluster. (?)
+		// check if  clusterIndexForPath1 and clusterIndexForPath2 are the
+		// same
+
+#ifdef CONFIG_ASSERT
+		assert(clusterIndexForPath1 == clusterIndexForPath2);
+#endif // CONFIG_ASSERT
+
+		int clusterIndex = clusterIndexForPath1;
+
+		set<int> & clusterContent = m_gossipClusters[clusterIndex];
+
+		clusterContent.insert(newGossipIndex);
+
+		// no update are necessary for the m_pathToClusterTable index
+
+	// step 3.5: path1 has 1 match and path2 has 1 match
 	// this bridges two existing clusters, how exciting !!!
 	} else if(m_pathToClusterTable.count(path1) > 0
 			&& m_pathToClusterTable.count(path2) > 0) {
+
+		int clusterIndexForPath1 = m_pathToClusterTable[path1];
+		int clusterIndexForPath2 = m_pathToClusterTable[path2];
+
+#ifdef CONFIG_ASSERT
+		assert(clusterIndexForPath1 != clusterIndexForPath2);
+#endif // CONFIG_ASSERT
 
 		// TODO optimization: flip group1 and group2 if group2 is smaller than
 		// group1
@@ -114,8 +145,8 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 
 		// add everything in the cluster of path1
 
-		int clusterIndexForPath1 = m_pathToClusterTable[path1];
-		int clusterIndexForPath2 = m_pathToClusterTable[path2];
+
+
 		set<int> & clusterContentForPath1 = m_gossipClusters[clusterIndexForPath1];
 		set<int> & clusterContentForPath2 = m_gossipClusters[clusterIndexForPath2];
 
@@ -123,11 +154,35 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 				i != clusterContentForPath2.end() ; ++i) {
 
 			int otherGossipIndex = *i;
-#ifdef CONFIG_ASSERT
-			assert(clusterContentForPath1.count(otherGossipIndex) == 0);
-#endif
 
 			GraphSearchResult & otherGossip = m_gossips[otherGossipIndex];
+
+#ifdef CONFIG_ASSERT
+			if(clusterContentForPath1.count(otherGossipIndex) > 0) {
+				cout << "Error: otherGossipIndex is in clusterContentForPath1 and clusterContentForPath2 ! ";
+				cout << " gossip: ";
+				cout << otherGossipIndex << " ";
+				otherGossip.print();
+				cout << " path1 " << path1;
+				cout << " path2 " << path2;
+				cout << " clusterIndexForPath1 " << clusterIndexForPath1;
+				cout << " clusterIndexForPath2 " << clusterIndexForPath2;
+				cout << " clusterContentForPath1 ";
+
+				for(set<int>::iterator j = clusterContentForPath1.begin();
+						j != clusterContentForPath1.end() ; ++j) {
+					cout << " " << *j;
+				}
+				cout << " clusterContentForPath2 ";
+
+				for(set<int>::iterator j = clusterContentForPath2.begin();
+						j != clusterContentForPath2.end() ; ++j) {
+					cout << " " << *j;
+				}
+				cout << endl;
+			}
+			assert(clusterContentForPath1.count(otherGossipIndex) == 0);
+#endif
 
 			PathHandle & otherPath1 = otherGossip.getPathHandles()[0];
 			PathHandle & otherPath2 = otherGossip.getPathHandles()[1];
@@ -178,6 +233,11 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 
 	// get the cluster that contains gossip
 
+#ifdef CONFIG_ASSERT
+	assert(m_pathToClusterTable.count(path1) > 0);
+	assert(m_pathToClusterTable.count(path2) > 0);
+#endif
+
 	int finalCluster1 = m_pathToClusterTable[path1];
 	int finalCluster2 = m_pathToClusterTable[path2];
 
@@ -186,6 +246,10 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 #endif
 
 	set<int> & finalClusterContent = m_gossipClusters[finalCluster1];
+
+#ifdef CONFIG_ASSERT
+	assert(finalClusterContent.count(newGossipIndex) > 0);
+#endif
 
 	// gather all destination for this cluster
 
