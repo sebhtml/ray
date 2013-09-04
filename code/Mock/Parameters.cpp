@@ -1263,7 +1263,13 @@ string Parameters::getLibraryGlobalFile(){
 string Parameters::getLibraryFile(int library){
 	ostringstream s;
 	s<<getPrefix();
-	s<<""<<"Library"<<library<<".txt";
+
+	//s<<""<<"Library"<<library<<".txt";
+
+	// everything is now in one single file:
+
+	s << "LibraryData.xml";
+
 	return s.str();
 }
 
@@ -1355,6 +1361,7 @@ void Parameters::computeAverageDistances(){
 			f2<<" File: "<<m_singleEndReadsFile[files[1]]<<endl;
 			f2<<"  NumberOfSequences: "<<m_numberOfSequencesInFile[files[1]]<<endl;
 		}
+
 		f2<<" Distribution: "<<getLibraryFile(library)<<endl;
 
 
