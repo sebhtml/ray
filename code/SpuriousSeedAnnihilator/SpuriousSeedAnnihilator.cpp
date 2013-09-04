@@ -273,7 +273,9 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message 
 
 	m_synced ++;
 
-	//cout << "[DEBUG] recv RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER m_synced " << m_synced << endl;
+#if 0
+	cout << "[DEBUG] recv RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER m_synced " << m_synced << endl;
+#endif
 
 	if(m_synced == m_core->getSize()) {
 		//cout << "[DEBUG] arbiter will advise" << endl;
@@ -286,7 +288,9 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SAY_HELLO_TO_ARBITER(Message 
 void SpuriousSeedAnnihilator::initializeMergingProcess() {
 	if(!m_initializedProcessing) {
 
-		//cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
+#if 0
+		cout << "[DEBUG] initialize RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS" << endl;
+#endif
 
 		m_entryIndex = 0;
 
@@ -772,8 +776,10 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_ARBITER_SIGNAL(Message * message) {
 
-	//cout << "[DEBUG] arbiter advises to continue with m_mode <- ";
-	//cout << m_nextMode << endl;
+#if 0
+	cout << "[DEBUG] arbiter advises to continue with m_mode <- ";
+	cout << m_nextMode << endl;
+#endif
 
 	m_mode = m_nextMode;
 }
@@ -783,12 +789,23 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_PROCESS_MERGING_ASSETS() {
 	initializeMergingProcess();
 
 	if(m_mustAdviseRanks) {
-		if(m_rankToAdvise < m_core->getSize()) {
 
-			this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, m_rankToAdvise, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
-			m_rankToAdvise ++;
-		} else {
+#ifdef CONFIG_ASSERT
+		assert(m_rankToAdvise < m_core->getSize());
+#endif
+
+		// reset the reset count
+		// here because we may receive a notification
+		// during the advise session
+		if(m_rankToAdvise == 0) {
 			m_synced = 0;
+		}
+
+		//cout << "Arbiter advises " << m_rankToAdvise << endl;
+		this->m_core->getSwitchMan()->sendEmptyMessage(m_outbox, m_rank, m_rankToAdvise, RAY_MESSAGE_TAG_ARBITER_SIGNAL);
+		m_rankToAdvise ++;
+
+		if(m_rankToAdvise == m_core->getSize()) {
 			m_mustAdviseRanks = false;
 
 			//cout << "[DEBUG] everybody received the arbiter advise" << endl;
@@ -1728,6 +1745,8 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
  * Tell another rank that we are done with this.
  */
 	m_core->closeSlaveModeLocally();
+
+	cout << "DEBUG closing slave mode locally" << endl;
 }
 
 /**
