@@ -1746,7 +1746,9 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
  */
 	m_core->closeSlaveModeLocally();
 
+#if 0
 	cout << "DEBUG closing slave mode locally" << endl;
+#endif
 }
 
 /**

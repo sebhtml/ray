@@ -20,7 +20,7 @@
 
 #include "GraphExplorer.h"
 
-#define DEBUG_EXPLORATION_123
+// #define DEBUG_EXPLORATION_123
 
 void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 	VirtualCommunicator * virtualCommunicator,
