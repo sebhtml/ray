@@ -25,6 +25,13 @@
 
 #include <RayPlatform/cryptography/crypto.h>
 
+#ifdef __unix__
+//  gcc -dM -E - < /dev/null | less
+#include <unistd.h>
+
+#endif
+
+
 #include <sstream>
 #include <algorithm>
 using namespace std;
@@ -456,13 +463,35 @@ void SpuriousSeedAnnihilator::checkResults() {
 
 	//cout << "[DEBUG] MODE_CHECK_RESULTS gossiping begins..." << endl;
 
-	m_mode = MODE_SHARE_WITH_LINKED_ACTORS;
-
 	m_messagesSentForGossiping = 0;
 
 	m_initialGossips = m_gossipAssetManager.getGossips().size();
 
 	m_messageWasSentToArbiter = false;
+
+	// this is a barrier
+
+	bool enableBug = false;
+	int mode = MODE_SHARE_WITH_LINKED_ACTORS;
+
+	if(!enableBug) {
+		sendMessageToArbiter();
+		m_nextMode = mode;
+
+	} else {
+		if(m_core->getRank() == m_core->getSize() - 1) {
+
+#ifdef __unix__
+			int seconds = 30;
+			cout << "DEBUG sleeping ";
+			cout << seconds << " seconds to trigger bug" << endl;
+			sleep(seconds);
+#endif
+		}
+
+		m_mode = mode;
+
+	}
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message * message) {
@@ -472,7 +501,8 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message * message
 	if(m_mode != MODE_SHARE_WITH_LINKED_ACTORS) {
 
 		cout << "Error: received RAY_MESSAGE_TAG_SEED_GOSSIP outside ";
-		cout << "MODE_SHARE_WITH_LINKED_ACTORS" << endl;
+		cout << "MODE_SHARE_WITH_LINKED_ACTORS m_mode = ";
+		cout << m_mode << endl;
 	}
 
 	// send the response now because the return
@@ -728,6 +758,8 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 		cout << "[DEBUG] MODE_SHARE_WITH_LINKED_ACTORS Rank rank:" << m_rank << " sent gossip gossip:" << key << " from rank rank:" << actor << endl;
 #endif
 
+		m_hasNewGossips = true;
+
 		m_messagesSentForGossiping ++;
 
 		return;
@@ -736,8 +768,6 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 	// at this point, we tried every gossip and they are all synchronized.
 
 	m_hasNewGossips = false;
-
-
 }
 
 void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_ARBITER_SIGNAL(Message * message) {
@@ -1099,7 +1129,9 @@ void SpuriousSeedAnnihilator::generateNewSeeds() {
 
 	//cout << "DEBUG m_nextMode = MODE_CLEAN_KEY_VALUE_STORE ";
 
+#if 0
 	cout << MODE_CLEAN_KEY_VALUE_STORE << endl;
+#endif
 }
 
 void SpuriousSeedAnnihilator::cleanKeyValueStore() {
