@@ -197,7 +197,7 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 
 		// replace the _1.fa with _2.fa
 		file1 = files[i];
-		newFile = replaceString(file1, "_1.fa", "_2.fa");
+		newFile = replaceString(file1, "_1.f", "_2.f");
 
 		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
 				&& newFile != file1) {
@@ -220,7 +220,7 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 
 		// try to replace the _2.fa with _1.fa
 		file1 = files[i];
-		newFile = replaceString(file1, "_2.fa", "_1.fa");
+		newFile = replaceString(file1, "_2.f", "_1.f");
 
 		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
 				&& newFile != file1) {
