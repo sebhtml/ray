@@ -238,12 +238,13 @@ bool GraphExplorer::processAnnotations(AnnotationFetcher & annotationFetcher, in
 		// This was seen in Ray Cloud Browser.
 
 		if(currentDepth != 0) {
-#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 
+			// skip self loops
 			if(pathName == m_seedName) {
 				continue;
 			}
 
+#ifdef INTERNET_EXPLORER_DEBUG_PATHS
 			cout << "[DEBUG] GraphExplorer found path " << pathName << " during graph search";
 			cout << ", visited " << m_visitedVertices << ", started from " << m_seedName;
 
