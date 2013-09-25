@@ -1820,6 +1820,10 @@ void Parameters::showUsage(){
 	cout<<endl;
 	showOption("-with-profiler-details","Shows number of messages sent and received in each methods during in each time slices (epochs). Needs -run-profiler.");
 	cout<<endl;
+
+	showOption("-debug", "Turns on -run-profiler and -with-profiler-details for debugging");
+	cout << endl;
+
 	showOption("-show-communication-events","Shows all messages sent and received.");
 	cout<<endl;
 	showOption("-show-read-placement","Shows read placement in the graph during the extension.");

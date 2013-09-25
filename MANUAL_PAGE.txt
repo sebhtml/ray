@@ -291,6 +291,9 @@ DESCRIPTION:
        -with-profiler-details
               Shows number of messages sent and received in each methods during in each time slices (epochs). Needs -run-profiler.
 
+       -debug
+              Turns on -run-profiler and -with-profiler-details for debugging
+
        -show-communication-events
               Shows all messages sent and received.
 

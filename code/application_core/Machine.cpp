@@ -314,11 +314,17 @@ void Machine::start(){
 
 	m_partitioner.constructor(m_outboxAllocator,m_inbox,m_outbox,&m_parameters,m_switchMan);
 
-	if(m_parameters.runProfiler())
+	if(m_parameters.runProfiler()) {
 		m_computeCore.enableProfiler();
+	}
 
 	if(m_parameters.hasOption("-with-profiler-details"))
 		m_computeCore.enableProfilerVerbosity();
+
+	if(m_parameters.hasOption("-debug")) {
+		m_computeCore.enableProfiler();
+		m_computeCore.enableProfilerVerbosity();
+	}
 
 	if(m_parameters.showCommunicationEvents())
 		m_computeCore.showCommunicationEvents();
