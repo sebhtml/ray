@@ -284,9 +284,9 @@ LargeCount VerticesExtractor::getDefaultNumberOfBitsForBloomFilter(){
  * * Number of directions in one dimension (2);
  */
 
-	int numberOfErrorsPerRead = 4;
+	uint64_t numberOfErrorsPerRead = 4;
 
-	int erroneousKmersPerError = m_parameters->getWordSize() * 2 * 2;
+	uint64_t erroneousKmersPerError = m_parameters->getWordSize() * 2 * 2;
 
 	// the formula below is completely arbitrary.
 	// for serious cases, you should do an initial run
@@ -295,9 +295,26 @@ LargeCount VerticesExtractor::getDefaultNumberOfBitsForBloomFilter(){
 	// furthermore, this formula does not consider
 	// the true kmers in the genome
 
-	int numberOfLocalReads = m_myReads->size();
+	uint64_t numberOfLocalReads = m_myReads->size();
 
-	int bits = numberOfErrorsPerRead * erroneousKmersPerError * numberOfLocalReads;
+	uint64_t bits = numberOfErrorsPerRead * erroneousKmersPerError * numberOfLocalReads;
+
+
+	// This is useless because I now use a 64-bit integer.
+	if(bits < 0) {
+		bits = 2147483647;
+	}
+
+	uint64_t maximumBits = 1024;
+	maximumBits *= 1024*1024*8; // 1 GiB
+
+	if(bits > maximumBits) {
+		bits = maximumBits;
+
+		cout << "Rank " << m_core->getRank() << " ";
+		cout << "Warning: You should increase the number of ranks because";
+		cout << " the number of reads per rank is high" << endl;
+	}
 
 	return bits;
 }
@@ -384,6 +401,8 @@ void VerticesExtractor::setProfiler(Profiler*profiler){
 
 void VerticesExtractor::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();
+
+	m_core = core;
 
 	PluginHandle plugin=m_plugin;
 
