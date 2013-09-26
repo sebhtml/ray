@@ -1,0 +1,56 @@
+Roadmap for refactoring of Ray and RayPlatform to use the actor model.
+Sébastien Boisvert
+2013-09-26
+
+# Estimated time effort: 1 month full-time
+
+Link: http://en.wikipedia.org/wiki/Actor_model
+Prototype of the model in C++/MPI: https://github.com/sebhtml/BioActors
+Erlang example: https://github.com/sebhtml/erlang-tests/
+
+# 3 things that an actor can do when receiving a message:
+
+1. send messages to other actors (including possibly himself
+2. spawn new actors
+3. change its behavior for next message (via state in C++, in Erlang, this means
+that you recurse with different arguments to further the life of the actor)
+
+
+# Advantages over the current RayPlatform model:
+
+- slave mode calls are useless most of the time since things (like
+m_inbox->hasMessage) returns false probably 99% of the time.
+- Code modularity is achieved without ugly RayPlatform macros. Instead,
+it is achieved with Actor registering themselves.
+- With this model, There are N MPI ranks, and any number of actors. actors are mapped to
+a rank.
+
+
+# Principles for the migration
+
+- only messages are allowed (no more slave modes or master modes)
+- each plugin will effectively become an actor with an address
+- Each actor (old plugins) will receive directly its messages with receive
+- new actor method called send
+- The old plugin classes with inherit from ComputeCore and Actor
+
+
+# Roadmap
+
+
+1. remove calls to allocateSlaveModeHandle
+
+2. remove calls to allocateMasterModeHandle
+
+3. at this point, this satisfy rule 1. of the actor model, that is an actor can only react
+to messages. Each MPI rank is an actor. But we can not spawn new actors at this point.
+
+4. remove call to processData in RayPlatform
+
+5. Ship a Ray version with this !
+
+6. rename registerPlugin to Spawn actor.
+
+7. Actor model *replaces* mini-ranks.
+
+
