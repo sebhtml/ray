@@ -22,6 +22,8 @@
 
 // #define DEBUG_EXPLORATION_123
 
+#define DEBUG_EXPLORATION_SHOW_SUMMARY
+
 void GraphExplorer::start(WorkerHandle key, Kmer * start, GraphPath * seed, int direction, Parameters * parameters,
 	VirtualCommunicator * virtualCommunicator,
 	RingAllocator * outboxAllocator,
@@ -313,7 +315,8 @@ bool GraphExplorer::work() {
 
 	if(m_done) {
 
-#ifdef DEBUG_EXPLORATION_123
+#ifdef DEBUG_EXPLORATION_SHOW_SUMMARY
+		m_debug = true;
 		if(m_debug) {
 			cout << "[DEBUG] 8d97f6e851 completed, m_visitedVertices " << m_visitedVertices;
 			cout << " path " << m_seedName;
@@ -331,6 +334,7 @@ bool GraphExplorer::work() {
 			cout << " search results: " << m_searchResults.size();
 			cout << endl;
 		}
+		m_debug = false;
 #endif
 
 		return m_done;
@@ -376,6 +380,21 @@ bool GraphExplorer::work() {
 
 			cout << " forward annotations: " << m_annotationFetcher.getDirections()->size();
 			cout << " reverse annotations: " << m_annotationFetcherReverse.getDirections()->size();
+			cout << endl;
+		}
+#endif
+
+#ifdef DEBUG_EXPLORATION_SHOW_SUMMARY
+
+		if(m_visitedVertices == 0) {
+			CoverageDepth coverageDepthForFirstVertex = 0;
+			coverageDepthForFirstVertex = m_attributeFetcher.getDepth();
+
+			cout << "DEBUG -> ";
+			cout << "BiologicalObject: ";
+			cout << object.idToWord(m_parameters->getWordSize(), m_parameters->getColorSpaceMode());
+			cout << " SequencingDepth: ";
+			cout << coverageDepthForFirstVertex;
 			cout << endl;
 		}
 #endif

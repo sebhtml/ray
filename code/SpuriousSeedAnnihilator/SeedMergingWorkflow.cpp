@@ -47,6 +47,15 @@ void SeedMergingWorkflow::finalizeMethod(){
 /** has an unassigned task left to compute */
 bool SeedMergingWorkflow::hasUnassignedTask(){
 
+	/*
+	 * This code is still buggy. I will do the 2.3.0 release
+	 * without it.
+	 */
+	bool enableSeedMerging = m_parameters->hasOption("-merge-seeds");
+
+	if(!enableSeedMerging)
+		return false;
+
 	return m_seedIndex < (int) m_seeds->size () ;
 }
 
@@ -128,8 +137,10 @@ void SeedMergingWorkflow::processWorkerResult(Worker*worker){
 /** destroy a worker */
 void SeedMergingWorkflow::destroyWorker(Worker*worker){
 
-	delete worker;
+	NanoMerger * concreteWorker = (NanoMerger*)worker;
+	delete concreteWorker;
 	worker = NULL; // this does nothing useful
+	concreteWorker = NULL;
 }
 
 void SeedMergingWorkflow::initialize(vector<GraphPath>*seeds, VirtualCommunicator*virtualCommunicator,

@@ -1609,11 +1609,14 @@ void Parameters::showUsage(){
 	showOptionDescription("First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.");
 	cout<<endl;
 
-	showOption("-debug-recycling","Debugs the recycling events");
+	showOption("-debug-recycling", "Debugs the recycling events");
 	cout<<endl;
 
-	showOption("-ignore-seeds","Disables assembly by ignoring seeds.");
+	showOption("-ignore-seeds", "Disables assembly by ignoring seeds.");
 	cout<<endl;
+
+	showOption("-merge-seeds", "Merges seeds initially to reduce running time.");
+	cout << endl;
 
 	showOption("-disable-scaffolder","Disables the scaffolder.");
 	cout<<endl;

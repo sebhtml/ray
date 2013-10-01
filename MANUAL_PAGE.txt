@@ -102,6 +102,9 @@ DESCRIPTION:
        -ignore-seeds
               Disables assembly by ignoring seeds.
 
+       -merge-seeds
+              Merges seeds initially to reduce running time.
+
        -disable-scaffolder
               Disables the scaffolder.
 
