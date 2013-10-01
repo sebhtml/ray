@@ -161,7 +161,9 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					verbose=true;
 				}
 
-				if(firstVertex<firstReverse){
+				bool ignoreSeeds = m_parameters->hasOption("-ignore-seeds");
+
+				if(firstVertex<firstReverse && !ignoreSeeds){
 
 					if(verbose){
 						printf("Rank %i stored a seed with %i vertices\n",m_rank,(int)seed->size());

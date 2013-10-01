@@ -97,7 +97,10 @@ DESCRIPTION:
               First Annual RECOMB Satellite Workshop on Massively Parallel Sequencing, March 26-27 2011, Vancouver, BC, Canada.
 
        -debug-recycling
-              Debug the recycling events
+              Debugs the recycling events
+
+       -ignore-seeds
+              Disables assembly by ignoring seeds.
 
        -disable-scaffolder
               Disables the scaffolder.
