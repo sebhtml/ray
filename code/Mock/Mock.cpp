@@ -20,6 +20,8 @@
 
 #include "Mock.h"
 
+#include <code/Surveyor/Mother.h>
+
 void Mock::registerPlugin(ComputeCore*core){
 	m_plugin=core->allocatePluginHandle();
 
@@ -31,5 +33,10 @@ void Mock::registerPlugin(ComputeCore*core){
 
 void Mock::resolveSymbols(ComputeCore*core){
 	/* nothing to resolve... */
+
+	m_core = core;
+	Mother * mother = new Mother();
+
+	m_core->spawnActor(mother);
 }
 
