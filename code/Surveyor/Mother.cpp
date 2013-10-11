@@ -28,5 +28,5 @@ void Mother::receive(Message * message) {
 void Mother::boot(Message * message) {
 
 	printName();
-	cout << "Mother says hello" << endl;
+	cout << "Mother is booting and says hello" << endl;
 }
