@@ -1,1 +1,3 @@
-Welcome to the Ray documentation !
+---
+title: Welcome to the Ray documentation !
+---
