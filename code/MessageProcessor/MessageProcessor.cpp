@@ -939,6 +939,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 /*
  * Make sure that the edge was added.
  */
+//#define ASSERT_123
 		#ifdef ASSERT
 		vector<Kmer> inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
 		bool found=false;
@@ -947,6 +948,15 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 				found=true;
 				break;
 			}
+		}
+		if(!found) {
+			cout << "Error: can not find prefix." << endl;
+			cout << "ingoing edges: " << inEdges.size() << endl;
+			cout << "i= " << i << " count= " << count << endl;
+			cout << prefix.idToWord(m_parameters->getWordSize(),
+					m_parameters->getColorSpaceMode()) << " -> ";
+			cout << suffix.idToWord(m_parameters->getWordSize(),
+					m_parameters->getColorSpaceMode()) << endl;
 		}
 		assert(found);
 		#endif

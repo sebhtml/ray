@@ -268,6 +268,7 @@ void Parameters::parseCommands(){
 
 	set<string> outputFileCommands;
 	outputFileCommands.insert("-o");
+	outputFileCommands.insert("-output");
 	outputFileCommands.insert("-OutputFile");
 	outputFileCommands.insert("--OutputFile");
 
@@ -1594,6 +1595,7 @@ void Parameters::showUsage(){
 	cout<<"  Outputs"<<endl;
 	cout<<endl;
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
+	showOptionDescription("Other name: -output");
 	cout<<endl;
 
 	cout<<"  Assembly options (defaults work well)"<<endl;

@@ -57,7 +57,7 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 	m_initialisedNetworkTest=false;
 	m_size=size;
 	m_rank=rank;
-	
+
 	m_ranksFinished=0;
 	m_askedToWriteFiles=false;
 
@@ -122,7 +122,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 	if(!m_started){
 
 		m_started=true;
-		
+
 		bool skip=false;
 
 		if(m_parameters->hasOption("-skip-network-test"))
@@ -166,7 +166,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 		}else if(m_inbox->size()>0 && m_inbox->at(0)->getTag()==RAY_MPI_TAG_TEST_NETWORK_MESSAGE_REPLY){
 			LargeCount endingMicroSeconds=getMicroseconds();
-			
+
 			#ifdef CONFIG_DEBUG_NETWORK_TEST_PLUGIN
 			Message*message=m_inbox->at(0);
 			Rank source=message->getSource();
@@ -238,7 +238,7 @@ void NetworkTest::writeData(){
 		ostringstream file;
 		file<<m_parameters->getPrefix();
 		file<<"Rank"<<m_parameters->getRank()<<".NetworkTestData.txt";
-	
+
 		cout<<"Rank "<<m_parameters->getRank()<<" is writing "<<file.str()<<" (-write-network-test-raw-data)"<<endl;
 
 		ofstream f(file.str().c_str());
@@ -254,7 +254,7 @@ void NetworkTest::writeData(){
 		f<<"# average latency measured in microseconds: "<<getAverageLatency()<<endl;
 		f<<"# next line contains column names"<<endl;
 		f<<"# TestMessage SourceRank DestinationRank QueryTimeInMicroseconds ReplyTimeInMicroseconds Latency MessagesSentToDestination"<<endl;
-	
+
 		#ifdef ASSERT
 		assert(m_sentMicroseconds.size() == m_destinations.size());
 		assert(m_sentMicroseconds.size() == m_receivedMicroseconds.size());
@@ -276,7 +276,7 @@ void NetworkTest::writeData(){
 		ostringstream file2;
 		file2<<m_parameters->getPrefix();
 		file2<<"Rank"<<m_parameters->getRank()<<".NetworkTestDataCount.txt";
-		
+
 		ofstream f2(file2.str().c_str());
 		f2<<"# DestinationRank	MessagesSentToDestination"<<endl;
 		for(map<int,int>::iterator i=counters.begin();i!=counters.end();i++){
@@ -371,7 +371,7 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 		cout<<endl;
 		m_timePrinter->printElapsedTime("Network testing");
 		cout<<endl;
-		
+
 		if(m_parameters->hasOption("-test-network-only")){
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 			return;
@@ -379,11 +379,15 @@ void NetworkTest::call_RAY_MASTER_MODE_TEST_NETWORK (){
 
 		/* no files */
 		if(m_parameters->getNumberOfFiles()==0){
-			cout<<"Rank "<<m_parameters->getRank()<<": no input files, aborting."<<endl;
+
+			if(!m_parameters->hasOption("-run-surveyor")) {
+				cout<<"Rank "<<m_parameters->getRank()<<": no input files, aborting."<<endl;
+			}
+
 			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
 		}
 	}else if(m_ranksFinished==m_size && !m_askedToWriteFiles){
-		
+
 		m_switchMan->sendToAll(m_outbox,m_parameters->getRank(),RAY_MPI_TAG_TEST_NETWORK_WRITE_DATA);
 
 		m_askedToWriteFiles=true;
@@ -421,7 +425,7 @@ int NetworkTest::getModeLatency(){
 		if(data.count(maxLatency)==0 || data[latency] > data[maxLatency])
 			maxLatency=latency;
 	}
-	
+
 	return maxLatency;
 }
 

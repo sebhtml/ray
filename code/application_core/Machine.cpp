@@ -572,16 +572,6 @@ m_seedingData,
  */
 	if(isMaster() && !m_aborted && !m_parameters.hasOption("-test-network-only")){
 		m_scaffolder.printFinalMessage();
-		cout<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getOutputFile()<<endl;
-		cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getScaffoldFile()<<endl;
-		cout<<"Check for "<<m_parameters.getPrefix()<<"*"<<endl;
-		cout<<endl;
-		if(m_parameters.useAmos()){
-			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters.getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
-
-		}
-		cout<<endl;
 	}
 
 	if(!oldDirectoryExists && !m_aborted

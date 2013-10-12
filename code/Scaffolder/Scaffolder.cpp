@@ -283,6 +283,10 @@ averageValues[1],countValues[1],standardDeviationValues[1]);
 }
 
 void Scaffolder::printFinalMessage(){
+
+	if(m_contigLengths.size() == 0)
+		return;
+
 	ostringstream outputStat;
 	outputStat<<m_parameters->getPrefix()<<"OutputNumbers.txt";
 	ofstream f5(outputStat.str().c_str());
@@ -291,6 +295,20 @@ void Scaffolder::printFinalMessage(){
 	printInStream(&f5);
 
 	f5.close();
+
+	cout<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<m_parameters->getOutputFile()<<endl;
+	cout<<"Rank "<<m_parameters->getRank()<<" wrote "<<m_parameters->getScaffoldFile()<<endl;
+	cout<<"Check for "<<m_parameters->getPrefix()<<"*"<<endl;
+	cout<<endl;
+	if(m_parameters->useAmos()){
+		cout<<"Rank "<< m_parameters->getRank()<<" wrote ";
+		cout <<m_parameters->getAmosFile()<<" (reads mapped onto contiguous sequences in AMOS format)"<<endl;
+
+	}
+	cout<<endl;
+
+
 }
 
 void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream*outputStream){
