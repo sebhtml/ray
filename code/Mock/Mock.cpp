@@ -19,7 +19,7 @@
 */
 
 #include "Mock.h"
-
+#include "Parameters.h"
 #include <code/Surveyor/Mother.h>
 
 void Mock::registerPlugin(ComputeCore*core){
@@ -35,8 +35,11 @@ void Mock::resolveSymbols(ComputeCore*core){
 	/* nothing to resolve... */
 
 	m_core = core;
+	Parameters * parameters=(Parameters*)m_core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
+
 	Mother * mother = new Mother();
 
+	mother->setParameters(parameters);
 	m_core->spawnActor(mother);
 }
 
