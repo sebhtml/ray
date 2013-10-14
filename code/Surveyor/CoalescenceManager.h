@@ -15,8 +15,9 @@ public:
 	void receivePayload(Message & message);
 
 	enum {
-		PAYLOAD = 3,
-		PAYLOAD_RESPONSE
+		PAYLOAD = 10100,
+		PAYLOAD_RESPONSE,
+		DIE
 	};
 };
 

@@ -11,6 +11,7 @@
 using namespace std;
 
 Mother::Mother() {
+
 	//cout << "DEBUG Mother constructor" << endl;
 }
 
@@ -32,34 +33,62 @@ void Mother::receive(Message & message) {
 
 		// spawn the next reader now !
 
+		/*
 		printName();
 		cout << "DEBUG spawnReader because START_PARTY_OK" << endl;
-
+*/
 		spawnReader();
+
+	} else if(tag == GenomeGraphReader::DONE) {
+
+		m_aliveReaders--;
+
+		//cout << "DEBUG received GenomeGraphReader::DONE remaining " << m_aliveReaders << endl;
+
+		if(m_aliveReaders == 0) {
+
+			stop();
+		}
 	}
 
 }
 
+void Mother::stop() {
+
+	Message kill;
+	kill.setTag(CoalescenceManager::DIE);
+
+	send(m_coalescenceManager->getName(), kill);
+
+	die();
+
+}
+
 void Mother::hello(Message & message) {
+	/*
 	printName();
 	cout << "received HELLO from ";
 	cout << message.getSourceActor();
 	cout << " bytes: " << message.getNumberOfBytes();
 	cout << " content: " << *((int*) message.getBufferBytes());
+	*/
 
 	//char * buffer = (char*) message.getBufferBytes();
 	uint32_t checksum = computeCyclicRedundancyCode32((uint8_t*) message.getBufferBytes(),
 			message.getNumberOfBytes());
-	cout << "DEBUG CRC32= " << checksum << endl;
+	//cout << "DEBUG CRC32= " << checksum << endl;
 
-	cout << endl;
+	//cout << endl;
 }
 
 void Mother::boot(Message & message) {
 
+	m_aliveReaders = 0;
+
+	/*
 	printName();
 	cout << "Mother is booting and says hello" << endl;
-
+*/
 	Message message2;
 	/*
 	char joe[4000];
@@ -76,11 +105,13 @@ void Mother::boot(Message & message) {
 	//message2.setNumberOfBytes(4000);
 	message2.setNumberOfBytes( sizeof(int) * 1 );
 
-	cout << "DEBUG sending " << joe << endl;
+	//cout << "DEBUG sending " << joe << endl;
 
+	/*
 	uint32_t checksum = computeCyclicRedundancyCode32((uint8_t*) message2.getBufferBytes(),
 		       message2.getNumberOfBytes()	);
 	cout << "DEBUG CRC32= " << checksum << endl;
+*/
 
 	message2.setTag(Mother::HELLO);
 
@@ -98,6 +129,8 @@ void Mother::boot(Message & message) {
 
 	if(m_parameters->hasOption("-run-surveyor")) {
 		startSurveyor();
+	} else {
+		die();
 	}
 }
 
@@ -105,7 +138,7 @@ void Mother::startSurveyor() {
 
 	bool isRoot = (getName() % getSize()) == 0;
 
-	cout << "DEBUG startSurveyor isRoot" << isRoot << endl;
+	//cout << "DEBUG startSurveyor isRoot" << isRoot << endl;
 
 	// get a list of files.
 
@@ -126,7 +159,8 @@ void Mother::startSurveyor() {
 	}
 
 	if(isRoot) {
-		cout << "DEBUG samples= " << m_sampleNames.size() << endl;
+		printName();
+		cout << "samples= " << m_sampleNames.size() << endl;
 	}
 
 /*
@@ -159,7 +193,7 @@ void Mother::startSurveyor() {
 	}
 
 	printName();
-	cout << "DEBUG readers to spawn: " << m_filesToSpawn.size() << endl;
+	cout << " readers to spawn: " << m_filesToSpawn.size() << endl;
 
 	m_fileIterator = 0;
 	spawnReader();
@@ -181,18 +215,27 @@ void Mother::spawnReader() {
 		Message dummyMessage;
 
 		int coalescenceManagerName = m_coalescenceManager->getName();
-		cout << "DEBUG coalescenceManagerName is " << coalescenceManagerName << endl;
+		//cout << "DEBUG coalescenceManagerName is " << coalescenceManagerName << endl;
 
 		dummyMessage.setBuffer(&coalescenceManagerName);
 		dummyMessage.setNumberOfBytes( sizeof(int) );
 
 		dummyMessage.setTag(GenomeGraphReader::START_PARTY);
 
+		/*
 		printName();
 		cout << " sending START_PARTY " << GenomeGraphReader::START_PARTY;
 		cout << " to " << destination << endl;
+*/
+
+		m_aliveReaders ++;
 
 		send(destination, dummyMessage);
+	}
+
+	if(m_aliveReaders == 0) {
+
+		stop();
 	}
 }
 

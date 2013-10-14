@@ -16,13 +16,19 @@ void CoalescenceManager::receive(Message & message) {
 
 	int tag = message.getTag();
 
+	/*
 	printName();
 	cout << " CoalescenceManager DEBUG receive message !";
 	cout << endl;
+*/
 
 	if(tag == PAYLOAD) {
 
 		receivePayload(message);
+
+	} else if(tag == DIE) {
+
+		die();
 	}
 }
 

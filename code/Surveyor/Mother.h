@@ -47,10 +47,13 @@ class Mother: public Actor {
 	vector<string> m_sampleNames;
 	vector<string> m_graphFileNames;
 
+	int m_aliveReaders;
+
 	void spawnReader();
 	void startSurveyor();
 	void hello(Message & message);
 	void boot(Message & message);
+	void stop();
 
 public:
 	Mother();
@@ -58,7 +61,7 @@ public:
 	void receive(Message & message);
 
 	enum {
-		HELLO = 10100
+		HELLO = 10200
 	};
 
 	void setParameters(Parameters * parameters);
