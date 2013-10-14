@@ -1,5 +1,6 @@
 
 #include "GenomeGraphReader.h"
+#include "CoalescenceManager.h"
 
 #include <iostream>
 using namespace std;
@@ -23,18 +24,38 @@ void GenomeGraphReader::receive(Message & message) {
 
 	if(type == START_PARTY) {
 		startParty(message);
+
+	} else if(type == CoalescenceManager::PAYLOAD_RESPONSE) {
+
+		printName();
+		cout << " DEBUG readLine because PAYLOAD_RESPONSE" << endl;
+		// read the next line now !
+		readLine();
 	}
 }
 
 void GenomeGraphReader::startParty(Message & message) {
 
-	printName();
-	cout << "DEBUG startParty" << endl;
-	cout << " bytes in message: " << message.getNumberOfBytes();
-	cout << endl;
+	char * buffer = (char*) message.getBufferBytes();
+
+	memcpy(&m_aggregator, buffer, sizeof(int));
+	//m_aggregator = *(int*)(message.getBufferBytes());
 
 	m_reader.open(m_fileName.c_str());
 	m_loaded = 0;
+
+
+	printName();
+	cout << "DEBUG startParty" << endl;
+	cout << " bytes in message: " << message.getNumberOfBytes();
+	cout << " must send messages to aggregator " << m_aggregator;
+	cout << endl;
+
+	int source = message.getSourceActor();
+	Message response;
+	response.setTag(START_PARTY_OK);
+
+	send(source, response);
 
 	readLine();
 }
@@ -61,7 +82,13 @@ void GenomeGraphReader::readLine() {
 
 	} else {
 		printName();
-		cout << " got data line " << buffer << endl;
+		cout << " got data line " << buffer;
+		cout << " sending PAYLOAD to " << m_aggregator << endl;
+
+		Message message;
+		message.setTag(CoalescenceManager::PAYLOAD);
+
+		send(m_aggregator, message);
 	}
 }
 

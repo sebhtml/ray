@@ -5,6 +5,8 @@
 #include "StoreKeeper.h"
 #include "GenomeGraphReader.h"
 
+#include <RayPlatform/cryptography/crypto.h>
+
 #include <iostream>
 using namespace std;
 
@@ -25,6 +27,15 @@ void Mother::receive(Message & message) {
 		boot(message);
 	} else if (tag == Mother::HELLO) {
 		hello(message);
+
+	} else if(tag == GenomeGraphReader::START_PARTY_OK) {
+
+		// spawn the next reader now !
+
+		printName();
+		cout << "DEBUG spawnReader because START_PARTY_OK" << endl;
+
+		spawnReader();
 	}
 
 }
@@ -33,6 +44,14 @@ void Mother::hello(Message & message) {
 	printName();
 	cout << "received HELLO from ";
 	cout << message.getSourceActor();
+	cout << " bytes: " << message.getNumberOfBytes();
+	cout << " content: " << *((int*) message.getBufferBytes());
+
+	//char * buffer = (char*) message.getBufferBytes();
+	uint32_t checksum = computeCyclicRedundancyCode32((uint8_t*) message.getBufferBytes(),
+			message.getNumberOfBytes());
+	cout << "DEBUG CRC32= " << checksum << endl;
+
 	cout << endl;
 }
 
@@ -42,6 +61,27 @@ void Mother::boot(Message & message) {
 	cout << "Mother is booting and says hello" << endl;
 
 	Message message2;
+	/*
+	char joe[4000];
+
+	int i = 4000;
+	char value = 0;
+	while(i)
+		joe[i--]=value++;
+*/
+
+	int joe = 9921;
+
+	message2.setBuffer(&joe);
+	//message2.setNumberOfBytes(4000);
+	message2.setNumberOfBytes( sizeof(int) * 1 );
+
+	cout << "DEBUG sending " << joe << endl;
+
+	uint32_t checksum = computeCyclicRedundancyCode32((uint8_t*) message2.getBufferBytes(),
+		       message2.getNumberOfBytes()	);
+	cout << "DEBUG CRC32= " << checksum << endl;
+
 	message2.setTag(Mother::HELLO);
 
 	int next = getName() + 1;
@@ -141,6 +181,7 @@ void Mother::spawnReader() {
 		Message dummyMessage;
 
 		int coalescenceManagerName = m_coalescenceManager->getName();
+		cout << "DEBUG coalescenceManagerName is " << coalescenceManagerName << endl;
 
 		dummyMessage.setBuffer(&coalescenceManagerName);
 		dummyMessage.setNumberOfBytes( sizeof(int) );

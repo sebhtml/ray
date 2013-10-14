@@ -14,13 +14,15 @@ class GenomeGraphReader: public Actor {
 	int m_loaded;
 	ifstream m_reader;
 	string m_fileName;
+	int m_aggregator;
 
 	void startParty(Message & message);
 
 public:
 
 	enum {
-		START_PARTY = 42
+		START_PARTY = 42,
+		START_PARTY_OK
 	};
 
 
