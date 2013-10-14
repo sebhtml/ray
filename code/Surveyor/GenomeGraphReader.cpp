@@ -18,6 +18,9 @@ void GenomeGraphReader::receive(Message & message) {
 
 	int type = message.getTag();
 
+	printName();
+	cout << "received tag " << type << endl;
+
 	if(type == START_PARTY) {
 		startParty(message);
 	}
@@ -25,7 +28,10 @@ void GenomeGraphReader::receive(Message & message) {
 
 void GenomeGraphReader::startParty(Message & message) {
 
+	printName();
 	cout << "DEBUG startParty" << endl;
+	cout << " bytes in message: " << message.getNumberOfBytes();
+	cout << endl;
 
 	m_reader.open(m_fileName.c_str());
 	m_loaded = 0;

@@ -140,7 +140,17 @@ void Mother::spawnReader() {
 
 		Message dummyMessage;
 
+		int coalescenceManagerName = m_coalescenceManager->getName();
+
+		dummyMessage.setBuffer(&coalescenceManagerName);
+		dummyMessage.setNumberOfBytes( sizeof(int) );
+
 		dummyMessage.setTag(GenomeGraphReader::START_PARTY);
+
+		printName();
+		cout << " sending START_PARTY " << GenomeGraphReader::START_PARTY;
+		cout << " to " << destination << endl;
+
 		send(destination, dummyMessage);
 	}
 }
