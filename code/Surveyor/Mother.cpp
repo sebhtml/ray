@@ -63,6 +63,35 @@ void Mother::boot(Message & message) {
 
 void Mother::startSurveyor() {
 
+	bool isRoot = (getName() % getSize()) == 0;
+
+	cout << "DEBUG startSurveyor isRoot" << isRoot << endl;
+
+	// get a list of files.
+
+	vector<string> * commands = m_parameters->getCommands();
+
+	for(int i = 0 ; i < (int) commands->size() ; ++i) {
+
+		string & element = commands->at(i);
+
+		if(element == "-read-sample-graph") {
+
+			string sampleName = commands->at(++i);
+			string fileName = commands->at(++i);
+
+			m_sampleNames.push_back(sampleName);
+			m_graphFileNames.push_back(fileName);
+		}
+	}
+
+	if(isRoot) {
+		cout << "DEBUG samples= " << m_sampleNames.size() << endl;
+	}
+
+/*
+
+	// spawn actors for storing the graph.
 	for(int i = 0 ; i < PLAN_STORE_KEEPER_ACTORS_PER_RANK; ++i) {
 
 		StoreKeeper * actor = new StoreKeeper();
@@ -70,13 +99,49 @@ void Mother::startSurveyor() {
 
 		m_storeKeepers.push_back(actor->getName());
 	}
+	*/
 
-	for(int i = 0 ; i < PLAN_GENOME_GRAPH_READER_ACTORS_PER_RANK; ++i) {
+	m_coalescenceManager = new CoalescenceManager();
+	spawn(m_coalescenceManager);
+
+	// spawn an actor for each file that this actor owns
+
+	for(int i = 0; i < (int) m_graphFileNames.size() ; ++i) {
+
+		int mother = getName() % getSize();
+		int fileMother = i % getSize();
+
+		if(mother == fileMother) {
+
+			m_filesToSpawn.push_back(i);
+
+		}
+	}
+
+	printName();
+	cout << "DEBUG readers to spawn: " << m_filesToSpawn.size() << endl;
+
+	m_fileIterator = 0;
+	spawnReader();
+}
+
+void Mother::spawnReader() {
+
+	if(m_fileIterator < (int) m_filesToSpawn.size()) {
+
+		string & fileName = m_graphFileNames[m_filesToSpawn[m_fileIterator]];
+		m_fileIterator++;
 
 		GenomeGraphReader * actor = new GenomeGraphReader();
 		spawn(actor);
+		actor->setFileName(fileName);
 
-		m_readers.push_back(actor->getName());
+		int destination = actor->getName();
+
+		Message dummyMessage;
+
+		dummyMessage.setTag(GenomeGraphReader::START_PARTY);
+		send(destination, dummyMessage);
 	}
 }
 

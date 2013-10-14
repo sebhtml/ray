@@ -2,6 +2,8 @@
 #ifndef MotherHeader
 #define MotherHeader
 
+#include "CoalescenceManager.h"
+
 #include <code/Mock/Parameters.h>
 #include <RayPlatform/actors/Actor.h>
 
@@ -11,12 +13,14 @@
 #define PLAN_GENOME_GRAPH_READER_ACTORS_PER_RANK 2
 
 #include <vector>
+#include <string>
 using namespace std;
 
 /**
  *
  * Map (assuming N ranks)
  *
+ * The following map is not used anymore because it is stupid.
  * ----------------------------------------------------------
  * Actors			Quantity	Role
  * Start	End
@@ -33,22 +37,31 @@ class Mother: public Actor {
 
 	Parameters * m_parameters;
 
+	CoalescenceManager * m_coalescenceManager;
+	int m_fileIterator;
+	vector<int> m_filesToSpawn;
+
 	vector<int> m_storeKeepers;
 	vector<int> m_readers;
+
+	vector<string> m_sampleNames;
+	vector<string> m_graphFileNames;
+
+	void spawnReader();
+	void startSurveyor();
+	void hello(Message & message);
+	void boot(Message & message);
 
 public:
 	Mother();
 	~Mother();
 	void receive(Message & message);
-	void hello(Message & message);
-	void boot(Message & message);
 
 	enum {
 		HELLO = 10100
 	};
 
 	void setParameters(Parameters * parameters);
-	void startSurveyor();
 };
 
 #endif
