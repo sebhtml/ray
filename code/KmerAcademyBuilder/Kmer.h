@@ -150,6 +150,8 @@ public:
 	bool canHaveChild(const Kmer*otherKmer,int kmerLength)const;
 	bool canHaveParent(const Kmer*otherKmer,int kmerLength)const;
 
+	void loadFromTextRepresentation(const char * text);
+
 }ATTRIBUTE_PACKED;
 
 /*

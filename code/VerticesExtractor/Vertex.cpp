@@ -30,6 +30,14 @@ using namespace std;
 
 #define __NO_ORIGIN -999
 
+Vertex::Vertex() {
+
+	constructor();
+}
+
+Vertex::~Vertex() {
+}
+
 void Vertex::constructor(){
 	m_coverage_lower=0;
 	m_edges_lower=0;
@@ -57,6 +65,11 @@ bool Vertex::isAssembledByGreaterRank(Rank origin){
 	return origin<m_assembled;
 }
 
+void Vertex::setCoverageValue(CoverageDepth coverage) {
+
+	m_coverage_lower = coverage;
+}
+
 void Vertex::setCoverage(Kmer*a,CoverageDepth coverage){
 	if(*a==m_lowerKey){
 
@@ -71,15 +84,19 @@ void Vertex::setCoverage(Kmer*a,CoverageDepth coverage){
 	}
 }
 
-CoverageDepth Vertex::getCoverage(Kmer*a){
+CoverageDepth Vertex::getVertexCoverage() const{
+	return getCoverage(&m_lowerKey);
+}
+
+CoverageDepth Vertex::getCoverage(const Kmer*a) const{
 	return m_coverage_lower;
 }
 
-vector<Kmer> Vertex::getIngoingEdges(Kmer *a,int k){
+vector<Kmer> Vertex::getIngoingEdges(const Kmer *a,int k) const{
 	return a->getIngoingEdges(getEdges(a),k);
 }
 
-vector<Kmer> Vertex::getOutgoingEdges(Kmer*a,int k){
+vector<Kmer> Vertex::getOutgoingEdges(const Kmer*a,int k) const{
 	return a->getOutgoingEdges(getEdges(a),k);
 }
 
@@ -138,7 +155,11 @@ void Vertex::setEdges(Kmer*a,uint8_t edges){
 		m_edges_lower=convertBitmap(edges);
 }
 
-uint8_t Vertex::getEdges(Kmer*a){
+uint8_t Vertex::getVertexEdges() const{
+	return getEdges(&m_lowerKey);
+}
+
+uint8_t Vertex::getEdges(const Kmer*a) const{
 	if(*a==m_lowerKey)
 		return m_edges_lower;
 	return convertBitmap(m_edges_lower);
@@ -282,7 +303,7 @@ Kmer Vertex::getKey(){
 	return m_lowerKey;
 }
 
-void Vertex::setKey(Kmer key){
+void Vertex::setKey(const Kmer & key){
 	m_lowerKey=key;
 }
 
@@ -310,7 +331,7 @@ void Vertex::setKey(Kmer key){
 *
  *  see also the .h that has more documentation for this.
  */
-uint8_t Vertex::convertBitmap(uint8_t bitMap){
+uint8_t Vertex::convertBitmap(uint8_t bitMap) const{
 
 /*
  * [Swap the 4 bits for children with the 4 bits for parents]
@@ -332,7 +353,8 @@ uint8_t Vertex::convertBitmap(uint8_t bitMap){
 	return baseMap;
 }
 
-uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2){
+uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2) const {
+
 	int bit1Value=((uint64_t)map<<(63-bit1))>>63;
 	int bit2Value=((uint64_t)map<<(63-bit2))>>63;
 
@@ -388,4 +410,53 @@ uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2){
 Direction*Vertex::getFirstDirection()const{
 
 	return m_directions;
+}
+
+int Vertex::load(const char * buffer) {
+	int position = 0;
+	position += m_lowerKey.load(buffer);
+
+	int bytes = sizeof(m_coverage_lower);
+	memcpy(&m_coverage_lower, buffer + position, bytes);
+	position += bytes;
+
+	bytes = sizeof(m_edges_lower);
+	memcpy(&m_edges_lower, buffer + position, bytes);
+	position += bytes;
+
+	return position;
+
+}
+
+int Vertex::dump(char * buffer) const {
+
+	int position = 0;
+	position += m_lowerKey.dump(buffer);
+
+	int bytes = sizeof(m_coverage_lower);
+	memcpy(buffer + position, &m_coverage_lower, bytes);
+	position += bytes;
+
+	bytes = sizeof(m_edges_lower);
+	memcpy(buffer + position, &m_edges_lower, bytes);
+	position += bytes;
+
+	return position;
+}
+
+int Vertex::getRequiredNumberOfBytes() const {
+
+	cout << "DEBUG sizeof(m_coverage_lower) is " << sizeof(m_coverage_lower) << endl;
+
+	return m_lowerKey.getRequiredNumberOfBytes() + sizeof(m_coverage_lower) + sizeof(m_edges_lower);
+}
+
+void Vertex::print(int kmerLength, bool colorSpaceMode) const {
+
+	cout << " Vertex key= ";
+	cout << m_lowerKey.idToWord(kmerLength, colorSpaceMode);
+	cout << " " << getVertexCoverage();
+	cout << " parents: " << getIngoingEdges(&m_lowerKey, kmerLength).size();
+	cout << " children: " << getOutgoingEdges(&m_lowerKey, kmerLength).size();
+	cout << endl;
 }

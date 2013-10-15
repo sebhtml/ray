@@ -21,6 +21,8 @@
 
 #include "Kmer.h"
 
+#include <code/Mock/common_functions.h>
+
 #include <RayPlatform/cryptography/crypto.h>
 
 #include <string>
@@ -488,4 +490,11 @@ int Kmer::dump(char * buffer) const {
 
 int Kmer::getRequiredNumberOfBytes() const {
 	return getNumberOfU64() * sizeof(MessageUnit);
+}
+
+void Kmer::loadFromTextRepresentation(const char * text) {
+
+	Kmer value = wordId(text);
+
+	*this = value;
 }

@@ -2,7 +2,13 @@
 #include "GenomeGraphReader.h"
 #include "CoalescenceManager.h"
 
+#include <code/Mock/constants.h>
+#include <code/Mock/common_functions.h>
+#include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/VerticesExtractor/Vertex.h>
+
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 #include <string.h>
@@ -25,6 +31,7 @@ void GenomeGraphReader::receive(Message & message) {
 */
 
 	if(type == START_PARTY) {
+
 		startParty(message);
 
 	} else if(type == CoalescenceManager::PAYLOAD_RESPONSE) {
@@ -67,6 +74,8 @@ void GenomeGraphReader::startParty(Message & message) {
 	readLine();
 }
 
+// TODO: add a BufferedLineReader class in RayPlatform
+// and use it here.
 void GenomeGraphReader::readLine() {
 
 	char buffer[1024];
@@ -95,6 +104,85 @@ void GenomeGraphReader::readLine() {
 
 		die();
 	} else {
+
+		// AGCTGTGAAACTGGTGCAAGCTACCAGAATC;36;A;C
+		string sequence;
+		CoverageDepth coverage;
+		string parents;
+		string children;
+
+		for(int i = 0 ; i < (int) strlen(buffer) ; ++i) {
+			if(buffer[i] == ';')
+				buffer[i] = ' ';
+		}
+
+		istringstream stringBuffer(buffer);
+
+		stringBuffer >> sequence;
+		stringBuffer >> coverage;
+		stringBuffer >> parents;
+		stringBuffer >> children;
+
+		//cout << "DEBUG " << sequence << " with " << coverage << endl;
+
+		// if this is the first one, send the k-mer length too
+		if(m_loaded == 0) {
+
+			Message aMessage;
+			aMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
+
+			int length = sequence.length();
+			aMessage.setBuffer(&length);
+			aMessage.setNumberOfBytes(sizeof(length));
+
+			send(m_aggregator, aMessage);
+		}
+
+		Kmer kmer;
+		kmer.loadFromTextRepresentation(sequence.c_str());
+
+		Vertex vertex;
+		vertex.setKey(kmer);
+		vertex.setCoverageValue(coverage);
+
+		// add parents
+		for(int i = 0 ; i < (int)parents.length() ; ++i) {
+
+			string parent = sequence;
+			for(int j = 0 ; j < (int) parent.length()-1 ; ++j) {
+				parent[j + 1] = parent[j];
+			}
+			parent[0] = parents[i];
+
+			Kmer parentKmer;
+			parentKmer.loadFromTextRepresentation(parent.c_str());
+
+			vertex.addIngoingEdge(&kmer, &parentKmer, sequence.length());
+		}
+
+		// add children
+		for(int i = 0 ; i < (int)children.length() ; ++i) {
+
+			string child = sequence;
+			for(int j = 0 ; j < (int) child.length()-1 ; ++j) {
+				child[j] = child[j + 1];
+			}
+			child[child.length() - 1] = children[i];
+
+			Kmer childKmer;
+			childKmer.loadFromTextRepresentation(child.c_str());
+
+			vertex.addOutgoingEdge(&kmer, &childKmer, sequence.length());
+		}
+
+		char messageBuffer[100];
+		int position = 0;
+
+		position += vertex.dump(messageBuffer + position);
+
+// TODO: accumulate many objects before flushing it.
+// we can go up to MAXIMUM_MESSAGE_SIZE_IN_BYTES bytes.
+
 		/*
 		printName();
 		cout << " got data line " << buffer;
@@ -102,6 +190,16 @@ void GenomeGraphReader::readLine() {
 */
 		Message message;
 		message.setTag(CoalescenceManager::PAYLOAD);
+		message.setBuffer(messageBuffer);
+		message.setNumberOfBytes(position);
+
+#if 0
+		printName();
+		cout << "DEBUG sending PAYLOAD to " << m_aggregator;
+		cout << " with " << position << " bytes ";
+		vertex.print(sequence.length(), false);
+		cout << endl;
+#endif
 
 		if(m_loaded % 1000000 == 0) {
 			printName();
@@ -117,8 +215,8 @@ void GenomeGraphReader::setFileName(string & fileName) {
 
 	m_fileName = fileName;
 
-	/*
+#if 0
 	printName();
-	cout << " setFileName " << m_fileName << endl;
-	*/
+	cout << " DEBUG setFileName " << m_fileName << endl;
+#endif
 }

@@ -74,8 +74,10 @@ void Mother::hello(Message & message) {
 	*/
 
 	//char * buffer = (char*) message.getBufferBytes();
+	/*
 	uint32_t checksum = computeCyclicRedundancyCode32((uint8_t*) message.getBufferBytes(),
 			message.getNumberOfBytes());
+			*/
 	//cout << "DEBUG CRC32= " << checksum << endl;
 
 	//cout << endl;

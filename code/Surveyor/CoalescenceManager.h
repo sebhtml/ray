@@ -6,6 +6,9 @@
 
 class CoalescenceManager : public Actor {
 
+	int m_kmerLength;
+	bool m_colorSpaceMode;
+
 public:
 
 	CoalescenceManager();
@@ -17,6 +20,8 @@ public:
 	enum {
 		PAYLOAD = 10100,
 		PAYLOAD_RESPONSE,
+		SET_KMER_LENGTH,
+		SET_KMER_LENGTH_OK,
 		DIE
 	};
 };

@@ -28,6 +28,8 @@
 #include <code/Mock/common_functions.h>
 #include <code/Searcher/ColorSet.h>
 
+#include <RayPlatform/store/CarriageableItem.h>
+
 #include <fstream>
 #include <stdint.h>
 #include <vector>
@@ -132,13 +134,18 @@ class Vertex{
  */
 	void setEdges(Kmer*kmer,uint8_t edgeData);
 
-	uint8_t convertBitmap(uint8_t bitmap);
-	uint8_t swapBits(uint8_t map,int bit1,int bit2);
+	uint8_t convertBitmap(uint8_t bitmap) const;
+	uint8_t swapBits(uint8_t map,int bit1,int bit2) const;
+public:
+
 /*
  * TODO: move these attributes in the private or protected zone
  */
 
-public:
+
+	Vertex();
+	~Vertex();
+
 	Kmer m_lowerKey;
 	/*
  *	The coverage of the vertex
@@ -166,21 +173,33 @@ public:
 
 	void constructor();
 	void setCoverage(Kmer*a,CoverageDepth coverage);
-	CoverageDepth getCoverage(Kmer*p);
+	void setCoverageValue(CoverageDepth coverage);
+	CoverageDepth getCoverage(const Kmer*p) const;
+	CoverageDepth getVertexCoverage() const;
+
+	// TODO: add methods to add parents and children without
+	// having to provide the base kmer.
+	// Having the base kmer is required for workflows where the lexicographically-lower
+	// object is used.
 	void addOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge(Kmer*vertex,Kmer*a,int k);
 
 /*
  * TODO, the vector should be a out parameter
  */
-	vector<Kmer> getIngoingEdges(Kmer*a,int k);
+	vector<Kmer> getIngoingEdges(const Kmer*a,int k) const;
 
 /*
  * TODO, the vector should be a out parameter
  */
-	vector<Kmer> getOutgoingEdges(Kmer*a,int k);
+	vector<Kmer> getOutgoingEdges(const Kmer*a,int k) const;
 
-	uint8_t getEdges(Kmer*a);
+/**
+ * get edges using a selector.
+ */
+	uint8_t getEdges(const Kmer*a) const;
+
+	uint8_t getVertexEdges() const;
 	void deleteIngoingEdge(Kmer*vertex,Kmer*a,int k);
 	void deleteOutgoingEdge(Kmer*vertex,Kmer*a,int k);
 
@@ -203,9 +222,15 @@ public:
 	void setVirtualColor(VirtualKmerColorHandle handle);
 
 	Kmer getKey();
-	void setKey(Kmer key);
+	void setKey(const Kmer & key);
 
 	Direction*getFirstDirection()const;
+
+	int load(const char * buffer);
+	int dump(char * buffer) const;
+	int getRequiredNumberOfBytes() const;
+
+	void print(int kmerLength, bool colorSpaceMode) const;
 
 } ATTRIBUTE_PACKED;
 

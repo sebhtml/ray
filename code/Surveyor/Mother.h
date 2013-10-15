@@ -31,6 +31,9 @@ using namespace std;
  * 102N		104N - 1	2N		GenomeGraphReader
  * ----------------------------------------------------------
  *
+ * It would be nice to have a number of tokens / second that can be exchanged and also
+ * the point-to-point latency for this actor implementation.
+ *
  * \author Sébastien Boisvert
  */
 class Mother: public Actor {
