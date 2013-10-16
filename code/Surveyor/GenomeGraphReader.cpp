@@ -94,7 +94,7 @@ void GenomeGraphReader::startParty(Message & message) {
 	readLine();
 }
 
-// TODO: add a BufferedLineReader class in RayPlatform
+// DONE 2013-10-16: add a BufferedLineReader class in RayPlatform
 // and use it here.
 void GenomeGraphReader::readLine() {
 
@@ -112,6 +112,8 @@ void GenomeGraphReader::readLine() {
 	}
 
 	if(m_reader.eof()) {
+
+		m_reader.close();
 
 		printName();
 		cout << " finished reading file " << m_fileName;
@@ -143,7 +145,9 @@ void GenomeGraphReader::readLine() {
 		stringBuffer >> parents;
 		stringBuffer >> children;
 
-		//cout << "DEBUG " << sequence << " with " << coverage << endl;
+#if 0
+		cout << "DEBUG " << sequence << " with " << coverage << endl;
+#endif
 
 		// if this is the first one, send the k-mer length too
 		if(m_loaded == 0) {

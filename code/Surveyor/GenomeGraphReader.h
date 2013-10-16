@@ -23,15 +23,28 @@
 #define GenomeGraphReaderHeader
 
 #include <RayPlatform/actors/Actor.h>
+#include <RayPlatform/files/FileReader.h>
+
 
 #include <string>
 #include <fstream>
 using namespace std;
 
+#define I_LIKE_FAST_IO
+
 class GenomeGraphReader: public Actor {
 
 	int m_loaded;
+
+#ifdef I_LIKE_FAST_IO
+
+	// fast IO using a wrapper.
+	FileReader m_reader;
+#else
+
 	ifstream m_reader;
+#endif
+
 	string m_fileName;
 
 	int m_aggregator;
