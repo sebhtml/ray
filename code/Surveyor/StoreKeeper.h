@@ -23,6 +23,8 @@
 #ifndef StoreKeeperHeader
 #define StoreKeeperHeader
 
+#define PLAN_STORE_KEEPER_ACTORS_PER_RANK 1
+
 #include <RayPlatform/actors/Actor.h>
 
 class StoreKeeper: public Actor {

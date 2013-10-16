@@ -26,11 +26,6 @@
 #include <code/Mock/Parameters.h>
 #include <RayPlatform/actors/Actor.h>
 
-#define PLAN_RANK_ACTORS_PER_RANK 1
-#define PLAN_MOTHER_ACTORS_PER_RANK 1
-#define PLAN_STORE_KEEPER_ACTORS_PER_RANK 100
-#define PLAN_GENOME_GRAPH_READER_ACTORS_PER_RANK 2
-
 #include <vector>
 #include <string>
 using namespace std;
@@ -59,7 +54,7 @@ class Mother: public Actor {
 
 	Parameters * m_parameters;
 
-	CoalescenceManager * m_coalescenceManager;
+	int m_coalescenceManager;
 	int m_fileIterator;
 	vector<int> m_filesToSpawn;
 

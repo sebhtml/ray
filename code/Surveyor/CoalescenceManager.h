@@ -29,6 +29,9 @@ class CoalescenceManager : public Actor {
 	int m_kmerLength;
 	bool m_colorSpaceMode;
 
+	int m_storeFirstActor;
+	int m_storeLastActor;
+
 public:
 
 	CoalescenceManager();
@@ -42,6 +45,7 @@ public:
 		PAYLOAD_RESPONSE,
 		SET_KMER_LENGTH,
 		SET_KMER_LENGTH_OK,
+		INTRODUCE_STORE,
 		DIE
 	};
 };

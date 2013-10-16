@@ -20,6 +20,7 @@
 
 
 #include "StoreKeeper.h"
+#include "CoalescenceManager.h"
 
 StoreKeeper::StoreKeeper() {
 
@@ -31,4 +32,11 @@ StoreKeeper::~StoreKeeper() {
 
 void StoreKeeper::receive(Message & message) {
 
+	int tag = message.getTag();
+
+
+	if(tag == CoalescenceManager::DIE) {
+
+		die();
+	}
 }

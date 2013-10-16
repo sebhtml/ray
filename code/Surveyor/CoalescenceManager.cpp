@@ -21,6 +21,7 @@
 
 
 #include "CoalescenceManager.h"
+#include "StoreKeeper.h"
 
 #include <code/Mock/constants.h>
 #include <code/Mock/common_functions.h>
@@ -90,6 +91,57 @@ void CoalescenceManager::receive(Message & message) {
 		*/
 
 		send(source, response);
+
+	} else if(tag == INTRODUCE_STORE) {
+
+		char * buffer = (char*) message.getBufferBytes();
+
+		int localStore = -1;
+
+		memcpy(&localStore, buffer, sizeof(localStore));
+
+#ifdef CONFIG_ASSERT
+		assert(localStore >= 0);
+#endif
+		// the the node on which we are
+		int rank = getRank();
+		int numberOfRanks = getSize();
+
+		/*
+		 * We have N MPI ranks.
+		 * The local rank is x.
+		 * The local StoreKeeper actor is y.
+		 * There are PLAN_STORE_KEEPER_ACTORS_PER_RANK StoreKeeper actors per rank
+		 *
+		 * So basically, we need to find the actor name on rank 0 (first StoreKeeper actor)
+		 * then, we add PLAN_STORE_KEEPER_ACTORS_PER_RANK * getSize to that -1 (the last StoreKeeper
+		 * actor)
+		 *
+		 * This obviously assumes that allocation is regular.
+		 * This assumption is correct since everything is spawned by Mother actors (in Surveyor).
+		 *
+		 * y = x + i * N
+		 *
+		 * Find i
+		 *
+		 * y - x = i * N
+		 * i = (y - x) / N
+		 *
+		 * or
+		 *
+		 */
+
+		int iterator = ( localStore - rank ) / numberOfRanks;
+
+		int first = 0 + iterator * numberOfRanks;
+		int last = first + ( numberOfRanks * PLAN_STORE_KEEPER_ACTORS_PER_RANK ) -1;
+
+		m_storeFirstActor = first;
+		m_storeLastActor = last;
+
+		printName();
+		cout << " is now acquainted with StoreKeeper actors from ";
+		cout << m_storeFirstActor << " to " << m_storeLastActor << endl;
 	}
 }
 

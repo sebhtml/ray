@@ -31,6 +31,12 @@
 #include <iostream>
 using namespace std;
 
+#define PLAN_RANK_ACTORS_PER_RANK 1
+#define PLAN_MOTHER_ACTORS_PER_RANK 1
+#define PLAN_GENOME_GRAPH_READER_ACTORS_PER_RANK 999999
+
+
+
 Mother::Mother() {
 
 	//cout << "DEBUG Mother constructor" << endl;
@@ -79,7 +85,12 @@ void Mother::stop() {
 	Message kill;
 	kill.setTag(CoalescenceManager::DIE);
 
-	send(m_coalescenceManager->getName(), kill);
+	send(m_coalescenceManager, kill);
+
+	send(m_storeKeepers[0], kill);
+
+	m_storeKeepers.clear();
+	m_coalescenceManager = -1;
 
 	die();
 
@@ -186,7 +197,14 @@ void Mother::startSurveyor() {
 		cout << "samples= " << m_sampleNames.size() << endl;
 	}
 
-/*
+
+	CoalescenceManager * coalescenceManager = new CoalescenceManager();
+	spawn(coalescenceManager);
+
+	m_coalescenceManager = coalescenceManager->getName();
+
+	// spawn the local store keeper and introduce the CoalescenceManager
+	// to the StoreKeeper
 
 	// spawn actors for storing the graph.
 	for(int i = 0 ; i < PLAN_STORE_KEEPER_ACTORS_PER_RANK; ++i) {
@@ -195,11 +213,19 @@ void Mother::startSurveyor() {
 		spawn(actor);
 
 		m_storeKeepers.push_back(actor->getName());
-	}
-	*/
 
-	m_coalescenceManager = new CoalescenceManager();
-	spawn(m_coalescenceManager);
+		// tell the CoalescenceManager about the local StoreKeeper
+		Message dummyMessage;
+		int localStore = actor->getName();
+
+		dummyMessage.setBuffer(&localStore);
+		dummyMessage.setNumberOfBytes( sizeof(int) );
+
+		dummyMessage.setTag(CoalescenceManager::INTRODUCE_STORE);
+
+		send(m_coalescenceManager, dummyMessage);
+	}
+
 
 	// spawn an actor for each file that this actor owns
 
@@ -234,10 +260,9 @@ void Mother::spawnReader() {
 		actor->setFileName(fileName);
 
 		int destination = actor->getName();
-
 		Message dummyMessage;
 
-		int coalescenceManagerName = m_coalescenceManager->getName();
+		int coalescenceManagerName = m_coalescenceManager;
 		//cout << "DEBUG coalescenceManagerName is " << coalescenceManagerName << endl;
 
 		dummyMessage.setBuffer(&coalescenceManagerName);
