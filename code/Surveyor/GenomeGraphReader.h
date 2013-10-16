@@ -34,6 +34,8 @@ using namespace std;
 
 class GenomeGraphReader: public Actor {
 
+private:
+	int m_sample;
 	int m_loaded;
 
 #ifdef I_LIKE_FAST_IO
@@ -65,7 +67,7 @@ public:
 	~GenomeGraphReader();
 	void receive(Message & message);
 	void readLine();
-	void setFileName(string & fileName);
+	void setFileName(string & fileName, int sample);
 };
 
 #endif

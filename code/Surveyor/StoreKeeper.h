@@ -27,12 +27,30 @@
 
 #include <RayPlatform/actors/Actor.h>
 
+/**
+ * Provides genomic storage.
+ *
+ * \author Sébastien Boisvert
+ */
 class StoreKeeper: public Actor {
+private:
+
+	int m_kmerLength;
+	bool m_colorSpaceMode;
+
+	void pushSampleVertex(Message & message);
 
 public:
+
 	StoreKeeper();
 	~StoreKeeper();
+
 	void receive(Message & message);
+
+	enum {
+		PUSH_SAMPLE_VERTEX = 10400,
+		PUSH_SAMPLE_VERTEX_OK
+	};
 };
 
 #endif

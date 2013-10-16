@@ -22,9 +22,15 @@
 #ifndef CoalescenceManagerHeader
 #define CoalescenceManagerHeader
 
+#include <code/KmerAcademyBuilder/Kmer.h>
+
 #include <RayPlatform/actors/Actor.h>
 
 class CoalescenceManager : public Actor {
+
+private:
+
+	int m_localStore;
 
 	int m_kmerLength;
 	bool m_colorSpaceMode;
@@ -32,6 +38,7 @@ class CoalescenceManager : public Actor {
 	int m_storeFirstActor;
 	int m_storeLastActor;
 
+	int getVertexDestination(Kmer & kmer);
 public:
 
 	CoalescenceManager();

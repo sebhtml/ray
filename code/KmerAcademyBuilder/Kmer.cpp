@@ -498,3 +498,13 @@ void Kmer::loadFromTextRepresentation(const char * text) {
 
 	*this = value;
 }
+
+uint64_t Kmer::getHashValue1() const {
+
+	return hash_function_1();
+}
+
+uint64_t Kmer::getHashValue2() const {
+
+	return hash_function_2();
+}

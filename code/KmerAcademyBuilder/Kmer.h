@@ -69,6 +69,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class Kmer : public CarriageableItem {
+
+private:
 	/** the actual array of uint64_t */
 	uint64_t m_u64[KMER_U64_ARRAY_SIZE];
 
@@ -133,9 +135,11 @@ public:
 
 	/** hash 1 is used to distribute k-mers on MPI ranks */
 	uint64_t hash_function_1()const;
+	uint64_t getHashValue1() const;
 
 	/** hash 2 is used for double hashing in the hash tables */
 	uint64_t hash_function_2()const;
+	uint64_t getHashValue2() const;
 /*
  * transform a Kmer in a string
  */

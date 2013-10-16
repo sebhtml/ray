@@ -22,6 +22,13 @@
 #include "StoreKeeper.h"
 #include "CoalescenceManager.h"
 
+#include <code/VerticesExtractor/Vertex.h>
+
+#include <iostream>
+using namespace std;
+
+#include <string.h>
+
 StoreKeeper::StoreKeeper() {
 
 }
@@ -35,8 +42,53 @@ void StoreKeeper::receive(Message & message) {
 	int tag = message.getTag();
 
 
-	if(tag == CoalescenceManager::DIE) {
+	if(tag == PUSH_SAMPLE_VERTEX) {
+		pushSampleVertex(message);
+
+	} else if( tag == CoalescenceManager::DIE) {
 
 		die();
+
+	} else if(CoalescenceManager::SET_KMER_LENGTH) {
+
+		int kmerLength = 0;
+		char * buffer = (char*)message.getBufferBytes();
+		memcpy(&kmerLength, buffer, sizeof(kmerLength));
+
+		if(m_kmerLength == 0)
+			m_kmerLength = kmerLength;
+
+		// cout << "DEBUG m_kmerLength = " << m_kmerLength << endl;
+
+		// the color space mode is an artefact.
+		m_colorSpaceMode = false;
+
+		//cout << "DEBUG StoreKeeper SET_KMER_LENGTH ";
+		cout << m_kmerLength;
+		cout << endl;
+
 	}
 }
+
+void StoreKeeper::pushSampleVertex(Message & message) {
+	char * buffer = (char*)message.getBufferBytes();
+	//int bytes = message.getNumberOfBytes();
+
+	int position = 0;
+	Vertex vertex;
+	position += vertex.load(buffer + position);
+
+	int sample = -1;
+	memcpy(&sample, buffer + position, sizeof(sample));
+
+	printName();
+	cout << " DEBUG received ";
+	cout << "(from " << message.getSourceActor();
+	cout << ") ";
+	cout << "vertex for sample " << sample;
+	cout << " with sequence ";
+	vertex.print(m_kmerLength, m_colorSpaceMode);
+	cout << endl;
+
+}
+

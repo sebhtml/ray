@@ -92,6 +92,13 @@ void CoalescenceManager::receive(Message & message) {
 
 		send(source, response);
 
+		Message kmerMessage;
+		kmerMessage.setBuffer(&m_kmerLength);
+		kmerMessage.setNumberOfBytes(sizeof(m_kmerLength));
+		kmerMessage.setTag(SET_KMER_LENGTH);
+		send(m_localStore, kmerMessage);
+
+
 	} else if(tag == INTRODUCE_STORE) {
 
 		char * buffer = (char*) message.getBufferBytes();
@@ -133,6 +140,8 @@ void CoalescenceManager::receive(Message & message) {
 
 		int iterator = ( localStore - rank ) / numberOfRanks;
 
+		m_localStore = localStore;
+
 		int first = 0 + iterator * numberOfRanks;
 		int last = first + ( numberOfRanks * PLAN_STORE_KEEPER_ACTORS_PER_RANK ) -1;
 
@@ -142,6 +151,7 @@ void CoalescenceManager::receive(Message & message) {
 		printName();
 		cout << " is now acquainted with StoreKeeper actors from ";
 		cout << m_storeFirstActor << " to " << m_storeLastActor << endl;
+
 	}
 }
 
@@ -150,11 +160,14 @@ void CoalescenceManager::receivePayload(Message & message) {
 	int source = message.getSourceActor();
 
 	char * buffer = (char*)message.getBufferBytes();
-	//int bytes = message.getNumberOfBytes();
+	int bytes = message.getNumberOfBytes();
 
 	int position = 0;
 	Vertex vertex;
-	position += vertex.load(buffer);
+	position += vertex.load(buffer + position);
+
+	int sample = -1;
+	memcpy(&sample, buffer + position, sizeof(sample));
 
 #if 0
 	printName();
@@ -165,8 +178,36 @@ void CoalescenceManager::receivePayload(Message & message) {
 
 #endif
 
+	Kmer kmer = vertex.getKey();
+	int storageDestination = getVertexDestination(kmer);
+
+	Message routedMessage;
+	routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
+	routedMessage.setBuffer(buffer);
+	routedMessage.setNumberOfBytes(bytes);
+
+#if 0
+	printName();
+	cout << "sends bits to StoreKeeper # " << storageDestination;
+	cout << endl;
+#endif
+
+	// TODO: do some aggregation or something !
+	//send(storageDestination, routedMessage);
+
 	Message response;
 	response.setTag(PAYLOAD_RESPONSE);
 
 	send(source, response);
+}
+
+int CoalescenceManager::getVertexDestination(Kmer & kmer) {
+
+	uint64_t hash = kmer.getHashValue1();
+
+	int storageActors = m_storeLastActor - m_storeFirstActor + 1;
+
+	int actor = (hash % storageActors) + m_storeFirstActor;
+
+	return actor;
 }

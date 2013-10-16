@@ -252,12 +252,14 @@ void Mother::spawnReader() {
 
 	if(m_fileIterator < (int) m_filesToSpawn.size()) {
 
-		string & fileName = m_graphFileNames[m_filesToSpawn[m_fileIterator]];
+		int sampleIdentifier = m_filesToSpawn[m_fileIterator];
+
+		string & fileName = m_graphFileNames[sampleIdentifier];
 		m_fileIterator++;
 
 		GenomeGraphReader * actor = new GenomeGraphReader();
 		spawn(actor);
-		actor->setFileName(fileName);
+		actor->setFileName(fileName, sampleIdentifier);
 
 		int destination = actor->getName();
 		Message dummyMessage;
