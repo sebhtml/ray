@@ -446,7 +446,7 @@ int Vertex::dump(char * buffer) const {
 
 int Vertex::getRequiredNumberOfBytes() const {
 
-	cout << "DEBUG sizeof(m_coverage_lower) is " << sizeof(m_coverage_lower) << endl;
+	//cout << "DEBUG sizeof(m_coverage_lower) is " << sizeof(m_coverage_lower) << endl;
 
 	return m_lowerKey.getRequiredNumberOfBytes() + sizeof(m_coverage_lower) + sizeof(m_edges_lower);
 }

@@ -38,7 +38,10 @@ private:
 	int m_kmerLength;
 	bool m_colorSpaceMode;
 
+	uint64_t m_receivedObjects;
+
 	void pushSampleVertex(Message & message);
+	void printStatus();
 
 public:
 

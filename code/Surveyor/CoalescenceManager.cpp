@@ -18,7 +18,7 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+// TODO -> flush buffers at the end.
 
 #include "CoalescenceManager.h"
 #include "StoreKeeper.h"
@@ -35,10 +35,19 @@ CoalescenceManager::CoalescenceManager() {
 
 	m_kmerLength = 0;
 	m_colorSpaceMode = false;
+
+	m_buffers = NULL;
+	m_bufferSizes = NULL;
 }
 
 CoalescenceManager::~CoalescenceManager() {
 
+
+	free(m_buffers);
+	free(m_bufferSizes);
+
+	m_buffers = NULL;
+	m_bufferSizes = NULL;
 }
 
 void CoalescenceManager::receive(Message & message) {
@@ -152,6 +161,40 @@ void CoalescenceManager::receive(Message & message) {
 		cout << " is now acquainted with StoreKeeper actors from ";
 		cout << m_storeFirstActor << " to " << m_storeLastActor << endl;
 
+		// allocate buffers too
+
+		if(m_buffers == NULL) {
+
+			int storageActors = m_storeLastActor - m_storeFirstActor + 1;
+			
+			int bytesAvailable = MAXIMUM_MESSAGE_SIZE_IN_BYTES;
+
+			m_bufferTotalSize = bytesAvailable;
+			m_storageActors = storageActors;
+
+			m_buffers = (char*) malloc(storageActors * bytesAvailable);
+			m_bufferSizes = (int*) malloc(storageActors * sizeof(int));
+
+			for(int i = 0 ; i < storageActors ; ++i) {
+				m_bufferSizes[i] = 0;
+			}
+		}
+
+	} else if(tag == StoreKeeper::PUSH_SAMPLE_VERTEX_OK) {
+
+		int producer = -1;
+		char * buffer = (char*) message.getBufferBytes();
+
+		memcpy(&producer, buffer, sizeof(producer));
+
+		int source = producer;
+
+		// respond to the producer now
+		Message response;
+		response.setTag(PAYLOAD_RESPONSE);
+		send(source, response);
+
+		//cout << "Resume reader 2" << endl;
 	}
 }
 
@@ -160,7 +203,7 @@ void CoalescenceManager::receivePayload(Message & message) {
 	int source = message.getSourceActor();
 
 	char * buffer = (char*)message.getBufferBytes();
-	int bytes = message.getNumberOfBytes();
+	//int bytes = message.getNumberOfBytes();
 
 	int position = 0;
 	Vertex vertex;
@@ -168,6 +211,20 @@ void CoalescenceManager::receivePayload(Message & message) {
 
 	int sample = -1;
 	memcpy(&sample, buffer + position, sizeof(sample));
+	position += sizeof(sample);
+
+	m_producer = source;
+
+	if(!classifyKmerInBuffer(sample, vertex)) {
+
+		Message response;
+		response.setTag(PAYLOAD_RESPONSE);
+		send(source, response);
+		//cout << "Resume reader 1" << endl;
+	}
+}
+
+bool CoalescenceManager::classifyKmerInBuffer(int & sample, Vertex & vertex) {
 
 #if 0
 	printName();
@@ -181,10 +238,64 @@ void CoalescenceManager::receivePayload(Message & message) {
 	Kmer kmer = vertex.getKey();
 	int storageDestination = getVertexDestination(kmer);
 
-	Message routedMessage;
-	routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
-	routedMessage.setBuffer(buffer);
-	routedMessage.setNumberOfBytes(bytes);
+	return addKmerInBuffer(storageDestination, sample, vertex);
+}
+
+bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & vertex) {
+
+	int actorIndex = actor - m_storeFirstActor;
+
+#ifdef CONFIG_ASSERT
+	assert(actorIndex < m_storageActors);
+#endif
+
+	char * buffer = m_buffers + actorIndex * m_bufferTotalSize * sizeof(char);
+	int offset = m_bufferSizes[actorIndex];
+
+	int requiredBytes = 0;
+	requiredBytes += vertex.getRequiredNumberOfBytes();
+	requiredBytes += sizeof(sample);
+
+	offset += vertex.dump(buffer + offset);
+	memcpy(buffer + offset, &sample, sizeof(sample));
+	offset += sizeof(sample);
+
+	m_bufferSizes[actorIndex] = offset;
+
+	// flush the message if no more bytes are available
+	int availableBytes = m_bufferTotalSize - offset;
+	availableBytes -= sizeof(int);
+
+	if(availableBytes < requiredBytes) {
+
+		// store producer
+
+		memcpy(buffer + offset, &m_producer, sizeof(m_producer));
+		offset += sizeof(m_producer);
+
+		int bytes = offset;
+
+		/*
+		printName();
+		cout << "flushing data, sending stuff to " << actor << endl;
+		*/
+
+		Message routedMessage;
+		routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
+		routedMessage.setBuffer(buffer);
+		routedMessage.setNumberOfBytes(bytes);
+
+		// free the buffer.
+		m_bufferSizes[actorIndex] = 0;
+
+
+		int storageDestination = actor;
+
+		// DONE: do some aggregation or something !
+		send(storageDestination, routedMessage);
+
+		return true;
+	}
 
 #if 0
 	printName();
@@ -192,13 +303,7 @@ void CoalescenceManager::receivePayload(Message & message) {
 	cout << endl;
 #endif
 
-	// TODO: do some aggregation or something !
-	//send(storageDestination, routedMessage);
-
-	Message response;
-	response.setTag(PAYLOAD_RESPONSE);
-
-	send(source, response);
+	return false;
 }
 
 int CoalescenceManager::getVertexDestination(Kmer & kmer) {

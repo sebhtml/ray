@@ -52,6 +52,10 @@ using namespace std;
  */
 class Mother: public Actor {
 
+private:
+
+	int m_finishedMothers;
+
 	Parameters * m_parameters;
 
 	int m_coalescenceManager;
@@ -65,12 +69,15 @@ class Mother: public Actor {
 	vector<string> m_graphFileNames;
 
 	int m_aliveReaders;
+	int m_motherToKill;
 
 	void spawnReader();
 	void startSurveyor();
 	void hello(Message & message);
 	void boot(Message & message);
 	void stop();
+	void notifyController();
+	void killMother(int & actor);
 
 public:
 	Mother();
@@ -78,7 +85,10 @@ public:
 	void receive(Message & message);
 
 	enum {
-		HELLO = 10200
+		HELLO = 10200,
+		FINISH_JOB,
+		SHUTDOWN,
+		SHUTDOWN_OK
 	};
 
 	void setParameters(Parameters * parameters);

@@ -39,6 +39,7 @@ using namespace std;
 
 Mother::Mother() {
 
+	m_finishedMothers = 0;
 	//cout << "DEBUG Mother constructor" << endl;
 }
 
@@ -74,9 +75,60 @@ void Mother::receive(Message & message) {
 
 		if(m_aliveReaders == 0) {
 
-			stop();
+			notifyController();
 		}
+
+	} else if(tag == SHUTDOWN) {
+
+		Message response;
+		response.setTag(SHUTDOWN_OK);
+		send(message.getSourceActor(), response);
+
+		stop();
+		
+	} else if(tag == FINISH_JOB) {
+
+		m_finishedMothers++;
+
+		if(m_finishedMothers == getSize()) {
+
+			m_motherToKill = 2 * getSize() - 1;
+
+			killMother(m_motherToKill);
+			m_motherToKill--;
+		}
+
+	} else if(tag == SHUTDOWN_OK) {
+
+		if(m_motherToKill < getSize())
+			return;
+
+		killMother(m_motherToKill);
+		m_motherToKill--;
 	}
+
+}
+
+void Mother::killMother(int & actor) {
+
+	printName();
+	cout << "kills Mother " << actor << endl;
+
+	Message message;
+	message.setTag(SHUTDOWN);
+	send(actor, message);
+}
+
+void Mother::notifyController() {
+	Message message2;
+	message2.setTag(FINISH_JOB);
+
+	// first Mother
+	int controller = getSize();
+
+	printName();
+	cout << "Mother notifies controller " << controller << endl;
+	send(controller, message2);
 
 }
 
@@ -157,6 +209,7 @@ void Mother::boot(Message & message) {
 		next += getSize();
 
 	printName();
+	cout << " local Mother is " << getName() << ",";
 	cout << " friend is # " << next << endl;
 
 	send(next, message2);
@@ -285,7 +338,7 @@ void Mother::spawnReader() {
 
 	if(m_aliveReaders == 0) {
 
-		stop();
+		notifyController();
 	}
 }
 

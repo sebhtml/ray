@@ -23,6 +23,7 @@
 #define CoalescenceManagerHeader
 
 #include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/VerticesExtractor/Vertex.h>
 
 #include <RayPlatform/actors/Actor.h>
 
@@ -30,15 +31,26 @@ class CoalescenceManager : public Actor {
 
 private:
 
+	int * m_bufferSizes;
+	char * m_buffers;
+	int m_bufferTotalSize;
+
 	int m_localStore;
+	int m_producer;
 
 	int m_kmerLength;
 	bool m_colorSpaceMode;
 
 	int m_storeFirstActor;
 	int m_storeLastActor;
+	int m_storageActors;
 
 	int getVertexDestination(Kmer & kmer);
+
+	bool classifyKmerInBuffer(int & sample, Vertex & vertex);
+	bool addKmerInBuffer(int & actor, int & sample, Vertex & vertex);
+
+
 public:
 
 	CoalescenceManager();

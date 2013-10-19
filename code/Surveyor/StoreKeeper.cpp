@@ -31,6 +31,7 @@ using namespace std;
 
 StoreKeeper::StoreKeeper() {
 
+	m_receivedObjects = 0;
 }
 
 StoreKeeper::~StoreKeeper() {
@@ -46,6 +47,12 @@ void StoreKeeper::receive(Message & message) {
 		pushSampleVertex(message);
 
 	} else if( tag == CoalescenceManager::DIE) {
+
+		printName();
+		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total" << endl;
+
+		printName();
+		cout << "will now die (StoreKeeper)" << endl;
 
 		die();
 
@@ -63,7 +70,7 @@ void StoreKeeper::receive(Message & message) {
 		// the color space mode is an artefact.
 		m_colorSpaceMode = false;
 
-		//cout << "DEBUG StoreKeeper SET_KMER_LENGTH ";
+		cout << "DEBUG StoreKeeper SET_KMER_LENGTH ";
 		cout << m_kmerLength;
 		cout << endl;
 
@@ -72,23 +79,60 @@ void StoreKeeper::receive(Message & message) {
 
 void StoreKeeper::pushSampleVertex(Message & message) {
 	char * buffer = (char*)message.getBufferBytes();
-	//int bytes = message.getNumberOfBytes();
+	int bytes = message.getNumberOfBytes();
 
 	int position = 0;
-	Vertex vertex;
-	position += vertex.load(buffer + position);
 
-	int sample = -1;
-	memcpy(&sample, buffer + position, sizeof(sample));
+	int producer = -1;
+	bytes -= sizeof(producer);
+	memcpy(&producer, buffer + bytes, sizeof(producer));
 
+	/*
 	printName();
-	cout << " DEBUG received ";
-	cout << "(from " << message.getSourceActor();
-	cout << ") ";
-	cout << "vertex for sample " << sample;
-	cout << " with sequence ";
-	vertex.print(m_kmerLength, m_colorSpaceMode);
-	cout << endl;
+	cout << "Received payload, last producer was " << producer << endl;
+	*/
 
+	while(position < bytes) {
+		Vertex vertex;
+
+
+		position += vertex.load(buffer + position);
+
+		int sample = -1;
+		memcpy(&sample, buffer + position, sizeof(sample));
+		position += sizeof(sample);
+
+	/*
+		printName();
+		cout << " DEBUG received ";
+		cout << "(from " << message.getSourceActor();
+		cout << ") ";
+		cout << "vertex for sample " << sample;
+		cout << " with sequence ";
+		vertex.print(m_kmerLength, m_colorSpaceMode);
+		cout << endl;
+		*/
+
+		m_receivedObjects ++;
+
+		if(m_receivedObjects % 1000000 == 0) {
+
+			printStatus();
+		}
+	}
+
+	int source = message.getSourceActor();
+
+	Message response;
+	response.setTag(PUSH_SAMPLE_VERTEX_OK);
+	response.setBuffer(&producer);
+	response.setNumberOfBytes(sizeof(producer));
+
+	send(source, response);
 }
 
+void StoreKeeper::printStatus() {
+
+	printName();
+	cout << "(StoreKeeper) received " << m_receivedObjects << " objects so far !" << endl;
+}

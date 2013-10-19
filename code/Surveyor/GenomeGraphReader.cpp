@@ -206,7 +206,7 @@ void GenomeGraphReader::readLine() {
 		memcpy(messageBuffer + position, &m_sample, sizeof(m_sample));
 		position += sizeof(m_sample);
 
-// TODO: accumulate many objects before flushing it.
+// maybe: accumulate many objects before flushing it.
 // we can go up to MAXIMUM_MESSAGE_SIZE_IN_BYTES bytes.
 
 		/*
