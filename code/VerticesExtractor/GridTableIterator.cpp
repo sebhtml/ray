@@ -48,7 +48,7 @@ Vertex*GridTableIterator::next(){
 	assert(hasNext());
 	#endif
 	m_currentEntry=m_iterator.next();
-	m_currentKey=m_currentEntry->m_lowerKey;
+	m_currentKey=m_currentEntry->getKey();
 	m_mustProcessOtherKey=true;
 	return m_currentEntry;
 }

@@ -2116,7 +2116,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 		cleared++;
 
 		Vertex*node=m_subgraph->find(&key);
-		assert(node->m_directions == NULL);
+		assert(node->getFirstDirection() == NULL);
 
 		#endif
 	}

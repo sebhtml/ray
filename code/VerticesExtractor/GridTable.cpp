@@ -234,7 +234,7 @@ vector<Direction> GridTable::getDirections(Kmer*a){
 
 	/* do a copy to track to check for a segmentation fault */
 	Vertex copy=*i;
-	assert(copy.m_coverage_lower >= 1);
+	assert(copy.getVertexCoverage() >= 1);
 	#endif
 
 	return i->getDirections(a);

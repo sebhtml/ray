@@ -405,7 +405,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 		/* here, we just want to find a path with
 		* a good progression */
 
-		Direction*a=node->m_directions;
+		Direction*a=node->getFirstDirection();
 		bool nicelyAssembled=false;
 
 		while(a!=NULL){

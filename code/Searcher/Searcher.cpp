@@ -529,7 +529,7 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 		/* here, we just want to find a path with
 		* a good progression */
 
-		Direction*a=node->m_directions;
+		Direction*a=node->getFirstDirection();
 		bool nicelyAssembled=false;
 
 		while(a!=NULL){
@@ -2803,7 +2803,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 
 		if(node!=NULL){
-			Kmer lowerKey=node->m_lowerKey;
+			Kmer lowerKey=node->getKey();
 			
 			bool weHaveLowerKey=lowerKey.isEqual(&vertex);
 
@@ -2812,7 +2812,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 			/* here, we just want to find a path with
  			* a good progression */
 
-			Direction*a=node->m_directions;
+			Direction*a=node->getFirstDirection();
 
 			bool nicelyAssembled=false;
 

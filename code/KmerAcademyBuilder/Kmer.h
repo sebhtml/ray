@@ -163,8 +163,7 @@ public:
  */
 char codeToChar(uint8_t a,bool color);
 
-inline int getNumberOfNucleotides(int numberOfKmers,int kmerLength){
-	return ( numberOfKmers==0 ) ?  0 :  (numberOfKmers + kmerLength -1 );
-}
+int getNumberOfNucleotides(int numberOfKmers,int kmerLength);
+
 
 #endif

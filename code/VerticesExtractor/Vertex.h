@@ -51,7 +51,9 @@ using namespace std;
  * both k-mers of the pair.
  */
 class Vertex{
-	
+
+private:
+
 /**
  * This is for the colored graph subsystem.
  * Right now, this subsystem stores only the origins
@@ -129,6 +131,29 @@ class Vertex{
  */
 	uint8_t m_edges_lower;
 
+/** the greatest rank that assembled the k-mer **/
+	Rank m_assembled;
+
+/*
+ *	which hyperfusions go on this vertex at least once?
+ */
+	Direction*m_directions;
+
+/*
+ * 	read annotations
+ * 	which reads start here?
+ */
+	ReadAnnotation*m_readsStartingHere;
+
+/*
+ *	The coverage of the vertex
+ */
+	CoverageDepth m_coverage_lower;
+
+	Kmer m_lowerKey;
+
+
+
 /*
  * Below are the methods
  */
@@ -145,28 +170,6 @@ public:
 
 	Vertex();
 	~Vertex();
-
-	Kmer m_lowerKey;
-	/*
- *	The coverage of the vertex
- */
-	CoverageDepth m_coverage_lower;
-
-
-/*
- * 	read annotations
- * 	which reads start here?
- */
-	ReadAnnotation*m_readsStartingHere;
-
-/*
- *	which hyperfusions go on this vertex at least once?
- */
-	Direction*m_directions;
-
-/** the greatest rank that assembled the k-mer **/
-	Rank m_assembled;
-
 
 	void addOutgoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);
 	void addIngoingEdge_ClassicMethod(Kmer*vertex,Kmer*a,int k);

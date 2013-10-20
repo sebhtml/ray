@@ -508,3 +508,7 @@ uint64_t Kmer::getHashValue2() const {
 
 	return hash_function_2();
 }
+
+int getNumberOfNucleotides(int numberOfKmers, int kmerLength) {
+	return ( numberOfKmers==0 ) ?  0 :  (numberOfKmers + kmerLength -1 );
+}
