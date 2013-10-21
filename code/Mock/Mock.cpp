@@ -37,9 +37,11 @@ void Mock::resolveSymbols(ComputeCore*core){
 	m_core = core;
 	Parameters * parameters=(Parameters*)m_core->getObjectFromSymbol(m_plugin,"/RayAssembler/ObjectStore/Parameters.ray");
 
-	Mother * mother = new Mother();
+	if(parameters->hasOption("-run-surveyor")) {
+		Mother * mother = new Mother();
 
-	mother->setParameters(parameters);
-	m_core->spawnActor(mother);
+		mother->setParameters(parameters);
+		m_core->spawnActor(mother);
+	}
 }
 
