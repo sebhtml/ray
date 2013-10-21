@@ -40,12 +40,19 @@ Vertex::~Vertex() {
 
 void Vertex::constructor(){
 	m_coverage_lower=0;
-	m_edges_lower=0;
+
+	setEdgeSet(0);
+
 	m_readsStartingHere=NULL;
 	m_directions=NULL;
 	m_assembled=__NO_ORIGIN;
 
 	m_color=0;
+}
+
+void Vertex::setEdgeSet(uint8_t edges) {
+
+	m_edges_lower = edges;
 }
 
 void Vertex::assemble(Rank origin){
@@ -437,11 +444,18 @@ int Vertex::dump(char * buffer) const {
 	memcpy(buffer + position, &m_coverage_lower, bytes);
 	position += bytes;
 
-	bytes = sizeof(m_edges_lower);
-	memcpy(buffer + position, &m_edges_lower, bytes);
+	uint8_t edges = getEdgeSet();
+
+	bytes = sizeof(edges);
+	memcpy(buffer + position, &edges, bytes);
 	position += bytes;
 
 	return position;
+}
+
+uint8_t Vertex::getEdgeSet() const {
+
+	return m_edges_lower;
 }
 
 int Vertex::getRequiredNumberOfBytes() const {

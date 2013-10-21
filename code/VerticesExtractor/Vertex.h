@@ -161,6 +161,10 @@ private:
 
 	uint8_t convertBitmap(uint8_t bitmap) const;
 	uint8_t swapBits(uint8_t map,int bit1,int bit2) const;
+
+	uint8_t getEdgeSet() const;
+	void setEdgeSet(uint8_t edges);
+
 public:
 
 /*
