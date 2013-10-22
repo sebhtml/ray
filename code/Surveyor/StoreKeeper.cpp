@@ -32,6 +32,9 @@ using namespace std;
 StoreKeeper::StoreKeeper() {
 
 	m_receivedObjects = 0;
+
+	m_configured = false;
+	m_kmerLength = 0;
 }
 
 StoreKeeper::~StoreKeeper() {
@@ -42,6 +45,8 @@ void StoreKeeper::receive(Message & message) {
 
 	int tag = message.getTag();
 
+	if(!m_configured)
+		configureHashTable();
 
 	if(tag == PUSH_SAMPLE_VERTEX) {
 		pushSampleVertex(message);
@@ -51,6 +56,13 @@ void StoreKeeper::receive(Message & message) {
 		printName();
 		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total" << endl;
 
+		// * 2 because we store pairs
+		uint64_t size = m_hashTable.size() * 2;
+
+		printName();
+		cout << "has " << size << " Kmer objects in MyHashTable instance (final)" << endl;
+
+
 		printName();
 		cout << "will now die (StoreKeeper)" << endl;
 
@@ -59,8 +71,10 @@ void StoreKeeper::receive(Message & message) {
 	} else if(CoalescenceManager::SET_KMER_LENGTH) {
 
 		int kmerLength = 0;
+		int position = 0;
 		char * buffer = (char*)message.getBufferBytes();
-		memcpy(&kmerLength, buffer, sizeof(kmerLength));
+		memcpy(&kmerLength, buffer + position, sizeof(kmerLength));
+		position += sizeof(kmerLength);
 
 		if(m_kmerLength == 0)
 			m_kmerLength = kmerLength;
@@ -70,11 +84,41 @@ void StoreKeeper::receive(Message & message) {
 		// the color space mode is an artefact.
 		m_colorSpaceMode = false;
 
+#if 0
 		cout << "DEBUG StoreKeeper SET_KMER_LENGTH ";
 		cout << m_kmerLength;
 		cout << endl;
+#endif
+
+		/*
+		memcpy(&m_parameters, buffer + position, sizeof(m_parameters));
+		position += sizeof(m_parameters);
+
+		*/
+		//configureHashTable();
 
 	}
+}
+
+void StoreKeeper::configureHashTable() {
+
+	uint64_t buckets = 268435456;
+
+	int bucketsPerGroup = 32 + 16 + 8 + 8;
+
+	// \see http://docs.oracle.com/javase/7/docs/api/java/util/HashMap.html
+	double loadFactorThreshold = 0.75;
+
+	int rank = getRank();
+
+	bool showMemoryAllocation = false;
+
+	m_hashTable.constructor(buckets,"/apps/Ray-Surveyor/actors/StoreKeeper.txt",
+		showMemoryAllocation, rank,
+		bucketsPerGroup,loadFactorThreshold
+		);
+
+	m_configured = true;
 }
 
 void StoreKeeper::pushSampleVertex(Message & message) {
@@ -101,6 +145,8 @@ void StoreKeeper::pushSampleVertex(Message & message) {
 		int sample = -1;
 		memcpy(&sample, buffer + position, sizeof(sample));
 		position += sizeof(sample);
+
+		storeData(vertex, sample);
 
 	/*
 		printName();
@@ -135,4 +181,29 @@ void StoreKeeper::printStatus() {
 
 	printName();
 	cout << "(StoreKeeper) received " << m_receivedObjects << " objects so far !" << endl;
+}
+
+void StoreKeeper::storeData(Vertex & vertex, int & sample) {
+
+	Kmer kmer = vertex.getKey();
+
+	Kmer lowerKey = kmer.complementVertex(m_kmerLength, m_colorSpaceMode);
+
+	if(kmer < lowerKey){
+		lowerKey= kmer;
+	}
+
+	m_hashTable.insert(&lowerKey);
+
+	// * 2 because we store pairs
+	uint64_t size = m_hashTable.size() * 2;
+
+	int period = 1000000;
+	if(size % period == 0 && size != m_lastSize) {
+
+		printName();
+		cout << "has " << size << " Kmer objects in MyHashTable instance" << endl;
+
+		m_lastSize = size;
+	}
 }

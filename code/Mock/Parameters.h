@@ -42,6 +42,8 @@ using namespace std;
  * The threshold for triggering incremental resizing
  * of the distributed hash table, valid for a single
  * agent
+ *
+ * \see http://docs.oracle.com/javase/7/docs/api/java/util/HashMap.html
  */
 #define __DEFAULT_LOAD_FACTOR_THRESHOLD 0.75 /* Like Java HashMap */
 

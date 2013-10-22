@@ -150,6 +150,11 @@ private:
  */
 	CoverageDepth m_coverage_lower;
 
+/**
+ * TODO: there should be a sister class that does not store
+ * the Kmer object since all kmers are in the MyHashTable
+ * and the keys there are Kmer objects !!!
+ */
 	Kmer m_lowerKey;
 
 

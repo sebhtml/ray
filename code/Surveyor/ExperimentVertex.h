@@ -19,60 +19,33 @@
 */
 
 
+#ifndef ExperimentVertexHeader
+#define ExperimentVertexHeader
 
-#ifndef StoreKeeperHeader
-#define StoreKeeperHeader
-
-#define PLAN_STORE_KEEPER_ACTORS_PER_RANK 1
-
-#include "ExperimentVertex.h"
-
-#include <code/VerticesExtractor/Vertex.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
 
-#include <RayPlatform/actors/Actor.h>
-#include <RayPlatform/structures/MyHashTable.h>
-
 /**
- * Provides genomic storage.
+ * This class stores a vertex for the multi-sample
+ * analysis problem.
  *
  * \author Sébastien Boisvert
  */
-class StoreKeeper: public Actor {
+class ExperimentVertex {
+
 
 private:
 
-	bool m_configured;
-
-	/**
-	 * MyHashTable is a space-efficient data structure provided
-	 * by RayPlatform.
-	 */
-	MyHashTable<Kmer,ExperimentVertex> m_hashTable;
-
-	int m_kmerLength;
-	bool m_colorSpaceMode;
-
-	uint64_t m_receivedObjects;
-	uint64_t m_lastSize;
-
-	void pushSampleVertex(Message & message);
-	void printStatus();
-
-	void storeData(Vertex & vertex, int & sample);
-	void configureHashTable();
+	// TODO: don't store kmers here since it is the key elsewhere already !
+	// Otherwise, this consumes more memory and this is not good.
+	Kmer m_kmer;
 
 public:
 
-	StoreKeeper();
-	~StoreKeeper();
+	ExperimentVertex();
+	~ExperimentVertex();
 
-	void receive(Message & message);
-
-	enum {
-		PUSH_SAMPLE_VERTEX = 10400,
-		PUSH_SAMPLE_VERTEX_OK
-	};
+	Kmer getKey() const;
+	void setKey(Kmer & kmer);
 };
 
 #endif
