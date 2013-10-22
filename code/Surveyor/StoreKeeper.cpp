@@ -195,17 +195,19 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 	Kmer lowerKey;
 	kmer.getLowerKey(&lowerKey, m_kmerLength, m_colorSpaceMode);
 
-	//uint64_t before = m_hashTable.size() * 2;
 	m_hashTable.insert(&lowerKey);
 
 	// * 2 because we store pairs
 	uint64_t size = m_hashTable.size() * 2;
 
 #if 0
+	printName();
+	uint64_t before = m_hashTable.size() * 2;
 	cout << "DEBUG Kmer " << kmer.idToWord(m_kmerLength, m_colorSpaceMode);
 	cout << " Sample " << sample << endl;
 	cout << "  DEBUG Lower " << lowerKey.idToWord(m_kmerLength, m_colorSpaceMode) << endl;
 #endif
+
 	int period = 1000000;
 	if(size % period == 0 && size != m_lastSize) {
 
@@ -215,5 +217,7 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 		m_lastSize = size;
 	}
 
-	// cout << "DEBUG Growth -> " << before << " -> " << size << endl;
+#if 0
+	cout << "DEBUG Growth -> " << before << " -> " << size << endl;
+#endif
 }

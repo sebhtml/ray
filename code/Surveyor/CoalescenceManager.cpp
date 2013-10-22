@@ -223,17 +223,21 @@ void CoalescenceManager::receivePayload(Message & message) {
 
 bool CoalescenceManager::classifyKmerInBuffer(int & sample, Vertex & vertex) {
 
+	Kmer kmer = vertex.getKey();
+	int storageDestination = getVertexDestination(kmer);
+
 #if 0
 	printName();
-	cout << "DEBUG received PAYLOAD from " << source;
+	int source = -999;
+
+	cout << "DEBUG/CoalescenceManager received PAYLOAD from " << source;
 	cout << " ";
 	vertex.print(m_kmerLength, m_colorSpaceMode);
 	cout << endl;
 
-#endif
 
-	Kmer kmer = vertex.getKey();
-	int storageDestination = getVertexDestination(kmer);
+	cout << "Destination -> " << storageDestination << endl;
+#endif
 
 	return addKmerInBuffer(storageDestination, sample, vertex);
 }

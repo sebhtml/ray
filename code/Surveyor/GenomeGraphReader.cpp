@@ -18,6 +18,8 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// TODO: validate that the kmer length is the same for this file
+// and the provided -k argument
 
 #include "GenomeGraphReader.h"
 #include "CoalescenceManager.h"
