@@ -101,12 +101,9 @@ void CoalescenceManager::receive(Message & message) {
 
 		send(source, response);
 
-		Message kmerMessage;
-		kmerMessage.setBuffer(&m_kmerLength);
-		kmerMessage.setNumberOfBytes(sizeof(m_kmerLength));
-		kmerMessage.setTag(SET_KMER_LENGTH);
-		send(m_localStore, kmerMessage);
-
+		/*
+		 * It is not the job here to find the kmer length
+*/
 
 	} else if(tag == INTRODUCE_STORE) {
 
@@ -308,7 +305,9 @@ bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & ver
 
 int CoalescenceManager::getVertexDestination(Kmer & kmer) {
 
-	uint64_t hash = kmer.getHashValue1();
+	uint64_t hash = kmer.getTwinHash1(m_kmerLength, m_colorSpaceMode);
+
+	//cout << "DEBUG getTwinHash1 " << hash << endl;
 
 	int storageActors = m_storeLastActor - m_storeFirstActor + 1;
 

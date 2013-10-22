@@ -512,3 +512,25 @@ uint64_t Kmer::getHashValue2() const {
 int getNumberOfNucleotides(int numberOfKmers, int kmerLength) {
 	return ( numberOfKmers==0 ) ?  0 :  (numberOfKmers + kmerLength -1 );
 }
+
+uint64_t Kmer::getTwinHash1(int kmerLength, bool colorSpaceMode) const {
+
+	Kmer lowerKey;
+	getLowerKey(&lowerKey, kmerLength, colorSpaceMode);
+	uint64_t hash = lowerKey.getHashValue1();
+
+	return hash;
+}
+
+void Kmer::getLowerKey(Kmer * lower, int kmerLength, bool colorSpaceMode) const {
+
+	Kmer kmer = *this;
+
+	Kmer lowerKey = kmer.complementVertex(kmerLength, colorSpaceMode);
+
+	if(kmer < lowerKey){
+		lowerKey= kmer;
+	}
+
+	*lower = lowerKey;
+}

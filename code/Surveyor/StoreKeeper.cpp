@@ -79,6 +79,11 @@ void StoreKeeper::receive(Message & message) {
 		if(m_kmerLength == 0)
 			m_kmerLength = kmerLength;
 
+		if(kmerLength != m_kmerLength) {
+
+			cout << "Error: the k-mer value is different this time !" << endl;
+		}
+
 		// cout << "DEBUG m_kmerLength = " << m_kmerLength << endl;
 
 		// the color space mode is an artefact.
@@ -122,6 +127,7 @@ void StoreKeeper::configureHashTable() {
 }
 
 void StoreKeeper::pushSampleVertex(Message & message) {
+
 	char * buffer = (char*)message.getBufferBytes();
 	int bytes = message.getNumberOfBytes();
 
@@ -186,18 +192,20 @@ void StoreKeeper::printStatus() {
 void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 
 	Kmer kmer = vertex.getKey();
+	Kmer lowerKey;
+	kmer.getLowerKey(&lowerKey, m_kmerLength, m_colorSpaceMode);
 
-	Kmer lowerKey = kmer.complementVertex(m_kmerLength, m_colorSpaceMode);
-
-	if(kmer < lowerKey){
-		lowerKey= kmer;
-	}
-
+	//uint64_t before = m_hashTable.size() * 2;
 	m_hashTable.insert(&lowerKey);
 
 	// * 2 because we store pairs
 	uint64_t size = m_hashTable.size() * 2;
 
+#if 0
+	cout << "DEBUG Kmer " << kmer.idToWord(m_kmerLength, m_colorSpaceMode);
+	cout << " Sample " << sample << endl;
+	cout << "  DEBUG Lower " << lowerKey.idToWord(m_kmerLength, m_colorSpaceMode) << endl;
+#endif
 	int period = 1000000;
 	if(size % period == 0 && size != m_lastSize) {
 
@@ -206,4 +214,6 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 
 		m_lastSize = size;
 	}
+
+	// cout << "DEBUG Growth -> " << before << " -> " << size << endl;
 }

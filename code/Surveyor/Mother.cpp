@@ -277,6 +277,16 @@ void Mother::startSurveyor() {
 		dummyMessage.setTag(CoalescenceManager::INTRODUCE_STORE);
 
 		send(m_coalescenceManager, dummyMessage);
+
+		int kmerLength = m_parameters->getWordSize();
+
+		// send the kmer to local store
+		Message kmerMessage;
+		kmerMessage.setBuffer(&kmerLength);
+		kmerMessage.setNumberOfBytes(sizeof(kmerLength));
+		kmerMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
+		send(localStore, kmerMessage);
+
 	}
 
 

@@ -155,6 +155,8 @@ public:
 	bool canHaveParent(const Kmer*otherKmer,int kmerLength)const;
 
 	void loadFromTextRepresentation(const char * text);
+	uint64_t getTwinHash1(int kmerLength, bool colorSpaceMode) const;
+	void getLowerKey(Kmer * kmer, int kmerLength, bool colorSpaceMode) const;
 
 }ATTRIBUTE_PACKED;
 
