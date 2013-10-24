@@ -37,3 +37,13 @@ void ExperimentVertex::setKey(Kmer & kmer) {
 
 	m_kmer = kmer;
 }
+
+void ExperimentVertex::setVirtualColor(VirtualKmerColorHandle handle) {
+
+	m_color = handle;
+}
+
+VirtualKmerColorHandle ExperimentVertex::getVirtualColor() const {
+
+	return m_color;
+}

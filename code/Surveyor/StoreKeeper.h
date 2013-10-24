@@ -27,6 +27,7 @@
 
 #include "ExperimentVertex.h"
 
+#include <code/Searcher/ColorSet.h>
 #include <code/VerticesExtractor/Vertex.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
 
@@ -41,6 +42,8 @@
 class StoreKeeper: public Actor {
 
 private:
+
+	ColorSet m_colorSet;
 
 	bool m_configured;
 

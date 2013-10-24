@@ -64,6 +64,11 @@ void StoreKeeper::receive(Message & message) {
 
 
 		printName();
+		cout << "Coloring Report:" << endl;
+
+		m_colorSet.printColors(&cout);
+
+		printName();
 		cout << "will now die (StoreKeeper)" << endl;
 
 		die();
@@ -195,18 +200,22 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 	Kmer lowerKey;
 	kmer.getLowerKey(&lowerKey, m_kmerLength, m_colorSpaceMode);
 
-	m_hashTable.insert(&lowerKey);
+	uint64_t before = m_hashTable.size() * 2;
+
+	ExperimentVertex * graphVertex = m_hashTable.insert(&lowerKey);
 
 	// * 2 because we store pairs
 	uint64_t size = m_hashTable.size() * 2;
 
-#if 0
-	printName();
-	uint64_t before = m_hashTable.size() * 2;
-	cout << "DEBUG Kmer " << kmer.idToWord(m_kmerLength, m_colorSpaceMode);
-	cout << " Sample " << sample << endl;
-	cout << "  DEBUG Lower " << lowerKey.idToWord(m_kmerLength, m_colorSpaceMode) << endl;
-#endif
+	if(before < size) {
+
+		set<PhysicalKmerColor> emptySet;
+		VirtualKmerColorHandle noColor = m_colorSet.findVirtualColor(&emptySet);
+
+		m_colorSet.incrementReferences(noColor);
+
+		graphVertex->setVirtualColor(noColor);
+	}
 
 	int period = 1000000;
 	if(size % period == 0 && size != m_lastSize) {
@@ -220,4 +229,42 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 #if 0
 	cout << "DEBUG Growth -> " << before << " -> " << size << endl;
 #endif
+
+
+	// add the PhysicalKmerColor to the node.
+
+	PhysicalKmerColor sampleColor = sample;
+	VirtualKmerColorHandle oldVirtualColor = graphVertex->getVirtualColor();
+
+	if(m_colorSet.virtualColorHasPhysicalColor(oldVirtualColor, sampleColor)) {
+
+		// Nothing to do, we already have this color
+		return;
+	}
+
+	VirtualKmerColorHandle newVirtualColor= m_colorSet.getVirtualColorFrom(oldVirtualColor, sampleColor);
+
+	graphVertex->setVirtualColor(newVirtualColor);
+
+	m_colorSet.decrementReferences(oldVirtualColor);
+	m_colorSet.incrementReferences(newVirtualColor);
+
+	LargeCount referencesForOld = m_colorSet.getNumberOfReferences(oldVirtualColor);
+	LargeCount referencesForNew = m_colorSet.getNumberOfReferences(newVirtualColor);
+
+	/*
+#if 1
+	printName();
+	cout << "DEBUG Kmer " << kmer.idToWord(m_kmerLength, m_colorSpaceMode);
+	cout << " Sample " << sample << endl;
+	cout << "  DEBUG Lower " << lowerKey.idToWord(m_kmerLength, m_colorSpaceMode) << endl;
+#endif
+
+
+
+	cout << "DEBUG referencesForOld " << referencesForOld;
+	cout << " " << " referencesForNew " << referencesForNew;
+	cout << endl;
+
+	*/
 }

@@ -23,6 +23,8 @@
 #define ExperimentVertexHeader
 
 #include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/Searcher/VirtualKmerColor.h>
+#include <code/Searcher/ColorSet.h>
 
 /**
  * This class stores a vertex for the multi-sample
@@ -35,6 +37,8 @@ class ExperimentVertex {
 
 private:
 
+	VirtualKmerColorHandle m_color;
+
 	// TODO: don't store kmers here since it is the key elsewhere already !
 	// Otherwise, this consumes more memory and this is not good.
 	Kmer m_kmer;
@@ -46,6 +50,9 @@ public:
 
 	Kmer getKey() const;
 	void setKey(Kmer & kmer);
+
+	void setVirtualColor(VirtualKmerColorHandle handle);
+	VirtualKmerColorHandle getVirtualColor() const;
 };
 
 #endif
