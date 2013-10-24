@@ -71,13 +71,21 @@ private:
 	int m_aliveReaders;
 	int m_motherToKill;
 
+	int m_forwardTag;
+	int m_responseTag;
+
 	void spawnReader();
 	void startSurveyor();
 	void hello(Message & message);
 	void boot(Message & message);
 	void stop();
 	void notifyController();
-	void killMother(int & actor);
+	void sendMessageWithReply(int & actor, int tag);
+
+	/*
+	 * Send tag to all mothers.
+	 */
+	void sendToFirstMother(int forwardTag, int responseTag);
 
 public:
 	Mother();

@@ -92,30 +92,42 @@ void Mother::receive(Message & message) {
 
 		if(m_finishedMothers == getSize()) {
 
-			m_motherToKill = 2 * getSize() - 1;
+			// all readers have finished,
+			// now tell mother to flush aggregators
 
-			killMother(m_motherToKill);
-			m_motherToKill--;
+			sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
 		}
 
-	} else if(tag == SHUTDOWN_OK) {
+	} else if(tag == m_responseTag) {
 
+		// every mother was informed.
 		if(m_motherToKill < getSize())
 			return;
 
-		killMother(m_motherToKill);
+		sendMessageWithReply(m_motherToKill, m_forwardTag);
 		m_motherToKill--;
 	}
-
 }
 
-void Mother::killMother(int & actor) {
+void Mother::sendToFirstMother(int forwardTag, int responseTag) {
 
+	m_forwardTag = forwardTag;
+	m_responseTag = responseTag;
+
+	m_motherToKill = 2 * getSize() - 1;
+
+	sendMessageWithReply(m_motherToKill, forwardTag);
+	m_motherToKill--;
+}
+
+void Mother::sendMessageWithReply(int & actor, int tag) {
+/*
 	printName();
 	cout << "kills Mother " << actor << endl;
+	*/
 
 	Message message;
-	message.setTag(SHUTDOWN);
+	message.setTag(tag);
 	send(actor, message);
 }
 
