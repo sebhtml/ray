@@ -62,11 +62,7 @@ void StoreKeeper::receive(Message & message) {
 		printName();
 		cout << "has " << size << " Kmer objects in MyHashTable instance (final)" << endl;
 
-
-		printName();
-		cout << "Coloring Report:" << endl;
-
-		m_colorSet.printColors(&cout);
+		computeLocalGramMatrix();
 
 		printName();
 		cout << "will now die (StoreKeeper)" << endl;
@@ -129,6 +125,104 @@ void StoreKeeper::configureHashTable() {
 		);
 
 	m_configured = true;
+}
+
+void StoreKeeper::printColorReport() {
+
+	printName();
+	cout << "Coloring Report:" << endl;
+
+	m_colorSet.printColors(&cout);
+}
+
+void StoreKeeper::computeLocalGramMatrix() {
+
+	// printColorReport();
+
+
+
+	// compute the local Gram matrix
+
+	int colors = m_colorSet.getTotalNumberOfVirtualColors();
+
+	for(int i = 0 ; i < colors ; ++i) {
+
+		VirtualKmerColorHandle virtualColor = i;
+
+		set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(virtualColor);
+
+		LargeCount hits = m_colorSet.getNumberOfReferences(virtualColor);
+
+		// since people are going to use this to check
+		// for genome size, don't duplicate counts
+		//
+		bool reportTwoDNAStrands = false;
+
+		// we have 2 DNA strands !!!
+		if(reportTwoDNAStrands)
+			hits *= 2;
+
+		// TODO: samples could be ordered and stored in a vector
+		// to stop as soon as j > i
+
+		// Complexity: quadratic in the number of samples.
+		for(set<PhysicalKmerColor>::iterator sample1 = samples->begin();
+				sample1 != samples->end();
+				++sample1) {
+
+			for(set<PhysicalKmerColor>::iterator sample2 = samples->begin();
+				sample2 != samples->end();
+				++sample2) {
+
+				SampleIdentifier sample1Index = *sample1;
+				SampleIdentifier sample2Index = *sample2;
+
+				//if(sample2 < sample1)
+				// this is a diagonal matrix
+
+				m_localGramMatrix[sample1Index][sample2Index] += hits;
+				//m_localGramMatrix[sample2Index][sample1Index] += hits;
+			}
+		}
+	}
+
+	printLocalGramMatrix();
+}
+
+void StoreKeeper::printLocalGramMatrix() {
+
+	printName();
+	cout << "Local Gram Matrix: " << endl;
+	cout << endl;
+
+	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator column = m_localGramMatrix.begin();
+			column != m_localGramMatrix.end(); ++column) {
+
+		SampleIdentifier sample = column->first;
+
+		cout << "	" << sample;
+	}
+
+	cout << endl;
+
+	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator row = m_localGramMatrix.begin();
+			row != m_localGramMatrix.end(); ++row) {
+
+		SampleIdentifier sample1 = row->first;
+
+		cout << sample1;
+		for(map<SampleIdentifier, LargeCount>::iterator cell = row->second.begin();
+				cell != row->second.end(); ++cell) {
+
+			//SampleIdentifier sample2 = cell->first;
+
+			LargeCount hits = cell->second;
+
+			cout << "	" << hits;
+		}
+
+		cout << endl;
+	}
 }
 
 void StoreKeeper::pushSampleVertex(Message & message) {
@@ -249,10 +343,10 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 	m_colorSet.decrementReferences(oldVirtualColor);
 	m_colorSet.incrementReferences(newVirtualColor);
 
+	/*
 	LargeCount referencesForOld = m_colorSet.getNumberOfReferences(oldVirtualColor);
 	LargeCount referencesForNew = m_colorSet.getNumberOfReferences(newVirtualColor);
 
-	/*
 #if 1
 	printName();
 	cout << "DEBUG Kmer " << kmer.idToWord(m_kmerLength, m_colorSpaceMode);

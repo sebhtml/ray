@@ -34,6 +34,8 @@
 #include <RayPlatform/actors/Actor.h>
 #include <RayPlatform/structures/MyHashTable.h>
 
+typedef int SampleIdentifier;
+
 /**
  * Provides genomic storage.
  *
@@ -42,6 +44,8 @@
 class StoreKeeper: public Actor {
 
 private:
+
+	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 
 	ColorSet m_colorSet;
 
@@ -64,6 +68,9 @@ private:
 
 	void storeData(Vertex & vertex, int & sample);
 	void configureHashTable();
+	void computeLocalGramMatrix();
+	void printLocalGramMatrix();
+	void printColorReport();
 
 public:
 
