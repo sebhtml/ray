@@ -18,8 +18,6 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// TODO -> flush buffers at the end.
-
 #include "CoalescenceManager.h"
 #include "StoreKeeper.h"
 
@@ -53,6 +51,7 @@ CoalescenceManager::~CoalescenceManager() {
 void CoalescenceManager::receive(Message & message) {
 
 	int tag = message.getTag();
+	int source = message.getSourceActor();
 
 	/*
 	printName();
@@ -192,6 +191,14 @@ void CoalescenceManager::receive(Message & message) {
 		send(source, response);
 
 		//cout << "Resume reader 2" << endl;
+
+	} else if(tag == FLUSH_BUFFERS) {
+
+		// TODO -> flush buffers at the end.
+
+		Message response;
+		response.setTag(FLUSH_BUFFERS_OK);
+		send(source, response);
 	}
 }
 

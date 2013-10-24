@@ -60,11 +60,14 @@ public:
 	void receivePayload(Message & message);
 
 	enum {
-		PAYLOAD = 10100,
+		FIRST_TAG = 10100,
+		PAYLOAD,
 		PAYLOAD_RESPONSE,
 		SET_KMER_LENGTH,
 		SET_KMER_LENGTH_OK,
 		INTRODUCE_STORE,
+		FLUSH_BUFFERS,
+		FLUSH_BUFFERS_OK,
 		DIE
 	};
 };

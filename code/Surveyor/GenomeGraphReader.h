@@ -57,7 +57,8 @@ private:
 public:
 
 	enum {
-		START_PARTY = 10300,
+		FIRST_TAG = 10300,
+		START_PARTY,
 		START_PARTY_OK,
 		DONE
 	};

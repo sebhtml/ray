@@ -68,6 +68,7 @@ private:
 	vector<string> m_sampleNames;
 	vector<string> m_graphFileNames;
 
+	int m_bigMother;
 	int m_aliveReaders;
 	int m_motherToKill;
 
@@ -93,10 +94,13 @@ public:
 	void receive(Message & message);
 
 	enum {
-		HELLO = 10200,
+		FIRST_TAG = 10200,
+		HELLO,
 		FINISH_JOB,
 		SHUTDOWN,
-		SHUTDOWN_OK
+		SHUTDOWN_OK,
+		FLUSH_AGGREGATOR,
+		FLUSH_AGGREGATOR_OK
 	};
 
 	void setParameters(Parameters * parameters);

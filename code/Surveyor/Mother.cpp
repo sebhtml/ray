@@ -50,6 +50,7 @@ Mother::~Mother() {
 void Mother::receive(Message & message) {
 
 	int tag = message.getTag();
+	int source = message.getSourceActor();
 
 	if(tag == Actor::BOOT) {
 
@@ -95,14 +96,37 @@ void Mother::receive(Message & message) {
 			// all readers have finished,
 			// now tell mother to flush aggregators
 
-			sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
+			sendToFirstMother(FLUSH_AGGREGATOR, FLUSH_AGGREGATOR_OK);
 		}
+	} else if(tag == FLUSH_AGGREGATOR) {
+
+		m_bigMother = source;
+
+		// forward the message to the aggregator
+
+		Message newMessage;
+		newMessage.setTag(CoalescenceManager::FLUSH_BUFFERS);
+		send(m_coalescenceManager, newMessage);
+
+	} else if(tag == CoalescenceManager::FLUSH_BUFFERS_OK) {
+
+		Message response;
+		response.setTag(FLUSH_AGGREGATOR_OK);
+		send(m_bigMother, response);
 
 	} else if(tag == m_responseTag) {
 
 		// every mother was informed.
-		if(m_motherToKill < getSize())
-			return;
+		if(m_motherToKill < getSize()) {
+
+			if(m_responseTag == SHUTDOWN_OK) {
+				return;
+
+			} else if(m_responseTag == FLUSH_AGGREGATOR_OK) {
+
+				sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
+			}
+		}
 
 		sendMessageWithReply(m_motherToKill, m_forwardTag);
 		m_motherToKill--;

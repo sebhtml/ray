@@ -80,7 +80,8 @@ public:
 	void receive(Message & message);
 
 	enum {
-		PUSH_SAMPLE_VERTEX = 10400,
+		FIRST_TAG = 10400,
+		PUSH_SAMPLE_VERTEX,
 		PUSH_SAMPLE_VERTEX_OK
 	};
 };
