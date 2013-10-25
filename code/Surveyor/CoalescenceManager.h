@@ -31,6 +31,7 @@ class CoalescenceManager : public Actor {
 
 private:
 
+	int m_mother;
 	int * m_bufferSizes;
 	char * m_buffers;
 	int m_bufferTotalSize;
@@ -52,6 +53,9 @@ private:
 	char * getBuffer(int actorIndex);
 	void flushBuffer(int producer, int consumer);
 	void flushAnyBuffer();
+	int getBufferUsedBytes(int i);
+
+	void runAssertions();
 
 public:
 

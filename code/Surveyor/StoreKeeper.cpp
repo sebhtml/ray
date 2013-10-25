@@ -29,6 +29,8 @@ using namespace std;
 
 #include <string.h>
 
+#include <assert.h>
+
 StoreKeeper::StoreKeeper() {
 
 	m_receivedObjects = 0;

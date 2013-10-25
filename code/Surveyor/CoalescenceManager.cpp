@@ -48,6 +48,18 @@ CoalescenceManager::~CoalescenceManager() {
 	m_bufferSizes = NULL;
 }
 
+void CoalescenceManager::runAssertions() {
+
+#ifdef CONFIG_ASSERT
+	for(int i = 0 ; i < m_storageActors; ++i) {
+		assert(getBufferUsedBytes(i) == 0);
+	}
+#endif
+
+}
+
+
+
 void CoalescenceManager::receive(Message & message) {
 
 	int tag = message.getTag();
@@ -64,6 +76,12 @@ void CoalescenceManager::receive(Message & message) {
 		receivePayload(message);
 
 	} else if(tag == DIE) {
+
+#ifdef CONFIG_ASSERT
+		runAssertions();
+#endif
+
+
 
 		die();
 
@@ -162,7 +180,7 @@ void CoalescenceManager::receive(Message & message) {
 		if(m_buffers == NULL) {
 
 			int storageActors = m_storeLastActor - m_storeFirstActor + 1;
-			
+
 			int bytesAvailable = MAXIMUM_MESSAGE_SIZE_IN_BYTES;
 
 			m_bufferTotalSize = bytesAvailable;
@@ -185,30 +203,66 @@ void CoalescenceManager::receive(Message & message) {
 
 		int source = producer;
 
-		// respond to the producer now
-		Message response;
-		response.setTag(PAYLOAD_RESPONSE);
-		send(source, response);
+		// this is a message from self ! how exciting...
+		if(source == getName()) {
+
+			flushAnyBuffer();
+
+		} else {
+
+			// respond to the producer now
+			Message response;
+			response.setTag(PAYLOAD_RESPONSE);
+			send(source, response);
+		}
 
 		//cout << "Resume reader 2" << endl;
 
 	} else if(tag == FLUSH_BUFFERS) {
 
-		// TODO -> flush buffers at the end.
+		// DONE !!! -> flush buffers at the end.
 
-		//flushAnyBuffer();
+		m_mother = source;
 
-		Message response;
-		response.setTag(FLUSH_BUFFERS_OK);
-		send(source, response);
+		flushAnyBuffer();
+
 
 	}
 }
 
 void CoalescenceManager::flushAnyBuffer() {
 
+	bool flushRemainingBits = false;
+
+	flushRemainingBits = true; // !!!
+
+	for(int i = 0; i < m_storageActors; ++i) {
+
+		if(!flushRemainingBits)
+			break;
+
+		// storage actors are consecutive
+		int destination = i + m_storeFirstActor;
+
+		int bytes = getBufferUsedBytes(i);
+
+		if(bytes > 0) {
+
+			int fakeSource = getName();
+			flushBuffer(fakeSource, destination);
+
+			//m_bufferSizes[i] = 0;
+
+			return;
+		}
+	}
 
 
+	int source = m_mother;
+
+	Message response;
+	response.setTag(FLUSH_BUFFERS_OK);
+	send(source, response);
 }
 
 void CoalescenceManager::receivePayload(Message & message) {
@@ -309,6 +363,13 @@ char * CoalescenceManager::getBuffer(int actorIndex) {
 
 }
 
+int CoalescenceManager::getBufferUsedBytes(int index) {
+
+	int actorIndex = index;
+
+	return m_bufferSizes[actorIndex];
+}
+
 void CoalescenceManager::flushBuffer(int sourceActor, int destinationActor) {
 
 
@@ -323,7 +384,7 @@ void CoalescenceManager::flushBuffer(int sourceActor, int destinationActor) {
 #endif
 
 	char * buffer = getBuffer(actorIndex);
-	int offset = m_bufferSizes[actorIndex];
+	int offset = getBufferUsedBytes(actorIndex);
 
 	memcpy(buffer + offset, &producer, sizeof(producer));
 	offset += sizeof(producer);
