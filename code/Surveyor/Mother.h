@@ -54,6 +54,8 @@ class Mother: public Actor {
 
 private:
 
+	int m_matrixOwner;
+
 	int m_finishedMothers;
 
 	Parameters * m_parameters;
@@ -89,18 +91,21 @@ private:
 	void sendToFirstMother(int forwardTag, int responseTag);
 
 public:
+
 	Mother();
 	~Mother();
+
 	void receive(Message & message);
 
 	enum {
-		FIRST_TAG = 10200,
+		FIRST_TAG = 10100,
 		HELLO,
 		FINISH_JOB,
 		SHUTDOWN,
 		SHUTDOWN_OK,
 		FLUSH_AGGREGATOR,
-		FLUSH_AGGREGATOR_OK
+		FLUSH_AGGREGATOR_OK,
+		LAST_TAG
 	};
 
 	void setParameters(Parameters * parameters);

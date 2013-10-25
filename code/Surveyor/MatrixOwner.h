@@ -18,58 +18,35 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef MatrixOwnerHeader
+#define MatrixOwnerHeader
 
-#ifndef GenomeGraphReaderHeader
-#define GenomeGraphReaderHeader
+#include <code/Mock/constants.h>
 
 #include <RayPlatform/actors/Actor.h>
-#include <RayPlatform/files/FileReader.h>
 
-
-#include <string>
-#include <fstream>
+#include <map>
 using namespace std;
 
-#define I_LIKE_FAST_IO
-
-class GenomeGraphReader: public Actor {
-
+class MatrixOwner : public Actor {
 private:
-	int m_sample;
-	int m_loaded;
 
-#ifdef I_LIKE_FAST_IO
-
-	// fast IO using a wrapper.
-	FileReader m_reader;
-#else
-
-	ifstream m_reader;
-#endif
-
-	string m_fileName;
-
-	int m_aggregator;
-	int m_parent;
-
-	void startParty(Message & message);
+	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_GramMatrix;
+	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_kernelDistanceMatrix;
 
 public:
 
+	MatrixOwner();
+	~MatrixOwner();
+
+	void receive(Message & message);
+
 	enum {
-		FIRST_TAG = 10200,
-		START_PARTY,
-		START_PARTY_OK,
-		DONE,
+		FIRST_TAG = 10300,
 		LAST_TAG
 	};
 
-
-	GenomeGraphReader();
-	~GenomeGraphReader();
-	void receive(Message & message);
-	void readLine();
-	void setFileName(string & fileName, int sample);
 };
 
 #endif
+

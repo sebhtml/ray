@@ -30,11 +30,10 @@
 #include <code/Searcher/ColorSet.h>
 #include <code/VerticesExtractor/Vertex.h>
 #include <code/KmerAcademyBuilder/Kmer.h>
+#include <code/Mock/constants.h>
 
 #include <RayPlatform/actors/Actor.h>
 #include <RayPlatform/structures/MyHashTable.h>
-
-typedef int SampleIdentifier;
 
 /**
  * Provides genomic storage.
@@ -80,9 +79,10 @@ public:
 	void receive(Message & message);
 
 	enum {
-		FIRST_TAG = 10400,
+		FIRST_TAG = 10250,
 		PUSH_SAMPLE_VERTEX,
-		PUSH_SAMPLE_VERTEX_OK
+		PUSH_SAMPLE_VERTEX_OK,
+		LAST_TAG
 	};
 };
 

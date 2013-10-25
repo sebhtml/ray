@@ -18,58 +18,25 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "MatrixOwner.h"
+#include "CoalescenceManager.h" // for DIE
 
-#ifndef GenomeGraphReaderHeader
-#define GenomeGraphReaderHeader
+MatrixOwner::MatrixOwner() {
 
-#include <RayPlatform/actors/Actor.h>
-#include <RayPlatform/files/FileReader.h>
+}
 
+MatrixOwner::~MatrixOwner() {
 
-#include <string>
-#include <fstream>
-using namespace std;
-
-#define I_LIKE_FAST_IO
-
-class GenomeGraphReader: public Actor {
-
-private:
-	int m_sample;
-	int m_loaded;
-
-#ifdef I_LIKE_FAST_IO
-
-	// fast IO using a wrapper.
-	FileReader m_reader;
-#else
-
-	ifstream m_reader;
-#endif
-
-	string m_fileName;
-
-	int m_aggregator;
-	int m_parent;
-
-	void startParty(Message & message);
-
-public:
-
-	enum {
-		FIRST_TAG = 10200,
-		START_PARTY,
-		START_PARTY_OK,
-		DONE,
-		LAST_TAG
-	};
+}
 
 
-	GenomeGraphReader();
-	~GenomeGraphReader();
-	void receive(Message & message);
-	void readLine();
-	void setFileName(string & fileName, int sample);
-};
+void MatrixOwner::receive(Message & message) {
 
-#endif
+	int tag = message.getTag();
+
+
+	if( tag == CoalescenceManager::DIE) {
+
+		die();
+	}
+}

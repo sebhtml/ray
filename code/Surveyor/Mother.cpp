@@ -25,6 +25,7 @@
 #include "Mother.h"
 #include "StoreKeeper.h"
 #include "GenomeGraphReader.h"
+#include "MatrixOwner.h"
 
 #include <RayPlatform/cryptography/crypto.h>
 
@@ -38,6 +39,12 @@ using namespace std;
 
 
 Mother::Mother() {
+
+	m_coalescenceManager = -1;
+	m_matrixOwner = -1;
+
+	m_parameters = NULL;
+	m_bigMother = -1;
 
 	m_finishedMothers = 0;
 	//cout << "DEBUG Mother constructor" << endl;
@@ -124,6 +131,20 @@ void Mother::receive(Message & message) {
 
 			} else if(m_responseTag == FLUSH_AGGREGATOR_OK) {
 
+				// spawn the MatrixOwner here !
+
+				MatrixOwner * matrixOwner = new MatrixOwner();
+				spawn(matrixOwner);
+
+				m_matrixOwner = matrixOwner->getName();
+
+				printName();
+				cout << "Spawned MatrixOwner actor !" << endl;
+
+				// TODO: tell the StoreKeeper actors to send their stuff to the
+				// MatrixOwner actor
+				// The Mother of Mother will wait for a signal from MatrixOwner
+
 				sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
 			}
 		}
@@ -174,11 +195,16 @@ void Mother::stop() {
 	kill.setTag(CoalescenceManager::DIE);
 
 	send(m_coalescenceManager, kill);
+	m_coalescenceManager = -1;
 
 	send(m_storeKeepers[0], kill);
-
 	m_storeKeepers.clear();
-	m_coalescenceManager = -1;
+
+	if(m_matrixOwner >= 0) {
+		send(m_matrixOwner, kill);
+		m_matrixOwner = -1;
+	}
+
 
 	die();
 

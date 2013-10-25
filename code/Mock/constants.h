@@ -190,6 +190,10 @@ typedef uint64_t LargeIndex;
 
 typedef uint16_t LibraryHandle;
 
+
+typedef int SampleIdentifier;
+
+
 /*
  * path storage engine
  * CONFIG_PATH_STORAGE_DEFAULT uses arrays of vertices, which consumes memory a lot.
