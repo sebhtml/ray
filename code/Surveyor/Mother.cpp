@@ -58,6 +58,7 @@ void Mother::receive(Message & message) {
 
 	int tag = message.getTag();
 	int source = message.getSourceActor();
+	char * buffer = message.getBufferBytes();
 
 	if(tag == Actor::BOOT) {
 
@@ -86,6 +87,25 @@ void Mother::receive(Message & message) {
 			notifyController();
 		}
 
+	} else if(tag == MERGE) {
+
+		int matrixOwner = -1;
+		memcpy(&matrixOwner, buffer, sizeof(matrixOwner));
+
+#ifdef CONFIG_ASSERT
+		assert(matrixOwner >= 0);
+		assert(m_storeKeepers.size() == 1);
+#endif
+
+		Message theMessage;
+		theMessage.setTag(StoreKeeper::MERGE);
+		theMessage.setBuffer(&matrixOwner);
+		theMessage.setNumberOfBytes(sizeof(matrixOwner));
+
+		int destination = m_storeKeepers[0];
+
+		send(destination, theMessage);
+
 	} else if(tag == SHUTDOWN) {
 
 		Message response;
@@ -93,7 +113,14 @@ void Mother::receive(Message & message) {
 		send(message.getSourceActor(), response);
 
 		stop();
-		
+
+	} else if(tag == StoreKeeper::MERGE_OK) {
+
+		Message newMessage;
+		newMessage.setTag(MERGE_OK);
+
+		send(m_bigMother, newMessage);
+
 	} else if(tag == FINISH_JOB) {
 
 		m_finishedMothers++;
@@ -141,9 +168,13 @@ void Mother::receive(Message & message) {
 				printName();
 				cout << "Spawned MatrixOwner actor !" << endl;
 
-				// TODO: tell the StoreKeeper actors to send their stuff to the
+				// tell the StoreKeeper actors to send their stuff to the
 				// MatrixOwner actor
 				// The Mother of Mother will wait for a signal from MatrixOwner
+
+				sendToFirstMother(MERGE, MERGE_OK);
+
+			} else if(m_responseTag == MERGE_OK) {
 
 				sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
 			}
@@ -173,6 +204,12 @@ void Mother::sendMessageWithReply(int & actor, int tag) {
 
 	Message message;
 	message.setTag(tag);
+
+	if(tag == MERGE) {
+		message.setBuffer(&m_matrixOwner);
+		message.setNumberOfBytes(sizeof(m_matrixOwner));
+	}
+
 	send(actor, message);
 }
 

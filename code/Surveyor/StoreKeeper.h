@@ -48,6 +48,8 @@ private:
 
 	ColorSet m_colorSet;
 
+	int m_matrixOwner;
+
 	bool m_configured;
 
 	/**
@@ -82,6 +84,8 @@ public:
 		FIRST_TAG = 10250,
 		PUSH_SAMPLE_VERTEX,
 		PUSH_SAMPLE_VERTEX_OK,
+		MERGE,
+		MERGE_OK,
 		LAST_TAG
 	};
 };

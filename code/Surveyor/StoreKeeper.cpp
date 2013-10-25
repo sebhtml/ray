@@ -46,6 +46,8 @@ StoreKeeper::~StoreKeeper() {
 void StoreKeeper::receive(Message & message) {
 
 	int tag = message.getTag();
+	int source = message.getSourceActor();
+	char * buffer = message.getBufferBytes();
 
 	if(!m_configured)
 		configureHashTable();
@@ -71,7 +73,18 @@ void StoreKeeper::receive(Message & message) {
 
 		die();
 
-	} else if(CoalescenceManager::SET_KMER_LENGTH) {
+	} else if(tag == MERGE) {
+
+		memcpy(&m_matrixOwner, buffer, sizeof(m_matrixOwner));
+
+		printName();
+		cout << "DEBUG m_matrixOwner " << m_matrixOwner << endl;
+
+		Message response;
+		response.setTag(MERGE_OK);
+		send(source, response);
+
+	} else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
 
 		int kmerLength = 0;
 		int position = 0;

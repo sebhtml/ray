@@ -65,6 +65,7 @@ private:
 	vector<int> m_filesToSpawn;
 
 	vector<int> m_storeKeepers;
+
 	vector<int> m_readers;
 
 	vector<string> m_sampleNames;
@@ -105,7 +106,9 @@ public:
 		SHUTDOWN_OK,
 		FLUSH_AGGREGATOR,
 		FLUSH_AGGREGATOR_OK,
-		LAST_TAG
+		LAST_TAG,
+		MERGE,
+		MERGE_OK
 	};
 
 	void setParameters(Parameters * parameters);
