@@ -196,10 +196,19 @@ void CoalescenceManager::receive(Message & message) {
 
 		// TODO -> flush buffers at the end.
 
+		//flushAnyBuffer();
+
 		Message response;
 		response.setTag(FLUSH_BUFFERS_OK);
 		send(source, response);
+
 	}
+}
+
+void CoalescenceManager::flushAnyBuffer() {
+
+
+
 }
 
 void CoalescenceManager::receivePayload(Message & message) {
@@ -217,9 +226,9 @@ void CoalescenceManager::receivePayload(Message & message) {
 	memcpy(&sample, buffer + position, sizeof(sample));
 	position += sizeof(sample);
 
-	m_producer = source;
+	int producer = source;
 
-	if(!classifyKmerInBuffer(sample, vertex)) {
+	if(!classifyKmerInBuffer(producer, sample, vertex)) {
 
 		Message response;
 		response.setTag(PAYLOAD_RESPONSE);
@@ -228,7 +237,7 @@ void CoalescenceManager::receivePayload(Message & message) {
 	}
 }
 
-bool CoalescenceManager::classifyKmerInBuffer(int & sample, Vertex & vertex) {
+bool CoalescenceManager::classifyKmerInBuffer(int producer, int & sample, Vertex & vertex) {
 
 	Kmer kmer = vertex.getKey();
 	int storageDestination = getVertexDestination(kmer);
@@ -246,10 +255,10 @@ bool CoalescenceManager::classifyKmerInBuffer(int & sample, Vertex & vertex) {
 	cout << "Destination -> " << storageDestination << endl;
 #endif
 
-	return addKmerInBuffer(storageDestination, sample, vertex);
+	return addKmerInBuffer(producer, storageDestination, sample, vertex);
 }
 
-bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & vertex) {
+bool CoalescenceManager::addKmerInBuffer(int producer, int & actor, int & sample, Vertex & vertex) {
 
 	int actorIndex = actor - m_storeFirstActor;
 
@@ -257,7 +266,7 @@ bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & ver
 	assert(actorIndex < m_storageActors);
 #endif
 
-	char * buffer = m_buffers + actorIndex * m_bufferTotalSize * sizeof(char);
+	char * buffer = getBuffer(actorIndex);
 	int offset = m_bufferSizes[actorIndex];
 
 	int requiredBytes = 0;
@@ -272,35 +281,15 @@ bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & ver
 
 	// flush the message if no more bytes are available
 	int availableBytes = m_bufferTotalSize - offset;
+
+	// also reserve space for the producer
 	availableBytes -= sizeof(int);
 
 	if(availableBytes < requiredBytes) {
 
 		// store producer
 
-		memcpy(buffer + offset, &m_producer, sizeof(m_producer));
-		offset += sizeof(m_producer);
-
-		int bytes = offset;
-
-		/*
-		printName();
-		cout << "flushing data, sending stuff to " << actor << endl;
-		*/
-
-		Message routedMessage;
-		routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
-		routedMessage.setBuffer(buffer);
-		routedMessage.setNumberOfBytes(bytes);
-
-		// free the buffer.
-		m_bufferSizes[actorIndex] = 0;
-
-
-		int storageDestination = actor;
-
-		// DONE: do some aggregation or something !
-		send(storageDestination, routedMessage);
+		flushBuffer(producer, actor);
 
 		return true;
 	}
@@ -312,6 +301,53 @@ bool CoalescenceManager::addKmerInBuffer(int & actor, int & sample, Vertex & ver
 #endif
 
 	return false;
+}
+
+char * CoalescenceManager::getBuffer(int actorIndex) {
+
+	return m_buffers + actorIndex * m_bufferTotalSize * sizeof(char);
+
+}
+
+void CoalescenceManager::flushBuffer(int sourceActor, int destinationActor) {
+
+
+	int producer = sourceActor;
+	int actor = destinationActor;
+
+	int actorIndex = actor - m_storeFirstActor;
+
+#if 0
+	cout << "DEBUG flushBuffer SRC " << sourceActor << " DST ";
+	cout << " IDX " << destinationActor << endl;
+#endif
+
+	char * buffer = getBuffer(actorIndex);
+	int offset = m_bufferSizes[actorIndex];
+
+	memcpy(buffer + offset, &producer, sizeof(producer));
+	offset += sizeof(producer);
+
+	int bytes = offset;
+
+	/*
+	printName();
+	cout << "flushing data, sending stuff to " << actor << endl;
+	*/
+
+	Message routedMessage;
+	routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
+	routedMessage.setBuffer(buffer);
+	routedMessage.setNumberOfBytes(bytes);
+
+	// free the buffer.
+	m_bufferSizes[actorIndex] = 0;
+
+	int storageDestination = actor;
+
+	// DONE: do some aggregation or something !
+	send(storageDestination, routedMessage);
+
 }
 
 int CoalescenceManager::getVertexDestination(Kmer & kmer) {

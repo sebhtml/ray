@@ -36,7 +36,6 @@ private:
 	int m_bufferTotalSize;
 
 	int m_localStore;
-	int m_producer;
 
 	int m_kmerLength;
 	bool m_colorSpaceMode;
@@ -47,9 +46,12 @@ private:
 
 	int getVertexDestination(Kmer & kmer);
 
-	bool classifyKmerInBuffer(int & sample, Vertex & vertex);
-	bool addKmerInBuffer(int & actor, int & sample, Vertex & vertex);
+	bool classifyKmerInBuffer(int producer, int & sample, Vertex & vertex);
+	bool addKmerInBuffer(int producer, int & actor, int & sample, Vertex & vertex);
 
+	char * getBuffer(int actorIndex);
+	void flushBuffer(int producer, int consumer);
+	void flushAnyBuffer();
 
 public:
 
