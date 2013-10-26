@@ -34,6 +34,7 @@ class MatrixOwner : public Actor {
 private:
 
 	Parameters * m_parameters;
+	vector<string> * m_sampleNames;
 
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_kernelDistanceMatrix;

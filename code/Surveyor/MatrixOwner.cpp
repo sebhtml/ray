@@ -52,10 +52,15 @@ void MatrixOwner::receive(Message & message) {
 
 	} else if(tag == GREETINGS) {
 
-		memcpy(&m_parameters, buffer, sizeof(m_parameters));
+		int offset = 0;
+		memcpy(&m_parameters, buffer + offset, sizeof(m_parameters));
+		offset += sizeof(m_parameters);
+		memcpy(&m_sampleNames, buffer + offset, sizeof(m_sampleNames));
+		offset += sizeof(m_sampleNames);
 
 #ifdef CONFIG_ASSERT
 		assert(m_parameters != NULL);
+		assert(m_sampleNames != NULL);
 #endif
 
 		m_mother = source;
@@ -200,7 +205,7 @@ void MatrixOwner::printLocalGramMatrix(ostream & stream, map<SampleIdentifier, m
 
 		SampleIdentifier sample = column->first;
 
-		stream << "	" << sample;
+		stream << "	" << m_sampleNames->at(sample);
 	}
 
 	stream << endl;
@@ -210,7 +215,8 @@ void MatrixOwner::printLocalGramMatrix(ostream & stream, map<SampleIdentifier, m
 
 		SampleIdentifier sample1 = row->first;
 
-		stream << sample1;
+		stream << m_sampleNames->at(sample1);
+
 		for(map<SampleIdentifier, LargeCount>::iterator cell = row->second.begin();
 				cell != row->second.end(); ++cell) {
 

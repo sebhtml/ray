@@ -179,8 +179,18 @@ void Mother::receive(Message & message) {
 				// The Mother of Mother will wait for a signal from MatrixOwner
 
 				Message greetingMessage;
-				greetingMessage.setBuffer(&m_parameters);
-				greetingMessage.setNumberOfBytes(sizeof(m_parameters));
+
+				vector<string> * names = & m_sampleNames;
+
+				char buffer[32];
+				int offset = 0;
+				memcpy(buffer + offset, &m_parameters, sizeof(m_parameters));
+				offset += sizeof(m_parameters);
+				memcpy(buffer + offset, &names, sizeof(names));
+				offset += sizeof(names);
+
+				greetingMessage.setBuffer(&buffer);
+				greetingMessage.setNumberOfBytes(offset);
 
 				greetingMessage.setTag(MatrixOwner::GREETINGS);
 				send(m_matrixOwner, greetingMessage);
