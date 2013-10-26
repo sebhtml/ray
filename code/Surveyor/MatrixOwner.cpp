@@ -28,6 +28,8 @@
 #include <sstream>
 using namespace std;
 
+#include <math.h>
+
 MatrixOwner::MatrixOwner() {
 
 	m_completedStoreActors = 0;
@@ -97,26 +99,87 @@ void MatrixOwner::receive(Message & message) {
 		if(m_completedStoreActors == getSize()) {
 
 
+			// create directory for Surveyor
 			ostringstream matrixFile;
 			matrixFile << m_parameters->getPrefix() << "/Surveyor/";
 			string surveyorDirectory = matrixFile.str();
 			createDirectory(surveyorDirectory.c_str());
+
+			// create SimilarityMatrix
 			matrixFile << "SimilarityMatrix.tsv";
 
 			string similarityMatrix = matrixFile.str();
 			ofstream similarityFile;
 			similarityFile.open(similarityMatrix.c_str());
-			printLocalGramMatrix(similarityFile);
+			printLocalGramMatrix(similarityFile, m_localGramMatrix);
 			similarityFile.close();
 
 			printName();
-			cout << "MatrixOwner prints the Similarity Matrix: ";
+			cout << "MatrixOwner printed the Similarity Matrix: ";
 			cout << similarityMatrix << endl;
+
+			// create DistanceMatrix
+
+			computeDistanceMatrix();
+
+			ostringstream matrixFileForDistances;
+			matrixFileForDistances << m_parameters->getPrefix() << "/Surveyor/";
+			matrixFileForDistances << "DistanceMatrix.tsv";
+
+
+			string distanceMatrix = matrixFileForDistances.str();
+			ofstream distanceFile;
+			distanceFile.open(distanceMatrix.c_str());
+			printLocalGramMatrix(distanceFile, m_kernelDistanceMatrix);
+			distanceFile.close();
+
+			printName();
+			cout << "MatrixOwner printed the Distance Matrix: ";
+			cout << distanceMatrix << endl;
+
+
+			// tell Mother that the matrix is ready now.
 
 			Message coolMessage;
 			coolMessage.setTag(MATRIX_IS_READY);
 			send(m_mother, coolMessage);
+
+
+			// clear matrices
+
+			m_localGramMatrix.clear();
+			m_kernelDistanceMatrix.clear();
 		}
+	}
+}
+
+
+// TODO: save time by only computing the lower triangle.
+void MatrixOwner::computeDistanceMatrix() {
+
+	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator row = m_localGramMatrix.begin();
+			row != m_localGramMatrix.end(); ++row) {
+
+		SampleIdentifier sample1 = row->first;
+
+		for(map<SampleIdentifier, LargeCount>::iterator cell = row->second.begin();
+				cell != row->second.end(); ++cell) {
+
+			SampleIdentifier sample2 = cell->first;
+
+			// d(x, x') = sqrt( k(x,x) + k(x', x') - 2 k (x, x'))
+			LargeCount distance = 0;
+			distance += m_localGramMatrix[sample1][sample1];
+			distance += m_localGramMatrix[sample2][sample2];
+			distance -= 2 * m_localGramMatrix[sample1][sample2];
+
+			distance = (LargeCount) sqrt((double)distance);
+
+			m_kernelDistanceMatrix[sample1][sample2] = distance;
+			m_kernelDistanceMatrix[sample2][sample1] = distance;
+
+		}
+
 	}
 }
 
@@ -124,7 +187,7 @@ void MatrixOwner::receive(Message & message) {
  * Write it in RaySurveyorResults/SurveyorMatrix.tsv
  * Also write a distance matrix too !
  */
-void MatrixOwner::printLocalGramMatrix(ostream & stream) {
+void MatrixOwner::printLocalGramMatrix(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix) {
 
 	/*
 	printName();
@@ -132,8 +195,8 @@ void MatrixOwner::printLocalGramMatrix(ostream & stream) {
 	cout << endl;
 	*/
 
-	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator column = m_localGramMatrix.begin();
-			column != m_localGramMatrix.end(); ++column) {
+	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator column = matrix.begin();
+			column != matrix.end(); ++column) {
 
 		SampleIdentifier sample = column->first;
 
@@ -142,8 +205,8 @@ void MatrixOwner::printLocalGramMatrix(ostream & stream) {
 
 	stream << endl;
 
-	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator row = m_localGramMatrix.begin();
-			row != m_localGramMatrix.end(); ++row) {
+	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator row = matrix.begin();
+			row != matrix.end(); ++row) {
 
 		SampleIdentifier sample1 = row->first;
 
