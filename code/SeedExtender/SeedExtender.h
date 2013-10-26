@@ -64,6 +64,12 @@ __DeclareMessageTagAdapter(SeedExtender,RAY_MPI_TAG_ASK_IS_ASSEMBLED_REPLY); /**
 
 /*
  * Performs the extension of seeds.
+ *
+ * This class includes modifications for the workflow
+ * called "Ray Meta"
+ *
+ * \see http://genomebiology.com/2012/13/12/R122
+ *
  * \author Sébastien Boisvert
  */
 class SeedExtender: public CorePlugin  {

@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 */
 
@@ -82,6 +82,12 @@ __DeclareMessageTagAdapter(Searcher,RAY_MPI_TAG_VIRTUAL_COLOR_DATA_REPLY);
 /**
  * This class searches for sequences in the de Bruijn graph
  * It outputs biological abundance readouts
+ *
+ * This class is part of the "Ray Communities" workflow.
+ *
+ * Methods in this class are also used for the "Ray Ontology"
+ * workflow.
+ *
  * \author Sébastien Boisvert
  **/
 class Searcher :  public CorePlugin {

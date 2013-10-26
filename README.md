@@ -14,16 +14,31 @@ Ray is documented in
 
 ## Solutions (all bundled in a single Product called Ray)
 
-- de novo genome assembly
-- de novo meta-genome assembly (with Ray Méta)
-- de novo transcriptome assembly (works, but not tested a lot)
-- quantification of contig abundances
-- quantification of microbiome consortia members (with Ray Communities)
-- quantification of transcript expression
-- taxonomy profiling of samples (with Ray Communities)
-- gene ontology profiling of samples (with Ray Ontologies)
+Standard:
 
-see Documentation/BiologicalAbundances.txt
+- de novo genome assembly (works by default)
+  => http://online.liebertpub.com/doi/abs/10.1089/cmb.2009.0238
+  => Documentation/README-heuristics
+- quantification of contig abundances (works by default)
+
+Metagenomics:
+
+- Ray Meta: de novo metagenome assembly (works by default)
+  => http://genomebiology.com/2012/13/12/R122
+- Ray Communities: quantification of microbiome consortia members (with Ray Communities with -search)
+  => Documentation/BiologicalAbundances.txt
+- Ray Communities: taxonomy profiling of samples (with -search and -with-taxonomy)
+  => Documentation/Taxonomy.txt
+- Ray Ontology: gene ontology profiling of samples (with -search and -gene-ontology)
+  => Documentation/GeneOntology.txt
+- Ray Surveyor: compare genomic content between samples (with -run-surveyor)
+  => Documentation/Ray-Surveyor.md
+
+Transcriptomics:
+
+- de novo transcriptome assembly (works, but not tested a lot)
+- quantification of transcript expression
+
 
 
 # Distributors
