@@ -179,6 +179,9 @@ void Mother::receive(Message & message) {
 				// The Mother of Mother will wait for a signal from MatrixOwner
 
 				Message greetingMessage;
+				greetingMessage.setBuffer(&m_parameters);
+				greetingMessage.setNumberOfBytes(sizeof(m_parameters));
+
 				greetingMessage.setTag(MatrixOwner::GREETINGS);
 				send(m_matrixOwner, greetingMessage);
 

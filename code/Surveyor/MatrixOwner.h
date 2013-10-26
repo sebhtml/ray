@@ -22,21 +22,25 @@
 #define MatrixOwnerHeader
 
 #include <code/Mock/constants.h>
+#include <code/Mock/Parameters.h>
 
 #include <RayPlatform/actors/Actor.h>
 
 #include <map>
+#include <iostream>
 using namespace std;
 
 class MatrixOwner : public Actor {
 private:
+
+	Parameters * m_parameters;
 
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_kernelDistanceMatrix;
 
 	int m_mother;
 	int m_completedStoreActors;
-	void printLocalGramMatrix();
+	void printLocalGramMatrix(ostream & stream);
 
 public:
 

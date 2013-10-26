@@ -21,6 +21,13 @@
 #include "MatrixOwner.h"
 #include "CoalescenceManager.h" // for DIE
 
+#include <RayPlatform/RayPlatform/core/OperatingSystem.h>
+
+#include <fstream>
+#include <string>
+#include <sstream>
+using namespace std;
+
 MatrixOwner::MatrixOwner() {
 
 	m_completedStoreActors = 0;
@@ -42,6 +49,12 @@ void MatrixOwner::receive(Message & message) {
 		die();
 
 	} else if(tag == GREETINGS) {
+
+		memcpy(&m_parameters, buffer, sizeof(m_parameters));
+
+#ifdef CONFIG_ASSERT
+		assert(m_parameters != NULL);
+#endif
 
 		m_mother = source;
 
@@ -83,9 +96,22 @@ void MatrixOwner::receive(Message & message) {
 
 		if(m_completedStoreActors == getSize()) {
 
+
+			ostringstream matrixFile;
+			matrixFile << m_parameters->getPrefix() << "/Surveyor/";
+			string surveyorDirectory = matrixFile.str();
+			createDirectory(surveyorDirectory.c_str());
+			matrixFile << "SimilarityMatrix.tsv";
+
+			string similarityMatrix = matrixFile.str();
+			ofstream similarityFile;
+			similarityFile.open(similarityMatrix.c_str());
+			printLocalGramMatrix(similarityFile);
+			similarityFile.close();
+
 			printName();
-			cout << "MatrixOwner prints the Gram matrix to be cool." << endl;
-			printLocalGramMatrix();
+			cout << "MatrixOwner prints the Similarity Matrix: ";
+			cout << similarityMatrix << endl;
 
 			Message coolMessage;
 			coolMessage.setTag(MATRIX_IS_READY);
@@ -98,28 +124,30 @@ void MatrixOwner::receive(Message & message) {
  * Write it in RaySurveyorResults/SurveyorMatrix.tsv
  * Also write a distance matrix too !
  */
-void MatrixOwner::printLocalGramMatrix() {
+void MatrixOwner::printLocalGramMatrix(ostream & stream) {
 
+	/*
 	printName();
 	cout << "Local Gram Matrix: " << endl;
 	cout << endl;
+	*/
 
 	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator column = m_localGramMatrix.begin();
 			column != m_localGramMatrix.end(); ++column) {
 
 		SampleIdentifier sample = column->first;
 
-		cout << "	" << sample;
+		stream << "	" << sample;
 	}
 
-	cout << endl;
+	stream << endl;
 
 	for(map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator row = m_localGramMatrix.begin();
 			row != m_localGramMatrix.end(); ++row) {
 
 		SampleIdentifier sample1 = row->first;
 
-		cout << sample1;
+		stream << sample1;
 		for(map<SampleIdentifier, LargeCount>::iterator cell = row->second.begin();
 				cell != row->second.end(); ++cell) {
 
@@ -127,9 +155,9 @@ void MatrixOwner::printLocalGramMatrix() {
 
 			LargeCount hits = cell->second;
 
-			cout << "	" << hits;
+			stream << "	" << hits;
 		}
 
-		cout << endl;
+		stream << endl;
 	}
 }

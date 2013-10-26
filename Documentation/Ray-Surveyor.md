@@ -50,7 +50,7 @@ also an option called: -read-sample-reads <SampleDirectory>
 
 This will generate:
 
-RaySurveyorResults/SurveyorMatrix.tsv
+RayOutput/Surveyor/SimilarityMatrix.tsv
 
 
 This file will contain pairwise similarity between graphs.
