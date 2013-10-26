@@ -46,8 +46,12 @@ private:
 
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 
+	map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator m_iterator1;
+	map<SampleIdentifier, LargeCount>::iterator m_iterator2;
+
 	ColorSet m_colorSet;
 
+	int m_mother;
 	int m_matrixOwner;
 
 	bool m_configured;
@@ -72,6 +76,8 @@ private:
 	void computeLocalGramMatrix();
 	void printLocalGramMatrix();
 	void printColorReport();
+
+	void sendMatrixCell();
 
 public:
 

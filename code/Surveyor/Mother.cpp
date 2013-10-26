@@ -106,6 +106,10 @@ void Mother::receive(Message & message) {
 
 		send(destination, theMessage);
 
+		Message response;
+		response.setTag(MERGE_OK);
+		send(source, response);
+
 	} else if(tag == SHUTDOWN) {
 
 		Message response;
@@ -116,10 +120,12 @@ void Mother::receive(Message & message) {
 
 	} else if(tag == StoreKeeper::MERGE_OK) {
 
+		/*
 		Message newMessage;
 		newMessage.setTag(MERGE_OK);
 
 		send(m_bigMother, newMessage);
+		*/
 
 	} else if(tag == FINISH_JOB) {
 
@@ -172,16 +178,23 @@ void Mother::receive(Message & message) {
 				// MatrixOwner actor
 				// The Mother of Mother will wait for a signal from MatrixOwner
 
+				Message greetingMessage;
+				greetingMessage.setTag(MatrixOwner::GREETINGS);
+				send(m_matrixOwner, greetingMessage);
+
 				sendToFirstMother(MERGE, MERGE_OK);
 
 			} else if(m_responseTag == MERGE_OK) {
 
-				sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
 			}
 		}
 
 		sendMessageWithReply(m_motherToKill, m_forwardTag);
 		m_motherToKill--;
+
+	} else if(tag == MatrixOwner::MATRIX_IS_READY) {
+
+		sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
 	}
 }
 

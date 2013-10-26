@@ -21,6 +21,7 @@
 
 #include "StoreKeeper.h"
 #include "CoalescenceManager.h"
+#include "MatrixOwner.h"
 
 #include <code/VerticesExtractor/Vertex.h>
 
@@ -66,7 +67,6 @@ void StoreKeeper::receive(Message & message) {
 		printName();
 		cout << "has " << size << " Kmer objects in MyHashTable instance (final)" << endl;
 
-		computeLocalGramMatrix();
 
 		printName();
 		cout << "will now die (StoreKeeper)" << endl;
@@ -75,14 +75,35 @@ void StoreKeeper::receive(Message & message) {
 
 	} else if(tag == MERGE) {
 
+		computeLocalGramMatrix();
+
+		m_mother = source;
+
 		memcpy(&m_matrixOwner, buffer, sizeof(m_matrixOwner));
 
+		/*
 		printName();
 		cout << "DEBUG m_matrixOwner " << m_matrixOwner << endl;
+*/
 
-		Message response;
-		response.setTag(MERGE_OK);
-		send(source, response);
+		m_iterator1 = m_localGramMatrix.begin();
+
+		if(m_iterator1 != m_localGramMatrix.end()) {
+
+			m_iterator2 = m_iterator1->second.begin();
+		}
+
+		/*
+		printName();
+		cout << "DEBUG printLocalGramMatrix before first sendMatrixCell" << endl;
+		printLocalGramMatrix();
+		*/
+
+		sendMatrixCell();
+
+	} else if(tag == MatrixOwner::PUSH_PAYLOAD_OK) {
+
+		sendMatrixCell();
 
 	} else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
 
@@ -119,6 +140,66 @@ void StoreKeeper::receive(Message & message) {
 		//configureHashTable();
 
 	}
+}
+
+void StoreKeeper::sendMatrixCell() {
+
+	if(m_iterator1 != m_localGramMatrix.end()) {
+
+		if(m_iterator2 != m_iterator1->second.end()) {
+
+			SampleIdentifier sample1 = m_iterator1->first;
+			SampleIdentifier sample2 = m_iterator2->first;
+			LargeCount count = m_iterator2->second;
+
+			Message message;
+			char buffer[20];
+			int offset = 0;
+			memcpy(buffer + offset, &sample1, sizeof(sample1));
+			offset += sizeof(sample1);
+			memcpy(buffer + offset, &sample2, sizeof(sample2));
+			offset += sizeof(sample2);
+			memcpy(buffer + offset, &count, sizeof(count));
+			offset += sizeof(count);
+
+			message.setBuffer(buffer);
+			message.setNumberOfBytes(offset);
+			message.setTag(MatrixOwner::PUSH_PAYLOAD);
+
+			//cout << " DEBUG send PUSH_PAYLOAD to  " << m_matrixOwner << endl;
+
+			send(m_matrixOwner, message);
+
+			m_iterator2++;
+
+			// end of the line
+			if(m_iterator2 == m_iterator1->second.end()) {
+
+				m_iterator1++;
+
+				if(m_iterator1 != m_localGramMatrix.end()) {
+
+					m_iterator2 = m_iterator1->second.begin();
+				}
+			}
+
+			return;
+		}
+	}
+
+	// we processed all the matrix
+
+	// free memory.
+	m_localGramMatrix.clear();
+
+	/*
+	printName();
+	cout << "DEBUG send PUSH_PAYLOAD_END to " << m_matrixOwner << endl;
+	*/
+
+	Message response;
+	response.setTag(MatrixOwner::PUSH_PAYLOAD_END);
+	send(m_matrixOwner, response);
 }
 
 void StoreKeeper::configureHashTable() {
@@ -201,7 +282,7 @@ void StoreKeeper::computeLocalGramMatrix() {
 		}
 	}
 
-	printLocalGramMatrix();
+	//printLocalGramMatrix();
 }
 
 void StoreKeeper::printLocalGramMatrix() {

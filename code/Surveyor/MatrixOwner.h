@@ -31,8 +31,12 @@ using namespace std;
 class MatrixOwner : public Actor {
 private:
 
-	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_GramMatrix;
+	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_kernelDistanceMatrix;
+
+	int m_mother;
+	int m_completedStoreActors;
+	void printLocalGramMatrix();
 
 public:
 
@@ -43,6 +47,11 @@ public:
 
 	enum {
 		FIRST_TAG = 10300,
+		GREETINGS,
+		PUSH_PAYLOAD,
+		PUSH_PAYLOAD_OK,
+		PUSH_PAYLOAD_END,
+		MATRIX_IS_READY,
 		LAST_TAG
 	};
 
