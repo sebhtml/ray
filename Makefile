@@ -130,7 +130,7 @@ CONFIG_FLAGS-$(CONFIG_HAVE_LIBZ) += -D CONFIG_HAVE_LIBZ
 LDFLAGS-$(CONFIG_HAVE_LIBZ) += -lz
 
 #compile with libbz2
-CONFIG_FLAGS-$(CONFIG_HAVE_LIBBZ2) += -D CONFIG_HAVE_LIBBZ2 
+CONFIG_FLAGS-$(CONFIG_HAVE_LIBBZ2) += -D CONFIG_HAVE_LIBBZ2
 LDFLAGS-$(CONFIG_HAVE_LIBBZ2) += -lbz2
 
 # pack data in memory to save space
@@ -162,7 +162,7 @@ all: Ray
 
 include code/*/Makefile
 
-showOptions: 
+showOptions:
 	$(Q)echo ""
 	$(Q)echo "Compilation options (you can change them of course)"
 	$(Q)echo ""
@@ -183,10 +183,17 @@ showOptions:
 	$(Q)touch showOptions
 	
 # how to make Ray
-Ray: showOptions RayPlatform/libRayPlatform.a $(obj-y)
+Ray: code/application_core/ray_main.o libRay.a libRayPlatform.a
 	$(Q)$(ECHO) "  LD $@"
-	$(Q)$(MPICXX) $(obj-y) RayPlatform/libRayPlatform.a -o$@ $(LDFLAGS)
+	$(Q)$(MPICXX) $^ -o$@ $(LDFLAGS)
 	$(Q)$(ECHO) $(PREFIX) > PREFIX
+
+libRay.a: $(obj-y)
+	$(Q)$(ECHO) "  AR $@"
+	$(Q)$(AR) rcs $@ $^
+
+libRayPlatform.a: RayPlatform/libRayPlatform.a
+	$(Q)$(CP) $^ $@
 
 RayPlatform/libRayPlatform.a:
 	$(Q)$(MAKE) $(MFLAGS) -C RayPlatform
@@ -194,9 +201,9 @@ RayPlatform/libRayPlatform.a:
 clean:
 	$(Q)$(MAKE) $(MFLAGS) -C RayPlatform clean
 	$(Q)$(ECHO) CLEAN Ray plugins
-	$(Q)$(RM) -f Ray showOptions PREFIX $(obj-y)
+	$(Q)$(RM) -f Ray PREFIX $(obj-y) libRay.a libRayPlatform.a code/application_core/ray_main.o
 
-install: 
+install:
 	$(eval PREFIX=$(shell cat PREFIX))
 
 	$(Q)$(MKDIR) -p $(PREFIX)
