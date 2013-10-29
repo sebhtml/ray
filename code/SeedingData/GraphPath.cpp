@@ -31,6 +31,10 @@ using namespace std;
 
 #include <string.h>
 
+#ifdef CONFIG_ASSERT
+#include <assert.h>
+#endif
+
 //#define CONFIG_PATH_VERBOSITY
 //#define CHECK_BUG_142
 

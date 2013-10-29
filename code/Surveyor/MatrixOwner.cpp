@@ -21,7 +21,7 @@
 #include "MatrixOwner.h"
 #include "CoalescenceManager.h" // for DIE
 
-#include <RayPlatform/RayPlatform/core/OperatingSystem.h>
+#include <RayPlatform/core/OperatingSystem.h>
 
 #include <fstream>
 #include <string>
