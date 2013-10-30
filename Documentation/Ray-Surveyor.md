@@ -5,7 +5,8 @@ Usage:
 <pre>
 mpiexec -n 512 \
 Ray \
--write-output RaySurveyorResults \
+-k 31 \
+-output RaySurveyorResults \
 -run-surveyor \
 -read-sample-graph ID033401 ./1996/ID033401-Ray-2013-10-07/kmers.txt \
 -read-sample-graph ID033406 ./1996/ID033406-Ray-2013-10-07/kmers.txt \
