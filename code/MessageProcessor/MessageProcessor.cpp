@@ -413,9 +413,10 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 }
 
 void MessageProcessor::call_RAY_MPI_TAG_SET_WORD_SIZE(Message*message){
+	/*
 	void*buffer=message->getBuffer();
 	MessageUnit*incoming=(MessageUnit*)buffer;
-	(*m_wordSize)=incoming[0];
+	*/
 }
 
 /*
@@ -812,7 +813,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 
 	#ifdef ASSERT
 	GridTableIterator iterator;
-	iterator.constructor(m_subgraph,*m_wordSize,m_parameters);
+	iterator.constructor(m_subgraph, m_parameters->getWordSize(),m_parameters);
 
 	LargeCount n=0;
 
@@ -875,7 +876,7 @@ void MessageProcessor::call_RAY_MPI_TAG_OUT_EDGES_DATA(Message*message){
 			continue; /* NULL because coverage is too low */
 		}
 
-		node->addOutgoingEdge(&prefix,&suffix,(*m_wordSize));
+		node->addOutgoingEdge(&prefix,&suffix, m_parameters->getWordSize());
 	}
 
 	Message aMessage(NULL,0,message->getSource(),RAY_MPI_TAG_OUT_EDGES_DATA_REPLY,m_rank);
@@ -934,7 +935,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
 			continue;
 		}
 
-		node->addIngoingEdge(&suffix,&prefix,(*m_wordSize));
+		node->addIngoingEdge(&suffix,&prefix, m_parameters->getWordSize());
 
 /*
  * Make sure that the edge was added.
@@ -1279,7 +1280,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_OUTGOING_EDGES(Message*me
 		Vertex*node=m_subgraph->find(&vertex);
 		vector<Kmer> outgoingEdges;
 		if(node!=NULL)
-			outgoingEdges=node->getOutgoingEdges(&vertex,*m_wordSize);
+			outgoingEdges=node->getOutgoingEdges(&vertex, m_parameters->getWordSize());
 		int outputPosition=(1+4*KMER_U64_ARRAY_SIZE)*i;
 		message2[outputPosition++]=outgoingEdges.size();
 		for(int j=0;j<(int)outgoingEdges.size();j++){
@@ -1307,8 +1308,8 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 	assert(node!=NULL);
 	#endif
 
-	vector<Kmer> outgoingEdges=node->getOutgoingEdges(&vertex,*m_wordSize);
-	vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
+	vector<Kmer> outgoingEdges=node->getOutgoingEdges(&vertex, m_parameters->getWordSize());
+	vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex, m_parameters->getWordSize());
 
 	message2[outputPosition++]=outgoingEdges.size();
 	for(int i=0;i<(int)outgoingEdges.size();i++){
@@ -1444,11 +1445,13 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 		Vertex*node=m_subgraph->find(&vertex);
 		#ifdef ASSERT
 		if(node==NULL){
-			cout<<"Rank="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
+			cout<<"Rank="<<m_rank<<" "<<vertex.idToWord(m_parameters->getWordSize(),
+					m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
 		}
 		assert(node!=NULL);
 		#endif
-		vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,*m_wordSize);
+		vector<Kmer> ingoingEdges=node->getIngoingEdges(&vertex,
+				m_parameters->getWordSize());
 		int outputPosition=i*5;
 		message2[outputPosition++]=ingoingEdges.size();
 		for(int j=0;j<(int)ingoingEdges.size();j++){
@@ -1564,7 +1567,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_VERTEX_AT_POSITION(Message*mess
 	Rank source=message->getSource();
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	Strand strand=incoming[2];
-	Kmer vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1],(*m_wordSize),strand,m_parameters->getColorSpaceMode());
+	Kmer vertex=(*m_myReads)[incoming[0]]->getVertex(incoming[1], m_parameters->getWordSize(),
+			strand,m_parameters->getColorSpaceMode());
 	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(1*sizeof(MessageUnit));
 	int bufferPosition=0;
 	vertex.pack(message2,&bufferPosition);
@@ -1744,7 +1748,8 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 		#ifdef ASSERT
 		Vertex*node=m_subgraph->find(&vertex);
 		if(node==NULL){
-			cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(*m_wordSize,m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
+			cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(m_parameters->getWordSize(),
+					m_parameters->getColorSpaceMode())<<" does not exist, aborting"<<endl;
 		}
 		assert(node!=NULL);
 
@@ -2101,7 +2106,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	// clear graph
 	GridTableIterator iterator;
-	iterator.constructor(m_subgraph,*m_wordSize,m_parameters);
+	iterator.constructor(m_subgraph, m_parameters->getWordSize(), m_parameters);
 
 	#ifdef ASSERT
 	LargeCount cleared=0;
@@ -2164,7 +2169,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 				Kmer otherKmer;
 				m_ed->m_EXTENSION_contigs[i].at(j,&otherKmer);
-				Kmer kmer=otherKmer.complementVertex(*m_wordSize,
+				Kmer kmer=otherKmer.complementVertex(m_parameters->getWordSize(),
 					m_parameters->getColorSpaceMode());
 				rc.push_back(&kmer);
 			}
@@ -2485,7 +2490,6 @@ SequencesLoader*sequencesLoader,ExtensionData*ed,
 				int rank,
 			int*m_numberOfMachinesDoneSendingEdges,
 			FusionData*m_fusionData,
-			int*m_wordSize,
 			ArrayOfReads*m_myReads,
 		int size,
 	RingAllocator*m_inboxAllocator,
@@ -2536,7 +2540,6 @@ SequencesIndexer*m_si){
 	m_rank=rank;
 	this->m_numberOfMachinesDoneSendingEdges=m_numberOfMachinesDoneSendingEdges;
 	this->m_fusionData=m_fusionData;
-	this->m_wordSize=m_wordSize;
 	this->m_myReads=m_myReads;
 	m_size=size;
 	this->m_inboxAllocator=m_inboxAllocator;

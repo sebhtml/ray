@@ -313,7 +313,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 
 void SeedingData::constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
 int*mode,
-	Parameters*parameters,int*wordSize,GridTable*subgraph,StaticVector*inbox,
+	Parameters*parameters,GridTable*subgraph,StaticVector*inbox,
 	VirtualCommunicator*vc){
 
 	m_skippedObjectsWithDeadEndForHead=0;

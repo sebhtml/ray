@@ -172,7 +172,7 @@ public:
 	void call_RAY_SLAVE_MODE_START_SEEDING();
 
 	void constructor(SeedExtender*seedExtender,int rank,int size,StaticVector*outbox,RingAllocator*outboxAllocator,
-		int*mode,Parameters*parameters,int*wordSize,GridTable*subgraph,
+		int*mode,Parameters*parameters,GridTable*subgraph,
 		StaticVector*inbox,VirtualCommunicator*vc);
 	void updateStates();
 

@@ -190,7 +190,6 @@ void Machine::start(){
 	m_numberOfMachinesReadyForEdgesDistribution=0;
 	m_aborted=false;
 	m_readyToSeed=0;
-	m_wordSize=-1;
 	m_last_value=0;
 	m_mode_send_ingoing_edges=false;
 	m_mode_send_vertices=false;
@@ -479,7 +478,7 @@ void Machine::start(){
 	if(!oldDirectoryExists)
 		m_subgraph.printStatus();
 	
-	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),m_outbox,m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&m_wordSize,&m_subgraph,m_inbox,m_virtualCommunicator);
+	m_seedingData->constructor(&m_seedExtender,getRank(),getSize(),m_outbox,m_outboxAllocator,m_switchMan->getSlaveModePointer(),&m_parameters,&m_subgraph,m_inbox,m_virtualCommunicator);
 
 	(*m_alive)=true;
 	m_totalLetters=0;
@@ -502,7 +501,6 @@ m_seedingData,
 			getRank(),
 			&m_numberOfMachinesDoneSendingEdges,
 			m_fusionData,
-			&m_wordSize,
 			&m_myReads,
 		getSize(),
 	m_inboxAllocator,

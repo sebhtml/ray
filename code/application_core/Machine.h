@@ -179,7 +179,6 @@ class Machine : public MiniRank{
 	MessageProcessor m_mp;
 	int m_argc;
 	char**m_argv;
-	int m_wordSize;
 	int m_last_value;
 	time_t m_lastTime;
 	bool m_mode_send_outgoing_edges;

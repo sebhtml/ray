@@ -474,7 +474,6 @@ class MessageProcessor :  public CorePlugin {
 	int m_rank;
 	int*m_numberOfMachinesDoneSendingEdges;
 	FusionData*m_fusionData;
-	int*m_wordSize;
 	ArrayOfReads*m_myReads;
 	int m_size;
 	SequencesIndexer*m_si;
@@ -531,7 +530,6 @@ ExtensionData*ed,
 				int rank,
 			int*m_numberOfMachinesDoneSendingEdges,
 			FusionData*m_fusionData,
-			int*m_wordSize,
 			ArrayOfReads*m_myReads,
 		int size,
 	RingAllocator*m_inboxAllocator,
