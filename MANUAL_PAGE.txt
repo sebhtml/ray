@@ -83,6 +83,7 @@ DESCRIPTION:
 
        -o outputDirectory
               Specifies the directory for outputted files. Default is RayOutput
+              Other name: -output
 
   Assembly options (defaults work well)
 
@@ -459,4 +460,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.3.0-devel
+Ray 2.3.0
