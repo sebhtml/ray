@@ -562,12 +562,12 @@ void SpuriousSeedAnnihilator::call_RAY_MESSAGE_TAG_SEED_GOSSIP(Message * message
 	// all ranks
 	//
 
-	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
 
 	Rank actor = message->getSource();
-	int gossipIndex = gossips.size() - 1;
 
 #ifdef CONFIG_ASSERT
+	vector<GraphSearchResult> & gossips = m_gossipAssetManager.getGossips();
+	int gossipIndex = gossips.size() - 1;
 	assert(gossipIndex < (int)gossips.size());
 	assert(actor >= 0);
 	assert(actor < m_core->getSize());

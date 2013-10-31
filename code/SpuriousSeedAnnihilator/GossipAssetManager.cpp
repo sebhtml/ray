@@ -108,13 +108,13 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 			&& m_pathToClusterTable[path1] == m_pathToClusterTable[path2]) {
 
 		int clusterIndexForPath1 = m_pathToClusterTable[path1];
-		int clusterIndexForPath2 = m_pathToClusterTable[path2];
 
 		// it is the same cluster. (?)
 		// check if  clusterIndexForPath1 and clusterIndexForPath2 are the
 		// same
 
 #ifdef CONFIG_ASSERT
+		int clusterIndexForPath2 = m_pathToClusterTable[path2];
 		assert(clusterIndexForPath1 == clusterIndexForPath2);
 #endif // CONFIG_ASSERT
 
@@ -239,9 +239,9 @@ void GossipAssetManager::classifyGossip(GraphSearchResult & gossip) {
 #endif
 
 	int finalCluster1 = m_pathToClusterTable[path1];
-	int finalCluster2 = m_pathToClusterTable[path2];
 
 #ifdef CONFIG_ASSERT
+	int finalCluster2 = m_pathToClusterTable[path2];
 	assert(finalCluster1 == finalCluster2);
 #endif
 

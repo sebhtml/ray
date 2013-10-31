@@ -689,9 +689,9 @@ int GraphPath::getRequiredNumberOfBytes() const {
 	//memcpy(buffer + position, &elements, operationSize);
 	position += operationSize;
 
-	uint32_t kmerLength = getKmerLength();
 
 #ifdef CONFIG_ASSERT
+	uint32_t kmerLength = getKmerLength();
 	assert(kmerLength > 0);
 #endif
 
