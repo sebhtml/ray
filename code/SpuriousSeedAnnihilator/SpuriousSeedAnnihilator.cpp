@@ -1186,7 +1186,7 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 
 		int count = message->getCount();
 
-		for(int i = 0 ; i < count ; ++i) {
+		for(int i = 0 ; i < count ; i += KMER_U64_ARRAY_SIZE) {
 
 			int seedIndex = m_buffersForPaths->getAt(source, i);
 			int positionIndex = m_buffersForPositions->getAt(source, i);
@@ -1199,6 +1199,10 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 			CoverageDepth coverage = buffer[i];
 
 #ifdef CONFIG_ASSERT
+			if(coverage <= 0) {
+				cout << "Error: coverage " << coverage << endl;
+
+			}
 			assert(coverage > 0);
 #endif
 
@@ -1222,7 +1226,9 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 	if(m_pendingMessages)
 		return;
 
-	if(m_seedIndex < (int)m_seeds->size()) {
+	bool hasSeeds = ( m_seeds->size() > 0 );
+
+	if(hasSeeds && m_seedIndex < (int)m_seeds->size()) {
 
 		GraphPath & seed = m_seeds->at(m_seedIndex);
 
@@ -1246,7 +1252,6 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 						MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit),
 						"/dev/memory-for-positions", m_parameters->showMemoryAllocations(), KMER_U64_ARRAY_SIZE);
 
-				m_pendingMessages = 0;
 			}
 
 			Kmer kmer;
@@ -1276,7 +1281,9 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 			m_seedIndex ++;
 			m_seedPosition = 0;
 		}
-	} else if (!m_buffersForMessages->isEmpty()) {
+
+	// flush buffers if we have some
+	} else if (hasSeeds && !m_buffersForMessages->isEmpty()) {
 
 		// flush the remaining bits
 		m_pendingMessages += m_buffersForMessages->flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE,
@@ -1284,17 +1291,30 @@ void SpuriousSeedAnnihilator::gatherCoverageValues() {
 
 	} else {
 
-		m_buffersForMessages->clear();
-		m_buffersForPaths->clear();
-		m_buffersForPositions->clear();
+		// only clear the buffers if we have seeds
+		if(hasSeeds) {
+			m_buffersForMessages->clear();
+			m_buffersForPaths->clear();
+			m_buffersForPositions->clear();
 
-		m_buffersForMessages = NULL;
-		m_buffersForPaths = NULL;
-		m_buffersForPositions = NULL;
+			delete m_buffersForMessages;
+			delete m_buffersForPaths;
+			delete m_buffersForPositions;
+
+			m_buffersForMessages = NULL;
+			m_buffersForPaths = NULL;
+			m_buffersForPositions = NULL;
+		}
 
 		for(int i = 0 ; i < (int)m_seeds->size() ; ++i) {
+
+#ifdef CONFIG_ASSERT
+			assert(hasSeeds == true);
+#endif
+
 			m_seeds->at(i).computePeakCoverage();
 		}
+
 		m_mode = MODE_STOP_THIS_SITUATION;
 	}
 }
@@ -2015,5 +2035,8 @@ void SpuriousSeedAnnihilator::resolveSymbols(ComputeCore*core){
 	m_mergedSeeds = false;
 
 	m_initializedProcessing = false;
+
+	// for communication
+	m_pendingMessages = 0;
 
 }
