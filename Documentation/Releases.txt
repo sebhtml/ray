@@ -1,23 +1,32 @@
-Ray v2.2.0 "Cloudy Sky of Wishes" with RayPlatform v1.1.1 "Nested Droids of Luck"
-Ray v2.1.0 "Ancient Granularity of Epochs" with RayPlatform v1.1.0 "Chariot of Complexity"
-Ray v2.0.0 "Dark Astrocyte of Knowledge" with RayPlatform v1.0.3 "Gray Pylon of Wisdom"
-Ray v1.7.0 "Magical Luminary of Celestial Bodies"
-Ray v1.6.1 "sunray"
-Ray v1.6.0
-Ray v1.4.0
-Ray v1.3.0
-Ray v1.2.3 "cRAYfish"
-Ray v1.2.2 "X-ray"
-Ray v1.2.1 "stringray"
-Ray v1.2.0
-Ray v1.0.0
-Ray v1.0.0
-Ray v0.1.0
-Ray v0.0.7
-Ray v0.0.6
-Ray v0.0.5
-Ray v0.0.4
-Ray v0.0.3
-Ray v0.0.2
-Ray v0.0.1 "Osiris"
-Ray v0.0.0 "crocodile"
+This file contains releases of Ray
+available at 
+- http://sourceforge.net/projects/denovoassembler/files/
+- https://github.com/sebhtml/Ray-Releases
+
+2013-10-31	Ray v2.3.0 "Distributed Pumpkin"		RayPlatform v2.0.0 "Actor Nest"
+2013-04-17	Ray v2.2.0 "Cloudy Sky of Wishes"		RayPlatform v1.1.1 "Nested Droids of Luck"
+2012-10-30	Ray v2.1.0 "Ancient Granularity of Epochs"	RayPlatform v1.1.0 "Chariot of Complexity"
+2012-06-24	Ray v2.0.0 "Dark Astrocyte of Knowledge"	RayPlatform v1.0.3 "Gray Pylon of Wisdom"
+2012-05-29	Ray v2.0.0-rc8
+2012-05-17	Ray v2.0.0-rc7
+2012-03-28	Ray v2.0-rc5
+2011-10-03	Ray v1.7 "Magical Luminary of Celestial Bodies"
+2011-07-15	Ray v1.6.1 "sunray"
+2011-06-13	Ray v1.6.0
+2011-05-30	Ray v1.4.0
+2011-03-22	Ray v1.3.0
+2011-02-23	Ray v1.2.4
+2011-02-05	Ray v1.2.3 "cRAYfish"
+2011-01-11	Ray v1.2.2 "X-ray"
+2010-12-30	Ray v1.2.1 "stringray"
+2010-12-03	Ray v1.2.0
+2010-11-25	Ray v1.0.0
+2010-11-04	Ray v0.1.0
+2010-04-24	Ray v0.0.7
+2010-04-10	Ray v0.0.6
+2010-03-29	Ray v0.0.5
+2010-03-23	Ray v0.0.4
+2010-03-10	Ray v0.0.3
+		Ray v0.0.2
+		Ray v0.0.1 "Osiris"
+		Ray v0.0.0 "crocodile"
