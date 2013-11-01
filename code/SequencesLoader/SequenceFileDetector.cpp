@@ -242,6 +242,10 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			}
 		}
 
+		// try to do it by brute force !
+
+#ifdef BRUTE_FORCE_MATCHING // not very good
+
 		int bestMatch = -1;
 		int bestScore = 999;
 		int withBestMatch = 0;
@@ -348,6 +352,9 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 			consumedFiles.insert(i);
 			consumedFiles.insert(bestMatch);
 		}
+
+#endif
+
 
 	}
 
