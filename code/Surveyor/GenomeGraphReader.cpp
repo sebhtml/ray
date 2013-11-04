@@ -229,7 +229,8 @@ void GenomeGraphReader::readLine() {
 		cout << endl;
 #endif
 
-		if(m_loaded % 1000000 == 0) {
+		int period = 1000000;
+		if(m_loaded % period == 0) {
 			printName();
 			cout << " loaded " << m_loaded << " sequences" << endl;
 

@@ -226,8 +226,10 @@ void CoalescenceManager::receive(Message & message) {
 			send(source, response);
 		}
 
-		//cout << "Resume reader 2" << endl;
-
+		/*
+		printName();
+		cout << " DEBUG Resume reader 2" << endl;
+*/
 	} else if(tag == FLUSH_BUFFERS) {
 
 		// DONE !!! -> flush buffers at the end.
@@ -341,6 +343,12 @@ bool CoalescenceManager::addKmerInBuffer(int producer, int & actor, int & sample
 	memcpy(buffer + offset, &sample, sizeof(sample));
 	offset += sizeof(sample);
 
+	/*
+	printName();
+	cout << "update DEBUG m_bufferSizes for actorIndex = " << actorIndex;
+	cout << " to " << offset << endl;
+	*/
+
 	m_bufferSizes[actorIndex] = offset;
 
 	// flush the message if no more bytes are available
@@ -401,15 +409,16 @@ void CoalescenceManager::flushBuffer(int sourceActor, int destinationActor) {
 
 	int bytes = offset;
 
-	/*
-	printName();
-	cout << "flushing data, sending stuff to " << actor << endl;
-	*/
-
 	Message routedMessage;
 	routedMessage.setTag(StoreKeeper::PUSH_SAMPLE_VERTEX);
 	routedMessage.setBuffer(buffer);
 	routedMessage.setNumberOfBytes(bytes);
+
+	/*
+	printName();
+	cout << "DEBUG flushing data, sending ";
+	cout << bytes << " bytes to " << actor << " tag= " << routedMessage.getTag() << endl;
+	*/
 
 	// free the buffer.
 	m_bufferSizes[actorIndex] = 0;
