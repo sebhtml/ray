@@ -42,6 +42,8 @@ void Mock::resolveSymbols(ComputeCore*core){
 
 		mother->setParameters(parameters);
 		m_core->spawnActor(mother);
+
+		m_core->setActorModelOnly();
 	}
 }
 
