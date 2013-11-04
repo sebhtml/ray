@@ -375,6 +375,10 @@ void StoreKeeper::pushSampleVertex(Message & message) {
 	response.setBuffer(&producer);
 	response.setNumberOfBytes(sizeof(producer));
 
+#ifdef CONFIG_ASSERT
+	assert(sizeof(producer) > 0);
+#endif
+
 	send(source, response);
 }
 

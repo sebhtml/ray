@@ -199,6 +199,16 @@ void CoalescenceManager::receive(Message & message) {
 		int producer = -1;
 		char * buffer = (char*) message.getBufferBytes();
 
+#ifdef CONFIG_ASSERT
+		if(!(buffer != NULL)) {
+			cout << "Count is " << message.getNumberOfBytes() << endl;
+			cout << "Tag ---------> " << message.getTag() << endl;
+		}
+		assert(message.getNumberOfBytes() > 0);
+		assert(buffer != NULL);
+		assert(sizeof(producer) > 0);
+#endif
+
 		memcpy(&producer, buffer, sizeof(producer));
 
 		int source = producer;
