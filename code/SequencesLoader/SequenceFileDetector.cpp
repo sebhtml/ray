@@ -131,10 +131,13 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 	 * Options for the matching algorithm
 	 */
 	bool enableSmartMatchingMode = true;
+
+#ifdef BRUTE_FORCE_MATCHING
 	bool enableBestHitMatchingMode = true;
 	int configurationMaximumHits = 1;
 	int configurationMinimumScore = 0;
 	int configurationMaximumScore = 2;
+#endif
 
 	// detect pairs
 	for(int i = 0 ; i < (int) files.size() ; ++i){
