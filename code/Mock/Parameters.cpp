@@ -1530,6 +1530,10 @@ void Parameters::showUsage(){
 	cout<<"    - taxonomy profiling of samples (with Ray Communities)"<<endl;
 	cout<<"    - gene ontology profiling of samples (with Ray Ontologies)"<<endl;
 	cout<<endl;
+
+	cout<<"    - compare DNA samples using words (Ray -run-surveyor ...; see Ray Surveyor options)"<<endl;
+
+	cout<<endl;
 	showOption("-help","Displays this help page.");
 	cout<<endl;
 	showOption("-version","Displays Ray version and compilation options.");
@@ -1597,6 +1601,22 @@ void Parameters::showUsage(){
 	showOption("-o outputDirectory","Specifies the directory for outputted files. Default is RayOutput");
 	showOptionDescription("Other name: -output");
 	cout<<endl;
+
+	cout << "  Ray Surveyor options" << endl;
+	cout<<endl;
+	showOption("-run-surveyor", "Runs Ray Surveyor to compare samples.");
+	showOptionDescription("See Documentation/Ray-Surveyor.md");
+	showOptionDescription("This workflow generates:");
+	showOptionDescription("RayOutput/Surveyor/SimilarityMatrix.tsv is a similarity Gramian matrix based on shared DNA words");
+	showOptionDescription("RayOutput/Surveyor/DistanceMatrix.tsv is a distance matrix (kernel-based).");
+
+	showOption("-read-sample-graph SampleName SampleGraphFile", "Reads a sample graph (generated with -write-kmers)");
+
+	cout<<endl;
+
+
+
+
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
 	cout<<endl;

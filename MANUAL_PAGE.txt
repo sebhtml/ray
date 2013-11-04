@@ -27,6 +27,8 @@ DESCRIPTION:
     - taxonomy profiling of samples (with Ray Communities)
     - gene ontology profiling of samples (with Ray Ontologies)
 
+    - compare DNA samples using words (Ray -run-surveyor ...; see Ray Surveyor options)
+
        -help
               Displays this help page.
 
@@ -84,6 +86,17 @@ DESCRIPTION:
        -o outputDirectory
               Specifies the directory for outputted files. Default is RayOutput
               Other name: -output
+
+  Ray Surveyor options
+
+       -run-surveyor
+              Runs Ray Surveyor to compare samples.
+              See Documentation/Ray-Surveyor.md
+              This workflow generates:
+              RayOutput/Surveyor/SimilarityMatrix.tsv is a similarity Gramian matrix based on shared DNA words
+              RayOutput/Surveyor/DistanceMatrix.tsv is a distance matrix (kernel-based).
+       -read-sample-graph SampleName SampleGraphFile
+              Reads a sample graph (generated with -write-kmers)
 
   Assembly options (defaults work well)
 
@@ -460,4 +473,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.3.0
+Ray 2.4.0-devel
