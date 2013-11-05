@@ -57,6 +57,10 @@ void ReadFetcher::work(){
 	}
 	if(!m_readsRequested){
 		MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+
+#ifdef CONFIG_ASSERT
+		assert(message2 != NULL);
+#endif
 		int bufferPosition=0;
 		m_vertex.pack(message2,&bufferPosition);
 
@@ -69,6 +73,10 @@ void ReadFetcher::work(){
 
 		// do some padding
 		while(bufferPosition<period){
+
+#ifdef CONFIG_ASSERT
+			assert(bufferPosition * sizeof(MessageUnit) < MAXIMUM_MESSAGE_SIZE_IN_BYTES);
+#endif
 			message2[bufferPosition++]=0;
 		}
 
