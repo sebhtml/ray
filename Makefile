@@ -225,6 +225,6 @@ install:
 
 	$(Q)mkdir $(PREFIX)/RayPlatform
 	$(Q)cp RayPlatform/AUTHORS $(PREFIX)/RayPlatform
-	$(Q)cp RayPlatform/README $(PREFIX)/RayPlatform
+	$(Q)cp RayPlatform/README.md $(PREFIX)/RayPlatform
 	$(Q)cp -r RayPlatform/Documentation $(PREFIX)/RayPlatform
 
