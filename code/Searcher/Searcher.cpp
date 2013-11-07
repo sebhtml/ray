@@ -206,7 +206,6 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		Message*message=m_inbox->at(0);
 		MessageUnit*buffer=message->getBuffer();
 
-		Rank source=message->getSource();
 
 		int position=0;
 
@@ -215,6 +214,7 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 		int count=buffer[position++];
 
 		#ifdef CONFIG_COUNT_ELEMENTS_VERBOSE
+		Rank source=message->getSource();
 		cout<<"Received RAY_MPI_TAG_SEARCH_ELEMENTS from "<<source<<endl;
 		#endif
 

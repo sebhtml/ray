@@ -35,6 +35,9 @@ using namespace std;
 class GenomeGraphReader: public Actor {
 
 private:
+
+	bool m_bad;
+
 	int m_sample;
 	int m_loaded;
 

@@ -75,7 +75,16 @@ void GenomeGraphReader::startParty(Message & message) {
 	//m_aggregator = *(int*)(message.getBufferBytes());
 
 	m_reader.open(m_fileName.c_str());
+
+	m_bad = false;
+
+	if(!m_reader.isValid())
+		m_bad = true;
+
 	m_loaded = 0;
+
+	printName();
+	cout <<"opens file " << m_fileName << endl;
 
 	m_parent = message.getSourceActor();
 
@@ -103,7 +112,7 @@ void GenomeGraphReader::readLine() {
 	char buffer[1024];
 	buffer[0] = '\0';
 
-	while(!m_reader.eof()) {
+	while(!m_bad && !m_reader.eof()) {
 		m_reader.getline(buffer, 1024);
 
 		// skip comment
@@ -113,13 +122,20 @@ void GenomeGraphReader::readLine() {
 		break;
 	}
 
-	if(m_reader.eof()) {
+	if(m_bad || m_reader.eof()) {
 
 		m_reader.close();
 
 		printName();
-		cout << " finished reading file " << m_fileName;
-		cout << " got " << m_loaded << " objects" << endl;
+
+		if(m_bad) {
+			cout << " Error: file " << m_fileName << " does not exist";
+			cout << endl;
+
+		} else {
+			cout << " finished reading file " << m_fileName;
+			cout << " got " << m_loaded << " objects" << endl;
+		}
 
 		Message finishedMessage;
 		finishedMessage.setTag(DONE);
