@@ -443,6 +443,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 	
 			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
+			// associated with -with-taxonomy
 			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 

@@ -183,6 +183,7 @@ void GeneOntology::fetchRelevantColors(){
 	
 			PhysicalKmerColor nameSpace=physicalColor/COLOR_NAMESPACE_MULTIPLIER;
 		
+			// for -gene-ontology
 			if(nameSpace==COLOR_NAMESPACE_EMBL_CDS){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 

@@ -249,6 +249,12 @@ void StoreKeeper::computeLocalGramMatrix() {
 
 		LargeCount hits = m_colorSet.getNumberOfReferences(virtualColor);
 
+		// TODO for "Directed Surveys",
+		// add a check for colors in the virtualColor that are not in a namespace.
+		// This directed survey only aims at counting colored kmers with colors
+		// other than sample colors
+
+
 		// since people are going to use this to check
 		// for genome size, don't duplicate counts
 		//

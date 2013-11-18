@@ -39,8 +39,11 @@ using namespace std;
 #define COLOR_NAMESPACE_MULTIPLIER 10000000000000000ULL
 
 // colors in the phylogeny namespace: 1024 * 10000000000000000 + identifier 
-#define COLOR_NAMESPACE_PHYLOGENY 	1024
+// available slots: 0 to 1844
+// each -search uses one slot, starting at 0
 #define COLOR_NAMESPACE_EMBL_CDS 	789
+#define COLOR_NAMESPACE_PHYLOGENY 	1024
+#define COLOR_NAMESPACE_SAMPLE          1200
 
 typedef uint32_t VirtualKmerColorHandle;
 

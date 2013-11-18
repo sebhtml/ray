@@ -222,6 +222,7 @@ void GenomeGraphReader::readLine() {
 
 		position += vertex.dump(messageBuffer + position);
 		memcpy(messageBuffer + position, &m_sample, sizeof(m_sample));
+
 		position += sizeof(m_sample);
 
 // maybe: accumulate many objects before flushing it.
@@ -258,7 +259,11 @@ void GenomeGraphReader::readLine() {
 
 void GenomeGraphReader::setFileName(string & fileName, int sample) {
 
+	//int nameSpace = COLOR_NAMESPACE_SAMPLE;
+	//m_sample = (uint64_t)sample + nameSpace * COLOR_NAMESPACE_MULTIPLIER;
+
 	m_sample = sample;
+
 	m_fileName = fileName;
 
 #if 0
