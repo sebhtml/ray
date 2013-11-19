@@ -1,5 +1,6 @@
-* run regression tests (+backup on colosse)
-* run unit tests
+* run system-tests (document in a github ticket)
+* run unit-tests
+* run robustness-tests
 * compile with make
 * compile with cmake
 
@@ -12,7 +13,7 @@
 * upload the tarball on sf
 * update the web site (download + manual)
 
-* post an email on the list including changes (dump-changes)
+* post an email on the list including changes
 * update the seqanswer thread
 * Google+
 * Twitter
