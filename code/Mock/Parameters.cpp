@@ -1135,7 +1135,7 @@ void Parameters::setDefaultRoutingOptions() {
 
 		radix--;
 
-		if(radix == 1)
+		if(radix <= 1)
 			break;
 
 		if(foundSolution)
