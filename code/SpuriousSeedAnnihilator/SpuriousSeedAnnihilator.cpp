@@ -1851,7 +1851,7 @@ bool SpuriousSeedAnnihilator::isPrimeNumber(int number) {
 }
 
 Rank SpuriousSeedAnnihilator::getArbiter() {
-	int rank = m_parameters->getSize();
+	int rank = m_parameters->getSize() - 1;
 
 	while(rank > 0 && !isPrimeNumber(rank))
 		rank--;
