@@ -33,6 +33,8 @@ using namespace std;
 class MatrixOwner : public Actor {
 private:
 
+	int m_receivedPayloads;
+
 	Parameters * m_parameters;
 	vector<string> * m_sampleNames;
 

@@ -33,6 +33,9 @@ using namespace std;
 MatrixOwner::MatrixOwner() {
 
 	m_completedStoreActors = 0;
+
+	m_receivedPayloads = 0;
+
 }
 
 MatrixOwner::~MatrixOwner() {
@@ -90,6 +93,7 @@ void MatrixOwner::receive(Message & message) {
 		printName();
 		cout << "DEBUG add " << sample1 << " " << sample2 << " " << count << endl;
 */
+		m_receivedPayloads ++;
 
 		m_localGramMatrix[sample1][sample2] += count;
 
@@ -103,6 +107,9 @@ void MatrixOwner::receive(Message & message) {
 
 		if(m_completedStoreActors == getSize()) {
 
+
+			printName();
+			cout << "MatrixOwner received " << m_receivedPayloads << " payloads" << endl;
 
 			// create directory for Surveyor
 			ostringstream matrixFile;
