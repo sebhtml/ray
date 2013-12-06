@@ -254,6 +254,10 @@ void StoreKeeper::computeLocalGramMatrix() {
 		// This directed survey only aims at counting colored kmers with colors
 		// other than sample colors
 
+		bool useFirstColorToFilter = false;
+
+		int filterColor = 0;
+		bool hasFilter = samples->count(filterColor) > 0;
 
 		// since people are going to use this to check
 		// for genome size, don't duplicate counts
@@ -281,6 +285,10 @@ void StoreKeeper::computeLocalGramMatrix() {
 
 				//if(sample2 < sample1)
 				// this is a diagonal matrix
+
+				if(useFirstColorToFilter && !hasFilter) {
+					continue;
+				}
 
 				m_localGramMatrix[sample1Index][sample2Index] += hits;
 				//m_localGramMatrix[sample2Index][sample1Index] += hits;
