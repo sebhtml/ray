@@ -56,6 +56,7 @@ private:
 
 	int m_matrixOwner;
 
+	int m_flushedMothers;
 	int m_finishedMothers;
 
 	Parameters * m_parameters;
@@ -106,9 +107,10 @@ public:
 		SHUTDOWN_OK,
 		FLUSH_AGGREGATOR,
 		FLUSH_AGGREGATOR_OK,
-		LAST_TAG,
+		FLUSH_AGGREGATOR_RETURN,
 		MERGE,
-		MERGE_OK
+		MERGE_OK,
+		LAST_TAG,
 	};
 
 	void setParameters(Parameters * parameters);

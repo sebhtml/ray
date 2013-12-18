@@ -44,6 +44,8 @@ class StoreKeeper: public Actor {
 
 private:
 
+	int m_storeDataCalls;
+	int m_receivedPushes;
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
 
 	map<SampleIdentifier, map<SampleIdentifier, LargeCount> >::iterator m_iterator1;

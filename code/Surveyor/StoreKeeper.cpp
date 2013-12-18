@@ -34,14 +34,19 @@ using namespace std;
 
 StoreKeeper::StoreKeeper() {
 
+	m_storeDataCalls = 0;
+
 	m_receivedObjects = 0;
 
 	m_configured = false;
 	m_kmerLength = 0;
+
+	m_receivedPushes = 0;
 }
 
 StoreKeeper::~StoreKeeper() {
 
+	m_receivedPushes = 0;
 }
 
 void StoreKeeper::receive(Message & message) {
@@ -54,12 +59,17 @@ void StoreKeeper::receive(Message & message) {
 		configureHashTable();
 
 	if(tag == PUSH_SAMPLE_VERTEX) {
+
+		m_receivedPushes ++;
+
 		pushSampleVertex(message);
 
 	} else if( tag == CoalescenceManager::DIE) {
 
 		printName();
-		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total" << endl;
+		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total";
+		cout << " with " << m_receivedPushes << " push operations" << endl;
+
 
 		// * 2 because we store pairs
 		uint64_t size = m_hashTable.size() * 2;
@@ -75,6 +85,11 @@ void StoreKeeper::receive(Message & message) {
 
 	} else if(tag == MERGE) {
 
+
+		printName();
+		cout << "DEBUG at MERGE message reception ";
+		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total";
+		cout << " with " << m_receivedPushes << " push operations" << endl;
 		computeLocalGramMatrix();
 
 		m_mother = source;
@@ -235,11 +250,20 @@ void StoreKeeper::computeLocalGramMatrix() {
 
 	// printColorReport();
 
-
+	uint64_t sum = 0;
 
 	// compute the local Gram matrix
 
 	int colors = m_colorSet.getTotalNumberOfVirtualColors();
+
+#if 0
+	cout << "DEBUG " << colors << " virtual colors" << endl;
+	cout << "DEBUG312 m_storeDataCalls " << m_storeDataCalls << endl;
+#endif
+
+#ifdef CONFIG_ASSERT
+	int withZeroReferences = 0;
+#endif
 
 	for(int i = 0 ; i < colors ; ++i) {
 
@@ -248,6 +272,10 @@ void StoreKeeper::computeLocalGramMatrix() {
 		set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(virtualColor);
 
 		LargeCount hits = m_colorSet.getNumberOfReferences(virtualColor);
+
+		if(hits == 0) {
+			withZeroReferences ++;
+		}
 
 		// TODO for "Directed Surveys",
 		// add a check for colors in the virtualColor that are not in a namespace.
@@ -264,6 +292,34 @@ void StoreKeeper::computeLocalGramMatrix() {
 		//
 		bool reportTwoDNAStrands = false;
 
+#if 0
+		cout << "DEBUG ***********";
+		cout << "virtualColor: " << i << " ";
+		cout << " samples: " << samples->size() << endl;
+		cout << "  Sample list:";
+#endif
+
+#if 0
+		for(set<PhysicalKmerColor>:: iterator sampleIterator = samples->begin();
+				sampleIterator != samples->end() ;
+				++sampleIterator) {
+
+			PhysicalKmerColor value = *sampleIterator;
+
+			cout << " " << value;
+		}
+		cout << endl;
+
+		cout << " References: " << hits << " hash table entries ";
+
+#ifdef CONFIG_ASSERT
+		cout << " DEBUG.WithZeroReferences ---> " << withZeroReferences << endl;
+#endif
+
+		cout << endl;
+
+#endif
+
 		// we have 2 DNA strands !!!
 		if(reportTwoDNAStrands)
 			hits *= 2;
@@ -276,11 +332,12 @@ void StoreKeeper::computeLocalGramMatrix() {
 				sample1 != samples->end();
 				++sample1) {
 
+			SampleIdentifier sample1Index = *sample1;
+
 			for(set<PhysicalKmerColor>::iterator sample2 = samples->begin();
 				sample2 != samples->end();
 				++sample2) {
 
-				SampleIdentifier sample1Index = *sample1;
 				SampleIdentifier sample2Index = *sample2;
 
 				//if(sample2 < sample1)
@@ -291,10 +348,27 @@ void StoreKeeper::computeLocalGramMatrix() {
 				}
 
 				m_localGramMatrix[sample1Index][sample2Index] += hits;
+
+				/*
+				cout << "DEBUG count entry ";
+				cout << "[ " << sample1Index << " ";
+				cout << sample2Index << " ";
+				cout <<
+				*/
+
+				sum += hits;
 				//m_localGramMatrix[sample2Index][sample1Index] += hits;
 			}
 		}
 	}
+
+#if 0
+	printName();
+	cout << "DEBUG checksum " << sum << endl;
+
+	uint64_t size = m_hashTable.size();
+	cout << "DEBUG m_hashTable.size() " << size << endl;
+#endif
 
 	//printLocalGramMatrix();
 }
@@ -354,7 +428,6 @@ void StoreKeeper::pushSampleVertex(Message & message) {
 	while(position < bytes) {
 		Vertex vertex;
 
-
 		position += vertex.load(buffer + position);
 
 		int sample = -1;
@@ -404,17 +477,21 @@ void StoreKeeper::printStatus() {
 
 void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 
+	m_storeDataCalls++;
+
 	Kmer kmer = vertex.getKey();
 	Kmer lowerKey;
 	kmer.getLowerKey(&lowerKey, m_kmerLength, m_colorSpaceMode);
 
-	uint64_t before = m_hashTable.size() * 2;
+	uint64_t before = m_hashTable.size();
 
 	ExperimentVertex * graphVertex = m_hashTable.insert(&lowerKey);
 
 	// * 2 because we store pairs
-	uint64_t size = m_hashTable.size() * 2;
+	uint64_t size = m_hashTable.size();
 
+	// check if we inserted something.
+	// if it is the case, then assign the dummy color to it.
 	if(before < size) {
 
 		set<PhysicalKmerColor> emptySet;
@@ -423,6 +500,10 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 		m_colorSet.incrementReferences(noColor);
 
 		graphVertex->setVirtualColor(noColor);
+
+#ifdef CONFIG_ASSERT
+		assert(noColor == NULL_VIRTUAL_COLOR);
+#endif
 	}
 
 	int period = 1000000;
@@ -450,12 +531,76 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 		return;
 	}
 
+#ifdef CONFIG_ASSERT
+
+	set<PhysicalKmerColor> * theOldSamples = m_colorSet.getPhysicalColors(oldVirtualColor);
+	set<PhysicalKmerColor> oldSamples = *theOldSamples;
+
+	assert(oldSamples.count(sampleColor) == 0);
+#endif
+
 	VirtualKmerColorHandle newVirtualColor= m_colorSet.getVirtualColorFrom(oldVirtualColor, sampleColor);
+
+#ifdef CONFIG_ASSERT
+	assert(m_colorSet.virtualColorHasPhysicalColor(newVirtualColor, sampleColor));
+	set<PhysicalKmerColor>* samples = m_colorSet.getPhysicalColors(newVirtualColor);
+
+
+	assert(samples->count(sampleColor) > 0);
+#endif
+
+
+#ifdef CONFIG_ASSERT2
+	if(oldVirtualColor == newVirtualColor) {
+
+		cout << "new sampleColor " << sampleColor << endl;
+		//cout << "References " << m_colorSet.getNumberOfReferences(newVirtualColor);
+		cout << endl;
+
+		cout << " >>> Old samples " << oldSamples.size () << endl;
+
+		for(set<PhysicalKmerColor>::iterator i = oldSamples.begin();
+				i != oldSamples.end() ; ++i) {
+
+			cout << " " << *i;
+
+		}
+
+		cout << endl;
+
+		cout << " old color " << oldVirtualColor;
+		cout << " refs " << m_colorSet.getNumberOfReferences(oldVirtualColor) << endl;
+
+
+		set<PhysicalKmerColor>* samples = m_colorSet.getPhysicalColors(newVirtualColor);
+
+		cout << " >>> new samples " << samples->size () << endl;
+
+		for(set<PhysicalKmerColor>::iterator i = samples->begin();
+				i != samples->end() ; ++i) {
+
+			cout << " " << *i;
+
+		}
+
+		cout << endl;
+
+		cout << " new color " << newVirtualColor;
+		cout << " refs " << m_colorSet.getNumberOfReferences(newVirtualColor) << endl;
+
+
+	}
+
+	// we can reuse the same handle if it has 0 references
+	// The call to decrementReferences is done above the
+	// call to getVirtualColorFrom
+	//assert(oldVirtualColor != newVirtualColor);
+#endif
 
 	graphVertex->setVirtualColor(newVirtualColor);
 
-	m_colorSet.decrementReferences(oldVirtualColor);
 	m_colorSet.incrementReferences(newVirtualColor);
+	m_colorSet.decrementReferences(oldVirtualColor);
 
 	/*
 	LargeCount referencesForOld = m_colorSet.getNumberOfReferences(oldVirtualColor);

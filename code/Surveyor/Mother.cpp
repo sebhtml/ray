@@ -48,6 +48,8 @@ Mother::Mother() {
 
 	m_finishedMothers = 0;
 	//cout << "DEBUG Mother constructor" << endl;
+
+	m_flushedMothers = 0;
 }
 
 Mother::~Mother() {
@@ -120,6 +122,10 @@ void Mother::receive(Message & message) {
 
 	} else if(tag == StoreKeeper::MERGE_OK) {
 
+		// TODO: the bug https://github.com/sebhtml/ray/issues/216
+		// is caused by the fact that this message is not
+		// received .
+
 		/*
 		Message newMessage;
 		newMessage.setTag(MERGE_OK);
@@ -136,9 +142,21 @@ void Mother::receive(Message & message) {
 			// all readers have finished,
 			// now tell mother to flush aggregators
 
-			sendToFirstMother(FLUSH_AGGREGATOR, FLUSH_AGGREGATOR_OK);
+			/*
+			printName();
+			cout << "DEBUG  m_finishedMothers: " << m_finishedMothers << " ";
+			cout << " starting pair FLUSH_AGGREGATOR, FLUSH_AGGREGATOR_RETURN";
+			cout << endl;
+			*/
+
+			sendToFirstMother(FLUSH_AGGREGATOR, FLUSH_AGGREGATOR_RETURN);
 		}
 	} else if(tag == FLUSH_AGGREGATOR) {
+
+		/*
+		printName();
+		cout << "DEBUG received FLUSH_AGGREGATOR" << endl;
+		*/
 
 		m_bigMother = source;
 
@@ -148,66 +166,99 @@ void Mother::receive(Message & message) {
 		newMessage.setTag(CoalescenceManager::FLUSH_BUFFERS);
 		send(m_coalescenceManager, newMessage);
 
+		Message newMessage2;
+		newMessage2.setTag(FLUSH_AGGREGATOR_RETURN);
+		send(source, newMessage2);
+
 	} else if(tag == CoalescenceManager::FLUSH_BUFFERS_OK) {
+
+		/*
+		printName();
+		cout << "DEBUG CoalescenceManager sent FLUSH_BUFFERS_OK to mother." << endl;
+		*/
 
 		Message response;
 		response.setTag(FLUSH_AGGREGATOR_OK);
 		send(m_bigMother, response);
 
-	} else if(tag == m_responseTag) {
-
-		// every mother was informed.
-		if(m_motherToKill < getSize()) {
-
-			if(m_responseTag == SHUTDOWN_OK) {
-				return;
-
-			} else if(m_responseTag == FLUSH_AGGREGATOR_OK) {
-
-				// spawn the MatrixOwner here !
-
-				MatrixOwner * matrixOwner = new MatrixOwner();
-				spawn(matrixOwner);
-
-				m_matrixOwner = matrixOwner->getName();
-
-				printName();
-				cout << "Spawned MatrixOwner actor !" << endl;
-
-				// tell the StoreKeeper actors to send their stuff to the
-				// MatrixOwner actor
-				// The Mother of Mother will wait for a signal from MatrixOwner
-
-				Message greetingMessage;
-
-				vector<string> * names = & m_sampleNames;
-
-				char buffer[32];
-				int offset = 0;
-				memcpy(buffer + offset, &m_parameters, sizeof(m_parameters));
-				offset += sizeof(m_parameters);
-				memcpy(buffer + offset, &names, sizeof(names));
-				offset += sizeof(names);
-
-				greetingMessage.setBuffer(&buffer);
-				greetingMessage.setNumberOfBytes(offset);
-
-				greetingMessage.setTag(MatrixOwner::GREETINGS);
-				send(m_matrixOwner, greetingMessage);
-
-				sendToFirstMother(MERGE, MERGE_OK);
-
-			} else if(m_responseTag == MERGE_OK) {
-
-			}
-		}
-
-		sendMessageWithReply(m_motherToKill, m_forwardTag);
-		m_motherToKill--;
+		/*
+		printName();
+		cout << "DEBUG sending FLUSH_AGGREGATOR_OK to m_bigMother" << endl;
+		*/
 
 	} else if(tag == MatrixOwner::MATRIX_IS_READY) {
 
 		sendToFirstMother(SHUTDOWN, SHUTDOWN_OK);
+
+	} else if(tag == FLUSH_AGGREGATOR_OK) {
+
+		/*
+		printName();
+		cout << "DEBUG received FLUSH_AGGREGATOR_OK" << endl;
+		*/
+
+		m_flushedMothers++;
+
+		if(m_flushedMothers < getSize())
+			return;
+
+		// spawn the MatrixOwner here !
+
+		MatrixOwner * matrixOwner = new MatrixOwner();
+		spawn(matrixOwner);
+
+		m_matrixOwner = matrixOwner->getName();
+
+		printName();
+		cout << "Spawned MatrixOwner actor !" << endl;
+
+		// tell the StoreKeeper actors to send their stuff to the
+		// MatrixOwner actor
+		// The Mother of Mother will wait for a signal from MatrixOwner
+
+		Message greetingMessage;
+
+		vector<string> * names = & m_sampleNames;
+
+		char buffer[32];
+		int offset = 0;
+		memcpy(buffer + offset, &m_parameters, sizeof(m_parameters));
+		offset += sizeof(m_parameters);
+		memcpy(buffer + offset, &names, sizeof(names));
+		offset += sizeof(names);
+
+		greetingMessage.setBuffer(&buffer);
+		greetingMessage.setNumberOfBytes(offset);
+
+		greetingMessage.setTag(MatrixOwner::GREETINGS);
+		send(m_matrixOwner, greetingMessage);
+
+		sendToFirstMother(MERGE, MERGE_OK);
+
+
+	} else if(tag == m_responseTag) {
+
+
+		if(m_responseTag == SHUTDOWN_OK) {
+
+		} else if(m_responseTag == MERGE_OK) {
+
+		} else if(m_responseTag == FLUSH_AGGREGATOR_RETURN) {
+
+			/*
+			printName();
+			cout << "DEBUG FLUSH_AGGREGATOR_RETURN received ";
+			cout << "m_motherToKill " << m_motherToKill << endl;
+			*/
+		}
+
+		// every mother was informed.
+		if(m_motherToKill >= getSize()) {
+
+			sendMessageWithReply(m_motherToKill, m_forwardTag);
+			m_motherToKill--;
+		}
+
 	}
 }
 
@@ -218,7 +269,7 @@ void Mother::sendToFirstMother(int forwardTag, int responseTag) {
 
 	m_motherToKill = 2 * getSize() - 1;
 
-	sendMessageWithReply(m_motherToKill, forwardTag);
+	sendMessageWithReply(m_motherToKill, m_forwardTag);
 	m_motherToKill--;
 }
 
@@ -234,6 +285,13 @@ void Mother::sendMessageWithReply(int & actor, int tag) {
 	if(tag == MERGE) {
 		message.setBuffer(&m_matrixOwner);
 		message.setNumberOfBytes(sizeof(m_matrixOwner));
+
+	} else if(tag == FLUSH_AGGREGATOR) {
+
+		/*
+		printName();
+		cout << " DEBUG sending message FLUSH_AGGREGATOR" << endl;
+		*/
 	}
 
 	send(actor, message);

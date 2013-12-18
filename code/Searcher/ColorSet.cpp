@@ -392,9 +392,17 @@ int ColorSet::getNumberOfPhysicalColors(VirtualKmerColorHandle handle){
 VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle handle,PhysicalKmerColor color){
 
 	#ifdef ASSERT
-	assert(handle<getTotalNumberOfVirtualColors());
+	assert(handle < getTotalNumberOfVirtualColors());
 	assert(!getVirtualColor(handle)->hasPhysicalColor(color));
+
+	// the handle may be available if the number of references
+	// was decremented before the call to getVirtualColorFrom
+	//
+	// on second thought, it is better to decrement after
+	// because all this code is designed like this
+	//
 	assert(m_availableHandles.count(handle)==0);
+
 	#endif
 
 	m_operations[OPERATION_getVirtualColorFrom]++;
@@ -415,14 +423,19 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 	uint64_t expectedHash=applyHashOperation(oldHash,color);
 
 	// case 3. no virtual color has the expected hash value
-	if(m_index.count(expectedHash)==0){
+	if(m_index.count(expectedHash) == 0){
 
 		// case X.: the virtual color has only one reference
+		// this reference is the one provided in input
+		// to the current call.
 		// in that case, we can just add the color to it and
 		// update its hash...
 		// but before doing that, we need to check that no one has the expectedHash
 	
-		if(oldVirtualColor->getNumberOfReferences()==1){
+		// I am not sure this is a valid approach.
+		// anyway, this will never happen because
+		// handles are purged when they reach 0 references
+		if(oldVirtualColor->getNumberOfReferences() == 1){
 			// we can update it, no problem
 			// because nobody is using it
 			// it is the copy-on-write design pattern I guess
