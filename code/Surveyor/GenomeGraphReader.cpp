@@ -163,6 +163,25 @@ void GenomeGraphReader::readLine() {
 		stringBuffer >> parents;
 		stringBuffer >> children;
 
+		///////////////////////////////////////////////////////////////////////
+		// convert the sequence to upper case
+
+		map<char,char> translationTable;
+		translationTable['a'] = 'A';
+		translationTable['t'] = 'T';
+		translationTable['g'] = 'G';
+		translationTable['c'] = 'C';
+
+		for(int i = 0 ; i < (int) sequence.length() ; ++i) {
+
+			char symbol = sequence[i];
+
+			if(translationTable.count(symbol) > 0) {
+				char correct = translationTable[symbol];
+
+				sequence [i] = correct;
+			}
+		}
 #if 0
 		cout << "DEBUG " << sequence << " with " << coverage << endl;
 #endif
