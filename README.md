@@ -3,6 +3,9 @@
 Ray is a parallel de novo genome assembler that utilises the message-passing interface everywhere
 and is implemented using peer-to-peer communication.
 
+Ray is free software distributed under the terms of the GNU General Public License,
+version 3 (GPLv3).
+
 Ray is implemented using RayPlatform, a message-passing-interface programming framework.
 
 Ray is documented in
