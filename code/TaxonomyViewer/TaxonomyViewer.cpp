@@ -327,6 +327,8 @@ void TaxonomyViewer::loadTree(){
 
 		int oldSize=m_taxonsForPhylogeny.size();
 
+		set<TaxonIdentifier> taxonsWithWarning;
+
 		while(loader.hasNext()){
 
 			TaxonIdentifier parent;
@@ -334,8 +336,11 @@ void TaxonomyViewer::loadTree(){
 	
 			loader.getNext(&parent,&child);
 
-			if(parent==child){
-				cout<<"Error: parent and child are the same: "<<parent<<" and "<<child<<endl;
+			if(parent==child && taxonsWithWarning.count(parent) == 0){
+
+				cout<<"Warning: parent and child are the same: "<<parent<<" and "<<child<<endl;
+
+				taxonsWithWarning.insert(parent);
 			}
 
 			if((m_loadAllTree || (m_taxonsForPhylogeny.count(child) > 0)) && parent!=child){
