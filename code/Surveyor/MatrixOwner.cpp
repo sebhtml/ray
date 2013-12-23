@@ -195,11 +195,49 @@ void MatrixOwner::computeDistanceMatrix() {
 	}
 }
 
+void MatrixOwner::printLocalGramMatrix(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix) {
+
+	int numberOfSamples = m_sampleNames->size();
+
+	for(int i = 0 ; i < numberOfSamples ; ++i) {
+
+		string & sampleName1 = m_sampleNames->at(i);
+
+		stream << "	" << sampleName1;
+	}
+
+	stream << endl;
+
+
+	for(int i = 0 ; i < numberOfSamples ; ++i) {
+
+		string & sampleName1 = m_sampleNames->at(i);
+
+		stream << sampleName1;
+
+		for(int j = 0 ; j < numberOfSamples ; ++j) {
+
+			//string & sampleName2 = m_sampleNames->at(j);
+
+			LargeCount hits = 0;
+
+			if(matrix.count(i) > 0 && matrix[i].count(j) > 0) {
+
+				hits = matrix[i][j];
+			}
+
+			stream << "	" << hits;
+		}
+
+		stream << endl;
+	}
+}
+
 /**
  * Write it in RaySurveyorResults/SurveyorMatrix.tsv
  * Also write a distance matrix too !
  */
-void MatrixOwner::printLocalGramMatrix(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix) {
+void MatrixOwner::printLocalGramMatrixWithHash(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix) {
 
 	/*
 	printName();

@@ -43,7 +43,9 @@ private:
 
 	int m_mother;
 	int m_completedStoreActors;
+
 	void printLocalGramMatrix(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix);
+	void printLocalGramMatrixWithHash(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix);
 
 	void computeDistanceMatrix();
 
