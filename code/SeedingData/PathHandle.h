@@ -55,6 +55,7 @@ public:
 	uint64_t operator + (uint64_t value);
 	uint64_t operator % (uint64_t value);
 
+	// add these 2 as friends.
 	friend ostream & operator <<(ostream & stream, const PathHandle & handle);
 	friend ostream & operator >>(ostream & stream, const PathHandle & handle);
 
@@ -65,5 +66,11 @@ public:
 	int dump(char * buffer) const;
 	int getRequiredNumberOfBytes() const;
 };
+
+/**
+ * prototype for operators.
+ */
+ostream & operator <<(ostream & stream, const PathHandle & handle);
+ostream & operator >>(ostream & stream, const PathHandle & handle);
 
 #endif
