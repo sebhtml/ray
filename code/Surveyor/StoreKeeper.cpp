@@ -273,9 +273,11 @@ void StoreKeeper::computeLocalGramMatrix() {
 
 		LargeCount hits = m_colorSet.getNumberOfReferences(virtualColor);
 
+#ifdef CONFIG_ASSERT
 		if(hits == 0) {
 			withZeroReferences ++;
 		}
+#endif
 
 		// TODO for "Directed Surveys",
 		// add a check for colors in the virtualColor that are not in a namespace.
