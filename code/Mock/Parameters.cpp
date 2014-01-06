@@ -1642,6 +1642,11 @@ void Parameters::showUsage(){
 
 	showOption("-disable-scaffolder","Disables the scaffolder.");
 	cout<<endl;
+
+	showOption("-minimum-seed-length minimumSeedLength",
+		"Changes the minimum seed length, default is 100 nucleotides");
+	cout<<endl;
+
 	showOption("-minimum-contig-length minimumContigLength",
 		"Changes the minimum contig length, default is 100 nucleotides");
 	cout<<endl;

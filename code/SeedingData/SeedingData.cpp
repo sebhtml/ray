@@ -107,6 +107,12 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 			m_workersDone.push_back(workerId);
 			GraphPath*seed=m_aliveWorkers[workerId].getSeed();
 
+			int minimalSeedLength = 100;
+
+			if(m_parameters->hasConfigurationOption("-minimum-seed-length", 1)) {
+				minimalSeedLength = m_parameters->getConfigurationInteger("-minimum-seed-length", 0);
+			}
+
 			int nucleotides=getNumberOfNucleotides(seed->size(),m_wordSize);
 
 			if(seed->size() > 0 && m_debugSeeds){
@@ -138,7 +144,8 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				m_skippedObjectsWithBubbleWeakComponent++;
 
 			// only consider the long ones.
-			}else if(nucleotides>=m_parameters->getMinimumContigLength()){
+			}else if(nucleotides >= minimalSeedLength){
+
 				#ifdef SHOW_DISCOVERIES
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				#endif
