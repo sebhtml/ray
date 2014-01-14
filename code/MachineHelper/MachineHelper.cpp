@@ -485,7 +485,9 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 			}
 		}
 		m_numberOfRanksDone++;
+
 	}else if(m_numberOfRanksDone==m_parameters->getSize()){
+
 		if(m_parameters->writeKmers()){
 			cout<<endl;
 			cout<<"Rank "<<getRank()<<" wrote "<<m_parameters->getPrefix()<<"kmers.txt"<<endl;
@@ -515,6 +517,19 @@ void MachineHelper::call_RAY_MASTER_MODE_WRITE_KMERS(){
 		m_edgeDistribution.clear();
 		f.close();
 		cout<<"Rank "<<getRank()<<" wrote "<<edgeFile.str()<<endl;
+
+		// stop here (in parallel) if -graph-only is provided.
+		if(m_parameters->hasOption("-graph-only")){
+
+			cout << "Rank " << m_parameters->getRank();
+			cout << " option -graph-only detected,";
+			cout << " exiting when graph is ready.";
+			cout << endl;
+
+			m_switchMan->setMasterMode(RAY_MASTER_MODE_KILL_ALL_MPI_RANKS);
+			return;
+		}
+
 
 	}else if(m_coverageRank==m_numberOfRanksDone){
 

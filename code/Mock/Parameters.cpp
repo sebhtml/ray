@@ -1735,10 +1735,15 @@ void Parameters::showUsage(){
 	showOptionDescription("An AMOS file contains read positions on contigs.");
 	showOptionDescription("Can be opened with software with graphical user interface.");
 	cout<<endl;
+
 	showOption("-write-kmers","Writes k-mer graph to RayOutput/kmers.txt");
 	showOptionDescription("The resulting file is not utilised by Ray.");
 	showOptionDescription("The resulting file is very large.");
 	cout<<endl;
+
+	showOption("-graph-only","Exits after building graph.");
+	cout<<endl;
+
 	showOption("-write-read-markers","Writes read markers to disk.");
 	cout<<endl;
 	showOption("-write-seeds","Writes seed DNA sequences to RayOutput/Rank<rank>.RaySeeds.fasta");

@@ -201,6 +201,9 @@ DESCRIPTION:
               The resulting file is not utilised by Ray.
               The resulting file is very large.
 
+       -graph-only
+              Exits after building graph.
+
        -write-read-markers
               Writes read markers to disk.
 
