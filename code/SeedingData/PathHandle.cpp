@@ -20,7 +20,12 @@
 
 #include "PathHandle.h"
 
+#include <fstream>
+#include <iostream>
+using namespace std;
+
 #include <string.h>
+#include <stdint.h>
 
 void PathHandle::operator=(const PathHandle &b) {
 	m_value = b.m_value;
@@ -62,13 +67,23 @@ uint64_t PathHandle::operator / (uint64_t value) {
 	return m_value / value;
 }
 
-ostream & operator >>(ostream & stream, const PathHandle & handle) {
-	stream >> handle.m_value;
+void PathHandle::setValue(uint64_t value) {
+	m_value = value;
+}
+
+istream & operator >>(istream & stream, PathHandle & handle) {
+
+	uint64_t myValue = 0;
+	stream >> myValue;
+	handle.setValue(myValue);
+
 	return stream;
 }
 
 ostream & operator <<(ostream & stream, const PathHandle & handle) {
-	stream << handle.m_value;
+
+	stream << handle.getValue();
+
 	return stream;
 }
 

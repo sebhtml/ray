@@ -24,7 +24,7 @@
 
 #include <RayPlatform/store/CarriageableItem.h>
 
-#include <ostream>
+#include <iostream>
 using namespace std;
 
 #include <stdint.h>
@@ -34,6 +34,7 @@ using namespace std;
  */
 class PathHandle : public CarriageableItem {
 
+private:
 	uint64_t m_value;
 
 public:
@@ -55,9 +56,13 @@ public:
 	uint64_t operator + (uint64_t value);
 	uint64_t operator % (uint64_t value);
 
+	void setValue(uint64_t value);
+
 	// add these 2 as friends.
+	/*
 	friend ostream & operator <<(ostream & stream, const PathHandle & handle);
 	friend ostream & operator >>(ostream & stream, const PathHandle & handle);
+	*/
 
 	const uint64_t & getValue() const;
 	uint64_t & getValue();
@@ -65,12 +70,13 @@ public:
 	int load(const char * buffer);
 	int dump(char * buffer) const;
 	int getRequiredNumberOfBytes() const;
+
 };
 
 /**
  * prototype for operators.
  */
 ostream & operator <<(ostream & stream, const PathHandle & handle);
-ostream & operator >>(ostream & stream, const PathHandle & handle);
+istream & operator >>(istream & stream, PathHandle & handle);
 
 #endif
