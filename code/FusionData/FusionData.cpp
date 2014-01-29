@@ -70,7 +70,7 @@ void FusionData::processCheckpoints(){
 					path.push_back(&kmer);
 				}
 	
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(vertices!=0);
 				assert(vertices == (int)path.size());
 				#endif
@@ -126,7 +126,7 @@ void FusionData::call_RAY_SLAVE_MODE_DISTRIBUTE_FUSIONS(){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
 	assert(m_ed->m_EXTENSION_currentPosition < (int) m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 	assert(m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size() > 0);
@@ -178,7 +178,7 @@ void FusionData::constructor(int size,int max,int rank,StaticVector*outbox,
 	m_outbox=outbox;
 	m_outboxAllocator=outboxAllocator;
 	m_wordSize=wordSize;
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_wordSize>0);
 	#endif
 	
@@ -237,7 +237,7 @@ void FusionData::finishFusions(){
 		m_cacheForRepeatedVertices.clear();
 		m_cacheAllocator.clear();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_FINISH_pathsForPosition!=NULL);
 		#endif
 		delete m_FINISH_pathsForPosition;
@@ -277,7 +277,7 @@ void FusionData::finishFusions(){
 	
 	PathHandle currentId=m_ed->m_EXTENSION_identifiers[m_seedingData->m_SEEDING_i];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getRankFromPathUniqueId(currentId)<m_size);
 	#endif
 
@@ -458,7 +458,7 @@ void FusionData::finishFusions(){
 	}else if(!m_mappingConfirmed){
 		if(position1<=m_validationPosition && m_validationPosition<=position2){
 			if(!m_Machine_getPaths_DONE){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_seedingData->m_SEEDING_i<m_ed->m_EXTENSION_contigs.size());
 				assert(m_ed->m_EXTENSION_currentPosition<(int)m_ed->m_EXTENSION_contigs[m_seedingData->m_SEEDING_i].size());
 				#endif
@@ -517,7 +517,7 @@ void FusionData::finishFusions(){
 				MessageUnit*message=(MessageUnit*)m_outboxAllocator->allocate(sizeof(MessageUnit));
 				message[0]=pathId.getValue();
 	
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(rankId<m_size);
 				#endif
 	
@@ -604,11 +604,11 @@ void FusionData::getPaths(Kmer vertex){
 	}
 	if(m_cacheForRepeatedVertices.find(vertex,false)!=NULL){
 		SplayNode<Kmer ,Direction*>*node=m_cacheForRepeatedVertices.find(vertex,false);
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(node!=NULL);
 		#endif
 		Direction**ddirect=node->getValue();
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(ddirect!=NULL);
 		#endif
 		Direction*d=*ddirect;
@@ -629,13 +629,13 @@ void FusionData::getPaths(Kmer vertex){
 		m_FUSION_paths_received=false;
 		m_FUSION_receivedPaths.clear();
 	}else if(m_FUSION_paths_received){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		for(int i=0;i<(int)m_FUSION_receivedPaths.size();i++){
 			assert(getRankFromPathUniqueId(m_FUSION_receivedPaths[i].getWave())<m_size);
 		}
 		#endif
 		// save the result in the cache.
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_cacheForRepeatedVertices.find(vertex,false)==NULL);
 		#endif
 
@@ -654,7 +654,7 @@ void FusionData::getPaths(Kmer vertex){
 		Direction**ddirect=node->getValue();
 		*ddirect=theDirection;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(m_Machine_getPaths_result.size()==0){
 			assert(*(m_cacheForRepeatedVertices.find(vertex,false)->getValue())==NULL);
 		}

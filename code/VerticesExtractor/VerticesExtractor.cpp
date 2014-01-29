@@ -63,7 +63,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
 	if(m_pendingMessages!=0){
@@ -92,7 +92,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 		flushAll(m_outboxAllocator,m_outbox,m_parameters->getRank());
 
 		if(m_pendingMessages==0){
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_bufferedDataForIngoingEdges.isEmpty());
 			assert(m_bufferedDataForOutgoingEdges.isEmpty());
 			#endif
@@ -135,7 +135,7 @@ void VerticesExtractor::call_RAY_SLAVE_MODE_ADD_EDGES(){
 
 		int maximumPosition=len-m_parameters->getWordSize()+1;
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_readSequence!=NULL);
 		#endif
 
@@ -341,7 +341,7 @@ void VerticesExtractor::constructor(int size,Parameters*parameters,GridTable*gra
 }
 
 void VerticesExtractor::setReadiness(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_pendingMessages>0);
 	#endif
 
@@ -381,7 +381,7 @@ void VerticesExtractor::incrementPendingMessages(){
 }
 
 void VerticesExtractor::showBuffers(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_bufferedDataForOutgoingEdges.isEmpty());
 	assert(m_bufferedDataForIngoingEdges.isEmpty());
 	#endif

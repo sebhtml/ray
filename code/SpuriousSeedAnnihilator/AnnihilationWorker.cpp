@@ -104,7 +104,7 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 
 	if(!m_searchIsStarted) {
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(direction == DIRECTION_PARENTS || direction == DIRECTION_CHILDREN);
 #endif
 
@@ -125,7 +125,7 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 		else if(direction == DIRECTION_CHILDREN)
 			index = m_seed->size() -1;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(index == 0 || index == m_seed->size()-1);
 #endif
 		m_seed->at(index, &startingPoint);
@@ -186,7 +186,7 @@ bool AnnihilationWorker::searchGraphForNiceThings(int direction){
 			else if(direction == DIRECTION_CHILDREN)
 				links = m_attributeFetcher.getChildren();
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 			assert(links != NULL);
 #endif
 

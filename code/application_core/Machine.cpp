@@ -673,7 +673,7 @@ for i in $(cat list ); do exp="s/option/$i/g"; sed $exp content; done > list2
 	cout<<endl;
 
 	cout<<"ASSERT = ";
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	cout<<"y";
 	#else
 	cout<<"n";

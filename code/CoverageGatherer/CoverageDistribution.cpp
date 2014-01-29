@@ -24,7 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 using namespace std;

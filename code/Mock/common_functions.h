@@ -42,7 +42,7 @@ see <http://www.gnu.org/licenses/>
 #include <iostream>
 #include <vector>
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 

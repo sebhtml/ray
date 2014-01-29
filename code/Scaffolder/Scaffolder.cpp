@@ -157,7 +157,7 @@ void Scaffolder::solve(){
 						int average=sum/n;
 						operationBuffer<<"contig-"<<leftContig<<"\t"<<leftStrand<<"\tcontig-"<<rightContig<<"\t"<<rightStrand<<"\t"<<average;
 
-						#ifdef ASSERT
+						#ifdef CONFIG_ASSERT
 						assert(averageValues.size() == countValues.size());
 						assert(standardDeviationValues.size() == countValues.size());
 						#endif
@@ -343,7 +343,7 @@ void Scaffolder::computeStatistics(vector<int>*lengths,int minimumLength,ostream
 			break;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i<(int)accepted.size());
 	#endif
 	int n50=accepted[i];
@@ -384,7 +384,7 @@ void Scaffolder::constructor(StaticVector*outbox,StaticVector*inbox,RingAllocato
 	m_initialised=false;
 	m_workerId=0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_parameters!=NULL);
 	#endif
 
@@ -485,7 +485,7 @@ void Scaffolder::getCoverageOfBlockOfLife(){
 			vector<MessageUnit> elements;
 			m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(elements.size() > 0);
 			#endif
 
@@ -596,7 +596,7 @@ void Scaffolder::sendSummary(){
 
 void Scaffolder::performSummary(){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_contigId < (int)m_contigs->size());
 	assert((int)m_vertexCoverageValues.size() == (*m_contigs)[m_contigId].size());
 	#endif
@@ -669,7 +669,7 @@ void Scaffolder::performSummary(){
 			fp.open(fileName.str().c_str(),ios_base::out|ios_base::app);
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_contigId < (int)m_contigNames->size());
 		#endif
 
@@ -750,7 +750,7 @@ void Scaffolder::performSummary(){
 }
 
 void Scaffolder::processContigPosition(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_contigId<(int)(*m_contigs).size());
 	assert(m_positionOnContig<(int)(*m_contigs)[m_contigId].size());
 	#endif
@@ -758,7 +758,7 @@ void Scaffolder::processContigPosition(){
 	Kmer vertex;
 	(*m_contigs)[m_contigId].at(m_positionOnContig,&vertex);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_parameters!=NULL);
 	#endif
 	if(!m_forwardDone){
@@ -842,7 +842,7 @@ void Scaffolder::processVertex(Kmer*vertex){
 		vector<MessageUnit> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(elements.size() > 0);
 		#endif
 
@@ -1510,7 +1510,7 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 				int elementIndex=(iterator*BITS_PER_NUCLEOTIDE ) / (sizeof(MessageUnit)*BITS_PER_BYTE);
 				int offset=(iterator*BITS_PER_NUCLEOTIDE) % (sizeof(MessageUnit)*BITS_PER_BYTE);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(sizeof(MessageUnit)==sizeof(uint64_t));
 				#endif
 
@@ -1534,7 +1534,7 @@ void Scaffolder::getContigSequenceFromPackedObjects(PathHandle id){
 		m_contigSequence=m_contigPathBuffer.str();
 		m_hasContigSequence=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if((int)m_contigSequence.length()!=m_theLengthInNucleotides){
 			cout<<"expected: "<<m_theLengthInNucleotides<<" actual: "<<m_contigSequence.length()<<endl;
 		}
@@ -1585,7 +1585,7 @@ void Scaffolder::getContigSequenceFromKmers(PathHandle id){
 		}
 	}else{
 		/* we should receive a correct number of vertices */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert((int)m_contigPath.size()==m_theLength);
 		#endif
 
@@ -1635,7 +1635,7 @@ void Scaffolder::call_RAY_MASTER_MODE_WRITE_SCAFFOLDS(){
 
 				int length=m_contigSequence.length();
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				int theLength=m_contigLengths[contigNumber]+m_parameters->getWordSize()-1;
 				assert(length==theLength);
 				#endif
@@ -1736,7 +1736,7 @@ void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message){
 	PathHandle contigId=incoming[thePosition++];
 	int nucleotidePosition=incoming[thePosition++];
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_contigNameIndex->count(contigId)>0);
 #endif
 
@@ -1759,7 +1759,7 @@ void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message){
 // clear bits
 	memset(messageContent,0,MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(index<(int)m_contigs->size());
 #endif
 
@@ -1779,7 +1779,7 @@ void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_PACKED_CHUNK(Message*message){
 
 		int localPosition=nucleotidePosition-kmerPosition;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(localPosition>=0);
 		assert(localPosition<kmerLength);
 #endif
@@ -1830,7 +1830,7 @@ void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 	PathHandle contigId=incoming[thePosition++];
 	int position=incoming[thePosition++];
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_contigNameIndex->count(contigId)>0);
 #endif
 
@@ -1846,7 +1846,7 @@ void Scaffolder::call_RAY_MPI_TAG_GET_CONTIG_CHUNK(Message*message){
 	 && (outputPosition+KMER_U64_ARRAY_SIZE)<(int)(MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit))){
 		Kmer theKmerObject;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(index<(int)m_contigs->size());
 #endif
 		(*m_contigs)[index].at(position++,&theKmerObject);
@@ -1957,7 +1957,7 @@ void Scaffolder::resolveSymbols(ComputeCore*core){
 
 	m_contigNameIndex=(map<PathHandle,int>*)core->getObjectFromSymbol(m_plugin, "/RayAssembler/ObjectStore/ContigNameIndex.ray");
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_contigNameIndex!=NULL);
 #endif
 }

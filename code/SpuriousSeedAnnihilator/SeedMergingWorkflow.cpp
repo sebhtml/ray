@@ -53,6 +53,8 @@ bool SeedMergingWorkflow::hasUnassignedTask(){
 	 */
 	bool enableSeedMerging = m_parameters->hasOption("-merge-seeds");
 
+	//enableSeedMerging = true;
+
 	if(!enableSeedMerging)
 		return false;
 
@@ -62,7 +64,7 @@ bool SeedMergingWorkflow::hasUnassignedTask(){
 /** assign the next task to a worker and return this worker */
 Worker*SeedMergingWorkflow::assignNextTask(){
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_seedIndex < (int)m_seeds->size());
 #endif
 

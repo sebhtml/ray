@@ -86,7 +86,7 @@ string convertToString(GraphPath*b,int m_wordSize,bool color){
 }
 
 Kmer kmerAtPosition(const char*m_sequence,int pos,int w,char strand,bool color){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(w<=CONFIG_MAXKMERLENGTH);
 	#endif
 	int length=strlen(m_sequence);
@@ -194,7 +194,7 @@ Kmer wordId(const char*a){
 		int bitPosition=2*j;
 		int chunk=bitPosition/64;
 		int bitPositionInChunk=bitPosition%64;
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(!(chunk<i.getNumberOfU64())){
 			cout<<"Chunk="<<chunk<<" positionInKmer="<<j<<" KmerLength="<<strlen(a)<<" bitPosition=" <<bitPosition<<" Chunks="<<i.getNumberOfU64()<<endl;
 		}

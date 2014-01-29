@@ -55,7 +55,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 		m_initiatedIterator=true;
 		m_maximumAliveWorkers=32768;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		m_splayTreeIterator.hasNext();
 		#endif
 
@@ -89,7 +89,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 	// 1. iterate on active workers
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
 		WorkerHandle workerId=*m_activeWorkerIterator;
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_aliveWorkers.count(workerId)>0);
 		assert(!m_aliveWorkers[workerId].isDone());
 		#endif
@@ -119,7 +119,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				cout<<"Raw seed length: "<<nucleotides<<" nucleotides"<<endl;
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(nucleotides==0 || nucleotides>=m_wordSize);
 			#endif
 
@@ -150,7 +150,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 				printf("Rank %i discovered a seed with %i vertices\n",m_rank,(int)seed.size());
 				#endif
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(seed->size()>0);
 				#endif
 
@@ -233,7 +233,7 @@ void SeedingData::call_RAY_SLAVE_MODE_START_SEEDING(){
 					}
 				}
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_SEEDING_i==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
@@ -268,7 +268,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 		m_activeWorkerIterator=m_activeWorkers.begin();
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
 	#endif
 
@@ -289,7 +289,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 		cout<<"Rank "<<m_rank<<" Skipped paths because of low coverage: "<<m_skippedNotEnoughCoverage<<endl;
 		cout<<"Rank "<<m_rank<<" Eligible paths: "<<m_eligiblePaths<<endl;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_eligiblePaths==(int)m_SEEDING_seeds.size());
 		#endif
 
@@ -301,7 +301,7 @@ RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 			showMemoryUsage(m_rank);
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
@@ -347,7 +347,7 @@ int*mode,
 	m_mode=mode;
 	m_parameters=parameters;
 	m_wordSize=m_parameters->getWordSize();
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_wordSize>=15&&m_wordSize<=CONFIG_MAXKMERLENGTH);
 	#endif
 	m_subgraph=subgraph;
@@ -379,7 +379,7 @@ void SeedingData::updateStates(){
 	for(int i=0;i<(int)m_workersDone.size();i++){
 		WorkerHandle workerId=m_workersDone[i];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		assert(m_aliveWorkers.count(workerId)>0);
 		#endif
@@ -392,7 +392,7 @@ void SeedingData::updateStates(){
 
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
 		WorkerHandle workerId=m_waitingWorkers[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
 		m_activeWorkers.erase(workerId);

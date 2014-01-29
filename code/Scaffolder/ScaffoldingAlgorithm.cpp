@@ -382,7 +382,7 @@ bool ScaffoldingAlgorithm::hasConflictWithEdgeAroundContig(ScaffoldingEdge*edgeT
 
 		int edge2ContigSideReverse=reverseEdge.getSide(contigToCheck);
 	
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		char edge2ContigStrandReverse=reverseEdge.getStrand(contigToCheck);
 		assert(edge2ContigStrandReverse == edge1ContigStrand);
 		#endif
@@ -419,7 +419,7 @@ void ScaffoldingAlgorithm::extractScaffolds(char state,map<PathHandle,int>*color
 
 	if((*parents).count(vertex)>0&&(*parents)[vertex].count(state)>0){
 		for(int i=0;i<(int)(*parents)[vertex][state].size();i++){
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(0<(*parents)[vertex][state][i].size());
 			#endif
 			PathHandle parent=(*parents)[vertex][state][i][0];
@@ -441,20 +441,20 @@ void ScaffoldingAlgorithm::extractScaffolds(char state,map<PathHandle,int>*color
 		if((*children).count(vertex)>0&&(*children)[vertex].count(state)>0){
 			bool found=false;
 			for(int i=0;i<(int)(*children)[vertex][state].size();i++){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(2<(*children)[vertex][state][i].size());
 				#endif
 
 				PathHandle childVertex=(*children)[vertex][state][i][2];
 				int childColor=(*colors)[childVertex];
 				if(childColor==currentColor){
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(3<(*children)[vertex][state][i].size());
 					#endif
 
 					char childState=(*children)[vertex][state][i][3];
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(4<(*children)[vertex][state][i].size());
 					#endif
 

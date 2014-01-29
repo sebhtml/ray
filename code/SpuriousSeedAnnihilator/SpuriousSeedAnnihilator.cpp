@@ -717,7 +717,7 @@ void SpuriousSeedAnnihilator::shareWithLinkedActors() {
 
 		char *messageBuffer = (char *)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-#ifdef ASSERT_CONFIG
+#ifdef CONFIG_ASSERT_CONFIG
 		assert( messageBuffer != NULL );
 #endif /* ASSERT_CONFIG */
 
@@ -1563,14 +1563,14 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_REGISTER_SEEDS(){
 		return;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_activeQueries>=0);
 	#endif
 
 	if(m_activeQueries > 0)
 		return;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_activeQueries==0);
 	#endif
 
@@ -1715,7 +1715,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
 // Trace was here -> PASS
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_parameters != NULL);
 	assert(m_subgraph != NULL);
 	#endif
@@ -1724,7 +1724,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph, m_parameters->getWordSize(), m_parameters);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	LargeCount cleared=0;
 	#endif
 
@@ -1735,7 +1735,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 		Kmer key=*(iterator.getKey());
 		m_subgraph->clearDirections(&key);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		cleared++;
 
 		Vertex*node=m_subgraph->find(&key);
@@ -1746,7 +1746,7 @@ void SpuriousSeedAnnihilator::call_RAY_SLAVE_MODE_CLEAN_SEEDS(){
 
 // Trace was here -> PASS
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(cleared == m_subgraph->size());
 	#endif
 

@@ -44,7 +44,7 @@ map<Kmer,int>*coverages){
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
 			Kmer a=trees->at(j).at(i+0);
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(i+1<(int)trees->at(j).size());
 			#endif
 			Kmer b=trees->at(j).at(i+1);
@@ -72,7 +72,7 @@ map<Kmer ,int>*coverages,int repeatCoverage){
 	}
 
 	int m_wordSize=m_parameters->getWordSize();
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	for(int i=0;i<(int)trees->size();i++){
 		for(int j=0;j<(int)trees->at(i).size();j+=2){
 			Kmer a=trees->at(i).at(j+0);
@@ -105,7 +105,7 @@ map<Kmer ,int>*coverages,int repeatCoverage){
 	for(int j=0;j<(int)trees->size();j++){
 		for(int i=0;i<(int)trees->at(j).size();i+=2){
 			Kmer a=trees->at(j).at(i+1);
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(coverages->count(a)==0){
 				cout<<a.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode())<<" has no coverage."<<endl;
 			}
@@ -132,11 +132,11 @@ map<Kmer ,int>*coverages,int repeatCoverage){
 		return false;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(coverages->count(root)>0);
 	assert(coverages->count(target)>0);
 	#endif
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	int rootCoverage=(*coverages)[root];
 	int targetCoverage=(*coverages)[target];
 	assert(rootCoverage>0);

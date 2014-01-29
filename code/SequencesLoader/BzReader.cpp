@@ -62,7 +62,7 @@ char*BzReader::readLine(char*s, int n){
 
 	//cout<<"[BzReader::readLine]"<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(!(n<=__BzReader_MAXIMUM_LENGTH)){
 		cout<<"Expected: "<<__BzReader_MAXIMUM_LENGTH<<" Actual: "<<n<<endl;
 	}

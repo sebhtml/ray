@@ -36,7 +36,7 @@
 #include <stdint.h>
 using namespace std;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 
@@ -45,7 +45,7 @@ __CreatePlugin(CoverageGatherer);
 __CreateSlaveModeAdapter(CoverageGatherer,RAY_SLAVE_MODE_SEND_DISTRIBUTION);
 
 void CoverageGatherer::writeKmers(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	LargeCount n=0;
 	#endif
 
@@ -75,7 +75,7 @@ void CoverageGatherer::writeKmers(){
 		Kmer key=*(iterator.getKey());
 		CoverageDepth coverage=node->getCoverage(&key);
 		m_distributionOfCoverage[coverage]++;
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		n++;
 		#endif
 		string kmerSequence=key.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
@@ -111,7 +111,7 @@ void CoverageGatherer::writeKmers(){
 	flushFileOperationBuffer_FILE(true, &buffer, kmerFile, CONFIG_FILE_IO_BUFFER_SIZE);
 	fclose(kmerFile);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(n!=m_subgraph->size()){
 		cout<<"n="<<n<<" size="<<m_subgraph->size()<<endl;
 	}
@@ -124,7 +124,7 @@ void CoverageGatherer::writeKmers(){
 void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 
 	if(m_distributionOfCoverage.size()==0){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		LargeCount n=0;
 		#endif
 
@@ -143,12 +143,12 @@ void CoverageGatherer::call_RAY_SLAVE_MODE_SEND_DISTRIBUTION(){
 			CoverageDepth coverage=node->getCoverage(&key);
 			m_distributionOfCoverage[coverage]++;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			n++;
 			#endif
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(n!=m_subgraph->size()){
 			cout<<"Expected (from iterator)="<<n<<" Actual (->size())="<<m_subgraph->size()<<endl;
 		}

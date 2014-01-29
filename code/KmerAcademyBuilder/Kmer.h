@@ -33,7 +33,7 @@
 /* this header was missing, but the code compiled with clang++, gcc, intel, pgi, but not pathscale. pathscale was right */
 #include <fstream> 
 #include <vector>
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 #include <string>

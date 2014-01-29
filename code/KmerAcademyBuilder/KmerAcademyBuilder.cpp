@@ -63,7 +63,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_pendingMessages>=0);
 	#endif
 	if(m_inbox->size()>0&&m_inbox->at(0)->getTag()==RAY_MPI_TAG_VERTICES_DATA_REPLY){
@@ -98,7 +98,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 		// flush data
 		flushAll(m_outboxAllocator,m_outbox,m_parameters->getRank());
 		if(m_pendingMessages==0){
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_bufferedData.isEmpty());
 			#endif
 
@@ -136,7 +136,7 @@ void KmerAcademyBuilder::call_RAY_SLAVE_MODE_ADD_VERTICES(){
 		char memory[CONFIG_MAXKMERLENGTH+1];
 		int maximumPosition=len-m_parameters->getWordSize()+1;
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_readSequence!=NULL);
 		#endif
 
@@ -246,7 +246,7 @@ SlaveMode*mode,RingAllocator*outboxAllocator){
 }
 
 void KmerAcademyBuilder::setReadiness(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_pendingMessages>0);
 	#endif
 	m_pendingMessages--;
@@ -274,7 +274,7 @@ void KmerAcademyBuilder::incrementPendingMessages(){
 }
 
 void KmerAcademyBuilder::showBuffers(){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_bufferedData.isEmpty());
 	#endif
 }

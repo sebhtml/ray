@@ -210,7 +210,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
  * 			m_hitNames
  * 			m_hitLengths
  */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_hits.size()==m_hitLengths.size());
 		assert(m_hitLengths.size()==m_hitNames.size());
 		assert(m_hitIterator == (int)m_hitLengths.size());
@@ -227,7 +227,7 @@ TODO: does the code pay attention when the coverage indicates a repeated k-mer ?
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(hit != m_identifier);
 			#endif
 

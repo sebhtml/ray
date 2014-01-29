@@ -72,7 +72,7 @@ void EdgePurger::call_RAY_SLAVE_MODE_PURGE_NULL_EDGES(){
 		MessageUnit*buffer=message->getBuffer();
 		LargeCount numberOfVertices=buffer[0];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(source>=0);
 		assert(source<(int)m_graphSizes.size());
 		#endif
@@ -148,7 +148,7 @@ Worker* EdgePurger::assignNextTask(){
 	cout<<"EdgePurger::assignNextTask"<<endl;
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_graphIterator.hasNext());
 	#endif
 
@@ -162,7 +162,7 @@ Worker* EdgePurger::assignNextTask(){
 
 	m_SEEDING_i++;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(worker != NULL);
 	#endif
 

@@ -251,7 +251,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 	if(m_activeWorkerIterator!=m_activeWorkers.end()){
 		WorkerHandle workerId=*m_activeWorkerIterator;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(m_aliveWorkers.count(workerId)==0){
 			cout<<"Error: "<<workerId<<" is not in alive workers "<<m_activeWorkers.size()<<endl;
 		}
@@ -286,7 +286,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 			if(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size()
 				&&(int)m_aliveWorkers.size()<m_maximumAliveWorkers){
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_SEEDING_i==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
@@ -339,7 +339,7 @@ void Library::call_RAY_SLAVE_MODE_AUTOMATIC_DISTANCE_DETECTION(){
 		m_activeWorkerIterator=m_activeWorkers.begin();
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
 	#endif
 
@@ -431,7 +431,7 @@ Parameters*m_parameters,SeedingData*m_seedingData,StaticVector*inbox,VirtualComm
 	m_ranksThatReplied=0;
 	this->m_outbox=m_outbox;
 	this->m_outboxAllocator=m_outboxAllocator;
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(this->m_outboxAllocator!=NULL);
 	#endif
 	this->m_ed=m_ed;
@@ -523,7 +523,7 @@ void Library::updateStates(){
 	for(int i=0;i<(int)m_workersDone.size();i++){
 		WorkerHandle workerId=m_workersDone[i];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		assert(m_aliveWorkers.count(workerId)>0);
 		#endif
@@ -542,7 +542,7 @@ void Library::updateStates(){
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
 		WorkerHandle workerId=m_waitingWorkers[i];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.count(workerId)>0);
 		#endif
 

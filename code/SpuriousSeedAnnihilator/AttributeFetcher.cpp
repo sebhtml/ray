@@ -52,7 +52,7 @@ bool AttributeFetcher::fetchObjectMetaData(Kmer * object){
 		uint8_t edges = elements[bufferPosition++];
 
 		m_depth=elements[bufferPosition++];
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(m_depth>= 1);
 #endif
 

@@ -55,7 +55,7 @@ void SequencesLoader::registerSequence(){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_distribution_sequence_id<m_loader.size());
 	#endif
 
@@ -73,13 +73,13 @@ void SequencesLoader::registerSequence(){
 		ReadHandle leftSequenceGlobalId=m_distribution_currentSequenceId;
 		LargeIndex leftSequenceIdOnRank=m_myReads->size()-1;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_loader.size()!=0);
 		#endif
 
 		ReadHandle rightSequenceGlobalId=leftSequenceGlobalId+m_loader.size();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(leftSequenceGlobalId<rightSequenceGlobalId);
 		assert(leftSequenceGlobalId>=0);
 		assert(leftSequenceGlobalId<m_totalNumberOfSequences);
@@ -89,7 +89,7 @@ void SequencesLoader::registerSequence(){
 
 		int rightSequenceRank=m_parameters->getRankFromGlobalId(rightSequenceGlobalId);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(rightSequenceRank>=m_size){
 			cout<<"m_distribution_currentSequenceId="<<m_distribution_currentSequenceId<<" m_distribution_sequence_id="<<m_distribution_sequence_id<<" LoaderSize="<<m_loader.size()<<" Rank="<<rightSequenceRank<<" Size="<<m_size<<endl;
 			assert(rightSequenceRank<m_size);
@@ -104,7 +104,7 @@ void SequencesLoader::registerSequence(){
 		(*m_myReads)[leftSequenceIdOnRank]->getPairedRead()->constructor(rightSequenceRank,rightSequenceIdOnRank,library);
 	}else if(m_LOADER_isRightFile){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_loader.size()!=0);
 		#endif
 
@@ -112,7 +112,7 @@ void SequencesLoader::registerSequence(){
 		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
 		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-m_loader.size();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(leftSequenceGlobalId>=0);
 
 		if(leftSequenceGlobalId>=m_totalNumberOfSequences){
@@ -131,7 +131,7 @@ void SequencesLoader::registerSequence(){
 		#endif
 
 		Rank leftSequenceRank=m_parameters->getRankFromGlobalId(leftSequenceGlobalId);
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(leftSequenceRank>=m_size){
 			cout<<"Global="<<leftSequenceGlobalId<<" rank="<<leftSequenceRank<<endl;
 		}
@@ -146,7 +146,7 @@ void SequencesLoader::registerSequence(){
 	}else if(m_isInterleavedFile && ((m_distribution_sequence_id)%2)==0){
 		ReadHandle rightSequenceGlobalId=(m_distribution_currentSequenceId)+1;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(rightSequenceGlobalId>=0);
 		assert(rightSequenceGlobalId<m_totalNumberOfSequences);
 		#endif
@@ -167,7 +167,7 @@ void SequencesLoader::registerSequence(){
 		LargeIndex rightSequenceIdOnRank=m_myReads->size()-1;
 		ReadHandle leftSequenceGlobalId=rightSequenceGlobalId-1;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(leftSequenceGlobalId>=0);
 		assert(leftSequenceGlobalId<m_totalNumberOfSequences);
 		assert(rightSequenceGlobalId>=0);
@@ -219,7 +219,7 @@ bool SequencesLoader::writeSequencesToAMOSFile(int rank,int size,
 				ReadHandle iid=m_distribution_currentSequenceId;
 				m_distribution_currentSequenceId++;
 				m_loader.at(i)->getSeq(seq,m_parameters->getColorSpaceMode(),true);
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(seq!=NULL);
 				#endif
 				strcpy(qlt,seq);
@@ -306,7 +306,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 		m_distribution_file_id++){
 
 		/** should not load more sequences than required */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_myReads->size()<=sequences);
 		#endif
 
@@ -340,7 +340,7 @@ bool SequencesLoader::call_RAY_SLAVE_MODE_LOAD_SEQUENCES(){
 			m_loader.at(m_distribution_sequence_id);
 
 			if(m_distribution_currentSequenceId>=startingSequenceId){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_distribution_currentSequenceId>=startingSequenceId);
 				assert(m_distribution_currentSequenceId<=endingSequenceId);
 				#endif
@@ -404,7 +404,7 @@ void SequencesLoader::call_RAY_MPI_TAG_SET_FILE_ENTRIES(Message*message){
 
 	MessageUnit*incoming=(MessageUnit*)message->getBuffer();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(message->getCount()>=2);
 	assert(message->getCount()%2==0);
 	#endif

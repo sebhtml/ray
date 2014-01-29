@@ -33,7 +33,7 @@
 #include <sstream>
 using namespace std;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 
@@ -83,7 +83,7 @@ void MachineHelper::call_RAY_MPI_TAG_EXTENSION_DATA_END(Message*message){
  */
 void MachineHelper::call_RAY_MASTER_MODE_LOAD_CONFIG(){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(this!=NULL);
 	#endif
 

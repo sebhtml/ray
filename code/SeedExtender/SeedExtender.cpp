@@ -205,7 +205,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=true;
 				(*receivedVertexCoverage)=*(m_cache.find(kmer,false)->getValue());
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert((CoverageDepth)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
@@ -214,7 +214,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 				(*vertexCoverageReceived)=true;
 				(*receivedVertexCoverage)=*(m_cache.find(reverseComplement,false)->getValue());
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert((CoverageDepth)(*receivedVertexCoverage)<=m_parameters->getMaximumAllowedCoverage());
 				#endif
 
@@ -242,7 +242,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 
 				CoverageDepth coverageValue=*receivedVertexCoverage;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 
 				if(coverageValue==0){
 					Rank dest=m_parameters->vertexRank(&kmer);
@@ -293,7 +293,7 @@ bool*vertexCoverageReceived,int size,int*receivedVertexCoverage,Chooser*chooser,
 			ed->m_EXTENSION_pairedLibrariesForVertices.clear();
 			ed->m_EXTENSION_pairedReadsForVertices.clear();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(ed->m_EXTENSION_coverages.size()==ed->m_enumerateChoices_outgoingEdges.size());
 			#endif
 		}
@@ -352,7 +352,7 @@ int*receivedVertexCoverage,bool*edgesReceived,vector<Kmer>*receivedOutgoingEdges
 				ReadHandle uniqueId=*(ed->m_EXTENSION_readIterator);
 				ExtensionElement*element=ed->getUsedRead(uniqueId);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(element!=NULL);
 				#endif
 
@@ -379,14 +379,14 @@ Presently, insertions or deletions up to 8 are supported.
 				int currentPosition=ed->m_EXTENSION_extension.size();
 				int distance=currentPosition-startPosition+element->getStrandPosition();
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(startPosition<(int)ed->m_extensionCoverageValues.size());
 				#endif
 
 				element->getSequence(m_receivedString,m_parameters);
 				char*theSequence=m_receivedString;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(theSequence!=NULL);
 				#endif
 
@@ -398,7 +398,7 @@ Presently, insertions or deletions up to 8 are supported.
 					cout<<ed->m_EXTENSION_receivedLength<<", k-mer length: ";
 					cout<<wordSize<<endl;
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(false);
 					#endif
 
@@ -409,7 +409,7 @@ Presently, insertions or deletions up to 8 are supported.
 
 				char theRightStrand=element->getStrand();
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(theRightStrand=='R'||theRightStrand=='F');
 				assert(element->getType()==TYPE_SINGLE_END||element->getType()==TYPE_RIGHT_END||element->getType()==TYPE_LEFT_END);
 				#endif
@@ -581,7 +581,7 @@ Presently, insertions or deletions up to 8 are supported.
 						m_ed->m_pairedReadsWithoutMate.erase(uniqueId);
 
 						// free the sequence
-						#ifdef ASSERT
+						#ifdef CONFIG_ASSERT
 						if(element==NULL){
 							cout<<"element "<<uniqueId<<" not found now="<<m_ed->m_EXTENSION_extension.size()-1<<""<<endl;
 						}
@@ -639,7 +639,7 @@ Presently, insertions or deletions up to 8 are supported.
 						cout<<"Selection: "<<choice+1<<endl;
 					}
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(choice<(int)ed->m_enumerateChoices_outgoingEdges.size());
 					#endif
 
@@ -692,7 +692,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 	m_parameters);
 					}
 				}else{
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(!m_dfsData->m_depthFirstSearchVisitedVertices_vector.empty());
 					#endif
 
@@ -862,7 +862,7 @@ size,theRank,outbox,receivedVertexCoverage,receivedOutgoingEdges,minimumCoverage
 			if(verbose)
 				cout<<"Rank "<<m_parameters->getRank()<<" is changing direction."<<endl;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_complementedSeed.size() == (int)ed->m_EXTENSION_extension.size());
 			#endif
 
@@ -930,11 +930,11 @@ map<Kmer,set<Kmer> >*arcs,map<Kmer,int>*coverages,int depth,set<Kmer>*visited){
 			printf(" ");
 		Kmer child=*i;
 		string s=child.idToWord(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(coverages->count(*i)>0);
 		#endif
 		int coverage=(*coverages)[*i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(coverages>0);
 		#endif
 		printf("%s coverage: %i depth: %i\n",s.c_str(),coverage,depth);
@@ -1336,7 +1336,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				m_currentPeakCoverage=m_ed->m_EXTENSION_currentSeed.getPeakCoverage();
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_currentPeakCoverage>=2);
 				#endif
 
@@ -1357,7 +1357,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		PathHandle waveId=getPathUniqueId(theRank,ed->m_EXTENSION_currentSeedIndex);
 
 		// save wave progress.
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert((int)getIdFromPathUniqueId(waveId)==ed->m_EXTENSION_currentSeedIndex);
 		assert((int)getRankFromPathUniqueId(waveId)==theRank);
 		assert(theRank<size);
@@ -1453,7 +1453,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 		ed->m_EXTENSION_extension.push_back((currentVertex));
 		ed->m_extensionCoverageValues.push_back(*receivedVertexCoverage);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(ed->m_currentCoverage > m_parameters->getMaximumAllowedCoverage())
 			cout<<"Error: m_currentCoverage= "<<ed->m_currentCoverage<<" getMaximumAllowedCoverage: "<<m_parameters->getMaximumAllowedCoverage()<<endl;
 		assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
@@ -1563,7 +1563,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 				SplayNode<ReadHandle,Read>*node=m_cacheForRepeatedReads.find(uniqueId,false);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(node!=NULL);
 				#endif
 
@@ -1576,7 +1576,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 					pr=&dummy;
 				}
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(pr!=NULL);
 				#endif
 				ed->m_EXTENSION_pairedRead=*pr;
@@ -1591,7 +1591,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 				m_sequenceRequested=true;
 				m_sequenceReceived=false;
 				int sequenceRank=ed->m_EXTENSION_receivedReads[m_sequenceIndexToCache].getRank();
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(sequenceRank>=0);
 				assert(sequenceRank<size);
 				#endif
@@ -1725,7 +1725,7 @@ BubbleData*bubbleData,int minimumCoverage,OpenAssemblerChooser*oa,int wordSize,v
 
 					MACRO_COLLECT_PROFILING_INFORMATION();
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					element->getSequence(m_receivedString,m_parameters);
 					assert(readLength==(int)strlen(m_receivedString));
 					#endif
@@ -1870,7 +1870,7 @@ void SeedExtender::configureTheBeautifulHotSkippingTechnology(){
 }
 
 void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(ed->m_enumerateChoices_outgoingEdges.size()==ed->m_EXTENSION_coverages.size());
 	#endif
 
@@ -1879,7 +1879,7 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 	cout<<endl;
 	cout<<"*****************************************"<<endl;
 	cout<<"CurrentVertex="<<currentVertex->idToWord(wordSize,m_parameters->getColorSpaceMode())<<" @"<<ed->m_EXTENSION_extension.size()<<endl;
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(ed->m_currentCoverage<=m_parameters->getMaximumAllowedCoverage());
 	#endif
 	cout<<"Coverage="<<ed->m_currentCoverage<<endl;
@@ -1895,7 +1895,7 @@ void SeedExtender::inspect(ExtensionData*ed,Kmer*currentVertex){
 		cout<<endl;
 		cout<<"Choice #"<<i+1<<endl;
 		cout<<"Vertex: "<<vertex<<endl;
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(i>=(int)ed->m_EXTENSION_coverages.size()){
 			cout<<"Error: i="<<i<<" Size="<<ed->m_EXTENSION_coverages.size()<<endl;
 		}
@@ -2093,7 +2093,7 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 	cout<<"Rank "<<m_parameters->getRank()<<" is reading checkpoint Extensions"<<endl;
 	ifstream f(m_parameters->getCheckpointFile("Extensions").c_str());
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ed->m_EXTENSION_contigs.size()==0);
 	#endif
 
@@ -2103,7 +2103,7 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 	for(int i=0;i<count;i++){
 		int length=0;
 		f.read((char*)&length,sizeof(int));
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(length>0);
 		#endif
 		GraphPath extension;
@@ -2125,7 +2125,7 @@ void SeedExtender::readCheckpoint(FusionData*fusionData){
 
 	cout<<"Rank "<<m_parameters->getRank()<<" loaded "<<count<<" extensions from checkpoint Extensions"<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count==(int)m_ed->m_EXTENSION_contigs.size());
 	assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
 	#endif
@@ -2246,7 +2246,7 @@ void SeedExtender::processExpiredReads(){
 
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(element!=NULL);
 		#endif
 
@@ -2255,7 +2255,7 @@ void SeedExtender::processExpiredReads(){
 		if(read==NULL){
 			continue;
 		}
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(read!=NULL);
 		#endif
 
@@ -2276,7 +2276,7 @@ void SeedExtender::printSeed(){
 
 	int position=m_ed->m_EXTENSION_currentSeed.size()-1;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(position>=0);
 	#endif
 
@@ -2375,7 +2375,7 @@ int SeedExtender::chooseWithSeed(){
 
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_ed->m_EXTENSION_coverages.size()==m_ed->m_enumerateChoices_outgoingEdges.size());
 		#endif
 
@@ -2392,7 +2392,7 @@ int SeedExtender::chooseWithSeed(){
 		//int last=100;
 		int position=m_ed->m_EXTENSION_extension.size()-1;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(position>=0);
 		#endif
 
@@ -2418,7 +2418,7 @@ int SeedExtender::chooseWithSeed(){
 
 		cout<<"Exiting..."<<endl;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(false);
 		#endif
 	}
@@ -2467,7 +2467,7 @@ void SeedExtender::finalizeExtensions(vector<GraphPath>*seeds,FusionData*fusionD
 		fusionData->m_FUSION_identifier_map[id]=i;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ed->m_EXTENSION_identifiers.size()==m_ed->m_EXTENSION_contigs.size());
 	#endif
 
@@ -2554,7 +2554,7 @@ void SeedExtender::call_RAY_MPI_TAG_ASK_IS_ASSEMBLED(Message*message){
 
 	Rank origin=incoming[pos++];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	Vertex*node=m_subgraph->find(&vertex);
 	assert(node!=NULL);
 	#endif
@@ -2611,7 +2611,7 @@ void SeedExtender::call_RAY_MPI_TAG_ADD_GRAPH_PATH(Message*message){
 		string file=fileName.str();
 		m_pathFile.open(file.c_str(),ios_base::app);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pathFile.is_open());
 		#endif
 

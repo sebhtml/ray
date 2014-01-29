@@ -205,7 +205,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_READ_MARKERS(Message*message){
 	int outputPosition=0;
 	for(int i=0;i<count;i++){
 		int readId=incoming[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(readId>=(int)m_myReads->size())
 			cout<<"Fatal Error: ReadIndex: "<<readId<<" but Reads: "<<m_myReads->size()<<endl;
 		assert(readId<(int)m_myReads->size());
@@ -289,7 +289,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	int OFFSET_POSITION_ON_STRAND=offset++;
 	int OFFSET_STRAND=offset++;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(OFFSET_STRAND < period);
 	assert(message->getCount()%period ==0);
 	#endif
@@ -301,7 +301,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 	}
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(period>=5);
 	#endif
 
@@ -317,7 +317,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 		uint64_t integerValue=buffer[bufferPosition++];
 		unpack_pointer((void**)&ptr, integerValue);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		// check the padding
 
 		int start=KMER_U64_ARRAY_SIZE+1;
@@ -355,7 +355,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_READS(Message*message){
 
 			int rank=ptr->getRank();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(rank>=0&&rank<m_parameters->getSize());
 			#endif
 
@@ -432,7 +432,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS(Message*message){
 	ReadAnnotation*e=(ReadAnnotation*)incoming[pos++];
 	ReadAnnotation*origin=e;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(e!=NULL);
 	#endif
 
@@ -476,7 +476,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_INFO(Message*message){
 	bool lower=vertex<complement;
 	Vertex*node=m_subgraph->find(&vertex);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(node!=NULL);
 	#endif
 
@@ -560,7 +560,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTEX_READS_FROM_LIST(Message*message){
 	int numberOfMates=incoming[KMER_U64_ARRAY_SIZE+1];
 	bool lower=vertex<complement;
 	ReadAnnotation*e=(ReadAnnotation*)incoming[KMER_U64_ARRAY_SIZE+0];
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(e!=NULL);
 	#endif
 	MessageUnit*outgoingMessage=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
@@ -630,7 +630,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 				tmp->addOutgoingEdge(&kmer,&child,m_parameters->getWordSize());
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			vector<Kmer> parentKmers=tmp->getIngoingEdges(&kmer,m_parameters->getWordSize());
 			vector<Kmer> childKmers=tmp->getOutgoingEdges(&kmer,m_parameters->getWordSize());
 			if((int)parentKmers.size()!=parents){
@@ -646,7 +646,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_INDEXING_SEQUENCES(Message*message
 		/* Otherwise, the code will fail later on */
 		m_subgraph->completeResizing();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_subgraph->size()==n);
 		#endif
 
@@ -702,7 +702,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 /* make sure that the payload
  * is for this process and not another one...
  */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		Rank rankToFlush=kmerObject.vertexRank(m_parameters->getSize(),m_parameters->getWordSize(),
 			m_parameters->getColorSpaceMode());
 
@@ -727,7 +727,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
  * the source code to enable odd k-mer length
  * values
  */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(reverseComplement!=kmerObject);
 		#endif
 
@@ -766,7 +766,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
  */
 		Vertex*tmp=m_subgraph->insert(&kmerObject);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(tmp!=NULL);
 		#endif
 
@@ -811,7 +811,7 @@ void MessageProcessor::call_RAY_MPI_TAG_VERTICES_DATA(Message*message){
 void MessageProcessor::call_RAY_MPI_TAG_PURGE_NULL_EDGES(Message*message){
 
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph, m_parameters->getWordSize(),m_parameters);
 
@@ -941,7 +941,7 @@ void MessageProcessor::call_RAY_MPI_TAG_IN_EDGES_DATA(Message*message){
  * Make sure that the edge was added.
  */
 //#define ASSERT_123
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		vector<Kmer> inEdges=node->getIngoingEdges(&suffix,m_parameters->getWordSize());
 		bool found=false;
 		for(int j=0;j<(int)inEdges.size();j++){
@@ -989,7 +989,7 @@ void MessageProcessor::call_RAY_MPI_TAG_PREPARE_COVERAGE_DISTRIBUTION(Message*me
 		uint64_t setBits=m_bloomFilter.getNumberOfSetBits();
 		uint64_t bits=m_bloomFilter.getNumberOfBits();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bits>0);
 		assert(bits==m_bloomBits);
 		#endif
@@ -1120,7 +1120,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 				ReadAnnotation*marker=
 					(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(marker!=NULL);
 				#endif
 
@@ -1128,7 +1128,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 
 				Vertex*node=m_subgraph->find(&kmer);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(node==NULL){
 					cout<<"Not found: "<<kmer.idToWord(m_parameters->getWordSize(),
 						m_parameters->getColorSpaceMode())<<endl;
@@ -1187,7 +1187,7 @@ void MessageProcessor::call_RAY_MPI_TAG_START_SEEDING(Message*message){
 		cout<<"Rank "<<m_parameters->getRank()<<": memory usage for  optimal read markers= "<<allocatedBytes/1024<<" KiB"<<endl;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_subgraph!=NULL);
 	#endif
 }
@@ -1201,7 +1201,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_COVERAGE_AND_MARK(Message*message){
 	vertex.unpack(incoming,&bufferPosition);
 	Vertex*node=m_subgraph->find(&vertex);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(node!=NULL);
 	#endif
 
@@ -1243,7 +1243,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE(Message*message)
 		if(node!=NULL){
 			coverage=node->getCoverage(&vertex);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(coverage!=0);
 			#endif
 		}
@@ -1259,7 +1259,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_REPLY(Message*me
 	void*buffer=message->getBuffer();
 	MessageUnit*incoming=(MessageUnit*)buffer;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	#endif
 
 	(m_seedingData->m_SEEDING_receivedVertexCoverage)=incoming[0];
@@ -1304,7 +1304,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_EDGES(Message*message){
 
 	Vertex*node=m_subgraph->find(&vertex);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(node!=NULL);
 	#endif
 
@@ -1430,7 +1430,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int count=message->getCount();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(count*5*sizeof(MessageUnit)>MAXIMUM_MESSAGE_SIZE_IN_BYTES){
 		cout<<"Count="<<count<<endl;
 	}
@@ -1443,7 +1443,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_VERTEX_INGOING_EDGES(Message*mes
 		int pos=i;
 		vertex.unpack(incoming,&pos);
 		Vertex*node=m_subgraph->find(&vertex);
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(node==NULL){
 			cout<<"Rank="<<m_rank<<" "<<vertex.idToWord(m_parameters->getWordSize(),
 					m_parameters->getColorSpaceMode())<<" does not exist."<<endl;
@@ -1546,7 +1546,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ATTACH_SEQUENCE(Message*message){
 
 		ReadAnnotation*e=(ReadAnnotation*)m_si->getAllocator()->allocate(sizeof(ReadAnnotation));
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(e!=NULL);
 		#endif
 		e->constructor(rank,sequenceIdOnDestination,positionOnStrand,strand,lower);
@@ -1588,11 +1588,11 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_READ_LENGTH(Message*message){
 	Rank source=message->getSource();
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int index=incoming[0];
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 	Read*read=(*m_myReads)[index];
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(read!=NULL);
 	#endif
 	int length=read->length();
@@ -1654,7 +1654,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 		Kmer rc=m_parameters->_complementVertex(&vertex);
 		bool lower=vertex<rc;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		Vertex*node=m_subgraph->find(&vertex);
 		if(node==NULL){
 			cout<<"Error: vertex does not exist: "<<vertex.idToWord(m_parameters->getWordSize(),
@@ -1669,7 +1669,7 @@ void MessageProcessor::call_RAY_MPI_TAG_SAVE_WAVE_PROGRESSION(Message*message){
 
 		PathHandle wave=incoming[pos++];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(getRankFromPathUniqueId(wave)>=m_size){
 			cout<<"Invalid rank: "<<getRankFromPathUniqueId(wave)<<" maximum is "<<m_size-1<<endl;
 		}
@@ -1745,7 +1745,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_SIZE(Message*message){
 		Kmer vertex;
 		vertex.unpack(incoming,&pos);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		Vertex*node=m_subgraph->find(&vertex);
 		if(node==NULL){
 			cout<<"Source="<<message->getSource()<<" Destination="<<m_rank<<" "<<vertex.idToWord(m_parameters->getWordSize(),
@@ -1788,7 +1788,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_LENGTH(Message*message){
 
 		if(m_fusionData->m_FUSION_identifier_map.count(id)>0){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_fusionData->m_FUSION_identifier_map[id] < (int) m_ed->m_EXTENSION_contigs.size());
 			#endif
 
@@ -1871,14 +1871,14 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 	outputPosition++;
 
 	while(firstPathId<(int)paths.size() && (outputPosition+2)<availableElements){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(firstPathId<(int)paths.size());
 		#endif
 
 		PathHandle pathId=paths[firstPathId].getWave().getValue();
 		int progression=paths[firstPathId].getProgression();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(getRankFromPathUniqueId(pathId)>=m_size){
 			cout<<"Invalid rank: "<<getRankFromPathUniqueId(pathId)<<" maximum is "<<m_size-1<<" Index: "<<firstPathId<<" Total: "<<paths.size()<<" Progression: "<<progression<<endl;
 		}
@@ -1892,7 +1892,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS(Message*message){
 
 	message2[origin]=firstPathId;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(outputPosition<=availableElements);
 	assert(source<m_size);
 	#endif
@@ -1919,7 +1919,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY(Message*message){
 	pos++;
 	for(int i=pos;i<count;i+=2){
 		PathHandle pathId=incoming[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(getRankFromPathUniqueId(pathId)<m_size);
 		#endif
 		int position=incoming[i+1];
@@ -1947,7 +1947,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATHS_REPLY_END(Message*messa
 	bool lower=vertex<complement;
 	for(int i=bufferPosition;i<count;i+=2){
 		PathHandle pathId=incoming[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(getRankFromPathUniqueId(pathId)<m_size);
 		#endif
 		int position=incoming[i+1];
@@ -1968,7 +1968,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 	int outputPosition=0;
 	MessageUnit*message2=(MessageUnit*)m_outboxAllocator->allocate(count*sizeof(MessageUnit));
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count % elementsPerItem == 0);
 	#endif
 
@@ -1976,7 +1976,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 		Kmer kmer;
 		kmer.unpack(incoming,&pos);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		Vertex*node=m_subgraph->find(&kmer);
 		assert(node!=NULL);
 		#endif
@@ -1987,7 +1987,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 		/* increment because there is padding */
 		pos++;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(indexInArray<(int)paths.size());
 		#endif
 
@@ -1995,7 +1995,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH(Message*message){
 		kmer.pack(message2,&outputPosition);
 		message2[outputPosition++]=d.getWave().getValue();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		Rank rank=getRankFromPathUniqueId(d.getWave());
 		if(rank>=m_size){
 			cout<<"Fatal error: rank: "<<rank<<endl;
@@ -2021,7 +2021,7 @@ void MessageProcessor::call_RAY_MPI_TAG_ASK_VERTEX_PATH_REPLY(Message*message){
 	bool lower=vertex<complement;
 	MessageUnit pathId=incoming[pos];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getRankFromPathUniqueId(pathId)<m_size);
 	#endif
 
@@ -2037,7 +2037,7 @@ void MessageProcessor::call_RAY_MPI_TAG_HAS_PAIRED_READ(Message*message){
 	int count=message->getCount();
 	for(int i=0;i<count;i++){
 		int index=incoming[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(index<(int)m_myReads->size());
 		#endif
 		message2[i]=(*m_myReads)[index]->hasPairedRead();
@@ -2059,7 +2059,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int index=incoming[0];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 
@@ -2070,7 +2070,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PAIRED_READ(Message*message){
 		t=&dummy;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(t!=NULL);
 	#endif
 
@@ -2100,7 +2100,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	// clearing old data too!.
 	m_fusionData->m_FINISH_pathLengths.clear();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ed->m_EXTENSION_contigs.size()==m_ed->m_EXTENSION_identifiers.size());
 	#endif
 
@@ -2108,7 +2108,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	GridTableIterator iterator;
 	iterator.constructor(m_subgraph, m_parameters->getWordSize(), m_parameters);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	LargeCount cleared=0;
 	#endif
 
@@ -2117,7 +2117,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 		Kmer key=*(iterator.getKey());
 		m_subgraph->clearDirections(&key);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		cleared++;
 
 		Vertex*node=m_subgraph->find(&key);
@@ -2126,7 +2126,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 		#endif
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(cleared != m_subgraph->size()){
 		cout<<"Hilarious error: cleared, expected: "<<m_subgraph->size()<<", actual: "<<cleared<<endl;
 	}
@@ -2182,7 +2182,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	for(int i=0;i<(int)fusions.size();i++){
 		PathHandle id=getPathUniqueId(m_rank,i);
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_rank<m_size);
 		assert(m_rank>=0);
 		assert(m_size>=1);
@@ -2193,7 +2193,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 
 	m_fusionData->m_FUSION_identifier_map.clear();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_fusionData->m_FUSION_identifier_map.size()==0);
 	#endif
 
@@ -2205,7 +2205,7 @@ void MessageProcessor::call_RAY_MPI_TAG_CLEAR_DIRECTIONS(Message*message){
 	(m_ed->m_EXTENSION_contigs).clear();
 	(m_ed->m_EXTENSION_contigs)=fusions;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ed->m_EXTENSION_contigs.size()==m_ed->m_EXTENSION_identifiers.size());
 	assert(m_fusionData->m_FUSION_identifier_map.size()==m_ed->m_EXTENSION_contigs.size());
 	#endif
@@ -2264,7 +2264,7 @@ void MessageProcessor::call_RAY_MPI_TAG_EXTENSION_START(Message*message){
 
 	PathHandle id=incoming[0];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	Rank rank=getRankFromPathUniqueId(id);
 	assert(rank<m_size);
 	#endif
@@ -2291,7 +2291,7 @@ void MessageProcessor::call_RAY_MPI_TAG_GET_PATH_VERTEX(Message*message){
 		PathHandle id=incoming[i];
 		int position=incoming[i+1];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_fusionData->m_FUSION_identifier_map.count(id)>0);
 		if(position>=(int)(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()){
 			cout<<"Pos="<<position<<" Length="<<(m_ed->m_EXTENSION_contigs)[m_fusionData->m_FUSION_identifier_map[id]].size()<<endl;
@@ -2381,7 +2381,7 @@ void MessageProcessor::call_RAY_MPI_TAG_UPDATE_LIBRARY_INFORMATION(Message*messa
 
 		int library=incoming[i+0];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_parameters->isAutomatic(library));
 		#endif
 
@@ -2415,7 +2415,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 	MessageUnit*incoming=(MessageUnit*)buffer;
 	int index=incoming[0];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(index<(int)m_myReads->size());
 	#endif
 
@@ -2426,7 +2426,7 @@ void MessageProcessor::call_RAY_MPI_TAG_REQUEST_READ_SEQUENCE(Message*message){
 		t=&dummy;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(t!=NULL);
 	#endif
 

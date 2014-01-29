@@ -59,7 +59,7 @@ void Vertex::assemble(Rank origin){
 	if(origin>m_assembled)
 		m_assembled=origin;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_assembled!=__NO_ORIGIN);
 	#endif
 }
@@ -178,7 +178,7 @@ void Vertex::addRead(Kmer*vertex,ReadAnnotation*e){
 }
 
 void Vertex::addDirection(Kmer*vertex,Direction*e){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	Vertex copy0=*this;
 
 	if(m_directions != NULL){
@@ -195,7 +195,7 @@ void Vertex::addDirection(Kmer*vertex,Direction*e){
 	e->setNext(m_directions);
 	m_directions=e;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_directions != NULL);
 	#endif
 }
@@ -224,7 +224,7 @@ vector<Direction> Vertex::getDirections(Kmer*vertex){
 	#endif
 
 	while(e!=NULL){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(e!=NULL);
 		#endif
 
@@ -243,7 +243,7 @@ vector<Direction> Vertex::getDirections(Kmer*vertex){
 		e=e->getNext();
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(e==NULL);
 	#endif
 
@@ -365,7 +365,7 @@ uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2) const {
 	int bit1Value=((uint64_t)map<<(63-bit1))>>63;
 	int bit2Value=((uint64_t)map<<(63-bit2))>>63;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(bit1>=0);
 	assert(bit1<8);
 	assert(bit2>=0);
@@ -378,7 +378,7 @@ uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2) const {
 	if(bit1Value==bit2Value)
 		return map;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(bit1Value+bit2Value!=1){
 		cout<<"bit values: "<<bit1Value<<" "<<bit2Value<<endl;
 	}
@@ -400,7 +400,7 @@ uint8_t Vertex::swapBits(uint8_t map,int bit1,int bit2) const {
 		map&=~(1<<bit2);
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	int newBit1Value=((uint64_t)map<<(63-bit1))>>63;
 	int newBit2Value=((uint64_t)map<<(63-bit2))>>63;
 

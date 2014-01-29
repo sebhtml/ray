@@ -25,7 +25,7 @@
 #include <RayPlatform/memory/allocator.h>
 
 #include <iostream>
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 using namespace std;
@@ -47,7 +47,7 @@ false positive rate = 0.00846 = 0.846%
 
 	m_bits=numberOfBits; /* 500 000 000 */
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(numberOfBits>0);
 	#endif
 
@@ -78,7 +78,7 @@ ULL means unsigned long long, it is necessary on some architectures
 	m_hashNumbers[m_hashFunctions++]=0x9007d0caef749698ULL;
 	m_hashNumbers[m_hashFunctions++]=0x4e4100a5605ef967ULL;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_hashFunctions == 8);
 	#endif
 
@@ -108,7 +108,7 @@ ULL means unsigned long long, it is necessary on some architectures
 
 #endif /* CONFIG_VERBOSE_BLOOM_FILTER */
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(required8Bytes > 0);
 	assert(m_bitmap != NULL);
 	#endif
@@ -132,7 +132,7 @@ bool BloomFilter::hasValue(Kmer*kmer){
 		int bitInChunk=bit%64;
 		int bitValue=(m_bitmap[chunk] << (63-bitInChunk)) >> 63;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bitValue == 0 || bitValue == 1);
 		#endif
 
@@ -140,7 +140,7 @@ bool BloomFilter::hasValue(Kmer*kmer){
 		if(bitValue == 0)
 			return false;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bitValue == 1);
 		#endif
 	}
@@ -153,7 +153,7 @@ void BloomFilter::insertValue(Kmer*kmer){
 
 	uint64_t origin = kmer->hash_function_2();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_hashFunctions == 8);
 	#endif
 
@@ -179,7 +179,7 @@ void BloomFilter::insertValue(Kmer*kmer){
 
 		m_bitmap[chunk] |= filter;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		int bitValue=(m_bitmap[chunk] << (63-bitInChunk)) >> 63;
 		if(bitValue != 1)
 			cout<<"Fatal: bit is "<<bitValue<<" but should be 1 bit="<<bit<<" chunk="<<chunk<<" bitInChunk="<<bitInChunk<<" chunkContent="<<m_bitmap[chunk]<<" filter="<<filter<<endl;
@@ -192,7 +192,7 @@ void BloomFilter::insertValue(Kmer*kmer){
 		m_numberOfSetBits++;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasValue(kmer));
 	#endif
 
@@ -201,7 +201,7 @@ void BloomFilter::insertValue(Kmer*kmer){
 
 void BloomFilter::destructor(){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_bitmap != NULL);
 	assert(m_hashFunctions > 0);
 	assert(m_bits > 0);
@@ -212,7 +212,7 @@ void BloomFilter::destructor(){
 	m_bits=0;
 	m_hashFunctions=0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_bitmap == NULL);
 	#endif
 }

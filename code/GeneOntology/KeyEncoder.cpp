@@ -27,7 +27,7 @@
 #include <iostream>
 using namespace std;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 
@@ -82,7 +82,7 @@ PhysicalKmerColor KeyEncoder::encode_EMBL_CDS(const char*identifier){
 
 	PhysicalKmerColor returnValue=0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(strlen(identifier)==3+5);
 	#endif
 
@@ -91,7 +91,7 @@ PhysicalKmerColor KeyEncoder::encode_EMBL_CDS(const char*identifier){
 	for(int exponent=0;exponent<5;exponent++){
 		char symbol=identifier[7-exponent];
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_mapping.count(symbol)>0);
 		#endif
 
@@ -113,7 +113,7 @@ PhysicalKmerColor KeyEncoder::encode_EMBL_CDS(const char*identifier){
 	for(int exponent=0;exponent<3;exponent++){
 		char symbol=identifier[2-exponent];
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_mapping.count(symbol)>0);
 		#endif
 
@@ -192,7 +192,7 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 	
 	populateMap();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_mapping.size()>0);
 	#endif
 
@@ -210,7 +210,7 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 		return 0;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert((int)strlen(identifier)== (start+length));
 	#endif
 
@@ -219,7 +219,7 @@ GeneOntologyIdentifier KeyEncoder::encodeGeneOntologyHandle(const char*identifie
 
 		char symbol=identifier[total-1-i];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(m_mapping.count(symbol)==0){
 			cout<<"Error: <input>"<<identifier<<"</input>"<<" symbol is "<<symbol<<endl;
 		}

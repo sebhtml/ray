@@ -67,7 +67,7 @@ bool IndexerWorker::isDone(){
 void IndexerWorker::work(){
 	Read*read=m_reads->at(m_workerId);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(read!=NULL);
 	#endif
 
@@ -249,14 +249,14 @@ void IndexerWorker::work(){
 
 	}else{
 		if(m_parameters->hasOption("-write-read-markers")){
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_readMarkerFile != NULL);
 			#endif
 
 			// append read marker information to a file.
 			(*m_readMarkerFile)<<m_sequenceId<<" Count: "<<m_coverages.size();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_workerId < (int)m_reads->size());
 			#endif
 
@@ -281,14 +281,14 @@ void IndexerWorker::work(){
 		}
 
 		if(m_parameters->hasOption("-write-marker-summary")){
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_workerId < (int)m_reads->size());
 			#endif
 
 			int forwardOffset = m_reads->at(m_workerId)->getForwardOffset();
 
 			if(forwardOffset < m_coverages.size() && m_coverages.size() > 0){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_coverages.size() > 0);
 				#endif
 
@@ -302,7 +302,7 @@ void IndexerWorker::work(){
 			int reverseOffset = m_reads->at(m_workerId)->getReverseOffset();
 
 			if(reverseOffset < m_coverages.size() && m_coverages.size() > 0){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_coverages.size() > 0);
 				#endif
 

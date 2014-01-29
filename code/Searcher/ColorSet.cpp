@@ -30,13 +30,13 @@
 #include <iostream>
 using namespace std;
 
-#ifdef ASSERT_LOW_LEVEL
+#ifdef CONFIG_ASSERT_LOW_LEVEL
 #ifndef ASSERT
 #define ASSERT
 #endif /* ASSERT */
 #endif /* ASSERT_LOW_LEVEL */
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif /* ASSERT */
 
@@ -75,7 +75,7 @@ ColorSet::ColorSet(){
 /** O(1) **/
 void ColorSet::incrementReferences(VirtualKmerColorHandle handle){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(handle < getTotalNumberOfVirtualColors());
 	#endif
 
@@ -93,7 +93,7 @@ void ColorSet::incrementReferences(VirtualKmerColorHandle handle){
 
 	virtualColor->incrementReferences();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.count(handle)==0);
 	assert(getVirtualColor(handle)->getNumberOfReferences()>=1);
 	#endif
@@ -102,7 +102,7 @@ void ColorSet::incrementReferences(VirtualKmerColorHandle handle){
 }
 
 void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(handle < getTotalNumberOfVirtualColors());
 	#endif
 
@@ -112,7 +112,7 @@ void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
 	if(handle == NULL_VIRTUAL_COLOR)
 		return;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.count(handle)==0);
 	assert(virtualColor->getNumberOfReferences()>0);
 	#endif
@@ -129,7 +129,7 @@ void ColorSet::decrementReferences(VirtualKmerColorHandle handle){
 }
 
 void ColorSet::purgeVirtualColor(VirtualKmerColorHandle handle){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getVirtualColor(handle)->getNumberOfReferences()==0);
 	#endif
 
@@ -146,7 +146,7 @@ void ColorSet::purgeVirtualColor(VirtualKmerColorHandle handle){
 	// actually, they are simply not removed.
 	// instead, they are re-used.
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.count(handle)==0);
 	#endif
 
@@ -156,7 +156,7 @@ void ColorSet::purgeVirtualColor(VirtualKmerColorHandle handle){
 	// because it may be useful sometime
 	// correction: we do remove it right now.
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.count(handle)>0);
 	assert(virtualColorToPurge->getNumberOfPhysicalColors()==0);
 	assert(virtualColorToPurge->getNumberOfReferences()==0);
@@ -167,7 +167,7 @@ void ColorSet::purgeVirtualColor(VirtualKmerColorHandle handle){
 
 /** O(1) **/
 VirtualKmerColor*ColorSet::getVirtualColor(VirtualKmerColorHandle handle){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(handle>= getTotalNumberOfVirtualColors())
 		cout<<"Error, handle= "<<handle<<" but size= "<<getTotalNumberOfVirtualColors()<<endl;
 
@@ -308,7 +308,7 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColorHandle(){
 		// instead, it will be removed from the avaialble list
 		// when its references are > 0
 	
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(getVirtualColor(handle)->getNumberOfReferences()==0);
 		assert(getVirtualColor(handle)->getPhysicalColors()->size()==0);
 		#endif
@@ -320,7 +320,7 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColorHandle(){
 		return handle;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.size()==0);
 	#endif
 
@@ -333,7 +333,7 @@ VirtualKmerColorHandle ColorSet::allocateVirtualColorHandle(){
 
 	m_operations[OPERATION_NEW_FROM_SCRATCH]++;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.size()==1);
 	#endif
 
@@ -373,7 +373,7 @@ uint64_t ColorSet::applyHashOperation(uint64_t hashValue,PhysicalKmerColor color
 }
 
 LargeCount ColorSet::getNumberOfReferences(VirtualKmerColorHandle handle){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(handle< getTotalNumberOfVirtualColors());
 	#endif
 	
@@ -382,7 +382,7 @@ LargeCount ColorSet::getNumberOfReferences(VirtualKmerColorHandle handle){
 
 int ColorSet::getNumberOfPhysicalColors(VirtualKmerColorHandle handle){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(handle< getTotalNumberOfVirtualColors());
 	#endif
 
@@ -391,7 +391,7 @@ int ColorSet::getNumberOfPhysicalColors(VirtualKmerColorHandle handle){
 
 VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle handle,PhysicalKmerColor color){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(handle < getTotalNumberOfVirtualColors());
 	assert(!getVirtualColor(handle)->hasPhysicalColor(color));
 
@@ -462,14 +462,14 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 
 		m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_HASH_CREATION]++;
 
-		#ifdef ASSERT_LOW_LEVEL
+		#ifdef CONFIG_ASSERT_LOW_LEVEL
 		assertNoVirtualColorDuplicates(handle,color,433);
 		#endif /* ASSERT_LOW_LEVEL */
 	
 		return createVirtualColorFrom(handle,color);
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_index.count(expectedHash)>0);
 	assert(m_index[expectedHash].size()>=1);
 	#endif /* ASSERT */
@@ -497,7 +497,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 
 		if(toCheck->virtualColorHasAllPhysicalColorsOf(oldVirtualColor,color)){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(virtualColorHasPhysicalColor(virtualColorToInvestigate,color));
 			#endif /* ASSERT */
 	
@@ -512,7 +512,7 @@ VirtualKmerColorHandle ColorSet::getVirtualColorFrom(VirtualKmerColorHandle hand
 	
 	m_operations[OPERATION_NO_VIRTUAL_COLOR_HAS_COLORS_CREATION]++;
 
-	#ifdef ASSERT_LOW_LEVEL
+	#ifdef CONFIG_ASSERT_LOW_LEVEL
 	assertNoVirtualColorDuplicates(handle,color,479);
 	#endif
 
@@ -526,7 +526,7 @@ VirtualKmerColorHandle ColorSet::createVirtualColorFrom(VirtualKmerColorHandle h
 	// consume the handle
 	m_availableHandles.erase(newHandle);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(!getVirtualColor(handle)->hasPhysicalColor(color));
 	assert(m_availableHandles.count(newHandle)==0);
 	assert(getNumberOfReferences(newHandle)==0);
@@ -550,7 +550,7 @@ VirtualKmerColorHandle ColorSet::createVirtualColorFrom(VirtualKmerColorHandle h
 
 	m_operations[OPERATION_createVirtualColorFrom]++;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getVirtualColor(newHandle)->getNumberOfPhysicalColors()==getVirtualColor(handle)->getNumberOfPhysicalColors()+1);
 	assert(getVirtualColor(newHandle)->getNumberOfReferences()==0);
 	assert(getVirtualColor(newHandle)->virtualColorHasAllPhysicalColorsOf(oldVirtualColor,color));
@@ -621,7 +621,7 @@ void ColorSet::assertNoVirtualColorDuplicates(VirtualKmerColorHandle handle,Phys
 				printPhysicalColors(getVirtualColor(handle)->getPhysicalColors());
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(!getVirtualColor(i)->hasPhysicalColors(&desiredColors));
 			#endif /* ASSERT */
 		}
@@ -661,13 +661,13 @@ VirtualKmerColorHandle ColorSet::createVirtualColorFromPhysicalColors(set<Physic
 	if(colors->size()==0)
 		return NULL_VIRTUAL_COLOR;
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(colors->size()!=0);
 	#endif /* ASSERT */
 
 	VirtualKmerColorHandle newHandle=allocateVirtualColorHandle();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_availableHandles.count(newHandle)>0);
 	#endif /* ASSERT */
 
@@ -681,7 +681,7 @@ VirtualKmerColorHandle ColorSet::createVirtualColorFromPhysicalColors(set<Physic
 	newVirtualColor->setHash(expectedHash);
 	addVirtualColorToIndex(newHandle);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(lookupVirtualColor(colors)!=NULL_VIRTUAL_COLOR);
 	#endif /* ASSERT */
 

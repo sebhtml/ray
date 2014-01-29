@@ -255,14 +255,14 @@ void Partitioner::call_RAY_SLAVE_MODE_COUNT_FILE_ENTRIES(){
 				f.read((char*)&file,sizeof(int));
 				f.read((char*)&sequences,sizeof(LargeCount));
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(file>=0);
 				assert(m_slaveCounts.count(file)==0);
 				#endif
 
 				m_slaveCounts[file]=sequences;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_slaveCounts.count(file)>0);
 				#endif
 				cout<<"Rank "<<m_parameters->getRank()<<": from checkpoint Partition, file "<<file<<" has "<<sequences<<" sequences."<<endl;

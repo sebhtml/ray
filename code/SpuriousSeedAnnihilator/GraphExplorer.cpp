@@ -340,7 +340,7 @@ bool GraphExplorer::work() {
 		return m_done;
 	}
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(!m_verticesToVisit.empty());
 	assert(!m_depths.empty());
 #endif
@@ -418,7 +418,7 @@ bool GraphExplorer::work() {
 		if(foundSomething && m_searchDepthForFirstResult < 0)
 			m_searchDepthForFirstResult = currentDepth;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(!m_depths.empty());
 #endif
 
@@ -434,7 +434,7 @@ bool GraphExplorer::work() {
 		else if(m_direction == EXPLORER_RIGHT)
 			links = m_attributeFetcher.getChildren();
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 		assert(links != NULL);
 #endif
 

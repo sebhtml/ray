@@ -275,7 +275,7 @@ class Machine : public MiniRank{
 	bool m_FINISH_hits_computed;
 	int m_FINISH_hit;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	set<int> m_collisions;
 	#endif
 	bool m_reductionOccured;

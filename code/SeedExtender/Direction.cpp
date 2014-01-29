@@ -43,7 +43,7 @@ Direction*Direction::getNext(){
 }
 
 void Direction::setNext(Direction*e){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(this!=NULL);
 
 	if(e!=NULL){

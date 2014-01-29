@@ -301,7 +301,7 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	m_wordSize=parameters->getWordSize();
 	m_parameters=parameters;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_wordSize!=0);
 #endif
 
@@ -387,7 +387,7 @@ void SeedWorker::do_1_1_test(){
 			m_ingoingCoverages.clear();
 			m_outgoingCoverages.clear();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(m_SEEDING_receivedIngoingEdges.size()>4){
 				cout<<"size="<<m_SEEDING_receivedIngoingEdges.size()<<endl;
 			}

@@ -38,7 +38,7 @@ void SeedFilteringWorkflow::initializeMethod(){
 	for(int i=0;i<(int)m_states.size(); i++)
 		m_states[i] = true;
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_states.size() == m_seeds->size());
 #endif
 
@@ -72,7 +72,7 @@ bool SeedFilteringWorkflow::hasUnassignedTask(){
 /** assign the next task to a worker and return this worker */
 Worker*SeedFilteringWorkflow::assignNextTask(){
 
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 	assert(m_seedIndex < (int)m_seeds->size());
 #endif
 

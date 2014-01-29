@@ -67,7 +67,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 	if(m_activeWorkerIterator.hasNext()){
 		WorkerHandle workerId=m_activeWorkerIterator.next()->getKey();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_aliveWorkers.find(workerId,false)!=NULL);
 		assert(!m_aliveWorkers.find(workerId,false)->getValue()->isDone());
 		#endif
@@ -106,7 +106,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 						showMemoryUsage(m_rank);
 				}
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_theSequenceId==0){
 					assert(m_completedJobs==0&&m_activeWorkers.size()==0&&m_aliveWorkers.size()==0);
 				}
@@ -137,7 +137,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 		m_activeWorkerIterator.constructor(&m_activeWorkers);
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert((int)m_aliveWorkers.size()<=m_maximumAliveWorkers);
 	#endif
 
@@ -156,7 +156,7 @@ void SequencesIndexer::call_RAY_SLAVE_MODE_INDEX_SEQUENCES(){
 			showMemoryUsage(m_rank);
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_aliveWorkers.size()==0);
 		assert(m_activeWorkers.size()==0);
 		#endif
@@ -261,7 +261,7 @@ void SequencesIndexer::updateStates(){
 	// erase completed jobs
 	for(int i=0;i<(int)m_workersDone.size();i++){
 		WorkerHandle workerId=m_workersDone[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.find(workerId,false)!=NULL);
 		assert(m_aliveWorkers.find(workerId,false)!=NULL);
 		#endif
@@ -273,7 +273,7 @@ void SequencesIndexer::updateStates(){
 
 	for(int i=0;i<(int)m_waitingWorkers.size();i++){
 		WorkerHandle workerId=m_waitingWorkers[i];
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeWorkers.find(workerId,false)!=NULL);
 		#endif
 		m_activeWorkers.remove(workerId,true,&m_workAllocator);

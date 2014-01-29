@@ -548,7 +548,7 @@ void Parameters::parseCommands(){
 
 			int meanFragmentLength=0;
 			int standardDeviation=0;
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(items==1 or items==3);
 			#endif
 
@@ -581,7 +581,7 @@ void Parameters::parseCommands(){
 					cout<<" Standard deviation: automatic detection"<<endl;
 				}
 			}else{
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(false);
 				#endif
 			}
@@ -654,7 +654,7 @@ void Parameters::parseCommands(){
 
 			int meanFragmentLength=0;
 			int standardDeviation=0;
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(items==4 or items==2);
 			#endif
 
@@ -953,7 +953,7 @@ void Parameters::parseCommands(){
  * There is not really any limit on the number of files.
  * The limit is on the number of paired libraries (2^sizeof(uint16_t)).
  */
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	LibraryHandle maximumLibraryIndex=0;
 	maximumLibraryIndex--;
 
@@ -981,7 +981,7 @@ void Parameters::writeCommandFile(){
 
 	int numberOfRays=getSize();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(numberOfRays%m_numberOfMiniRanksPerRank==0);
 	#endif
 
@@ -1025,7 +1025,7 @@ void Parameters::writeSmartCommand() {
 
 	int numberOfRays=getSize();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(numberOfRays%m_numberOfMiniRanksPerRank==0);
 	#endif
 
@@ -1407,7 +1407,7 @@ int Parameters::getNumberOfLibraries(){
 }
 
 LargeCount Parameters::getNumberOfSequences(int file){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(file>=(int)m_numberOfSequencesInFile.size())
 		cout<<"Error File= "<<file<<" Files: "<<m_numberOfSequencesInFile.size()<<endl;
 
@@ -2058,7 +2058,7 @@ Rank Parameters::getRankFromGlobalId(ReadHandle & a){
 		rank=m_size-1;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 
 	if(rank<0){
 		cout<<"Error: rank is < 0, rank: "<<rank<<" ReadHandle: "<<a<<" elementsPerRank: "<<elementsPerRank;
@@ -2311,7 +2311,7 @@ bool Parameters::hasConfigurationOption(const char*string,int count){
 
 double Parameters::getConfigurationDouble(const char*string,int offset){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasConfigurationOption(string,offset+1));
 	#endif
 
@@ -2333,7 +2333,7 @@ double Parameters::getConfigurationDouble(const char*string,int offset){
 
 const char*Parameters::getConfigurationString(const char*string,int offset){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasConfigurationOption(string,offset+1));
 	#endif
 
@@ -2349,7 +2349,7 @@ const char*Parameters::getConfigurationString(const char*string,int offset){
 
 
 uint64_t Parameters::getConfigurationInteger(const char*string,int offset){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasConfigurationOption(string,offset+1));
 	#endif
 
@@ -2398,7 +2398,7 @@ void Parameters::__shuffleOperationCodes(){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(newCommands.size()==m_commands.size());
 	#endif
 

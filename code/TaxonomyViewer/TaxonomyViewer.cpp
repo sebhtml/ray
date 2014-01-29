@@ -62,7 +62,7 @@ void TaxonomyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 		
 		m_ranksThatLoadedTaxons++;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_rank==0);
 		#endif
 
@@ -115,7 +115,7 @@ void TaxonomyViewer::call_RAY_MASTER_MODE_PHYLOGENY_MAIN(){
 		ofstream f;
 		f.open(file.c_str(),ios_base::app);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(f.is_open());
 		#endif
 
@@ -145,7 +145,7 @@ void TaxonomyViewer::copyTaxonsFromSecondaryTable(){
 
 	cout<<"[TaxonomyViewer::copyTaxonsFromSecondaryTable] "<<before<<" -> "<<after<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_taxonsForPhylogeny.size() == m_taxonsForPhylogenyMaster.size());
 	#endif
 
@@ -219,7 +219,7 @@ void TaxonomyViewer::sendTreeCounts(){
 
 	}else if(!m_messageSent){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_countIterator!= m_taxonObservations.end());
 		#endif
 
@@ -245,7 +245,7 @@ void TaxonomyViewer::sendTreeCounts(){
 			m_countIterator++;
 		}
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bufferPosition!=0);
 		#endif
 
@@ -268,7 +268,7 @@ void TaxonomyViewer::call_RAY_MPI_TAG_TAXON_OBSERVATIONS(Message*message){
 
 	int count=message->getCount();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count%2==0);
 	assert(m_rank==MASTER_RANK);
 	#endif
@@ -390,7 +390,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 
 	while(iterator.hasNext()){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parity==0 || parity==1);
 		#endif
 
@@ -427,7 +427,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 			continue; // the k-mer is not nicely assembled...
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(nicelyAssembled || !useOnlyAssembledKmer);
 		#endif
 
@@ -452,7 +452,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 			if(nameSpace==COLOR_NAMESPACE_PHYLOGENY){
 				PhysicalKmerColor colorForPhylogeny=physicalColor % COLOR_NAMESPACE_MULTIPLIER;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_colorsForPhylogeny.count(colorForPhylogeny)==0){
 					//cout<<"Error: color "<<colorForPhylogeny<<" should be in m_colorsForPhylogeny which contains "<<m_colorsForPhylogeny.size()<<endl;
 				}
@@ -479,7 +479,7 @@ void TaxonomyViewer::gatherKmerObservations(){
 					continue;
 				}
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_genomeToTaxon.count(colorForPhylogeny)>0);
 				#endif
 
@@ -585,7 +585,7 @@ void TaxonomyViewer::showObservations_XML(ostream*stream){
 	for(map<string,LargeCount>::iterator i=rankSelfObservations.begin();i!=rankSelfObservations.end();i++){
 		string rank=i->first;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(rankRecursiveObservations.count(rank)>0);
 		assert(rankSelfObservations.count(rank)>0);
 		#endif
@@ -626,14 +626,14 @@ void TaxonomyViewer::showObservations_XML(ostream*stream){
 
 		string rank=getTaxonRank(taxon);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(rankSelfObservations.count(rank)>0);
 		assert(rankRecursiveObservations.count(rank)>0);
 		#endif
 
 		LargeCount rankRecursiveCount=rankRecursiveObservations[rank];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		LargeCount rankSelfCount=rankSelfObservations[rank]; //-
 
 		assert(rankSelfCount>=0);
@@ -841,7 +841,7 @@ void TaxonomyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCover
 
 	}else{ // more than 1
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(taxons->size()>1);
 		#endif
 
@@ -869,7 +869,7 @@ void TaxonomyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCover
 
 		if(parentCount.size()==1){ // only 1 common ancestor, easy
 			
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(!(parentCount.begin()->second == found)){
 				cout<<"Error: taxons: "<<taxons->size()<<", parentCount: "<<parentCount.size()<<" 1 element with "<<parentCount.begin()->second<<" taxons"<<endl;
 			}
@@ -894,7 +894,7 @@ void TaxonomyViewer::classifySignal(vector<TaxonIdentifier>*taxons,int kmerCover
 		// since we have a tree, find the nearest common ancestor
 		// in the worst case, the common ancestor is the root
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parentCount.size()>1);
 		#endif
 
@@ -1166,7 +1166,7 @@ void TaxonomyViewer::sendTaxonsFromMaster(){
 
 	}else if(!m_messageSent){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_taxonIterator!= m_taxonsForPhylogeny.end());
 		#endif
 
@@ -1183,7 +1183,7 @@ void TaxonomyViewer::sendTaxonsFromMaster(){
 			m_taxonIterator++;
 		}
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bufferPosition!=0);
 		#endif
 
@@ -1215,7 +1215,7 @@ void TaxonomyViewer::sendTaxonsToMaster(){
 
 	}else if(!m_messageSent){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_taxonIterator!= m_taxonsForPhylogeny.end());
 		#endif
 
@@ -1232,7 +1232,7 @@ void TaxonomyViewer::sendTaxonsToMaster(){
 			m_taxonIterator++;
 		}
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(bufferPosition!=0);
 		#endif
 
@@ -1266,7 +1266,7 @@ void TaxonomyViewer::extractColorsForPhylogeny(){
 		Vertex*node=iterator.next();
 		Kmer key=*(iterator.getKey());
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parity==0 || parity==1);
 		#endif
 

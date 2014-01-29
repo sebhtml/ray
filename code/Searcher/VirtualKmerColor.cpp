@@ -23,7 +23,7 @@
 
 #include <iostream>
 using namespace std;
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 
@@ -37,11 +37,11 @@ void VirtualKmerColor::clear(){
 	m_colors.clear();
 	m_hash=0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getNumberOfReferences()==0);
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(getNumberOfPhysicalColors()==0);
 	#endif
 }
@@ -53,14 +53,14 @@ void VirtualKmerColor::incrementReferences(){
 void VirtualKmerColor::decrementReferences(){
 	m_references--;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_references>=0);
 	#endif
 }
 
 void VirtualKmerColor::addPhysicalColor(PhysicalKmerColor color){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(!hasPhysicalColor(color));
 	#endif
 

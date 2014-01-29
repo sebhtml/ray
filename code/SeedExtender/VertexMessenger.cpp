@@ -62,7 +62,7 @@ void VertexMessenger::work(){
 			int strandPosition=buffer[5+4*i+2];
 			char strand=buffer[5+4*i+3];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(theRank>=0);
 			if(theRank>=m_parameters->getSize()){
 				cout<<"Rank="<<theRank<<" Size="<<m_parameters->getSize()<<endl;
@@ -136,7 +136,7 @@ void VertexMessenger::getReadsForRepeatedVertex(){
 			int strandPosition=buffer[1+4*i+2];
 			char strand=buffer[1+4*i+3];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(theRank>=0);
 			if(theRank>=m_parameters->getSize()){
 				cout<<"Rank="<<theRank<<" Size="<<m_parameters->getSize()<<endl;
@@ -180,7 +180,7 @@ void VertexMessenger::getReadsForUniqueVertex(){
 			int strandPosition=buffer[1+4*i+2];
 			char strand=buffer[1+4*i+3];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(theRank>=0);
 			if(theRank>=m_parameters->getSize()){
 				cout<<"Rank="<<theRank<<" Size="<<m_parameters->getSize()<<endl;

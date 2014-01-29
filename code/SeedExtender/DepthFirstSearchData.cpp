@@ -97,7 +97,7 @@ void DepthFirstSearchData::depthFirstSearch(Kmer root,Kmer a,int maxDepth,
 			}else if((*edgesReceived)){
 				Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=m_depthFirstSearchDepths.top();
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
 				#endif
@@ -152,7 +152,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
  int*receivedVertexCoverage,SeedingData*seedingData,
 		int minimumCoverage,bool*edgesReceived,Parameters*parameters){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	int wordSize=parameters->getWordSize();
 	#endif
 
@@ -203,7 +203,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 			if(!(*edgesRequested)){
 				m_coverages[vertexToVisit]=(*receivedVertexCoverage);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_depthFirstSearchVisitedVertices.count(vertexToVisit)>0){
 					cout<<"Already visited: "<<vertexToVisit.idToWord(wordSize,parameters->getColorSpaceMode())<<" root is "<<a.idToWord(wordSize,parameters->getColorSpaceMode())<<endl;
 				}
@@ -214,7 +214,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				if((*receivedVertexCoverage)>0){
 					m_depthFirstSearchVisitedVertices.insert(vertexToVisit);
 				}else{
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(false);
 					#endif
 					// don't visit it.
@@ -244,7 +244,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				Kmer vertexToVisit=m_depthFirstSearchVerticesToVisit.top();
 				int theDepth=m_depthFirstSearchDepths.top();
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 	
 				assert(theDepth>=0);
 				assert(theDepth<=maxDepth);
@@ -284,7 +284,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 					m_depthFirstSearchVisitedVertices_depths.push_back(newDepth);
 				}
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				if(m_outgoingEdges.count(vertexToVisit)>0){
 					cout<<vertexToVisit.idToWord(wordSize,parameters->getColorSpaceMode())<<" is already in the data structure "<<m_outgoingEdges[vertexToVisit].size()<<" v. "<<outgoingEdges.size()<<endl;
 				}
@@ -320,7 +320,7 @@ void DepthFirstSearchData::depthFirstSearchBidirectional(Kmer a,int maxDepth,
 				(*edgesRequested)=false;
 				(*vertexCoverageRequested)=false;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_ingoingEdges.count(vertexToVisit)==0);
 	
 				#endif

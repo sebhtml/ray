@@ -44,7 +44,7 @@ Vertex*GridTableIterator::next(){
 		m_currentKey=m_currentKey.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 		return m_currentEntry;
 	}
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasNext());
 	#endif
 	m_currentEntry=m_iterator.next();

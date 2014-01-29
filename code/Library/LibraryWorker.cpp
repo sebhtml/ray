@@ -67,7 +67,7 @@ void LibraryWorker::work(){
 	if(m_done){
 		return;
 	}
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_SEEDING_i<m_seedingData->m_SEEDING_seeds.size());
 	#endif
 	if(m_EXTENSION_currentPosition==(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size()){
@@ -80,7 +80,7 @@ void LibraryWorker::work(){
 	}else{
 		if(!m_EXTENSION_reads_requested){
 			m_EXTENSION_reads_requested=true;
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_seedingData!=NULL);
 			assert(m_EXTENSION_currentPosition<(int)m_seedingData->m_SEEDING_seeds[m_SEEDING_i].size());
 			#endif
@@ -91,7 +91,7 @@ void LibraryWorker::work(){
 		
 			m_readFetcher.constructor(vertex,m_outboxAllocator,m_inbox,m_outbox,m_parameters,m_virtualCommunicator,
 				m_SEEDING_i,RAY_MPI_TAG_REQUEST_VERTEX_READS);
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(!m_readFetcher.isDone());
 			#endif
 			m_EXTENSION_edgeIterator=0;// iterate over reads
@@ -105,7 +105,7 @@ void LibraryWorker::work(){
 				if(!m_EXTENSION_hasPairedReadRequested){
 					MessageUnit*message=(MessageUnit*)(m_outboxAllocator)->allocate(1*sizeof(MessageUnit));
 					message[0]=rightRead;
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(m_parameters!=NULL);
 					if(!(annotation.getRank()<m_parameters->getSize())){
 						cout<<"Error rank="<<annotation.getRank()<<" size="<<m_parameters->getSize()<<endl;
@@ -118,7 +118,7 @@ void LibraryWorker::work(){
 				}else if(m_virtualCommunicator->isMessageProcessed(m_SEEDING_i)){
 					vector<MessageUnit> buffer;
 					m_virtualCommunicator->getMessageResponseElements(m_SEEDING_i,&buffer);
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert((int)buffer.size()==4);
 					#endif
 	

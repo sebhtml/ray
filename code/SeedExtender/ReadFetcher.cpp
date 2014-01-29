@@ -80,7 +80,7 @@ void ReadFetcher::work(){
 			message2[bufferPosition++]=0;
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		int start=KMER_U64_ARRAY_SIZE+1;
 	
 		assert(period>=5);
@@ -120,7 +120,7 @@ void ReadFetcher::work(){
 		vector<MessageUnit> buffer;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&buffer);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_REQUEST_VERTEX_READS);
 		assert((int)buffer.size()==period);
 		#endif
@@ -146,7 +146,7 @@ void ReadFetcher::work(){
 
 		if(rank!=INVALID_RANK){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(!(rank>=0&&rank<m_parameters->getSize())){
 				cout<<"Error rank="<<rank<<endl;
 				cout<<"Buffer: ";
@@ -162,7 +162,7 @@ void ReadFetcher::work(){
 			int position=buffer[3];
 			char strand=(char)buffer[4];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			int destination=m_parameters->vertexRank(&m_vertex);
 
 			assert(readIndex>=0);

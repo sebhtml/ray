@@ -150,12 +150,12 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 		m_currentStart=0;
 		m_firstNewLine=0;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_readaheadBuffer!=NULL);
 		#endif
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_readaheadBuffer!=NULL);
 	#endif
 
@@ -183,7 +183,7 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 		if(m_debug)
 			cout<<"Reading data from disk"<<endl;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_bufferedBytes<=2*CONFIG_ZLIB_READAHEAD_SIZE);
 	
 		if(m_bufferedBytes>CONFIG_ZLIB_READAHEAD_SIZE){
@@ -204,7 +204,7 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 		if(bytes==0)
 			m_noMoreBytes=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_bufferedBytes<=2*CONFIG_ZLIB_READAHEAD_SIZE);
 		#endif
 	}
@@ -223,12 +223,12 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 	if(m_debug)
 		cout<<"seek offset if at m_firstNewLine "<<m_firstNewLine<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_firstNewLine<m_bufferedBytes);
 	assert(m_readaheadBuffer[m_firstNewLine]=='\n' || m_firstNewLine==m_bufferedBytes-1);
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_bufferedBytes<=2*CONFIG_ZLIB_READAHEAD_SIZE);
 	#endif
 
@@ -260,7 +260,7 @@ bool FastqGzLoader::pullLineWithReadaheadTechnology(char*buffer,int maximumLengt
 
 	char*source=m_readaheadBuffer+m_currentStart;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(bytesToCopy==0){
 		cout<<"Error: nothing to copy, m_bufferedBytes= "<<m_bufferedBytes;
 		cout<<" m_firstNewLine "<<m_firstNewLine<<" m_currentStart "<<m_currentStart;

@@ -28,7 +28,7 @@
 #include "GenomeNeighbourhood.h"
 
 #include <sstream>
-#ifdef ASSERT
+#ifdef CONFIG_ASSERT
 #include <assert.h>
 #endif
 
@@ -64,7 +64,7 @@ void GenomeNeighbourhood::call_RAY_MPI_TAG_NEIGHBOURHOOD_DATA(Message*message){
 
 	int gapSizeInKmers=incoming[position++];
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(gapSizeInKmers >= 1);
 	assert(m_rank==0x00);
 	assert(m_contigLengths->count(leftContig)>0);
@@ -285,7 +285,7 @@ void GenomeNeighbourhood::fetchPaths(int mode){
 
 void GenomeNeighbourhood::processLinks(int mode){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(!m_stackOfVertices.empty());
 	assert(m_stackOfVertices.size() == m_stackOfDepths.size());
 	#endif
@@ -382,13 +382,13 @@ void GenomeNeighbourhood::processLinks(int mode){
 		vector<MessageUnit> elements;
 		m_virtualCommunicator->getMessageResponseElements(m_workerId,&elements);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert((int)elements.size()>=2);
 		#endif
 
 		uint8_t edges=elements[0];
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		int coverage=elements[1];
 		assert(coverage>0);
 		#endif
@@ -412,7 +412,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 		
 		vector<Kmer>*links=&parents;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(mode==FETCH_CHILDREN || mode==FETCH_PARENTS);
 		#endif
 
@@ -423,7 +423,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 			links=&parents;
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_stackOfDepths.size()==m_stackOfVertices.size());
 		#endif
 
@@ -431,7 +431,7 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 		for(int i=0;i<(int)links->size();i++){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(i<(int) links->size());
 			#endif
 
@@ -459,19 +459,19 @@ void GenomeNeighbourhood::processLinks(int mode){
 
 void GenomeNeighbourhood::processSide(int mode){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(mode==FETCH_CHILDREN || mode==FETCH_PARENTS);
 	#endif
 
 	if(!m_startedSide){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_contigIndex < (int)m_contigs->size());
 		#endif
 
 		int contigLength=m_contigs->at(m_contigIndex).size();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(contigLength>=1);
 		#endif
 
@@ -902,7 +902,7 @@ void GenomeNeighbourhood::call_RAY_SLAVE_MODE_NEIGHBOURHOOD(){
 
 		cout<<"Rank "<<m_rank<<" is fetching contig path neighbours ["<<m_contigIndex<<"/"<<m_contigs->size()<<"]"<<endl;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_contigIndex == (int)m_contigs->size());
 		#endif
 
@@ -925,7 +925,7 @@ void GenomeNeighbourhood::sendRightNeighbours(){
 			Rank destination=0x0;
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(period > 0);
 			#endif
 
@@ -985,7 +985,7 @@ void GenomeNeighbourhood::sendLeftNeighbours(){
 			Rank destination=0x0;
 			int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_NEIGHBOURHOOD_DATA);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(period > 0);
 			#endif
 

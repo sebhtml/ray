@@ -135,7 +135,7 @@ void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 			m_switchMan->closeSlaveModeLocally(m_outbox,m_parameters->getRank());
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_numberOfWords*sizeof(MessageUnit) <= MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
@@ -255,7 +255,7 @@ void NetworkTest::writeData(){
 		f<<"# next line contains column names"<<endl;
 		f<<"# TestMessage SourceRank DestinationRank QueryTimeInMicroseconds ReplyTimeInMicroseconds Latency MessagesSentToDestination"<<endl;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_sentMicroseconds.size() == m_destinations.size());
 		assert(m_sentMicroseconds.size() == m_receivedMicroseconds.size());
 		assert((int) m_sentMicroseconds.size() == m_numberOfTestMessages);

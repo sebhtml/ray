@@ -211,7 +211,7 @@ int Read::getRequiredBytes(){
 		requiredBits+=bitsToAdd;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(requiredBits%8==0);
 	#endif
 

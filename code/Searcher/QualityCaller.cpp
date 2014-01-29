@@ -34,7 +34,7 @@ double QualityCaller::computeCorrelation(vector<int>*x,vector<int>*y){
 	if(x->size()==0)
 		return 0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(x->size()==y->size());
 	#endif
 

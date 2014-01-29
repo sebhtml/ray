@@ -83,7 +83,7 @@ int Loader::load(string file,bool isGenome){
 }
 
 Read*Loader::at(LargeIndex i){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i<m_size);
 	#endif
 
@@ -91,7 +91,7 @@ Read*Loader::at(LargeIndex i){
 		loadSequences();
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(i>=m_currentOffset+m_reads.size()){
 		cout<<"i= "<<i<<" m_currentOffset= " << m_currentOffset<<" m_reads.size: " << m_reads.size()<<endl;
 	}
@@ -112,7 +112,7 @@ void Loader::clear(){
 	m_currentOffset=0;
 	//m_type=FORMAT_NULL;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_reads.size()==0);
 	#endif
 }
@@ -148,7 +148,7 @@ void Loader::reset(){
 
 	//m_type=FORMAT_NULL;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_reads.size()==0);
 	#endif
 }

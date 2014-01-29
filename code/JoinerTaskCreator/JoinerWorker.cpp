@@ -60,7 +60,7 @@ void JoinerWorker::work(){
 			}
 */
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_position < (int)m_path->size());
 			#endif
 
@@ -73,7 +73,7 @@ void JoinerWorker::work(){
 			int destination=kmer.vertexRank(m_parameters->getSize(),
 				m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(destination < m_parameters->getSize() && destination >= 0);
 			#endif
 
@@ -247,7 +247,7 @@ void JoinerWorker::work(){
  * 			m_hitNames
  * 			m_hitLengths
  */
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_hits.size()==m_hitLengths.size());
 		assert(m_hitLengths.size()==m_hitNames.size());
 		assert(m_hitIterator == (int)m_hitLengths.size());
@@ -255,7 +255,7 @@ void JoinerWorker::work(){
 
 		// here, populate coordinates
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_selfPositions.size()==m_hitPositions.size());
 		#endif
 
@@ -380,7 +380,7 @@ void JoinerWorker::work(){
 		m_selfPositions.clear();
 		m_hitPositions.clear();
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_selfPositions.size()==m_hitPositions.size());
 		assert(m_selfPositions.size()==0);
 		#endif
@@ -399,13 +399,13 @@ void JoinerWorker::work(){
 			//int selfLength=m_path->size();
 
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_hits.count(hit)>0);
 			#endif
 
 			int matches=m_hits[hit];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(hit != m_identifier);
 			#endif
 
@@ -596,7 +596,7 @@ Also, don't do it if the matching ratios are below 10%.
 				cout<<" End: "<<m_maxPosition[hitName]<<endl;
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(hitLength == (int)m_hitVertices.size());
 			#endif
 

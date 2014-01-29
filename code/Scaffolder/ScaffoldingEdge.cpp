@@ -166,7 +166,7 @@ void ScaffoldingEdge::print(){
 }
 
 Strand ScaffoldingEdge::getStrand(PathHandle name){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(name==getLeftContig() || name==getRightContig());
 	#endif
 
@@ -179,7 +179,7 @@ Strand ScaffoldingEdge::getStrand(PathHandle name){
 }
 
 int ScaffoldingEdge::getSide(PathHandle name){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(name==getLeftContig() || name==getRightContig());
 	#endif
 

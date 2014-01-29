@@ -230,7 +230,7 @@ void Searcher::call_RAY_MASTER_MODE_COUNT_SEARCH_ELEMENTS(){
 	}else if(m_ranksDoneCounting==m_parameters->getSize()){
 		m_ranksDoneCounting=-1;
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_parameters->getRank() == 0);
 		#endif
 
@@ -338,7 +338,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 			// must be called.
 			m_searchDirectories=new SearchDirectory[m_searchDirectories_size];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_searchDirectories!=NULL);
 			#endif
 		}
@@ -346,7 +346,7 @@ void Searcher::call_RAY_SLAVE_MODE_COUNT_SEARCH_ELEMENTS(){
 		for(int i=0;i<(int)directories->size();i++){
 			//cout<<"before constructor"<<endl;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_searchDirectories!=NULL);
 			#endif
 
@@ -509,7 +509,7 @@ void Searcher::countKmerObservations(LargeCount*localAssembledKmerObservations,
 
 	while(iterator.hasNext()){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parity==0 || parity==1);
 		#endif
 
@@ -759,13 +759,13 @@ void Searcher::call_RAY_MASTER_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
  */
 void Searcher::call_RAY_MPI_TAG_GRAPH_COUNTS(Message*message){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_pumpedCounts==false);
 	#endif
 
 	MessageUnit*buffer=message->getBuffer();
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(message->getCount()==6+1);
 	#endif
 
@@ -851,7 +851,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		cout<<"Processed all contigs"<<endl;
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_bufferedData.isEmpty());
 		#endif
 
@@ -877,7 +877,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		if(m_writeDetailedFiles){ /* now we write coverage frequencies */
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert((int)m_coverageValues.size() == (*m_contigs)[m_contig].size());
 			#endif
 
@@ -899,7 +899,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 				Kmer*kmer=&kmer2;
 				double gcRatio=kmer->getGuanineCytosineProportion(kmerLength,coloredMode);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(coverage>=2);
 				assert(colors>=0);
 				#endif
@@ -981,7 +981,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		m_waitingForAbundanceReply=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_bufferedData.isEmpty());
 		#endif
 
@@ -1049,7 +1049,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 				showContigAbundanceProgress();
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_contig<(int)(*m_contigs).size());
 			assert(m_contigPosition<(int)(*m_contigs)[m_contig].size());
 			#endif
@@ -1099,14 +1099,14 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE_AND_COLORS,m_outboxAllocator,
 				m_outbox,m_parameters->getRank());
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages>0);
 			#endif
 		}
 
 		m_requestedCoverage=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages>0);
 		#endif
 
@@ -1120,7 +1120,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		m_pendingMessages--;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(m_pendingMessages!=0){
 			cout<<"m_pendingMessages is "<<m_pendingMessages<<" but should be "<<m_pendingMessages<<endl;
 		}
@@ -1142,7 +1142,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			int coverage=buffer[bufferPosition++];
 			int colors=(int)buffer[bufferPosition++];
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(coverage>0);
 			#endif
 
@@ -1153,7 +1153,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 			}
 
 			if(m_writeDetailedFiles){
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				int length=(*m_contigs)[m_contig].size();
 
 				if(position>=length){
@@ -1176,7 +1176,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 
 		m_requestedCoverage=false;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages==0);
 		assert(m_requestedCoverage==false);
 		#endif
@@ -1192,7 +1192,7 @@ void Searcher::call_RAY_SLAVE_MODE_CONTIG_BIOLOGICAL_ABUNDANCES(){
 		// and it is as if we had requested it for real.
 		m_requestedCoverage=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages>0);
 		#endif
 	}
@@ -1323,7 +1323,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEARCHER_CLOSE(){
 	m_arrayOfFiles.clear();
 	m_arrayOfFiles_Buffer.clear();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_activeFiles==0);
 	#endif
 
@@ -1357,7 +1357,7 @@ void Searcher::browseColoredGraph(){
 		m_browsedTheGraphStarted=true;
 		m_currentVirtualColor=0;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(!m_waiting);
 		#endif /* ASSERT */
 
@@ -1408,7 +1408,7 @@ void Searcher::browseColoredGraph(){
 				}
 			}
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			int maximumPosition=MAXIMUM_MESSAGE_SIZE_IN_BYTES/sizeof(MessageUnit);
 			assert(position<=maximumPosition);
 			#endif /* ASSERT */
@@ -1527,7 +1527,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		for(int i=0;i<(int)m_searchDirectories_size;i++){
 			for(int j=0;j<(int)m_searchDirectories[i].getSize();j++){
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(i<m_searchDirectories_size);
 				assert(j<m_searchDirectories[i].getSize());
 				#endif
@@ -1580,7 +1580,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 		m_pendingMessages--;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages==0);
 		#endif
 
@@ -1599,7 +1599,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			m_createdSequenceReader=false;
 			m_requestedCoverage=false;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages==0);
 			#endif
 
@@ -1620,7 +1620,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 		// at this point, we have a valid iterator
 		}else{
 	
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages==0);
 			assert(m_sortedHitsIterator!=m_sortedHits.end());
 			#endif
@@ -1660,7 +1660,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			messageBuffer[bufferPosition++]=m_sequenceIterator;
 			messageBuffer[bufferPosition++]=m_numberOfKmers;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(count > m_numberOfKmers){
 				cout<<"Error before sending, count= "<<count<<" m_numberOfKmers= "<<m_numberOfKmers<<endl;
 				cout<<"m_sequenceIterator= "<<m_sequenceIterator<<endl;
@@ -1835,7 +1835,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			
 			showProcessedKmers();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_directoryIterator<m_searchDirectories_size);
 			assert(m_fileIterator<m_searchDirectories[m_directoryIterator].getSize());
 			#endif
@@ -1930,7 +1930,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					m_sortedHits.push_back(hit);
 		
 					// the number of matches can not exceed the length
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(matches <= m_numberOfKmers);
 					#endif
 		
@@ -1945,7 +1945,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					m_sortedHits.push_back(hit);
 					
 					// the number of matches can not exceed the length
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(matches <= m_numberOfKmers);
 					#endif
 		
@@ -1966,7 +1966,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 				buffer[bufferPosition++]=m_color;
 				buffer[bufferPosition++]=m_globalSequenceIterator;
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_directoryIterator==(int)buffer[0]);
 				assert(m_fileIterator==(int)buffer[1]);
 				assert(m_sequenceIterator==(int)buffer[2]);
@@ -2009,20 +2009,20 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 				m_outbox->push_back(&aMessage);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_directoryIterator==(int)buffer[0]);
 				assert(m_fileIterator==(int)buffer[1]);
 				assert(m_sequenceIterator==(int)buffer[2]);
 				assert(m_outbox->size()>0);
 				#endif
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_pendingMessages==0);
 				#endif
 
 				m_pendingMessages++;
 				
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_pendingMessages==1);
 				#endif
 
@@ -2179,7 +2179,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 					m_outboxAllocator,
 					m_outbox,m_parameters->getRank());
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(m_pendingMessages>=0);
 				#endif
 			}
@@ -2198,7 +2198,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			Message*message=m_inbox->at(0);
 			MessageUnit*buffer=message->getBuffer();
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(message!=NULL);
 			#endif
 
@@ -2211,7 +2211,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 			m_pendingMessages--;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages==0);
 			#endif
 
@@ -2224,7 +2224,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 			cout<<"meta count= "<<count<<" period= "<<period<<endl;
 			#endif
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(count%period==0);
 			#endif
 
@@ -2281,7 +2281,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 
 					int numberOfPaths=buffer[bufferPosition++];
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 
 					int index=buffer[bufferPosition];
 					int total=buffer[bufferPosition+1];
@@ -2354,7 +2354,7 @@ void Searcher::call_RAY_SLAVE_MODE_SEQUENCE_BIOLOGICAL_ABUNDANCES(){
 						m_contigCounts[strand][contigPath].insert(theContigPosition);
 
 						// the number of matches can not exceed the length
-						#ifdef ASSERT
+						#ifdef CONFIG_ASSERT
 						assert((int)m_contigCounts[strand][contigPath].size()<= m_numberOfKmers);
 						#endif
 
@@ -2521,7 +2521,7 @@ string Searcher::getFileBaseName(int i,int j){
 	int theLength=file->length();
 	// .fasta is 6
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(theLength>0);
 	#endif
 
@@ -2563,7 +2563,7 @@ string Searcher::getBaseName(string a){
 		lastPosition--;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(lastPosition>=0);
 	assert(lastPosition!=0);
 	assert(a[lastPosition]!='/');
@@ -2590,7 +2590,7 @@ string Searcher::getBaseName(string a){
 	if(a[lastSlash]=='/'){
 		lastSlash++;
 	}else{
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(lastSlash==0);
 		#endif
 	}
@@ -2598,7 +2598,7 @@ string Searcher::getBaseName(string a){
 	// at this point, we have 2 positions
 	// from lastSlash to lastPosition inclusively,
 	// there is no slash.
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	for(int i=lastSlash;i<=lastPosition;i++){
 		if(a[i]=='/'){
 			cout<<"Input= "<<a<<" lastSlash= "<<lastSlash<<" lastPosition="<<lastPosition<<endl;
@@ -2616,7 +2616,7 @@ string Searcher::getBaseName(string a){
 
 	int count=lastPosition-lastSlash+1;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count>0);
 	#endif
 
@@ -2710,7 +2710,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 	cout<<"Capacity: "<<pathsThatCanBePacked<<" paths."<<endl;
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count%period==0);
 	#endif
 
@@ -2844,7 +2844,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 
 			while(pathIndex<(int)paths.size()){
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(pathIndex<(int)paths.size());
 				#endif
 
@@ -2886,7 +2886,7 @@ void Searcher::call_RAY_MPI_TAG_GET_COVERAGE_AND_PATHS(Message*message){
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(count*sizeof(MessageUnit)<=MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 	#endif
 
@@ -2959,7 +2959,7 @@ void Searcher::addColorToKmer(Vertex*node,PhysicalKmerColor color){
 	m_colorSet.incrementReferences(newVirtualColor);
 	m_colorSet.decrementReferences(virtualColorHandle);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_colorSet.virtualColorHasPhysicalColor(newVirtualColor,color));
 
 	// maybe this color was purged..
@@ -3060,7 +3060,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		cout<<"m_colorSequenceKmersSlaveStarted := true"<<endl;
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_bufferedData.isEmpty());
 		#endif
 
@@ -3098,7 +3098,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 	}else if(m_pendingMessages > 0 &&
 			m_inbox->hasMessage(RAY_MPI_TAG_ADD_KMER_COLOR_REPLY)){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages==1);
 		#endif
 
@@ -3108,7 +3108,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 		m_pendingMessages--;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_pendingMessages==0);
 		#endif
 
@@ -3224,21 +3224,21 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		// in the above code
 		}else if(!m_bufferedData.isEmpty()){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages==0);
 			#endif
 
 			m_pendingMessages+=m_bufferedData.flushAll(RAY_MPI_TAG_ADD_KMER_COLOR,m_outboxAllocator,
 				m_outbox,m_parameters->getRank());
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages>0);
 			#endif
 
 		// finished the file
 		}else if(m_pendingMessages==0){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_bufferedData.isEmpty());
 			#endif
 
@@ -3312,7 +3312,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		cout<<"[phylogeny] identifier= "<<m_identifier<<endl;
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		//assert(m_pendingMessages==0); not used anymore
 		#endif
 
@@ -3327,7 +3327,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 		if( !m_searchDirectories[m_directoryIterator].hasNextKmer(m_kmerLength)){
 			
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_directoryIterator<m_searchDirectories_size);
 			assert(m_fileIterator<m_searchDirectories[m_directoryIterator].getSize());
 			#endif
@@ -3353,7 +3353,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 			bool gatheringKmers=true;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_pendingMessages==0);
 			#endif
 
@@ -3414,7 +3414,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 
 				int period=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ADD_KMER_COLOR);
 
-				#ifdef ASSERT
+				#ifdef CONFIG_ASSERT
 				assert(period == added);
 				#endif
 
@@ -3430,7 +3430,7 @@ void Searcher::call_RAY_SLAVE_MODE_ADD_COLORS(){
 					cout<<"flushed a message."<<endl;
 					#endif
 
-					#ifdef ASSERT
+					#ifdef CONFIG_ASSERT
 					assert(m_pendingMessages>0);
 					assert(m_pendingMessages==1);
 					#endif
@@ -3539,13 +3539,13 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		m_arrayOfFiles_tsv_Buffer[directoryIterator]=new ostringstream;
 
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeFiles>=0); // it is 0 or 1 or something else
 		#endif
 
 		m_activeFiles++;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_activeFiles>=1); 
 		#endif
 
@@ -3699,7 +3699,7 @@ void Searcher::call_RAY_MPI_TAG_WRITE_SEQUENCE_ABUNDANCE_ENTRY(Message*message){
 		#endif /* TEST_COLORED_AND_ASSEMBLED */
 
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_arrayOfFiles.count(directoryIterator)>0);
 		#endif
 
@@ -3730,15 +3730,15 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
 
        	char strand=messageBuffer[bufferPosition++];
 
-       	#ifdef ASSERT
-       	assert(m_contigLengths.count(contig)>0);
+	#ifdef CONFIG_ASSERT
+	assert(m_contigLengths.count(contig)>0);
        	#endif
 
        	int kmerLength=m_parameters->getWordSize();
        	int contigLength=m_contigLengths[contig];
        	int count=messageBuffer[bufferPosition++];
 
-       	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
        	assert(kmerLength>0);
        	assert(contigLength>0);
        	assert(count>0);
@@ -3747,21 +3747,21 @@ void Searcher::call_RAY_MPI_TAG_CONTIG_IDENTIFICATION(Message*message){
        	int directoryIterator=messageBuffer[bufferPosition++];
        	int fileIterator=messageBuffer[bufferPosition++];
 
-       	#ifdef ASSERT
+       	#ifdef CONFIG_ASSERT
        	assert(directoryIterator<m_searchDirectories_size);
        	assert(fileIterator<m_searchDirectories[directoryIterator].getSize());
        	#endif
 
        	string category=m_fileNames[directoryIterator][fileIterator];
 
-       	int sequenceIterator=messageBuffer[bufferPosition++];
+	int sequenceIterator=messageBuffer[bufferPosition++];
 
        	int numberOfKmers=messageBuffer[bufferPosition++];
 
        	// the number of matches can not be greater than
        	// the number of k-mers in the query sequence
        	// otherwise, it does not make sense
-       	#ifdef ASSERT
+       	#ifdef CONFIG_ASSERT
        	if(count> numberOfKmers){
        		cout<<"Error: "<<count<<" k-mers observed, but the contig has only "<<numberOfKmers<<endl;
        		cout<<"Sequence= "<<sequenceIterator<<endl;
@@ -3848,7 +3848,7 @@ LargeCount Searcher::getTotalNumberOfKmerObservations(){
 void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force){
 
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_arrayOfFiles_Buffer.count(directoryIterator)>0);
 	assert(m_arrayOfFiles.count(directoryIterator)>0);
 	#endif
@@ -3865,7 +3865,7 @@ void Searcher::flushSequenceAbundanceXMLBuffer(int directoryIterator,bool force)
 
 void Searcher::flushContigIdentificationBuffer(int directoryIterator,bool force){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_identificationFiles.count(directoryIterator)>0);
 	assert(m_identificationFiles_Buffer.count(directoryIterator)>0);
 	#endif
@@ -3886,7 +3886,7 @@ void Searcher::call_RAY_MPI_TAG_VIRTUAL_COLOR_DATA(Message*message){
 
 	MessageUnit*buffer=(MessageUnit*)message->getBuffer();
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	int count=message->getCount();
 	assert(count>0);
 	#endif /* ASSERT */
@@ -4016,13 +4016,13 @@ void Searcher::generateSummaryOfColoredDeBruijnGraph(){
 		if(references==0)
 			continue;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		int numberOfPhysicalColors=m_masterColorSet.getNumberOfPhysicalColors(currentVirtualColor);
 		#endif
 
 		set<PhysicalKmerColor>*colors=m_masterColorSet.getPhysicalColors(currentVirtualColor);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(numberOfPhysicalColors>0);
 		#endif /* ASSERT */
 
@@ -4052,7 +4052,7 @@ void Searcher::generateSummaryOfColoredDeBruijnGraph(){
 			PhysicalKmerColor physicalColor=getColorInNamespace(handle);
 			classifiedData[aNamespace].insert(physicalColor);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(classifiedData.count(aNamespace)>0);
 			#endif /* ASSERT */
 		}

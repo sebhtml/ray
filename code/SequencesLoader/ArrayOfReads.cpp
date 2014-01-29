@@ -27,7 +27,7 @@
 using namespace std;
 
 void ArrayOfReads::constructor(MyAllocator*allocator){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(allocator!=NULL);
 	#endif
 	m_allocator=allocator;
@@ -39,7 +39,7 @@ void ArrayOfReads::constructor(MyAllocator*allocator){
 	for(int i=0;i<m_maxNumberOfChunks;i++)
 		m_chunks[i]=NULL;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_chunks!=NULL);
 	#endif
 
@@ -49,27 +49,27 @@ void ArrayOfReads::constructor(MyAllocator*allocator){
 }
 
 void ArrayOfReads::push_back(Read*a){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 	if(m_elements==m_maxSize){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_numberOfChunks!=m_maxNumberOfChunks);
 		#endif
 
 		m_maxSize+=m_CHUNK_SIZE;
 		m_numberOfChunks++;
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_numberOfChunks!=0);
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_chunks!=NULL);
 		#endif
 
 		m_chunks[m_numberOfChunks-1]=(Read*)m_allocator->allocate(m_CHUNK_SIZE*sizeof(Read));
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_chunks[m_numberOfChunks-1]!=NULL);
 		assert(m_elements<m_maxSize);
 		assert(m_numberOfChunks!=0);
@@ -77,7 +77,7 @@ void ArrayOfReads::push_back(Read*a){
 		#endif
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_elements!=m_maxSize);
 	assert(m_maxSize!=0);
 	if(m_numberOfChunks==0){
@@ -90,7 +90,7 @@ void ArrayOfReads::push_back(Read*a){
 	Read*b=at(m_elements-1);
 	*b=*a;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_elements<=m_maxSize);
 	assert(m_elements!=0);
 	assert(m_maxSize!=0);
@@ -104,7 +104,7 @@ LargeCount ArrayOfReads::size(){
 }
 
 Read*ArrayOfReads::at(LargeIndex i){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_maxSize!=0);
 	assert(m_numberOfChunks!=0);
 	assert(m_elements!=0);
@@ -114,7 +114,7 @@ Read*ArrayOfReads::at(LargeIndex i){
 
 	int chunkNumber=i/m_CHUNK_SIZE;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(chunkNumber>=m_numberOfChunks){
 		cout<<"ElementIdentifier="<<i<<" ChunkIdentifier="<<chunkNumber<<" NumberOfChunks="<<m_numberOfChunks<<" NumberOfElements="<<m_elements<<" MaxNumberOfElements="<<m_maxSize<<endl;
 	}
@@ -123,7 +123,7 @@ Read*ArrayOfReads::at(LargeIndex i){
 
 	int positionInSaidChunk=i%m_CHUNK_SIZE;
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(positionInSaidChunk<m_CHUNK_SIZE);
 	#endif
 
@@ -143,7 +143,7 @@ void ArrayOfReads::clear(){
 		m_maxSize=0;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_chunks==NULL);
 	assert(m_elements==0);
 	assert(m_numberOfChunks==0);

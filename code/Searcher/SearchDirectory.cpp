@@ -94,7 +94,7 @@ void SearchDirectory::readDirectory(){
 }
 
 int SearchDirectory::getCount(int i){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(i>=(int)m_counts.size()){
 		cout<<"Error, file= "<<i<<" but size= "<<m_counts.size()<<endl;
 		cout<<"Directory= "<<getDirectoryName()<<endl;
@@ -108,7 +108,7 @@ int SearchDirectory::getCount(int i){
 }
 
 void SearchDirectory::countEntriesInFile(int fileNumber){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(fileNumber<(int)m_files.size());
 	#endif
 
@@ -153,7 +153,7 @@ int SearchDirectory::getSize(){
 
 void SearchDirectory::setCount(int file,int count){
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	int current=m_counts[file];
 	if(current!=0){
 		assert(current==count);
@@ -165,7 +165,7 @@ void SearchDirectory::setCount(int file,int count){
 
 void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(file<(int)m_files.size());
 	assert(sequence<m_counts[file]);
 	#endif
@@ -177,7 +177,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		cout<<"Closing current file"<<endl;
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		//assert(m_currentFileStream.is_open());
 		#endif
 
@@ -185,7 +185,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		m_currentFileStream=NULL;
 		m_hasFile=false;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		//assert(!m_currentFileStream.is_open());
 		assert(m_currentFileStream==NULL);
 		#endif
@@ -195,7 +195,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 	// open the file
 	if(!m_hasFile){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_currentFileStream==NULL);
 		#endif
 
@@ -215,14 +215,14 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 
 		m_hasFile=true;
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		//assert(m_currentFileStream.is_open());
 		assert(m_currentFileStream!=NULL);
 		assert(m_hasFile);
 		#endif
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_hasFile);
 	assert(m_currentFile==file);
 	assert(m_currentFileStream!=NULL);
@@ -253,7 +253,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 		}
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(m_currentSequence!=sequence){
 		cout<<"Expected: "<<sequence<<" Actual: "<<m_currentSequence<<endl;
 	}
@@ -274,7 +274,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 
 	m_currentSequenceNumberOfAvailableKmers=0;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(strlen(m_currentSequenceHeader)>0);
 	assert(m_currentSequenceHeader[0]=='>');
 	assert(strlen(m_currentSequenceBuffer)==0);
@@ -286,7 +286,7 @@ void SearchDirectory::createSequenceReader(int file,int sequence,int kmerLength)
 void SearchDirectory::readLineFromFile(char*line,int length){
 	// use the buffer
 	if(m_hasBufferedLine){
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(m_hasBufferedLine);
 		#endif
 
@@ -298,20 +298,20 @@ void SearchDirectory::readLineFromFile(char*line,int length){
 		cout<<"Using buffered line!"<<endl;
 		#endif
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(!m_hasBufferedLine);
 		#endif
 
 		return;
 	}
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(strlen(m_bufferedLine)==0);
 	assert(!m_hasBufferedLine);
 	assert(m_currentFileStream!=NULL);
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(line!=NULL);
 	assert(length>0);
 	assert(m_currentFileStream!=NULL);
@@ -333,7 +333,7 @@ int SearchDirectory::getCurrentSequenceLengthInKmers(){
 
 bool SearchDirectory::hasNextKmer(int kmerLength){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(kmerLength>0);
 	#endif
 
@@ -371,7 +371,7 @@ bool SearchDirectory::hasNextKmer(int kmerLength){
 			cout<<"Closing file in hasNextKmer"<<endl;
 			#endif
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			//assert(m_currentFileStream.is_open());
 			assert(m_currentFileStream!=NULL);
 			#endif
@@ -381,11 +381,11 @@ bool SearchDirectory::hasNextKmer(int kmerLength){
 			m_hasFile=false;
 			m_currentFileStream=NULL;
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			//assert(!m_currentFileStream.is_open());
 			#endif
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_hasFile==false);
 			assert(m_currentFileStream==NULL);
 			#endif
@@ -413,7 +413,7 @@ void SearchDirectory::iterateToNextKmer(){
 
 void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(kmerLength>0);
 	#endif
 
@@ -427,7 +427,7 @@ void SearchDirectory::getNextKmer(int kmerLength,Kmer*kmer){
 	memcpy(sequenceBuffer,m_currentSequenceBuffer+m_currentSequencePosition,kmerLength);
 	sequenceBuffer[kmerLength]='\0';
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert((int)strlen(sequenceBuffer)==kmerLength);
 	#endif
 
@@ -484,7 +484,7 @@ string SearchDirectory::getCurrentSequenceName(){
 			position+=2;
 		}
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		if(position>=currentSequenceHeader.length()){
 			cout<<"Header= "<<currentSequenceHeader<<endl;
 		}
@@ -501,7 +501,7 @@ string SearchDirectory::getCurrentSequenceName(){
 	// remove the '>' and keep only maximumLength characters.
 	//cout<<"code 108"<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(currentSequenceHeader.length()==0){
 		cout<<"currentSequenceHeader is empty, fatal"<<endl;
 	}
@@ -518,7 +518,7 @@ void SearchDirectory::loadSomeSequence(){
 	if(m_noMoreSequence)
 		return;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_currentFileStream!=NULL);
 	assert(!m_noMoreSequence);
 	#endif
@@ -540,7 +540,7 @@ void SearchDirectory::loadSomeSequence(){
 
 	while(m_currentSequencePosition<theLength){
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(theLength>0);
 		#endif
 
@@ -569,7 +569,7 @@ void SearchDirectory::loadSomeSequence(){
 		// rollback to where we were before
 		if(lineIsSequenceHeader(line)){
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(strlen(m_bufferedLine)==0);
 			assert(!m_hasBufferedLine);
 			#endif
@@ -605,7 +605,7 @@ void SearchDirectory::loadSomeSequence(){
 	m_currentSequencePosition=0;
 	strcpy(m_currentSequenceBuffer,newContent);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_currentSequencePosition==0);
 	#endif
 
@@ -714,7 +714,7 @@ bool SearchDirectory::hasIdentifier_EMBL_CDS(){
 
 PhysicalKmerColor SearchDirectory::getIdentifier_EMBL_CDS(){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(hasIdentifier_EMBL_CDS());
 	#endif
 

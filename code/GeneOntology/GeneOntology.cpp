@@ -97,7 +97,7 @@ string GeneOntology::getDomainName(GeneOntologyDomain handle){
 		m_domainNames[GENE_ONTOLOGY_DOMAIN_biological_process]=GENE_ONTOLOGY_DOMAIN_biological_process_STRING;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_domainNames.count(handle)==1);
 	#endif
 
@@ -112,7 +112,7 @@ GeneOntologyDomain GeneOntology::getGeneOntologyDomain(const char*text){
 		m_domains[GENE_ONTOLOGY_DOMAIN_biological_process_STRING]=GENE_ONTOLOGY_DOMAIN_biological_process;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_domains.count(text)>0);
 	#endif
 
@@ -161,7 +161,7 @@ void GeneOntology::fetchRelevantColors(){
 		Vertex*node=iterator.next();
 		Kmer key=*(iterator.getKey());
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parity==0 || parity==1);
 		#endif
 
@@ -398,7 +398,7 @@ void GeneOntology::writeOntologyProfile(GeneOntologyDomain domain){
 		domainName=GENE_ONTOLOGY_DOMAIN_molecular_function_STRING;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(domainName!="NULL");
 	#endif
 
@@ -476,7 +476,7 @@ bool GeneOntology::hasDepth(GeneOntologyIdentifier handle){
 
 int GeneOntology::getGeneOntologyDepth(GeneOntologyIdentifier handle){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(m_depths.count(handle)==0){
 		cout<<"Error: handle "<<handle<<" identifier="<<getGeneOntologyIdentifier(handle)<<" has no depth"<<endl;
 	}
@@ -549,7 +549,7 @@ void GeneOntology::populateRecursiveValues(){
 
 void GeneOntology::addRecursiveCount(GeneOntologyIdentifier handle,int count){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_recursiveCounts.count(handle)==0);
 	#endif
 
@@ -557,7 +557,7 @@ void GeneOntology::addRecursiveCount(GeneOntologyIdentifier handle,int count){
 }
 
 int GeneOntology::getRecursiveCount(GeneOntologyIdentifier handle){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_recursiveCounts.count(handle)==1);
 	#endif
 
@@ -731,7 +731,7 @@ void GeneOntology::writeOntologyFiles(){
 			mean/=total;
 		}
 		
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(modeCoverages.count(handle)==0);
 		assert(meanCoverages.count(handle)==0);
 		#endif /**/
@@ -857,7 +857,7 @@ void GeneOntology::writeOntologyFiles(){
 
 void GeneOntology::setDomain(GeneOntologyIdentifier handle,GeneOntologyDomain domain){
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_termDomains.count(handle)==0);
 	#endif
 
@@ -874,7 +874,7 @@ GeneOntologyDomain GeneOntology::getDomain(GeneOntologyIdentifier handle){
 		return GENE_ONTOLOGY_DOMAIN_molecular_function;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(m_termDomains.count(handle)==0){
 		cout<<"Error, handle= "<<handle<<" termDomains: "<<m_termDomains.size()<<endl;
 	}
@@ -943,7 +943,7 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 
 			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(identifiers->count(handle)==0);
 			assert(descriptions->count(handle)==0);
 			#endif
@@ -978,7 +978,7 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 			GeneOntologyIdentifier handle=encoder.encodeGeneOntologyHandle(identifier.c_str());
 
 			// an alternate handle can be utilised only once
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(m_symbolicLinks.count(alternateHandle)==0);
 			#endif
 
@@ -1003,7 +1003,7 @@ void GeneOntology::loadOntology(map<GeneOntologyIdentifier,string>*identifiers,
 
 	cout<<"Rank "<<m_rank<<": loaded "<<identifiers->size()<<" gene ontology terms."<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(identifiers->size()==descriptions->size());
 	#endif
 
@@ -1079,7 +1079,7 @@ void GeneOntology::getPathsFromRoot(GeneOntologyIdentifier handle,vector<vector<
 
 void GeneOntology::addParentGeneOntologyIdentifier(GeneOntologyIdentifier term,GeneOntologyIdentifier parent){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	if(hasParent(term)){
 		vector<GeneOntologyIdentifier> parents;
 		getParents(term,&parents);
@@ -1097,7 +1097,7 @@ void GeneOntology::addParentGeneOntologyIdentifier(GeneOntologyIdentifier term,G
 
 void GeneOntology::getChildren(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*children){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(children->size()==0);
 	#endif
 
@@ -1113,7 +1113,7 @@ void GeneOntology::getChildren(GeneOntologyIdentifier handle,vector<GeneOntology
 
 void GeneOntology::getParents(GeneOntologyIdentifier handle,vector<GeneOntologyIdentifier>*parents){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(parents->size()==0);
 	#endif
 
@@ -1179,7 +1179,7 @@ void GeneOntology::synchronize(){
 
 		MessageUnit*buffer=(MessageUnit*)m_outboxAllocator->allocate(MAXIMUM_MESSAGE_SIZE_IN_BYTES);
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(buffer!=NULL);
 		#endif
 
@@ -1194,7 +1194,7 @@ void GeneOntology::synchronize(){
 			cout<<"[DEBUG_ONTOLOGY_SYNC] will add an object."<<endl;
 			#endif
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			if(added==0){
 				assert(bufferPosition==0);
 			}
@@ -1202,7 +1202,7 @@ void GeneOntology::synchronize(){
 				
 			addDataToBuffer(buffer,&bufferPosition);
 
-			#ifdef ASSERT
+			#ifdef CONFIG_ASSERT
 			assert(bufferPosition%3 == 0);
 			#endif
 
@@ -1288,7 +1288,7 @@ void GeneOntology::countOntologyTermsInGraph(){
 
 	cout<<"Rank "<<m_rank<<": counting ontology terms in the graph..."<<endl;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ontologyTermFrequencies.size()==0);
 	#endif
 
@@ -1305,7 +1305,7 @@ void GeneOntology::countOntologyTermsInGraph(){
 		Vertex*node=iterator.next();
 		Kmer key=*(iterator.getKey());
 
-		#ifdef ASSERT
+		#ifdef CONFIG_ASSERT
 		assert(parity==0 || parity==1);
 		#endif
 
@@ -1420,7 +1420,7 @@ GeneOntologyIdentifier GeneOntology::dereferenceTerm_safe(GeneOntologyIdentifier
 
 void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,CoverageDepth kmerCoverage,int frequency){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(kmerCoverage>0);
 	assert(frequency>0);
 
@@ -1431,7 +1431,7 @@ void GeneOntology::incrementOntologyTermFrequency(GeneOntologyIdentifier term,Co
 
 	m_ontologyTermFrequencies[term][kmerCoverage]+=frequency;
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_ontologyTermFrequencies.count(term)>0);
 	assert(m_ontologyTermFrequencies[term].count(kmerCoverage)>0);
 	#endif

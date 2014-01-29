@@ -33,7 +33,7 @@
 
 void GridTable::constructor(int rank,Parameters*parameters){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(parameters!=NULL);
 	#endif
 
@@ -82,7 +82,7 @@ LargeCount GridTable::size(){
 }
 
 Vertex*GridTable::find(Kmer*key){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(key!=NULL);
 	#endif
 
@@ -109,11 +109,11 @@ Vertex*GridTable::find(Kmer*key){
 }
 
 Vertex*GridTable::insert(Kmer*key){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(key!=NULL);
 	#endif
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(m_parameters!=NULL);
 	#endif
 
@@ -138,13 +138,13 @@ bool GridTable::inserted(){
 }
 
 bool GridTable::isAssembledByGreaterRank(Kmer*a,Rank origin){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 
 	Vertex*entry=find(a);
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(entry!=NULL);
 	#endif
 
@@ -152,13 +152,13 @@ bool GridTable::isAssembledByGreaterRank(Kmer*a,Rank origin){
 }
 
 bool GridTable::isAssembled(Kmer*a){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 
 	Vertex*entry=find(a);
 	
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(entry!=NULL);
 	#endif
 
@@ -167,7 +167,7 @@ bool GridTable::isAssembled(Kmer*a){
 
 void GridTable::addRead(Kmer*a,ReadAnnotation*e){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	assert(e!=NULL);
 	#endif
@@ -175,7 +175,7 @@ void GridTable::addRead(Kmer*a,ReadAnnotation*e){
 	Vertex*i=find(a);
 	i->addRead(a,e);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	ReadAnnotation*reads=i->getReads(a);
 	assert(reads!=NULL);
 	#endif
@@ -183,7 +183,7 @@ void GridTable::addRead(Kmer*a,ReadAnnotation*e){
 
 ReadAnnotation*GridTable::getReads(Kmer*a){
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 
@@ -197,7 +197,7 @@ ReadAnnotation*GridTable::getReads(Kmer*a){
 }
 
 void GridTable::addDirection(Kmer*a,Direction*d){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	assert(d!=NULL);
 
@@ -210,7 +210,7 @@ void GridTable::addDirection(Kmer*a,Direction*d){
 
 	Vertex*i=find(a);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i!=NULL);
 	#endif
 
@@ -218,7 +218,7 @@ void GridTable::addDirection(Kmer*a,Direction*d){
 }
 
 vector<Direction> GridTable::getDirections(Kmer*a){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 
@@ -229,7 +229,7 @@ vector<Direction> GridTable::getDirections(Kmer*a){
 		return p;
 	}
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i!=NULL);
 
 	/* do a copy to track to check for a segmentation fault */
@@ -241,13 +241,13 @@ vector<Direction> GridTable::getDirections(Kmer*a){
 }
 
 void GridTable::clearDirections(Kmer*a){
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(a!=NULL);
 	#endif
 
 	Vertex*i=find(a);
 
-	#ifdef ASSERT
+	#ifdef CONFIG_ASSERT
 	assert(i!=NULL);
 	#endif
 	
