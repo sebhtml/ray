@@ -479,4 +479,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.3.1-devel
+Ray 2.3.1
