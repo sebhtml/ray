@@ -3,6 +3,7 @@ available at
 - http://sourceforge.net/projects/denovoassembler/files/
 - https://github.com/sebhtml/Ray-Releases
 
+2014-02-12	Ray v2.3.1 "Distributed Pumpkin"		RayPlatform v2.0.1 "Actor Nest"
 2013-10-31	Ray v2.3.0 "Distributed Pumpkin"		RayPlatform v2.0.0 "Actor Nest"
 2013-04-17	Ray v2.2.0 "Cloudy Sky of Wishes"		RayPlatform v1.1.1 "Nested Droids of Luck"
 2012-10-30	Ray v2.1.0 "Ancient Granularity of Epochs"	RayPlatform v1.1.0 "Chariot of Complexity"
