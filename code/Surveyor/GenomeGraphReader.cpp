@@ -112,6 +112,8 @@ void GenomeGraphReader::readLine() {
 	char buffer[1024];
 	buffer[0] = '\0';
 
+	bool isCurrentlyAtTheGreatEndOfTime = m_reader.eof();
+
 	while(!m_bad && !m_reader.eof()) {
 		m_reader.getline(buffer, 1024);
 
@@ -122,7 +124,7 @@ void GenomeGraphReader::readLine() {
 		break;
 	}
 
-	if(m_bad || m_reader.eof()) {
+	if(m_bad || (m_reader.eof() && isCurrentlyAtTheGreatEndOfTime)) {
 
 		m_reader.close();
 
