@@ -76,19 +76,11 @@ void GenomeAssemblyReader::receive(Message & message) {
 void GenomeAssemblyReader::startParty(Message & message) {
 
 	char * buffer = (char*) message.getBufferBytes();
-        // SequenceKmerReader kmerRead;
 
 	memcpy(&m_aggregator, buffer, sizeof(int));
 	//m_aggregator = *(int*)(message.getBufferBytes());
 
         m_kmerReader.openFile(m_fileName, KMER_SIZE);
-
-	// m_reader.open(m_fileName.c_str());
-
-	// m_bad = false;
-
-	// if(!m_reader.isValid())
-	// 	m_bad = true;
 
 	m_loaded = 0;
 
@@ -123,12 +115,14 @@ void GenomeAssemblyReader::readKmer() {
         CoverageDepth coverage = 1;
         string badParent = "";
         string badChild = "";
-        cout << "DEBUG: ReadKmer" << endl;
+
 
         if(m_kmerReader.hasAnotherKmer()){
                 m_kmerReader.fetchNextKmer(sequence);
                 manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
+#if 0
                 cout << "DEBUG: Sending a Kmer to storekeeper" << endl;
+#endif
         }else{
 
 		Message finishedMessage;
@@ -138,7 +132,7 @@ void GenomeAssemblyReader::readKmer() {
 
 		die();
         }
-        
+
 
 }
 
@@ -163,8 +157,9 @@ void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, Cove
         Kmer kmer;
         kmer.loadFromTextRepresentation(sequence.c_str());
 
+#if 0
         cout << "DEBUG: "  << sequence.c_str() << endl;
-
+#endif
         Vertex vertex;
         vertex.setKey(kmer);
         vertex.setCoverageValue(coverage);

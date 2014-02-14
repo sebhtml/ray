@@ -33,7 +33,7 @@ SequenceKmerReader::~SequenceKmerReader(){
 }
 
 void SequenceKmerReader::openFile(string & fileName, int kmerSize){
-       
+
         m_kmerSize = kmerSize;
 
 	m_reader.open(fileName.c_str());
@@ -46,7 +46,7 @@ void SequenceKmerReader::openFile(string & fileName, int kmerSize){
 	m_loaded = 0;
 
 	cout <<"opens file " << fileName << endl;
-        
+
         m_hasKmerLeft = true;
 }
 
@@ -62,7 +62,6 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
 
         bool endOfFile = m_reader.eof();
 
-        ofstream kmerFile;
 
         while(m_tmpSequence.length() < (unsigned) m_kmerSize && !endOfFile){
                 m_reader.getline(m_buffer, 1024);
@@ -73,10 +72,6 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
         }
 
         if(m_tmpSequence.length() >= (unsigned) m_kmerSize){
-                
-                kmerFile.open("kmers.out.txt",ios::app);
-                kmerFile << m_tmpSequence.substr(0,m_kmerSize-1) << "\n";
-                kmerFile.close();
 
                 kmer = m_tmpSequence.substr(0,m_kmerSize-1);
                 convertSequenceToUpperCase(kmer);
