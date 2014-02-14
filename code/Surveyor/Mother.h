@@ -70,7 +70,8 @@ private:
 	vector<int> m_readers;
 
 	vector<string> m_sampleNames;
-	vector<string> m_graphFileNames;
+	vector<string> m_inputFileNames;
+        vector<int> m_sampleInputTypes;
 
 	int m_bigMother;
 	int m_aliveReaders;

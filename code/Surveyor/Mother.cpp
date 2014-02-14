@@ -25,6 +25,7 @@
 #include "Mother.h"
 #include "StoreKeeper.h"
 #include "GenomeGraphReader.h"
+#include "GenomeAssemblyReader.h"
 #include "MatrixOwner.h"
 
 #include <RayPlatform/cryptography/crypto.h>
@@ -35,7 +36,8 @@ using namespace std;
 #define PLAN_RANK_ACTORS_PER_RANK 1
 #define PLAN_MOTHER_ACTORS_PER_RANK 1
 #define PLAN_GENOME_GRAPH_READER_ACTORS_PER_RANK 999999
-
+#define INPUT_TYPE_GRAPH 0
+#define INPUT_TYPE_ASSEMBLY 1
 
 
 Mother::Mother() {
@@ -414,18 +416,34 @@ void Mother::startSurveyor() {
 
 	vector<string> * commands = m_parameters->getCommands();
 
+
 	for(int i = 0 ; i < (int) commands->size() ; ++i) {
 
 		string & element = commands->at(i);
 
-		if(element == "-read-sample-graph") {
+                // DONE: Check bounds for file names
 
-			string sampleName = commands->at(++i);
-			string fileName = commands->at(++i);
+                map<string,int> fastTable;
 
-			m_sampleNames.push_back(sampleName);
-			m_graphFileNames.push_back(fileName);
-		}
+                fastTable["-read-sample-graph"] = INPUT_TYPE_GRAPH;
+                fastTable["-read-sample-assembly"] = INPUT_TYPE_ASSEMBLY;
+
+                // Unsupported option
+                if(fastTable.count(element) == 0 || i+2 > (int) commands->size() )
+                        continue;
+
+                string sampleName = commands->at(++i);
+                string fileName = commands->at(++i);
+
+                m_sampleNames.push_back(sampleName);
+
+                // DONE implement this m_assemblyFileNames + type
+                m_inputFileNames.push_back(fileName);
+
+                int type = fastTable[element];
+
+                m_sampleInputTypes.push_back(type);
+
 	}
 
 	if(isRoot) {
@@ -475,7 +493,7 @@ void Mother::startSurveyor() {
 
 	// spawn an actor for each file that this actor owns
 
-	for(int i = 0; i < (int) m_graphFileNames.size() ; ++i) {
+	for(int i = 0; i < (int) m_inputFileNames.size() ; ++i) {
 
 		int mother = getName() % getSize();
 		int fileMother = i % getSize();
@@ -500,33 +518,57 @@ void Mother::spawnReader() {
 
 		int sampleIdentifier = m_filesToSpawn[m_fileIterator];
 
-		string & fileName = m_graphFileNames[sampleIdentifier];
-		m_fileIterator++;
+		string & fileName = m_inputFileNames[sampleIdentifier];
+		int type = m_sampleInputTypes[sampleIdentifier];
+                m_fileIterator++;
 
-		GenomeGraphReader * actor = new GenomeGraphReader();
-		spawn(actor);
-		actor->setFileName(fileName, sampleIdentifier);
 
-		int destination = actor->getName();
-		Message dummyMessage;
+		// GenomeGraphReader * actor = new GenomeGraphReader();
+		// GenomeGraphReader * actor = NULL;
 
-		int coalescenceManagerName = m_coalescenceManager;
-		//cout << "DEBUG coalescenceManagerName is " << coalescenceManagerName << endl;
 
-		dummyMessage.setBuffer(&coalescenceManagerName);
-		dummyMessage.setNumberOfBytes( sizeof(int) );
 
-		dummyMessage.setTag(GenomeGraphReader::START_PARTY);
+                if(type == INPUT_TYPE_GRAPH){
+                        GenomeGraphReader * actor = new GenomeGraphReader();
 
-		/*
-		printName();
-		cout << " sending START_PARTY " << GenomeGraphReader::START_PARTY;
-		cout << " to " << destination << endl;
-*/
+                        spawn(actor);
+                        actor->setFileName(fileName, sampleIdentifier);
 
-		m_aliveReaders ++;
 
-		send(destination, dummyMessage);
+                        int coalescenceManagerName = m_coalescenceManager;
+                        int destination = actor->getName();
+                        Message dummyMessage;
+
+                        dummyMessage.setBuffer(&coalescenceManagerName);
+                        dummyMessage.setNumberOfBytes( sizeof(int) );
+                        dummyMessage.setTag(GenomeGraphReader::START_PARTY);
+
+                        m_aliveReaders ++;
+
+                        send(destination, dummyMessage);
+
+
+                }else if(type == INPUT_TYPE_ASSEMBLY) {
+                        // TODO create GenomeAssemblyReader class
+                        GenomeAssemblyReader * actor = new GenomeAssemblyReader();
+                        spawn(actor);
+                        actor->setFileName(fileName, sampleIdentifier);
+
+                        int coalescenceManagerName = m_coalescenceManager;
+                        int destination = actor->getName();
+                        Message dummyMessage;
+
+                        dummyMessage.setBuffer(&coalescenceManagerName);
+                        dummyMessage.setNumberOfBytes( sizeof(int) );
+
+                        dummyMessage.setTag(GenomeAssemblyReader::START_PARTY);
+
+                        m_aliveReaders ++;
+
+                        send(destination, dummyMessage);
+
+                }
+
 	}
 
 	if(m_aliveReaders == 0) {
