@@ -1,7 +1,6 @@
 /*
-    Copyright 2013 Sébastien Boisvert
-    Copyright 2013 Université Laval
-    Copyright 2013 Centre Hospitalier Universitaire de Québec
+    Copyright 2014 Maxime Déraspe
+    Copyright 2014 Université Laval
 
     This file is part of Ray Surveyor.
 
@@ -59,12 +58,12 @@ private:
 
 	void startParty(Message & message);
 
-        /* string m_tmpSequence; */
-
-        /* void convertSequenceToUpperCase(string & sequence); */
         void manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parent, string & child);
 
+        int m_kmerSize;
         SequenceKmerReader m_kmerReader;
+
+	void readKmer();
 
 public:
 
@@ -80,9 +79,8 @@ public:
 	GenomeAssemblyReader();
 	~GenomeAssemblyReader();
 	void receive(Message & message);
-	void readKmer();
 	void setFileName(string & fileName, int sample);
-
+        void setKmerSize(int kmerSize);
 
 };
 

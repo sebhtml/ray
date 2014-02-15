@@ -1,6 +1,6 @@
 /*
-    Copyright 2013 Maxime Déraspe
-    Copyright 2013 Université Laval
+    Copyright 2014 Maxime Déraspe
+    Copyright 2014 Université Laval
 
     This file is part of Ray Surveyor.
 
@@ -39,7 +39,6 @@ using namespace std;
 #include <string.h>
 
 // TODO: need to know the kmer size
-#define KMER_SIZE 31
 
 GenomeAssemblyReader::GenomeAssemblyReader() {
 
@@ -80,7 +79,7 @@ void GenomeAssemblyReader::startParty(Message & message) {
 	memcpy(&m_aggregator, buffer, sizeof(int));
 	//m_aggregator = *(int*)(message.getBufferBytes());
 
-        m_kmerReader.openFile(m_fileName, KMER_SIZE);
+        m_kmerReader.openFile(m_fileName, m_kmerSize);
 
 	m_loaded = 0;
 
@@ -248,4 +247,9 @@ void GenomeAssemblyReader::setFileName(string & fileName, int sample) {
 	cout << " DEBUG setFileName " << m_fileName << endl;
 #endif
 
+}
+
+
+void GenomeAssemblyReader::setKmerSize(int kmerSize) {
+        m_kmerSize = kmerSize;
 }

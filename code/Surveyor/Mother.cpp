@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert
+    Copyright 2013 Sébastien Boisvert, Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
@@ -429,7 +429,7 @@ void Mother::startSurveyor() {
                 fastTable["-read-sample-assembly"] = INPUT_TYPE_ASSEMBLY;
 
                 // Unsupported option
-                if(fastTable.count(element) == 0 || i+2 > (int) commands->size() )
+                if(fastTable.count(element) == 0 || i+2 > (int) commands->size())
                         continue;
 
                 string sampleName = commands->at(++i);
@@ -487,7 +487,6 @@ void Mother::startSurveyor() {
 		kmerMessage.setNumberOfBytes(sizeof(kmerLength));
 		kmerMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
 		send(localStore, kmerMessage);
-
 	}
 
 
@@ -499,9 +498,7 @@ void Mother::startSurveyor() {
 		int fileMother = i % getSize();
 
 		if(mother == fileMother) {
-
 			m_filesToSpawn.push_back(i);
-
 		}
 	}
 
@@ -521,12 +518,6 @@ void Mother::spawnReader() {
 		string & fileName = m_inputFileNames[sampleIdentifier];
 		int type = m_sampleInputTypes[sampleIdentifier];
                 m_fileIterator++;
-
-
-		// GenomeGraphReader * actor = new GenomeGraphReader();
-		// GenomeGraphReader * actor = NULL;
-
-
 
                 if(type == INPUT_TYPE_GRAPH){
                         GenomeGraphReader * actor = new GenomeGraphReader();
@@ -553,6 +544,7 @@ void Mother::spawnReader() {
                         GenomeAssemblyReader * actor = new GenomeAssemblyReader();
                         spawn(actor);
                         actor->setFileName(fileName, sampleIdentifier);
+                        actor->setKmerSize(m_parameters->getWordSize());
 
                         int coalescenceManagerName = m_coalescenceManager;
                         int destination = actor->getName();
@@ -568,7 +560,6 @@ void Mother::spawnReader() {
                         send(destination, dummyMessage);
 
                 }
-
 	}
 
 	if(m_aliveReaders == 0) {
