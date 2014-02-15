@@ -120,7 +120,7 @@ void GenomeAssemblyReader::readKmer() {
 
         if(m_kmerReader.hasAnotherKmer()){
 
-                // m_kmerReader.fetchNextKmer(sequence);
+                m_kmerReader.fetchNextKmer(sequence);
                 // outFile << sequence << endl;
                 // outFile.close();
                 manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
