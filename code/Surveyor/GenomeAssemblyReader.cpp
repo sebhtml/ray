@@ -115,9 +115,14 @@ void GenomeAssemblyReader::readKmer() {
         string badParent = "";
         string badChild = "";
 
+        // ofstream outFile;
+        // outFile.open("kmers-created.txt", ios::app);
 
         if(m_kmerReader.hasAnotherKmer()){
-                m_kmerReader.fetchNextKmer(sequence);
+
+                // m_kmerReader.fetchNextKmer(sequence);
+                // outFile << sequence << endl;
+                // outFile.close();
                 manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
 #if 0
                 cout << "DEBUG: Sending a Kmer to storekeeper" << endl;

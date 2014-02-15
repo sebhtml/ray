@@ -60,25 +60,23 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
 
 	m_buffer[0] = '\0';
 
-        bool endOfFile = m_reader.eof();
+        m_hasKmerLeft = !(m_tmpSequence.length() < (unsigned) m_kmerSize && m_reader.eof());
 
-
-        while(m_tmpSequence.length() < (unsigned) m_kmerSize && !endOfFile){
+        while(m_tmpSequence.length() < (unsigned) m_kmerSize && !m_reader.eof()){
                 m_reader.getline(m_buffer, 1024);
                 if (m_buffer[0] != '>'){
-                        m_buffer[strlen(m_buffer)-1] = '\0';
+                        if(m_buffer[strlen(m_buffer)-1] == '\n'){
+                                m_buffer[strlen(m_buffer)-1] = '\0';
+                        }
                         m_tmpSequence += m_buffer;
                 }
         }
 
-        if(m_tmpSequence.length() >= (unsigned) m_kmerSize){
-
+        if(m_tmpSequence.length() + 1 >= (unsigned) m_kmerSize){
                 kmer = m_tmpSequence.substr(0,m_kmerSize-1);
                 convertSequenceToUpperCase(kmer);
                 m_tmpSequence.erase(0,1);
         }
-
-        m_hasKmerLeft = (!endOfFile || m_tmpSequence.length() >= (unsigned) m_kmerSize) ;
 
 }
 
