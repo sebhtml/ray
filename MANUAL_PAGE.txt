@@ -95,8 +95,12 @@ DESCRIPTION:
               This workflow generates:
               RayOutput/Surveyor/SimilarityMatrix.tsv is a similarity Gramian matrix based on shared DNA words
               RayOutput/Surveyor/DistanceMatrix.tsv is a distance matrix (kernel-based).
+
        -read-sample-graph SampleName SampleGraphFile
               Reads a sample graph (generated with -write-kmers)
+
+       -read-sample-assembly SampleName SampleAssemblyFile
+              Reads an assembly (a fasta file)
 
   Assembly options (defaults work well)
 
@@ -479,4 +483,4 @@ COPYRIGHT
        You have received a copy of the GNU General Public License
        along with this program (see LICENSE).
 
-Ray 2.3.1
+Ray 2.3.2-devel

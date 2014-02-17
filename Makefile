@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 3
-SUBLEVEL = 1
-EXTRAVERSION =
+SUBLEVEL = 2
+EXTRAVERSION = -devel
 NAME = Distributed Pumpkin
 
 # Like in Linux, stuff that must be propagated to

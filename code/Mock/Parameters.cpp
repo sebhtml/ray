@@ -1609,11 +1609,13 @@ void Parameters::showUsage(){
 	showOptionDescription("This workflow generates:");
 	showOptionDescription("RayOutput/Surveyor/SimilarityMatrix.tsv is a similarity Gramian matrix based on shared DNA words");
 	showOptionDescription("RayOutput/Surveyor/DistanceMatrix.tsv is a distance matrix (kernel-based).");
+	cout << endl;
 
 	showOption("-read-sample-graph SampleName SampleGraphFile", "Reads a sample graph (generated with -write-kmers)");
-
 	cout<<endl;
 
+	showOption("-read-sample-assembly SampleName SampleAssemblyFile", "Reads an assembly (a fasta file)");
+	cout<<endl;
 
 
 
