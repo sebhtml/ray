@@ -72,7 +72,6 @@ void GenomeGraphReader::startParty(Message & message) {
 	char * buffer = (char*) message.getBufferBytes();
 
 	memcpy(&m_aggregator, buffer, sizeof(int));
-	//m_aggregator = *(int*)(message.getBufferBytes());
 
 	m_reader.open(m_fileName.c_str());
 
@@ -88,14 +87,6 @@ void GenomeGraphReader::startParty(Message & message) {
 
 	m_parent = message.getSourceActor();
 
-	/*
-	printName();
-	cout << "DEBUG startParty" << endl;
-	cout << " bytes in message: " << message.getNumberOfBytes();
-	cout << " must send messages to aggregator " << m_aggregator;
-	cout << endl;
-*/
-
 	int source = message.getSourceActor();
 	Message response;
 	response.setTag(START_PARTY_OK);
@@ -105,8 +96,6 @@ void GenomeGraphReader::startParty(Message & message) {
 	readLine();
 }
 
-// DONE 2013-10-16: add a BufferedLineReader class in RayPlatform
-// and use it here.
 void GenomeGraphReader::readLine() {
 
 	char buffer[1024];

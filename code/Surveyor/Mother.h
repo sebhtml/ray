@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert
+    Copyright 2013 Sébastien Boisvert, Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
@@ -70,7 +70,8 @@ private:
 	vector<int> m_readers;
 
 	vector<string> m_sampleNames;
-	vector<string> m_graphFileNames;
+	vector<string> m_inputFileNames;
+        vector<int> m_sampleInputTypes;
 
 	int m_bigMother;
 	int m_aliveReaders;
