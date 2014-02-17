@@ -544,7 +544,7 @@ void Mother::spawnReader() {
                         GenomeAssemblyReader * actor = new GenomeAssemblyReader();
                         spawn(actor);
                         actor->setFileName(fileName, sampleIdentifier);
-                        actor->setKmerSize(m_parameters->getWordSize()+1);
+                        actor->setKmerSize(m_parameters->getWordSize());
 
                         int coalescenceManagerName = m_coalescenceManager;
                         int destination = actor->getName();

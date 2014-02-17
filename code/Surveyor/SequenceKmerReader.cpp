@@ -73,7 +73,7 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
         }
 
         if(m_tmpSequence.length() + 1 >= (unsigned) m_kmerSize){
-                kmer = m_tmpSequence.substr(0,m_kmerSize-1);
+                kmer = m_tmpSequence.substr(0,m_kmerSize);
                 convertSequenceToUpperCase(kmer);
                 m_tmpSequence.erase(0,1);
         }

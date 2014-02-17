@@ -77,24 +77,14 @@ void GenomeAssemblyReader::startParty(Message & message) {
 	char * buffer = (char*) message.getBufferBytes();
 
 	memcpy(&m_aggregator, buffer, sizeof(int));
-	//m_aggregator = *(int*)(message.getBufferBytes());
 
         m_kmerReader.openFile(m_fileName, m_kmerSize);
-
 	m_loaded = 0;
 
 	printName();
 	cout <<"opens file " << m_fileName << endl;
 
 	m_parent = message.getSourceActor();
-
-	/*
-	printName();
-	cout << "DEBUG startParty" << endl;
-	cout << " bytes in message: " << message.getNumberOfBytes();
-	cout << " must send messages to aggregator " << m_aggregator;
-	cout << endl;
-        */
 
 	int source = message.getSourceActor();
 	Message response;
