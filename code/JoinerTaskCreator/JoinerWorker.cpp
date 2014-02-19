@@ -1,6 +1,6 @@
 /*
  	Ray
-    Copyright (C) 2010, 2011, 2012, 2013 Sébastien Boisvert
+    Copyright (C) 2010, 2011, 2012, 2013, 2014 Sébastien Boisvert
 
 	http://DeNovoAssembler.SourceForge.Net/
 
@@ -14,12 +14,13 @@
     GNU General Public License for more details.
 
     You have received a copy of the GNU General Public License
-    along with this program (gpl-3.0.txt).  
+    along with this program (gpl-3.0.txt).
 	see <http://www.gnu.org/licenses/>
 
 */
 
 #include "JoinerWorker.h"
+#include "PathMaster.h"
 
 #include <iostream>
 using namespace std;
@@ -39,6 +40,15 @@ bool JoinerWorker::isDone(){
  *
  */
 void JoinerWorker::work(){
+
+	bool debugMode = false;
+
+	if(m_parameters->hasOption("-debug-fusions")) {
+
+		debugMode = true;
+	}
+
+
 /*
   used tags:
 
@@ -99,7 +109,7 @@ void JoinerWorker::work(){
 			vector<MessageUnit> response;
 			m_virtualCommunicator->getMessageResponseElements(m_workerIdentifier,&response);
 			m_numberOfPaths=response[0];
-		
+
 			if(m_parameters->hasOption("-debug-fusions2"))
 				cout<<"worker "<<m_workerIdentifier<<" Got "<<m_numberOfPaths<<endl;
 
@@ -124,7 +134,7 @@ void JoinerWorker::work(){
 				if(m_reverseStrand){
 					kmer=kmer.complementVertex(m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				}
-	
+
 				int destination=kmer.vertexRank(m_parameters->getSize(),
 					m_parameters->getWordSize(),m_parameters->getColorSpaceMode());
 				int elementsPerQuery=m_virtualCommunicator->getElementsPerQuery(RAY_MPI_TAG_ASK_VERTEX_PATH);
@@ -160,7 +170,7 @@ void JoinerWorker::work(){
 
 				if(otherPathIdentifier != m_identifier){
 					m_hits[otherPathIdentifier]++;
-			
+
 					int positionOnSelf=m_position;
 
 					if(m_reverseStrand){
@@ -263,7 +273,7 @@ void JoinerWorker::work(){
 		int bestOtherScore=0;
 
 		for(map<PathHandle,vector<int> >::iterator i=m_selfPositions.begin();i!=m_selfPositions.end();i++){
-	
+
 			PathHandle otherIdentifier=i->first;
 
 			set<int> positionsForSelf;
@@ -275,7 +285,7 @@ void JoinerWorker::work(){
 			}
 
 			// find the coordinates now
-			
+
 			int maximumBadEvents=32;
 			int relevantScore=128;
 
@@ -310,7 +320,7 @@ void JoinerWorker::work(){
 				}
 
 				if(localScore > bestSelfScore){
-			
+
 					if(localScore >= relevantScore){
 
 						if(m_parameters->hasOption("-debug-fusions")){
@@ -358,7 +368,7 @@ void JoinerWorker::work(){
 				}
 
 				if(localScore > bestOtherScore){
-			
+
 					if(localScore >= relevantScore){
 						if(m_parameters->hasOption("-debug-fusions")){
 							cout<<"New best score for other (handle: "<<otherIdentifier;
@@ -448,7 +458,7 @@ void JoinerWorker::work(){
 			double selfRangeRatio=(selfRange+0.0)/matches;
 			double otherRangeRatio=(otherRange+0.0)/matches;
 
-			if(selfRangeRatio < (1-softZone) || otherRangeRatio < (1-softZone) 
+			if(selfRangeRatio < (1-softZone) || otherRangeRatio < (1-softZone)
 				|| selfRangeRatio > (1+softZone) || otherRangeRatio > (1+softZone)){
 
 				continue;
@@ -491,7 +501,7 @@ Hit
  End: 27051
 
 while there is 1451 matches, this is simply not sufficient to do the matching.
-at the moment, the minimum is 1000. Maybe change that to something larger, like 
+at the moment, the minimum is 1000. Maybe change that to something larger, like
 8192.
 
 The main purpose of this code is to merge things that are identical, almost.
@@ -521,7 +531,7 @@ Also, don't do it if the matching ratios are below 10%.
 			int hitLength=m_hitLengths[hit];
 			int selfLength=m_path->size();
 			int matches=m_hits[hit];
-			
+
 			if(m_parameters->hasOption("-debug-fusions")){
 				cout<<"SelectedHit selfPath= "<<m_identifier<<" selfStrand="<<m_reverseStrand<<" selfLength= "<<selfLength<<" MinSelf="<<m_minPositionOnSelf[hit]<<" MaxSelf="<<m_maxPositionOnSelf[hit]<<" Path="<<hit<<"	matches= "<<matches<<"	length= "<<hitLength<<" minPosition= "<<m_minPosition[hit]<<" maxPosition= "<<m_maxPosition[hit]<<endl;
 			}
@@ -570,7 +580,7 @@ Also, don't do it if the matching ratios are below 10%.
 				kmer.unpack(&response,&position);
 
 				m_hitVertices.push_back(&kmer);
-				
+
 				m_hitPosition++;
 				m_requestedHitVertex=false;
 			}
@@ -603,7 +613,7 @@ Also, don't do it if the matching ratios are below 10%.
 			/* self can be forward or reverse
  * 				self can hit on its left or on its right side
  * 			other can be forward
- * 			other can hit on its left and on its right side 
+ * 			other can hit on its left and on its right side
  * 			*/
 
 			int selfMiddle=(m_minPositionOnSelf[hitName]+m_maxPositionOnSelf[hitName])/2;
@@ -622,55 +632,18 @@ Also, don't do it if the matching ratios are below 10%.
 				otherSide=RIGHT_SIDE;
 
 			/*
+			               |
  * 			--------------->
  * 				---------------->
  * 				*/
 			if(selfSide==RIGHT_SIDE && otherSide == LEFT_SIDE){
 
-				if(m_parameters->hasOption("-debug-fusions"))
-					cout<<"VALID"<<endl;
-				
-				GraphPath newPath;
-				newPath.setKmerLength(m_parameters->getWordSize());
+				if(m_parameters->hasOption("-debug-fusions")) {
+					cout<<"VALID  self:RIGHT_SIDE, other:LEFT_SIDE"<<endl;
 
-				/* we take directly the path */
-				if(!m_reverseStrand){
-					newPath=(*m_path);
-				}else{
-					/* we need the reverse complement path */
-					GraphPath rc;
-					rc.setKmerLength(m_parameters->getWordSize());
 
-					for(int j=(*m_path).size()-1;j>=0;j--){
-	
-						Kmer theKmer;
-						(*m_path).at(j,&theKmer);
-						Kmer newKmer=theKmer.complementVertex(m_parameters->getWordSize(),
-							m_parameters->getColorSpaceMode());
-
-						rc.push_back(&newKmer);
-					}
-					newPath=rc;
-				}
-
-				/* other path is always forward strand */
-				for(int i=m_maxPosition[hitName]+1;i<(int)hitLength;i++){
-					Kmer otherKmer;
-					m_hitVertices.at(i,&otherKmer);
-					newPath.push_back(&otherKmer);
-				}
-
-				m_newPaths->push_back(newPath);
-
-				if(m_parameters->hasOption("-debug-fusions")){
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
-				}
-
-				if(m_parameters->hasOption("-debug-fusions")){
 					cout<<"Received hit path data."<<endl;
-				}
 
-				if(m_parameters->hasOption("-debug-fusions")){
 					cout<<"Matches: "<<matches<<endl;
 					cout<<"Self"<<endl;
 					cout<<" Identifier: "<<m_identifier<<endl;
@@ -686,6 +659,50 @@ Also, don't do it if the matching ratios are below 10%.
 					cout<<" End: "<<m_maxPosition[hitName]<<endl;
 				}
 
+				int bestMatches = 0;
+				int bestLast1 = 0;
+				int bestLast2 = 0;
+
+				GraphPath & path1 = *m_path;
+				GraphPath & path2 = m_hitVertices;
+
+				PathMaster pathMaster;
+				pathMaster.initialize(m_parameters);
+				pathMaster.compare(path1, m_reverseStrand, path2, false,
+						bestMatches, bestLast1, bestLast2);
+
+				//
+
+				if(debugMode ) {
+
+					cout << "/DEBUG ";
+
+					cout << " path0 " << m_reverseStrand << " 0-" << m_path->size() - 1;
+					cout << " band " << bestLast1 - bestMatches + 1 << "-" << bestLast1;
+					cout << " / ";
+					cout << " path1 " << false << " 0-" << m_hitVertices.size() - 1;
+					cout << " band " << bestLast2 - bestMatches + 1 << "-" << bestLast2;
+
+					cout << " Matches " << bestMatches << endl;
+					cout << endl;
+				}
+
+				//-----------------------------
+				// generate new path
+				//
+
+				GraphPath newPath;
+
+				pathMaster.combine(newPath, path1, m_reverseStrand,
+							path2, false, bestLast1, bestLast2);
+
+				if(debugMode) {
+					cout<<"Created new path, length= "<<newPath.size()<<endl;
+
+				}
+
+
+				m_newPaths->push_back(newPath);
 
 				m_eliminated=true;
 
@@ -695,8 +712,9 @@ Also, don't do it if the matching ratios are below 10%.
  *             */
 			}else if(selfSide==LEFT_SIDE && otherSide == RIGHT_SIDE){
 
-				if(m_parameters->hasOption("-debug-fusions"))
-					cout<<"VALID"<<endl;
+				if(m_parameters->hasOption("-debug-fusions")) {
+					cout<<"VALID self:LEFT_SIDE other: RIGHT_SIDE"<<endl;
+				}
 
 				/* other path is always forward strand */
 				GraphPath newPath=m_hitVertices;

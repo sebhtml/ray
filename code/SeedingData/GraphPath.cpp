@@ -111,7 +111,8 @@ void GraphPath::push_back(const Kmer*a){
 			cout<<"last objects:"<<endl;
 			int count=16;
 			int iterator=size()-count;
-			while(iterator<size()){
+
+			while(iterator<size() && iterator >= 0){
 				Kmer theObject;
 				at(iterator,&theObject);
 
