@@ -16,9 +16,11 @@
  * along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "PathMaster.h"
+
+#include <code/Mock/Logger.h>
+
+// #define DEBUG_THE_PATH_MASTER
 
 PathMaster::PathMaster(){
 
@@ -171,14 +173,16 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1, i
 	assert(bestLast2 >= 0);
 	assert(bestLast2 < (int) path2.size());
 
+#ifdef DEBUG_THE_PATH_MASTER
 	cout << "DEBUG combine path1 pathSize " << path1.size() << " strand " << strand1 << " position " << bestLast1 << endl;
 	display(path1, strand1, bestLast1-30, bestLast1 + 30, bestLast1);
 
 	cout << "DEBUG pathSize path2 " << path2.size() << " strand " << strand2 << " position " << bestLast2 << endl;
 	display(path2, strand2, bestLast2-30, bestLast2 + 30, bestLast2);
 
+#endif
 
-	cout << "DEBUG length newPath (t=  0) " << newPath.size() << endl;
+	LOG(INFO) << "DEBUG length newPath (t=  0) " << newPath.size() << endl;
 
 	/* we take directly the path */
 	if(!strand1){
@@ -202,7 +206,7 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1, i
 
 	}
 
-	cout << "DEBUG length newPath (t=  1) " << newPath.size() << endl;
+	LOG(INFO) << "DEBUG length newPath (t=  1) " << newPath.size() << endl;
 
 	bool hasError = false;
 
@@ -231,12 +235,12 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1, i
 
 			hasError = true;
 
-			cout << "Warning: problem detected while creating new path." << endl;
+			LOG(WARNING) << "Warning: problem detected while creating new path." << endl;
 		}
 	}
 
 
-	cout << "DEBUG length newPath (t=  2) " << newPath.size() << endl;
+	LOG(INFO) << "DEBUG length newPath (t=  2) " << newPath.size() << endl;
 
 }
 

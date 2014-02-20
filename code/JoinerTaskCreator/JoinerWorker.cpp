@@ -22,8 +22,12 @@
 #include "JoinerWorker.h"
 #include "PathMaster.h"
 
+#include <code/Mock/Logger.h>
+
 #include <iostream>
 using namespace std;
+
+// #define DEBUG_PATH_MASTER "YES"
 
 bool JoinerWorker::isDone(){
 	return m_isDone;
@@ -697,10 +701,7 @@ Also, don't do it if the matching ratios are below 10%.
 				pathMaster.combine(newPath, path1, m_reverseStrand, bestLast1,
 							path2, false, bestLast2);
 
-				if(debugMode) {
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
-
-				}
+				LOG(INFO) <<"Created new path, length= "<<newPath.size()<<endl;
 
 
 				m_newPaths->push_back(newPath);
@@ -715,7 +716,6 @@ Also, don't do it if the matching ratios are below 10%.
 
 				if(m_parameters->hasOption("-debug-fusions")) {
 					cout<<"VALID self:LEFT_SIDE other: RIGHT_SIDE"<<endl;
-
 
 					cout<<"Received hit path data."<<endl;
 					cout<<"Matches: "<<matches<<endl;
@@ -732,8 +732,6 @@ Also, don't do it if the matching ratios are below 10%.
 					cout<<" Begin: "<<m_minPosition[hitName]<<endl;
 					cout<<" End: "<<m_maxPosition[hitName]<<endl;
 				}
-
-
 
 				int bestMatches = 0;
 				int bestLast1 = 0;
@@ -768,10 +766,8 @@ Also, don't do it if the matching ratios are below 10%.
 							path1, m_reverseStrand, bestLast1);
 				m_newPaths->push_back(newPath);
 
-				if(debugMode) {
 
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
-				}
+				LOG(INFO) <<"Created new path, length= "<<newPath.size()<<endl;
 
 				m_eliminated=true;
 
