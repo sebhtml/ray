@@ -21,6 +21,7 @@
 #include "NetworkTest.h"
 
 #include <code/Mock/constants.h>
+#include <code/Mock/Logger.h>
 
 #include <RayPlatform/communication/Message.h>
 #include <RayPlatform/communication/mpi_tags.h>
@@ -120,6 +121,9 @@ void NetworkTest::constructor(int rank,int size,StaticVector*inbox,StaticVector*
 void NetworkTest::call_RAY_SLAVE_MODE_TEST_NETWORK(){
 
 	if(!m_started){
+
+		LOG(INFO) << "Testing Logger." << endl;
+		LOG(NETWORK_TEST_DEBUG) << "Another test ." << endl;
 
 		m_started=true;
 

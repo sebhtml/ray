@@ -180,8 +180,6 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1, i
 
 	cout << "DEBUG length newPath (t=  0) " << newPath.size() << endl;
 
-
-
 	/* we take directly the path */
 	if(!strand1){
 
