@@ -668,8 +668,9 @@ Also, don't do it if the matching ratios are below 10%.
 
 				PathMaster pathMaster;
 				pathMaster.initialize(m_parameters);
-				pathMaster.compare(path1, m_reverseStrand, path2, false,
-						bestMatches, bestLast1, bestLast2);
+				pathMaster.compare(path1, m_reverseStrand, bestLast1,
+						path2, false, bestLast2,
+						bestMatches);
 
 				//
 
@@ -693,8 +694,8 @@ Also, don't do it if the matching ratios are below 10%.
 
 				GraphPath newPath;
 
-				pathMaster.combine(newPath, path1, m_reverseStrand,
-							path2, false, bestLast1, bestLast2);
+				pathMaster.combine(newPath, path1, m_reverseStrand, bestLast1,
+							path2, false, bestLast2);
 
 				if(debugMode) {
 					cout<<"Created new path, length= "<<newPath.size()<<endl;
@@ -714,44 +715,7 @@ Also, don't do it if the matching ratios are below 10%.
 
 				if(m_parameters->hasOption("-debug-fusions")) {
 					cout<<"VALID self:LEFT_SIDE other: RIGHT_SIDE"<<endl;
-				}
 
-				/* other path is always forward strand */
-				GraphPath newPath=m_hitVertices;
-				newPath.setKmerLength(m_parameters->getWordSize());
-
-				/* we push the forward path */
-				if(!m_reverseStrand){
-					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
-						Kmer aKmer;
-						m_path->at(i,&aKmer);
-						newPath.push_back(&aKmer);
-					}
-
-				/* we push the reverse path */
-				}else{
-					GraphPath rc;
-					rc.setKmerLength(m_parameters->getWordSize());
-					for(int j=(*m_path).size()-1;j>=0;j--){
-
-						Kmer otherKmer;
-						(*m_path).at(j,&otherKmer);
-						Kmer aKmer=otherKmer.complementVertex(m_parameters->getWordSize(),
-							m_parameters->getColorSpaceMode());
-						rc.push_back(&aKmer);
-					}
-
-					for(int i=m_maxPositionOnSelf[hitName]+1;i<(int)m_path->size();i++){
-						Kmer otherKmer;
-						rc.at(i,&otherKmer);
-						newPath.push_back(&otherKmer);
-					}
-
-				}
-				m_newPaths->push_back(newPath);
-
-				if(m_parameters->hasOption("-debug-fusions")){
-					cout<<"Created new path, length= "<<newPath.size()<<endl;
 
 					cout<<"Received hit path data."<<endl;
 					cout<<"Matches: "<<matches<<endl;
@@ -767,6 +731,46 @@ Also, don't do it if the matching ratios are below 10%.
 					cout<<" Length: "<<hitLength<<endl;
 					cout<<" Begin: "<<m_minPosition[hitName]<<endl;
 					cout<<" End: "<<m_maxPosition[hitName]<<endl;
+				}
+
+
+
+				int bestMatches = 0;
+				int bestLast1 = 0;
+				int bestLast2 = 0;
+
+				GraphPath & path1 = *m_path;
+				GraphPath & path2 = m_hitVertices;
+
+				PathMaster pathMaster;
+				pathMaster.initialize(m_parameters);
+				pathMaster.compare(path1, m_reverseStrand, bestLast1,
+						path2, false, bestLast2,
+						bestMatches);
+
+				if(debugMode ) {
+
+					cout << "/DEBUG_LEFT_SIDE ";
+
+					cout << " path0 " << m_reverseStrand << " 0-" << m_path->size() - 1;
+					cout << " band " << bestLast1 - bestMatches + 1 << "-" << bestLast1;
+					cout << " / ";
+					cout << " path1 " << false << " 0-" << m_hitVertices.size() - 1;
+					cout << " band " << bestLast2 - bestMatches + 1 << "-" << bestLast2;
+
+					cout << " Matches " << bestMatches << endl;
+					cout << endl;
+				}
+
+				GraphPath newPath;
+
+				pathMaster.combine(newPath, path2, false, bestLast2,
+							path1, m_reverseStrand, bestLast1);
+				m_newPaths->push_back(newPath);
+
+				if(debugMode) {
+
+					cout<<"Created new path, length= "<<newPath.size()<<endl;
 				}
 
 				m_eliminated=true;

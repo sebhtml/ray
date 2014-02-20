@@ -33,8 +33,8 @@ void PathMaster::initialize(Parameters * parameters) {
 	m_parameters = parameters;
 }
 
-void PathMaster::compare(GraphPath & path1, bool strand1, GraphPath & path2, bool strand2,
-		int &bestMatches, int &bestLast1, int &bestLast2) {
+void PathMaster::compare(GraphPath & path1, bool strand1, int &bestLast1,
+	GraphPath & path2, bool strand2, int &bestLast2, int &bestMatches) {
 
 	vector<Kmer> kmers;
 
@@ -160,8 +160,8 @@ void PathMaster::compare(GraphPath & path1, bool strand1, GraphPath & path2, boo
  *                                    |
  *                                   bestLast2
  */
-void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1,
-							GraphPath & path2, bool strand2, int bestLast1, int bestLast2) {
+void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1, int bestLast1,
+		GraphPath & path2, bool strand2, int bestLast2) {
 
 	newPath.setKmerLength(m_parameters->getWordSize());
 
@@ -170,7 +170,6 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1,
 	assert(bestLast1 < (int)path1.size());
 	assert(bestLast2 >= 0);
 	assert(bestLast2 < (int) path2.size());
-
 
 	cout << "DEBUG combine path1 pathSize " << path1.size() << " strand " << strand1 << " position " << bestLast1 << endl;
 	display(path1, strand1, bestLast1-30, bestLast1 + 30, bestLast1);
@@ -209,10 +208,19 @@ void PathMaster::combine(GraphPath & newPath, GraphPath & path1, bool strand1,
 
 	bool hasError = false;
 
+	GraphPath rc;
+
+	GraphPath * selection = &path2;
+
+	if(strand2) {
+		path2.reverseContent(rc);
+		selection = &rc;
+	}
+
 	/* other path is always forward strand */
-	for(int i= bestLast2 + 1 ;i<(int)path2.size() ; ++i){
+	for(int i= bestLast2 + 1 ;i<(int)selection->size() ; ++i){
 		Kmer otherKmer;
-		path2.at(i,&otherKmer);
+		selection->at(i,&otherKmer);
 
 		int before = newPath.size();
 

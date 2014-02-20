@@ -48,14 +48,17 @@ public:
 
 	void initialize(Parameters * parameters);
 
-	void compare(GraphPath & path1, bool strand1, GraphPath & path2, bool strand2,
-		int &bestMatches, int &bestLast1, int &bestLast2);
+	void compare(GraphPath & path1, bool strand1, int & bestLast1,
+			GraphPath & path2, bool strand2, int & bestLast2, int & bestMatches);
 
 
 
-	void combine(GraphPath & newPath, GraphPath & path1, bool strand1,
-							GraphPath & path2, bool strand2, int bestLast1, int bestLast2);
-
+	/**
+	 *  path1 must be on the left of path2
+	 */
+	void combine(GraphPath & newPath,
+			GraphPath & path1, bool strand1, int bestLast1,
+			GraphPath & path2, bool strand2, int bestLast2);
 
 	void display(GraphPath & path, bool strand, int start, int end, int special);
 };
