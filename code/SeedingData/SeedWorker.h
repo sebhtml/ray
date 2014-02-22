@@ -41,6 +41,9 @@ using namespace std;
  */
 class SeedWorker : public Worker {
 
+private:
+
+
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
 
@@ -49,7 +52,13 @@ class SeedWorker : public Worker {
 	bool m_hasDeadEnd;
 	bool m_debugSeeds;
 
+	int m_maximumDepth;
 	bool m_elongationMode;
+
+	bool m_exploreLeftSide;
+	bool m_exploreLeftSideStarted;
+	bool m_exploreRightSide;
+	bool m_exploreRightSideStarted;
 
 	map<Kmer,int> m_cache;
 	WorkerHandle m_workerIdentifier;
@@ -128,6 +137,8 @@ class SeedWorker : public Worker {
 	bool getPathBefore(Kmer*kmer,int depth);
 	bool getPathAfter(Kmer*kmer,int depth);
 
+	void exploreRightSide();
+	void exploreLeftSide() ;
 public:
 	void constructor(Kmer*vertex,Parameters*parameters,RingAllocator*outboxAllocator,
 		VirtualCommunicator*vc,WorkerHandle workerId,

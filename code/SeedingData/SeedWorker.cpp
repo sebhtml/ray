@@ -253,7 +253,7 @@ void SeedWorker::performChecksOnPathEnds(){
 		int positionInPath=0;
 		m_SEEDING_seed.at(positionInPath,&kmer);
 
-		if(getPathBefore(&kmer,10)){
+		if(getPathBefore(&kmer,m_maximumDepth)){
 
 			m_checkedHead=true;
 			m_checkedTail=false;
@@ -269,15 +269,52 @@ void SeedWorker::performChecksOnPathEnds(){
 		int positionInPath=m_SEEDING_seed.size()-1;
 		m_SEEDING_seed.at(positionInPath,&kmer);
 
-		if(getPathAfter(&kmer,10)){
+		if(getPathAfter(&kmer, m_maximumDepth)){
 			m_checkedTail=true;
 			m_vertexFetcherStarted=false;
 		}
+
+	} else if(m_exploreLeftSide) {
+
+		exploreLeftSide();
+
+	} else if (m_exploreRightSide) {
+
+		exploreRightSide();
 
 	}else{
 		m_endChecksMode=false;
 	}
 }
+
+void SeedWorker::exploreLeftSide() {
+
+	/**
+	 * explore with depth m_maximumDepth on the left.
+	 * starting with m_SEEDING_seed[0].
+	 *
+	 * if the actual depth is less than m_maximumDepth
+	 * then set m_headIsDeadEnd to true.
+	 */
+	if(!m_exploreLeftSideStarted) {
+		m_exploreLeftSideStarted = true;
+	} else {
+
+		m_exploreLeftSide = false;
+	}
+}
+
+void SeedWorker::exploreRightSide() {
+
+	if(!m_exploreRightSideStarted) {
+		m_exploreRightSideStarted = true;
+	} else {
+
+		m_exploreRightSide = false;
+	}
+}
+
+
 
 bool SeedWorker::isDone(){
 
@@ -290,6 +327,15 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT,
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 ){
+
+	m_maximumDepth = 4;
+
+	m_exploreLeftSide = true;
+	m_exploreLeftSideStarted = false;
+
+	m_exploreRightSide = true;
+	m_exploreRightSideStarted = false;
+
 	this->RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE=RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
 	this->RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT=RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 
