@@ -22,6 +22,8 @@
 
 // #define DEBUG_THE_PATH_MASTER
 
+#include <assert.h>
+
 PathMaster::PathMaster(){
 
 }
