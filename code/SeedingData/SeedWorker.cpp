@@ -134,10 +134,14 @@ void SeedWorker::work(){
 			}
 		}
 	}else if(m_endChecksMode){
-		m_endChecksMode = false;
-		return;
 
-#if 0
+		if(m_SEEDING_seed.size() > 3 * m_parameters->getWordSize()) {
+			m_endChecksMode = false;
+			return;
+		}
+
+		// I wonder why this code was disabled...
+#if 1
 		performChecksOnPathEnds();
 #endif
 	}else{
@@ -223,6 +227,9 @@ bool SeedWorker::getPathBefore(Kmer*kmer,int depth){
 }
 
 void SeedWorker::performChecksOnPathEnds(){
+
+	//m_endChecksMode = false;
+
 /*
  * Check if it's a dead end. We don't want dead ends because they consume too
  * much time.
