@@ -240,6 +240,7 @@ void SeedWorker::performChecksOnPathEnds(){
  */
 
 	if(!m_endChecksModeStarted){
+
 		m_endChecksModeStarted=true;
 		m_checkedHead=false;
 		m_vertexFetcherStarted=false;
@@ -298,6 +299,12 @@ void SeedWorker::exploreLeftSide() {
 	 */
 	if(!m_exploreLeftSideStarted) {
 
+		if(m_headIsDeadEnd) {
+			m_exploreLeftSide = false;
+
+			return;
+		}
+
 		Kmer kmer;
 		int positionInPath=0;
 		m_SEEDING_seed.at(positionInPath,&kmer);
@@ -313,7 +320,11 @@ void SeedWorker::exploreLeftSide() {
 
 		if(!m_depthFirstSearch.hasReachedMaximumDepth()) {
 
-			m_headIsDeadEnd = true;
+			if(m_active) {
+				m_headIsDeadEnd = true;
+
+				//cout << "DEBUG found dead end on the left" << endl;
+			}
 		}
 
 		m_exploreLeftSide = false;
@@ -323,6 +334,12 @@ void SeedWorker::exploreLeftSide() {
 void SeedWorker::exploreRightSide() {
 
 	if(!m_exploreRightSideStarted) {
+
+		if(m_tailIsDeadEnd) {
+			m_exploreRightSide = false;
+
+			return;
+		}
 
 		Kmer kmer;
 		int positionInPath= m_SEEDING_seed.size() -1;
@@ -340,7 +357,12 @@ void SeedWorker::exploreRightSide() {
 
 		if(!m_depthFirstSearch.hasReachedMaximumDepth()) {
 
-			m_tailIsDeadEnd = true;
+			if(m_active) {
+
+				//cout << "DEBUG found dead end on the right" << endl;
+
+				m_tailIsDeadEnd = true;
+			}
 		}
 
 		m_exploreRightSide = false;
@@ -361,7 +383,8 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE
 ){
 
-	m_maximumDepth = 4;
+	m_active = true;
+	m_maximumDepth = 8;
 	m_maximumVertices = 32;
 
 	m_exploreLeftSide = true;

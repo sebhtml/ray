@@ -58,7 +58,7 @@ private:
 	int m_actualMaximumDepth;
 
 	void reset();
-
+	void processEdges(vector<Kmer> * vertices, int depth);
 public:
 
 	DepthFirstSearch();

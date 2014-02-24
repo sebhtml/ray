@@ -19,6 +19,12 @@
 
 #include "DepthFirstSearch.h"
 
+#include <code/Mock/Logger.h>
+
+#ifdef CONFIG_ASSERT
+#include <assert.h>
+#endif
+
 DepthFirstSearch::DepthFirstSearch() {
 
 }
@@ -71,22 +77,103 @@ void DepthFirstSearch::start(Kmer & kmer, bool checkParents, bool checkChildren,
 
 	m_maximumDepth = maximumDepth;
 	m_maximumNumberOfVisitedVertices = maximumNumberOfVertices;
+
 }
 
 void DepthFirstSearch::work() {
 
-	return;
+	if(!m_doChildren && !m_doParents) {
+		return;
+	}
+
+	if(isDone())
+		return;
+
+	Kmer kmer = m_verticesToVisit.top();
+	int depth = m_depths.top();
+
+	if(!m_attributeFetcher.fetchObjectMetaData(&kmer)) {
+
+		// work a bit
+
+	} else {
+
+		if(depth > m_actualMaximumDepth)
+			m_actualMaximumDepth = depth;
+
+		vector<Kmer> * parents = m_attributeFetcher.getParents();
+		vector<Kmer> * children = m_attributeFetcher.getChildren();
+		//CoverageDepth coverageDepth = m_attributeFetcher.getDepth();
+
+		m_verticesToVisit.pop();
+		m_depths.pop();
+
+		int newDepth = depth + 1;
+
+		// insert visited vertex that before processing edges
+		// in the case it is its own parent or child
+		m_visitedVertices.insert(kmer);
+
+		if(m_doChildren) {
+
+			processEdges(children, newDepth);
+		}
+
+		if(m_doParents) {
+
+			processEdges(parents, newDepth);
+		}
+
+		m_attributeFetcher.reset();
+	}
+}
+
+void DepthFirstSearch::processEdges(vector<Kmer> * vertices, int depth) {
+
+	if(depth > m_maximumDepth)
+		return;
+
+	if((int)m_visitedVertices.size() >= m_maximumNumberOfVisitedVertices)
+		return;
+	for(vector<Kmer>::iterator i = vertices->begin();
+			i != vertices->end();
+			++i) {
+
+		Kmer kmer = *i;
+
+		if(m_visitedVertices.count(kmer) > 0)
+			continue;
+
+		m_verticesToVisit.push(kmer);
+		m_depths.push(depth);
+	}
 }
 
 bool DepthFirstSearch::isDone() const {
 
-	return true;
+#ifdef CONFIG_ASSERT
+	assert(m_verticesToVisit.size() ==  m_depths.size());
+#endif
+
+	bool result = m_verticesToVisit.size() == 0;
+
+	return result;
 }
 
 bool DepthFirstSearch::hasReachedMaximumDepth() const {
 
-	return true;
-
+#if 0
+	bool result = true;
+	if(result) {
+		cout << "DEBUG ";
+		cout << " parents " << m_doParents;
+		cout << " children " << m_doChildren;
+		cout << " DepthFirstSearch visited " << m_visitedVertices.size();
+		cout << "/" << m_maximumNumberOfVisitedVertices << " ";
+		cout << " " << " depth " << m_actualMaximumDepth << "/";
+		cout << m_maximumDepth << endl;
+	}
+#endif
 
 	return m_actualMaximumDepth >= m_maximumDepth;
 }

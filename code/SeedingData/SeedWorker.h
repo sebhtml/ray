@@ -45,6 +45,7 @@ class SeedWorker : public Worker {
 
 private:
 
+	bool m_active;
 	DepthFirstSearch m_depthFirstSearch;
 	int m_maximumDepth;
 	int m_maximumVertices;
