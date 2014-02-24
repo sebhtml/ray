@@ -297,8 +297,24 @@ void SeedWorker::exploreLeftSide() {
 	 * then set m_headIsDeadEnd to true.
 	 */
 	if(!m_exploreLeftSideStarted) {
+
+		Kmer kmer;
+		int positionInPath=0;
+		m_SEEDING_seed.at(positionInPath,&kmer);
+
+		m_depthFirstSearch.start(kmer, true, false, m_maximumDepth, m_maximumVertices);
+
 		m_exploreLeftSideStarted = true;
+	} else if(!m_depthFirstSearch.isDone()) {
+
+		m_depthFirstSearch.work();
+
 	} else {
+
+		if(!m_depthFirstSearch.hasReachedMaximumDepth()) {
+
+			m_headIsDeadEnd = true;
+		}
 
 		m_exploreLeftSide = false;
 	}
@@ -307,8 +323,25 @@ void SeedWorker::exploreLeftSide() {
 void SeedWorker::exploreRightSide() {
 
 	if(!m_exploreRightSideStarted) {
+
+		Kmer kmer;
+		int positionInPath= m_SEEDING_seed.size() -1;
+		m_SEEDING_seed.at(positionInPath,&kmer);
+
+		m_depthFirstSearch.start(kmer, false, true, m_maximumDepth, m_maximumVertices);
+
 		m_exploreRightSideStarted = true;
+
+	} else if(!m_depthFirstSearch.isDone()) {
+
+		m_depthFirstSearch.work();
+
 	} else {
+
+		if(!m_depthFirstSearch.hasReachedMaximumDepth()) {
+
+			m_tailIsDeadEnd = true;
+		}
 
 		m_exploreRightSide = false;
 	}
@@ -329,6 +362,7 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 ){
 
 	m_maximumDepth = 4;
+	m_maximumVertices = 32;
 
 	m_exploreLeftSide = true;
 	m_exploreLeftSideStarted = false;
@@ -368,6 +402,13 @@ void SeedWorker::constructor(Kmer*key,Parameters*parameters,RingAllocator*outbox
 
 	m_headIsDeadEnd=false;
 	m_tailIsDeadEnd=false;
+
+	// initialize attribute fetcher
+
+	m_depthFirstSearch.initialize(m_parameters, m_virtualCommunicator,
+			m_workerIdentifier, m_outboxAllocator,
+			RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT);
+
 }
 
 void SeedWorker::enableDebugMode(){

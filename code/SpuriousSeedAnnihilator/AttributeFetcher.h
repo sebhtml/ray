@@ -1,6 +1,6 @@
 /*
  *  Ray -- Parallel genome assemblies for parallel DNA sequencing
- *  Copyright (C) 2013 Sébastien Boisvert
+ *  Copyright (C) 2013, 2014 Sébastien Boisvert
  *
  *  http://DeNovoAssembler.SourceForge.Net/
  *
@@ -43,6 +43,8 @@ using namespace std;
  * \author Sébastien Boisvert
  */
 class AttributeFetcher{
+
+private:
 
 	Rank m_rank;
 	Parameters*m_parameters;

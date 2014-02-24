@@ -22,6 +22,8 @@
 #ifndef _SeedWorker
 #define _SeedWorker
 
+#include "DepthFirstSearch.h"
+
 #include <code/SeedingData/GraphPath.h>
 #include <code/Mock/Parameters.h>
 
@@ -43,6 +45,9 @@ class SeedWorker : public Worker {
 
 private:
 
+	DepthFirstSearch m_depthFirstSearch;
+	int m_maximumDepth;
+	int m_maximumVertices;
 
 	MessageTag RAY_MPI_TAG_GET_VERTEX_EDGES_COMPACT;
 	MessageTag RAY_MPI_TAG_REQUEST_VERTEX_COVERAGE;
@@ -52,7 +57,6 @@ private:
 	bool m_hasDeadEnd;
 	bool m_debugSeeds;
 
-	int m_maximumDepth;
 	bool m_elongationMode;
 
 	bool m_exploreLeftSide;
