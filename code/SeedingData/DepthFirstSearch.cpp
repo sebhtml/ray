@@ -52,10 +52,8 @@ void DepthFirstSearch::reset() {
 	// class stack has no clear method
 	// which is strange
 	// \see http://www.gamedev.net/topic/527439-c-stdstack--why-no-clear-method/
-	stack<Kmer> empty1;
-	m_verticesToVisit = empty1;
-	stack<int> empty2;
-	m_depths = empty2;
+	m_verticesToVisit = stack<Kmer>();
+	m_depths = stack<int>();
 
 	m_attributeFetcher.reset();
 
