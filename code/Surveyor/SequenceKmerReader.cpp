@@ -35,7 +35,7 @@ SequenceKmerReader::~SequenceKmerReader(){
 void SequenceKmerReader::openFile(string & fileName, int kmerSize){
 
         m_emptyBuffer = false;
-        
+
         m_kmerSize = kmerSize;
 
 	m_reader.open(fileName.c_str());
@@ -61,7 +61,7 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
         if (strlen(m_buffer) == 0){
                 m_buffer[0] = '\0';
         }else{
-                addBufferToTmpSequence();                
+                addBufferToTmpSequence();
         }
 
         m_hasKmerLeft = !(m_tmpSequence.length() < (unsigned) m_kmerSize && m_reader.eof());
