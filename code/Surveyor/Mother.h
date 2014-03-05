@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 using namespace std;
 
 /**
@@ -55,9 +56,12 @@ class Mother: public Actor {
 private:
 
 	int m_matrixOwner;
+        int m_kmerMatrixOwner;
 
 	int m_flushedMothers;
 	int m_finishedMothers;
+        bool m_matricesAreReady;
+        bool m_printKmersMatrix;
 
 	Parameters * m_parameters;
 
@@ -93,6 +97,13 @@ private:
 	 */
 	void sendToFirstMother(int forwardTag, int responseTag);
 
+        /* int m_kmerMatrixBlocNumber; */
+        void printLocalKmersMatrix(string & kmer, string & samples_kmers, bool force);
+        void createKmersMatrixOutputFile();
+
+        void spawnMatrixOwner();
+        void spawnKmerMatrixOwner();
+
 public:
 
 	Mother();
@@ -109,8 +120,10 @@ public:
 		FLUSH_AGGREGATOR,
 		FLUSH_AGGREGATOR_OK,
 		FLUSH_AGGREGATOR_RETURN,
-		MERGE,
-		MERGE_OK,
+		MERGE_GRAM_MATRIX,
+		MERGE_GRAM_MATRIX_OK,
+		MERGE_KMER_MATRIX,
+		MERGE_KMER_MATRIX_OK,
 		LAST_TAG,
 	};
 

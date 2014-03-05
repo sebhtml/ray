@@ -22,10 +22,16 @@
 #include "StoreKeeper.h"
 #include "CoalescenceManager.h"
 #include "MatrixOwner.h"
+#include "KmerMatrixOwner.h"
 
 #include <code/VerticesExtractor/Vertex.h>
+#include <RayPlatform/structures/MyHashTableIterator.h>
+#include <RayPlatform/core/OperatingSystem.h>
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
 using namespace std;
 
 #include <string.h>
@@ -83,14 +89,20 @@ void StoreKeeper::receive(Message & message) {
 
 		die();
 
-	} else if(tag == MERGE) {
+	} else if(tag == MERGE_GRAM_MATRIX) {
 
 
-		printName();
-		cout << "DEBUG at MERGE message reception ";
-		cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total";
-		cout << " with " << m_receivedPushes << " push operations" << endl;
+		// printName();
+		// cout << "DEBUG at MERGE_GRAM_MATRIX message reception ";
+		// cout << "(StoreKeeper) received " << m_receivedObjects << " objects in total";
+		// cout << " with " << m_receivedPushes << " push operations" << endl;
 		computeLocalGramMatrix();
+
+
+                // TODEL Print matrix bloc
+                // m_kmerMatrixBlocNumber = 0;
+                // printLocalKmersMatrix();
+
 
 		m_mother = source;
 
@@ -108,19 +120,24 @@ void StoreKeeper::receive(Message & message) {
 			m_iterator2 = m_iterator1->second.begin();
 		}
 
-		/*
-		printName();
-		cout << "DEBUG printLocalGramMatrix before first sendMatrixCell" << endl;
-		printLocalGramMatrix();
-		*/
-
 		sendMatrixCell();
 
 	} else if(tag == MatrixOwner::PUSH_PAYLOAD_OK) {
-
 		sendMatrixCell();
+	} else if(tag == MERGE_KMER_MATRIX) {
 
-	} else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
+                m_mother = source;
+
+		memcpy(&m_kmerMatrixOwner, buffer, sizeof(m_kmerMatrixOwner));
+
+                m_hashTableIterator.constructor(&m_hashTable);
+
+                sendKmersSamples();
+        } else if (tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_END) {
+
+        } else if(tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_OK) {
+                sendKmersSamples();
+        } else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
 
 		int kmerLength = 0;
 		int position = 0;
@@ -136,8 +153,6 @@ void StoreKeeper::receive(Message & message) {
 			cout << "Error: the k-mer value is different this time !" << endl;
 		}
 
-		// cout << "DEBUG m_kmerLength = " << m_kmerLength << endl;
-
 		// the color space mode is an artefact.
 		m_colorSpaceMode = false;
 
@@ -146,13 +161,6 @@ void StoreKeeper::receive(Message & message) {
 		cout << m_kmerLength;
 		cout << endl;
 #endif
-
-		/*
-		memcpy(&m_parameters, buffer + position, sizeof(m_parameters));
-		position += sizeof(m_parameters);
-
-		*/
-		//configureHashTable();
 
 	}
 }
@@ -181,8 +189,6 @@ void StoreKeeper::sendMatrixCell() {
 			message.setNumberOfBytes(offset);
 			message.setTag(MatrixOwner::PUSH_PAYLOAD);
 
-			//cout << " DEBUG send PUSH_PAYLOAD to  " << m_matrixOwner << endl;
-
 			send(m_matrixOwner, message);
 
 			m_iterator2++;
@@ -207,10 +213,7 @@ void StoreKeeper::sendMatrixCell() {
 	// free memory.
 	m_localGramMatrix.clear();
 
-	/*
 	printName();
-	cout << "DEBUG send PUSH_PAYLOAD_END to " << m_matrixOwner << endl;
-	*/
 
 	Message response;
 	response.setTag(MatrixOwner::PUSH_PAYLOAD_END);
@@ -236,6 +239,7 @@ void StoreKeeper::configureHashTable() {
 		);
 
 	m_configured = true;
+
 }
 
 void StoreKeeper::printColorReport() {
@@ -247,8 +251,6 @@ void StoreKeeper::printColorReport() {
 }
 
 void StoreKeeper::computeLocalGramMatrix() {
-
-	// printColorReport();
 
 	uint64_t sum = 0;
 
@@ -372,8 +374,8 @@ void StoreKeeper::computeLocalGramMatrix() {
 	cout << "DEBUG m_hashTable.size() " << size << endl;
 #endif
 
-	//printLocalGramMatrix();
 }
+
 
 void StoreKeeper::printLocalGramMatrix() {
 
@@ -623,3 +625,58 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 
 	*/
 }
+
+
+void StoreKeeper::setSampleSize(int sampleSize) {
+        m_sampleSize = sampleSize;
+}
+
+
+void StoreKeeper::sendKmersSamples() {
+
+        char buffer[MAXIMUM_MESSAGE_SIZE_IN_BYTES];
+        int bytes = 0;
+
+        ExperimentVertex * currentVertex = NULL;
+        VirtualKmerColorHandle currentVirtualColor = NULL_VIRTUAL_COLOR;
+
+        vector<bool> samplesVector (m_sampleSize, false);
+
+        if(m_hashTableIterator.hasNext()){
+
+                currentVertex = m_hashTableIterator.next();
+                Kmer kmer = currentVertex->getKey();
+
+                bytes += kmer.dump(buffer);
+
+                currentVirtualColor = currentVertex->getVirtualColor();
+                set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(currentVirtualColor);
+
+                for(set<PhysicalKmerColor>:: iterator sampleIterator = samples->begin();
+                    sampleIterator != samples->end(); ++sampleIterator) {
+			PhysicalKmerColor value = *sampleIterator;
+                        samplesVector[value] = true;
+		}
+
+                for (std::vector<bool>::iterator it = samplesVector.begin();
+                     it != samplesVector.end(); ++it) {
+                        buffer[bytes] = *it;
+                        bytes++;
+                }
+        }
+
+
+        Message message;
+        message.setNumberOfBytes(bytes);
+        message.setBuffer(buffer);
+
+        if(m_hashTableIterator.hasNext()){
+                message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES);
+        }else{
+                message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES_END);
+        }
+
+        send(m_kmerMatrixOwner, message);
+
+}
+

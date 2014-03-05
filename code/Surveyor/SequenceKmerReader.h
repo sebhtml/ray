@@ -34,6 +34,7 @@ private:
         int m_kmerSize;
         string m_tmpSequence;
         bool m_hasKmerLeft;
+        bool m_emptyBuffer;
 
         // fast IO using a wrapper.
         FileReader m_reader;
@@ -42,6 +43,7 @@ private:
         int m_loaded;
 
         void convertSequenceToUpperCase(string & sequence);
+        void addBufferToTmpSequence();
 
 public:
 

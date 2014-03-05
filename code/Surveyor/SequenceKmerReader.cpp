@@ -34,6 +34,8 @@ SequenceKmerReader::~SequenceKmerReader(){
 
 void SequenceKmerReader::openFile(string & fileName, int kmerSize){
 
+        m_emptyBuffer = false;
+        
         m_kmerSize = kmerSize;
 
 	m_reader.open(fileName.c_str());
@@ -44,8 +46,6 @@ void SequenceKmerReader::openFile(string & fileName, int kmerSize){
 		m_bad = true;
 
 	m_loaded = 0;
-
-	cout <<"opens file " << fileName << endl;
 
         m_hasKmerLeft = true;
 }
@@ -58,24 +58,67 @@ bool SequenceKmerReader::hasAnotherKmer(){
 
 void SequenceKmerReader::fetchNextKmer(string & kmer){
 
-	m_buffer[0] = '\0';
+        if (strlen(m_buffer) == 0){
+                m_buffer[0] = '\0';
+        }else{
+                addBufferToTmpSequence();                
+        }
 
         m_hasKmerLeft = !(m_tmpSequence.length() < (unsigned) m_kmerSize && m_reader.eof());
 
         while(m_tmpSequence.length() < (unsigned) m_kmerSize && !m_reader.eof()){
                 m_reader.getline(m_buffer, 1024);
                 if (m_buffer[0] != '>'){
+
                         if(m_buffer[strlen(m_buffer)-1] == '\n'){
                                 m_buffer[strlen(m_buffer)-1] = '\0';
                         }
-                        m_tmpSequence += m_buffer;
+                        addBufferToTmpSequence();
                 }
         }
 
-        if(m_tmpSequence.length() + 1 >= (unsigned) m_kmerSize){
+        if(m_tmpSequence.length() >= (unsigned) m_kmerSize){
                 kmer = m_tmpSequence.substr(0,m_kmerSize);
                 convertSequenceToUpperCase(kmer);
                 m_tmpSequence.erase(0,1);
+        }
+
+}
+
+
+void SequenceKmerReader::addBufferToTmpSequence() {
+
+        bool untilEndOfBuffer = true;
+
+        int i = 0;
+
+        while (m_buffer[i] != '\0'  && untilEndOfBuffer == true){
+                if(m_buffer[i] == 'N' || m_buffer[i] == 'n' ){
+                        if(m_tmpSequence.length() < (unsigned) m_kmerSize){
+                                m_tmpSequence.clear();
+                                if (m_reader.eof() && 
+                                    (strlen(m_buffer) - i + m_tmpSequence.length()) < (unsigned) m_kmerSize){
+                                        untilEndOfBuffer = false;
+                                }
+                        }
+                        else {
+                                m_buffer[0] = m_buffer[i];
+                                untilEndOfBuffer = false;
+                        }
+                } else {
+                        m_tmpSequence += m_buffer[i];
+                }
+                ++i;
+        }
+
+        if (untilEndOfBuffer) {
+                m_buffer[0] = '\0';
+        }
+
+        if (m_reader.eof()) {
+                if (m_tmpSequence.length() + strlen(m_buffer) < (unsigned) m_kmerSize){
+                        m_hasKmerLeft = false;
+                }
         }
 
 }

@@ -34,6 +34,10 @@
 
 #include <RayPlatform/actors/Actor.h>
 #include <RayPlatform/structures/MyHashTable.h>
+#include <RayPlatform/structures/MyHashTableIterator.h>
+
+#include <iostream>
+#include <sstream>
 
 /**
  * Provides genomic storage.
@@ -55,6 +59,7 @@ private:
 
 	int m_mother;
 	int m_matrixOwner;
+	int m_kmerMatrixOwner;
 
 	bool m_configured;
 
@@ -63,6 +68,8 @@ private:
 	 * by RayPlatform.
 	 */
 	MyHashTable<Kmer,ExperimentVertex> m_hashTable;
+
+        MyHashTableIterator<Kmer,ExperimentVertex> m_hashTableIterator;
 
 	int m_kmerLength;
 	bool m_colorSpaceMode;
@@ -79,6 +86,11 @@ private:
 	void printLocalGramMatrix();
 	void printColorReport();
 
+        int m_sampleSize;
+        string m_outputKmersMatrixPath;
+        void printLocalKmersMatrix(string & m_kmer, string & m_samplesKmers);
+        void sendKmersSamples();
+
 	void sendMatrixCell();
 
 public:
@@ -86,14 +98,18 @@ public:
 	StoreKeeper();
 	~StoreKeeper();
 
+        void setSampleSize(int sampleSize);
+
 	void receive(Message & message);
 
 	enum {
 		FIRST_TAG = 10250,
 		PUSH_SAMPLE_VERTEX,
 		PUSH_SAMPLE_VERTEX_OK,
-		MERGE,
-		MERGE_OK,
+		MERGE_GRAM_MATRIX,
+		MERGE_GRAM_MATRIX_OK,
+                MERGE_KMER_MATRIX,
+                MERGE_KMER_MATRIX_OK,
 		LAST_TAG
 	};
 };
