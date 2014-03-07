@@ -137,8 +137,15 @@ void KmerMatrixOwner::dumpKmerMatrixBuffer(Kmer & kmer, vector<bool> & samplesWi
 
 
 void KmerMatrixOwner::createKmersMatrixOutputFile() {
-	string dir = m_parameters->getPrefix() + "Surveyor";
-	createDirectory(dir.c_str());
+
+	string directory = m_parameters->getPrefix() + "Surveyor";
+
+	// This directory is created elsewhere.
+	// Just in case it does not exist, we create it.
+	if(!fileExists(directory.c_str())) {
+		createDirectory(directory.c_str());
+	}
+
 	string matrixFileString = m_parameters->getPrefix() + "Surveyor/KmerMatrix.tsv";
 	m_kmerMatrixFile.open(matrixFileString.c_str());
 	printMatrixHeader();

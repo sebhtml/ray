@@ -108,7 +108,12 @@ void MatrixOwner::receive(Message & message) {
 			ostringstream matrixFile;
 			matrixFile << m_parameters->getPrefix() << "/Surveyor/";
 			string surveyorDirectory = matrixFile.str();
-			createDirectory(surveyorDirectory.c_str());
+
+			// avoid a race condition
+			// we don't know which actor will win the race of life.
+			if(!fileExists(surveyorDirectory.c_str())) {
+				createDirectory(surveyorDirectory.c_str());
+			}
 
 			// create SimilarityMatrix
 			matrixFile << "SimilarityMatrix.tsv";
