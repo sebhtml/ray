@@ -61,7 +61,7 @@ private:
 	int m_flushedMothers;
 	int m_finishedMothers;
         bool m_matricesAreReady;
-        bool m_printKmersMatrix;
+        bool m_printKmerMatrix;
 
 	Parameters * m_parameters;
 
@@ -98,8 +98,8 @@ private:
 	void sendToFirstMother(int forwardTag, int responseTag);
 
         /* int m_kmerMatrixBlocNumber; */
-        void printLocalKmersMatrix(string & kmer, string & samples_kmers, bool force);
-        void createKmersMatrixOutputFile();
+        /* void printLocalKmersMatrix(string & kmer, string & samples_kmers, bool force); */
+        /* void createKmersMatrixOutputFile(); */
 
         void spawnMatrixOwner();
         void spawnKmerMatrixOwner();

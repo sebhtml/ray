@@ -99,11 +99,6 @@ void StoreKeeper::receive(Message & message) {
 		computeLocalGramMatrix();
 
 
-                // TODEL Print matrix bloc
-                // m_kmerMatrixBlocNumber = 0;
-                // printLocalKmersMatrix();
-
-
 		m_mother = source;
 
 		memcpy(&m_matrixOwner, buffer, sizeof(m_matrixOwner));
@@ -126,18 +121,18 @@ void StoreKeeper::receive(Message & message) {
 		sendMatrixCell();
 	} else if(tag == MERGE_KMER_MATRIX) {
 
-                m_mother = source;
+		m_mother = source;
 
 		memcpy(&m_kmerMatrixOwner, buffer, sizeof(m_kmerMatrixOwner));
 
-                m_hashTableIterator.constructor(&m_hashTable);
+		m_hashTableIterator.constructor(&m_hashTable);
 
-                sendKmersSamples();
-        } else if (tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_END) {
+		sendKmersSamples();
+	} else if (tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_END) {
 
-        } else if(tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_OK) {
-                sendKmersSamples();
-        } else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
+	} else if(tag == KmerMatrixOwner::PUSH_KMER_SAMPLES_OK) {
+		sendKmersSamples();
+	} else if(tag == CoalescenceManager::SET_KMER_LENGTH) {
 
 		int kmerLength = 0;
 		int position = 0;
@@ -628,55 +623,54 @@ void StoreKeeper::storeData(Vertex & vertex, int & sample) {
 
 
 void StoreKeeper::setSampleSize(int sampleSize) {
-        m_sampleSize = sampleSize;
+	m_sampleSize = sampleSize;
 }
 
 
 void StoreKeeper::sendKmersSamples() {
 
-        char buffer[MAXIMUM_MESSAGE_SIZE_IN_BYTES];
-        int bytes = 0;
+	char buffer[MAXIMUM_MESSAGE_SIZE_IN_BYTES];
+	int bytes = 0;
 
-        ExperimentVertex * currentVertex = NULL;
-        VirtualKmerColorHandle currentVirtualColor = NULL_VIRTUAL_COLOR;
+	ExperimentVertex * currentVertex = NULL;
+	VirtualKmerColorHandle currentVirtualColor = NULL_VIRTUAL_COLOR;
 
-        vector<bool> samplesVector (m_sampleSize, false);
+	vector<bool> samplesVector (m_sampleSize, false);
 
-        if(m_hashTableIterator.hasNext()){
+	if(m_hashTableIterator.hasNext()){
 
-                currentVertex = m_hashTableIterator.next();
-                Kmer kmer = currentVertex->getKey();
+		currentVertex = m_hashTableIterator.next();
+		Kmer kmer = currentVertex->getKey();
 
-                bytes += kmer.dump(buffer);
+		bytes += kmer.dump(buffer);
 
-                currentVirtualColor = currentVertex->getVirtualColor();
-                set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(currentVirtualColor);
+		currentVirtualColor = currentVertex->getVirtualColor();
+		set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(currentVirtualColor);
 
-                for(set<PhysicalKmerColor>:: iterator sampleIterator = samples->begin();
-                    sampleIterator != samples->end(); ++sampleIterator) {
+		for(set<PhysicalKmerColor>:: iterator sampleIterator = samples->begin();
+		    sampleIterator != samples->end(); ++sampleIterator) {
 			PhysicalKmerColor value = *sampleIterator;
-                        samplesVector[value] = true;
+			samplesVector[value] = true;
 		}
 
-                for (std::vector<bool>::iterator it = samplesVector.begin();
-                     it != samplesVector.end(); ++it) {
-                        buffer[bytes] = *it;
-                        bytes++;
-                }
-        }
+		for (std::vector<bool>::iterator it = samplesVector.begin();
+		     it != samplesVector.end(); ++it) {
+			buffer[bytes] = *it;
+			bytes++;
+		}
+	}
 
 
-        Message message;
-        message.setNumberOfBytes(bytes);
-        message.setBuffer(buffer);
+	Message message;
+	message.setNumberOfBytes(bytes);
+	message.setBuffer(buffer);
 
-        if(m_hashTableIterator.hasNext()){
-                message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES);
-        }else{
-                message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES_END);
-        }
+	if(m_hashTableIterator.hasNext()){
+		message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES);
+	}else{
+		message.setTag(KmerMatrixOwner::PUSH_KMER_SAMPLES_END);
+	}
 
-        send(m_kmerMatrixOwner, message);
+	send(m_kmerMatrixOwner, message);
 
 }
-

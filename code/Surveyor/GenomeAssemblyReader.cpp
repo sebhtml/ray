@@ -55,7 +55,7 @@ void GenomeAssemblyReader::receive(Message & message) {
 	/*
 	printName();
 	cout << "received tag " << type << endl;
-        */
+	*/
 
 	if(type == START_PARTY) {
 
@@ -78,7 +78,7 @@ void GenomeAssemblyReader::startParty(Message & message) {
 
 	memcpy(&m_aggregator, buffer, sizeof(int));
 
-        m_kmerReader.openFile(m_fileName, m_kmerSize);
+	m_kmerReader.openFile(m_fileName, m_kmerSize);
 	m_loaded = 0;
 
 	printName();
@@ -92,7 +92,7 @@ void GenomeAssemblyReader::startParty(Message & message) {
 
 	send(source, response);
 
-        readKmer();
+	readKmer();
 }
 
 // DONE 2013-10-16: add a BufferedLineReader class in RayPlatform
@@ -100,23 +100,23 @@ void GenomeAssemblyReader::startParty(Message & message) {
 void GenomeAssemblyReader::readKmer() {
 // void GenomeAssemblyReader::readLine() {
 
-        string sequence;
-        CoverageDepth coverage = 1;
-        string badParent = "";
-        string badChild = "";
+	string sequence;
+	CoverageDepth coverage = 1;
+	string badParent = "";
+	string badChild = "";
 
-        // ofstream outFile;
-        // outFile.open("kmers-created.txt", ios::app);
+	// ofstream outFile;
+	// outFile.open("kmers-created.txt", ios::app);
 
-        if(m_kmerReader.hasAnotherKmer()){
+	if(m_kmerReader.hasAnotherKmer()){
 
-                m_kmerReader.fetchNextKmer(sequence);
+	m_kmerReader.fetchNextKmer(sequence);
 
-                manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
+	manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
 #if 0
-                cout << "DEBUG: Sending a Kmer to storekeeper" << endl;
+	cout << "DEBUG: Sending a Kmer to storekeeper" << endl;
 #endif
-        }else{
+	}else{
 
 		Message finishedMessage;
 		finishedMessage.setTag(DONE);
@@ -124,7 +124,7 @@ void GenomeAssemblyReader::readKmer() {
 		send(m_parent, finishedMessage);
 
 		die();
-        }
+	}
 
 
 }
@@ -134,103 +134,100 @@ void GenomeAssemblyReader::readKmer() {
 void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parents, string & children){
 
 
-        // if this is the first one, send the k-mer length too
-        if(m_loaded == 0) {
+	// if this is the first one, send the k-mer length too
+	if(m_loaded == 0) {
 
-                Message aMessage;
-                aMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
+	Message aMessage;
+	aMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
 
-                int length = sequence.length();
-                aMessage.setBuffer(&length);
-                aMessage.setNumberOfBytes(sizeof(length));
+	int length = sequence.length();
+	aMessage.setBuffer(&length);
+	aMessage.setNumberOfBytes(sizeof(length));
 
-                send(m_aggregator, aMessage);
-        }
+	send(m_aggregator, aMessage);
+	}
 
-        Kmer kmer;
-        kmer.loadFromTextRepresentation(sequence.c_str());
+	Kmer kmer;
+	kmer.loadFromTextRepresentation(sequence.c_str());
 
 #if 0
-        cout << "DEBUG: "  << sequence.c_str() << endl;
+	cout << "DEBUG: "  << sequence.c_str() << endl;
 #endif
-        Vertex vertex;
-        vertex.setKey(kmer);
-        vertex.setCoverageValue(coverage);
+	Vertex vertex;
+	vertex.setKey(kmer);
+	vertex.setCoverageValue(coverage);
 
-        // add parents
-        for(int i = 0 ; i < (int)parents.length() ; ++i) {
+	// add parents
+	for(int i = 0 ; i < (int)parents.length() ; ++i) {
 
-                string parent = sequence;
-                for(int j = 0 ; j < (int) parent.length()-1 ; ++j) {
-                        parent[j + 1] = parent[j];
-                }
-                parent[0] = parents[i];
+	string parent = sequence;
+	for(int j = 0 ; j < (int) parent.length()-1 ; ++j) {
+		parent[j + 1] = parent[j];
+	}
+	parent[0] = parents[i];
 
-                Kmer parentKmer;
-                parentKmer.loadFromTextRepresentation(parent.c_str());
+	Kmer parentKmer;
+	parentKmer.loadFromTextRepresentation(parent.c_str());
 
-                vertex.addIngoingEdge(&kmer, &parentKmer, sequence.length());
-        }
+	vertex.addIngoingEdge(&kmer, &parentKmer, sequence.length());
+	}
 
-        // add children
-        for(int i = 0 ; i < (int)children.length() ; ++i) {
+	// add children
+	for(int i = 0 ; i < (int)children.length() ; ++i) {
 
-                string child = sequence;
-                for(int j = 0 ; j < (int) child.length()-1 ; ++j) {
-                        child[j] = child[j + 1];
-                }
-                child[child.length() - 1] = children[i];
+	string child = sequence;
+	for(int j = 0 ; j < (int) child.length()-1 ; ++j) {
+		child[j] = child[j + 1];
+	}
+	child[child.length() - 1] = children[i];
 
-                Kmer childKmer;
-                childKmer.loadFromTextRepresentation(child.c_str());
+	Kmer childKmer;
+	childKmer.loadFromTextRepresentation(child.c_str());
 
-                vertex.addOutgoingEdge(&kmer, &childKmer, sequence.length());
-        }
+	vertex.addOutgoingEdge(&kmer, &childKmer, sequence.length());
+	}
 
-        char messageBuffer[100];
-        int position = 0;
+	char messageBuffer[100];
+	int position = 0;
 
-        position += vertex.dump(messageBuffer + position);
-        memcpy(messageBuffer + position, &m_sample, sizeof(m_sample));
+	position += vertex.dump(messageBuffer + position);
+	memcpy(messageBuffer + position, &m_sample, sizeof(m_sample));
 
-        position += sizeof(m_sample);
+	position += sizeof(m_sample);
 
 // maybe: accumulate many objects before flushing it.
 // we can go up to MAXIMUM_MESSAGE_SIZE_IN_BYTES bytes.
 
-        /*
-          printName();
-          cout << " got data line " << buffer;
-          cout << " sending PAYLOAD to " << m_aggregator << endl;
-        */
-        Message message;
-        message.setTag(CoalescenceManager::PAYLOAD);
-        message.setBuffer(messageBuffer);
-        message.setNumberOfBytes(position);
+	/*
+	  printName();
+	  cout << " got data line " << buffer;
+	  cout << " sending PAYLOAD to " << m_aggregator << endl;
+	*/
+	Message message;
+	message.setTag(CoalescenceManager::PAYLOAD);
+	message.setBuffer(messageBuffer);
+	message.setNumberOfBytes(position);
 
 #if 0
-        printName();
-        cout << "DEBUG sending PAYLOAD to " << m_aggregator;
-        cout << " with " << position << " bytes ";
-        vertex.print(sequence.length(), false);
-        cout << endl;
+	printName();
+	cout << "DEBUG sending PAYLOAD to " << m_aggregator;
+	cout << " with " << position << " bytes ";
+	vertex.print(sequence.length(), false);
+	cout << endl;
 #endif
 
-        int period = 1000000;
-        if(m_loaded % period == 0) {
-                printName();
-                cout << " loaded " << m_loaded << " sequences" << endl;
+	int period = 1000000;
+	if(m_loaded % period == 0) {
+	printName();
+	cout << " loaded " << m_loaded << " sequences" << endl;
 
-        }
-        m_loaded ++;
-        send(m_aggregator, message);
+	}
+	m_loaded ++;
+	send(m_aggregator, message);
 }
 
 
 void GenomeAssemblyReader::setFileName(string & fileName, int sample) {
-
-	//int nameSpace = COLOR_NAMESPACE_SAMPLE;
-	//m_sample = (uint64_t)sample + nameSpace * COLOR_NAMESPACE_MULTIPLIER;
 
 	m_sample = sample;
 
@@ -245,5 +242,5 @@ void GenomeAssemblyReader::setFileName(string & fileName, int sample) {
 
 
 void GenomeAssemblyReader::setKmerSize(int kmerSize) {
-        m_kmerSize = kmerSize;
+	m_kmerSize = kmerSize;
 }

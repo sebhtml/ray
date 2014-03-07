@@ -58,16 +58,18 @@ private:
 
 	void startParty(Message & message);
 
-        void manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parent, string & child);
+	void manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parent, string & child);
 
-        int m_kmerSize;
-        SequenceKmerReader m_kmerReader;
+	int m_kmerSize;
+	SequenceKmerReader m_kmerReader;
 
 	void readKmer();
 
 public:
 
 	enum {
+		// Using the same tag as GenomeGraphReader
+		// because we can mix an assembly reader with a graph reader
 		FIRST_TAG = 10200,
 		START_PARTY,
 		START_PARTY_OK,
@@ -80,7 +82,7 @@ public:
 	~GenomeAssemblyReader();
 	void receive(Message & message);
 	void setFileName(string & fileName, int sample);
-        void setKmerSize(int kmerSize);
+	void setKmerSize(int kmerSize);
 
 };
 

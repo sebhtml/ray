@@ -65,93 +65,93 @@ void KmerMatrixOwner::receive(Message & message) {
 #endif
 		m_mother = source;
 
-                //open the buffer of the file
-                createKmersMatrixOutputFile();
+		//open the buffer of the file
+		createKmersMatrixOutputFile();
 
 	} else if(tag == PUSH_KMER_SAMPLES) {
 
-                vector<bool> samplesWithKmer;
+		vector<bool> samplesWithKmer;
 
-                int offset = 0;
+		int offset = 0;
 
-                Kmer kmer;
-                offset += kmer.load(buffer);
-                int numberOfSamples = m_sampleNames->size();
-                char * bufferForSamples = buffer + offset;
+		Kmer kmer;
+		offset += kmer.load(buffer);
+		int numberOfSamples = m_sampleNames->size();
+		char * bufferForSamples = buffer + offset;
 
-                for(int i=0; i<numberOfSamples; ++i){
-                        bool state = bufferForSamples[i];
-                        samplesWithKmer.push_back(state);
-                }
+		for(int i=0; i<numberOfSamples; ++i){
+			bool state = bufferForSamples[i];
+			samplesWithKmer.push_back(state);
+		}
 
-                printLocalKmersMatrix(kmer, samplesWithKmer, false);
+		dumpKmerMatrixBuffer(kmer, samplesWithKmer, false);
 
-                Message response;
-                response.setTag(PUSH_KMER_SAMPLES_OK);
-                send(source, response);
+		Message response;
+		response.setTag(PUSH_KMER_SAMPLES_OK);
+		send(source, response);
 
 	} else if(tag == PUSH_KMER_SAMPLES_END) {
 
-                vector<bool> samplesWithKmer;
+		vector<bool> samplesWithKmer;
 
-                int offset = 0;
+		int offset = 0;
 
-                Kmer kmer;
-                offset += kmer.load(buffer);
-                int numberOfSamples = m_sampleNames->size();
-                char * bufferForSamples = buffer + offset;
+		Kmer kmer;
+		offset += kmer.load(buffer);
+		int numberOfSamples = m_sampleNames->size();
+		char * bufferForSamples = buffer + offset;
 
-                for(int i=0; i<numberOfSamples; ++i){
-                        bool state = bufferForSamples[i];
-                        samplesWithKmer.push_back(state);
-                }
+		for(int i=0; i<numberOfSamples; ++i){
+			bool state = bufferForSamples[i];
+			samplesWithKmer.push_back(state);
+		}
 
-                printLocalKmersMatrix(kmer, samplesWithKmer, true);
+		dumpKmerMatrixBuffer(kmer, samplesWithKmer, true);
 
-                Message response;
-                response.setTag(PUSH_KMER_SAMPLES_END);
-                send(source, response);
+		Message response;
+		response.setTag(PUSH_KMER_SAMPLES_END);
+		send(source, response);
 
-                m_completedStoreActors += 1;
+		m_completedStoreActors += 1;
 
-                if(m_completedStoreActors >= getSize()){
-                        Message coolMessage;
-                        coolMessage.setTag(KMER_MATRIX_IS_READY);
-                        send(m_mother, coolMessage);
-                        m_kmerMatrixFile.close();
-                }
+		if(m_completedStoreActors >= getSize()){
+			Message coolMessage;
+			coolMessage.setTag(KMER_MATRIX_IS_READY);
+			send(m_mother, coolMessage);
+			m_kmerMatrixFile.close();
+		}
 
-        }
+	}
 }
 
 
-void KmerMatrixOwner::printLocalKmersMatrix(Kmer & kmer, vector<bool> & samplesWithKmer, bool force) {
-        m_kmerMatrix << kmer.idToWord(31,0);
-        for(int i =0; i < (signed) samplesWithKmer.size(); ++i){
-                m_kmerMatrix << "\t" << samplesWithKmer[i];
-        }
-        m_kmerMatrix << endl;
+void KmerMatrixOwner::dumpKmerMatrixBuffer(Kmer & kmer, vector<bool> & samplesWithKmer, bool force) {
+	m_kmerMatrix << kmer.idToWord(m_parameters->getWordSize(),0);
+	for(int i =0; i < (signed) samplesWithKmer.size(); ++i){
+		m_kmerMatrix << "\t" << samplesWithKmer[i];
+	}
+	m_kmerMatrix << endl;
 
-        flushFileOperationBuffer(force, &m_kmerMatrix, &m_kmerMatrixFile, CONFIG_FILE_IO_BUFFER_SIZE);
+	flushFileOperationBuffer(force, &m_kmerMatrix, &m_kmerMatrixFile, CONFIG_FILE_IO_BUFFER_SIZE);
 }
 
 
 void KmerMatrixOwner::createKmersMatrixOutputFile() {
-        string dir = m_parameters->getPrefix() + "Surveyor";
-        createDirectory(dir.c_str());
-        string matrixFileString = m_parameters->getPrefix() + "Surveyor/KmerMatrix.tsv";
-        m_kmerMatrixFile.open(matrixFileString.c_str());
-        printMatrixHeader();
+	string dir = m_parameters->getPrefix() + "Surveyor";
+	createDirectory(dir.c_str());
+	string matrixFileString = m_parameters->getPrefix() + "Surveyor/KmerMatrix.tsv";
+	m_kmerMatrixFile.open(matrixFileString.c_str());
+	printMatrixHeader();
 }
 
 
 void KmerMatrixOwner::printMatrixHeader() {
-        ostringstream header;
-        header << "kmers";
-        for(vector<string>::iterator sample = m_sampleNames->begin();
-            sample != m_sampleNames->end(); ++sample) {
-                header << "\t" << *sample;
-        }
-        header << endl;
-        flushFileOperationBuffer(true, &header, &m_kmerMatrixFile, CONFIG_FILE_IO_BUFFER_SIZE);
+	ostringstream header;
+	header << "kmers";
+	for(vector<string>::iterator sample = m_sampleNames->begin();
+	    sample != m_sampleNames->end(); ++sample) {
+		header << "\t" << *sample;
+	}
+	header << endl;
+	flushFileOperationBuffer(true, &header, &m_kmerMatrixFile, CONFIG_FILE_IO_BUFFER_SIZE);
 }

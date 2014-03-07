@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert
+    Copyright 2013 Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
@@ -40,14 +40,13 @@ private:
 	int m_mother;
 	int m_completedStoreActors;
 
-        ostringstream m_kmerMatrix;
-        ofstream m_kmerMatrixFile;
+	ostringstream m_kmerMatrix;
+	ofstream m_kmerMatrixFile;
 
-        /* void printLocalKmersMatrix(string & kmer, string & samples_kmers, bool force); */
-        void printLocalKmersMatrix(Kmer & kmer, vector<bool> & samplesWithKmer, bool force);
-        void createKmersMatrixOutputFile();
+	void dumpKmerMatrixBuffer(Kmer & kmer, vector<bool> & samplesWithKmer, bool force);
+	void createKmersMatrixOutputFile();
 
-        void printMatrixHeader();
+	void printMatrixHeader();
 
 public:
 
@@ -59,9 +58,9 @@ public:
 	enum {
 		FIRST_TAG = 10350,
 		GREETINGS,
-                PUSH_KMER_SAMPLES,
-                PUSH_KMER_SAMPLES_OK,
-                PUSH_KMER_SAMPLES_END,
+		PUSH_KMER_SAMPLES,
+		PUSH_KMER_SAMPLES_OK,
+		PUSH_KMER_SAMPLES_END,
 		KMER_MATRIX_IS_READY,
 		LAST_TAG
 	};
@@ -69,4 +68,3 @@ public:
 };
 
 #endif
-
