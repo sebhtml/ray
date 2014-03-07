@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert
+    Copyright 2013 Sébastien Boisvert, Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
@@ -65,7 +65,6 @@ void MatrixOwner::receive(Message & message) {
 		assert(m_parameters != NULL);
 		assert(m_sampleNames != NULL);
 #endif
-
 		m_mother = source;
 
 	} else if(tag == PUSH_PAYLOAD) {
@@ -89,10 +88,6 @@ void MatrixOwner::receive(Message & message) {
 		assert(count >= 0);
 #endif
 
-		/*
-		printName();
-		cout << "DEBUG add " << sample1 << " " << sample2 << " " << count << endl;
-*/
 		m_receivedPayloads ++;
 
 		m_localGramMatrix[sample1][sample2] += count;
@@ -100,13 +95,11 @@ void MatrixOwner::receive(Message & message) {
 		Message response;
 		response.setTag(PUSH_PAYLOAD_OK);
 		send(source, response);
-
-	} else if(tag == PUSH_PAYLOAD_END) {
+        } else if(tag == PUSH_PAYLOAD_END) {
 
 		m_completedStoreActors++;
 
 		if(m_completedStoreActors == getSize()) {
-
 
 			printName();
 			cout << "MatrixOwner received " << m_receivedPayloads << " payloads" << endl;
@@ -151,10 +144,9 @@ void MatrixOwner::receive(Message & message) {
 
 
 			// tell Mother that the matrix is ready now.
-
-			Message coolMessage;
-			coolMessage.setTag(MATRIX_IS_READY);
-			send(m_mother, coolMessage);
+                        Message coolMessage;
+                        coolMessage.setTag(GRAM_MATRIX_IS_READY);
+                        send(m_mother, coolMessage);
 
 
 			// clear matrices
@@ -275,3 +267,4 @@ void MatrixOwner::printLocalGramMatrixWithHash(ostream & stream, map<SampleIdent
 		stream << endl;
 	}
 }
+

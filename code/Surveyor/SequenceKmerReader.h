@@ -1,6 +1,6 @@
 /*
-    Copyright 2013 Maxime Déraspe
-    Copyright 2013 Université Laval
+    Copyright 2014 Maxime Déraspe
+    Copyright 2014 Université Laval
 
     This file is part of Ray Surveyor.
 
@@ -31,26 +31,27 @@ class SequenceKmerReader {
 
 private:
 
-        int m_kmerSize;
-        string m_tmpSequence;
-        bool m_hasKmerLeft;
+	int m_kmerSize;
+	string m_tmpSequence;
+	bool m_hasKmerLeft;
+	bool m_emptyBuffer;
 
-        // fast IO using a wrapper.
-        FileReader m_reader;
-        char m_buffer[1024];
-        bool m_bad;
-        int m_loaded;
+	FileReader m_reader;
+	char m_buffer[1024];
+	bool m_bad;
+	int m_loaded;
 
-        void convertSequenceToUpperCase(string & sequence);
+	void convertSequenceToUpperCase(string & sequence);
+	void addBufferToTmpSequence();
 
 public:
 
-        SequenceKmerReader();
-        ~SequenceKmerReader();
+	SequenceKmerReader();
+	~SequenceKmerReader();
 
-        void openFile(string & fileName, int kmerSize);
-        bool hasAnotherKmer();
-        void fetchNextKmer(string & kmer);
+	void openFile(string & fileName, int kmerSize);
+	bool hasAnotherKmer();
+	void fetchNextKmer(string & kmer);
 
 };
 

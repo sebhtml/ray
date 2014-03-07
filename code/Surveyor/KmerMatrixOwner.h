@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert
+    Copyright 2013 Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
@@ -18,8 +18,8 @@
     along with Ray Surveyor.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MatrixOwnerHeader
-#define MatrixOwnerHeader
+#ifndef KmerMatrixOwnerHeader
+#define KmerMatrixOwnerHeader
 
 #include <code/Mock/constants.h>
 #include <code/Mock/Parameters.h>
@@ -31,43 +31,40 @@
 #include <sstream>
 using namespace std;
 
-class MatrixOwner : public Actor {
+class KmerMatrixOwner : public Actor {
 private:
-
-	int m_receivedPayloads;
 
 	Parameters * m_parameters;
 	vector<string> * m_sampleNames;
 
-	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_localGramMatrix;
-	map<SampleIdentifier, map<SampleIdentifier, LargeCount> > m_kernelDistanceMatrix;
-
 	int m_mother;
 	int m_completedStoreActors;
 
-	void printLocalGramMatrix(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix);
-	void printLocalGramMatrixWithHash(ostream & stream, map<SampleIdentifier, map<SampleIdentifier, LargeCount> > & matrix);
+	ostringstream m_kmerMatrix;
+	ofstream m_kmerMatrixFile;
 
-	void computeDistanceMatrix();
+	void dumpKmerMatrixBuffer(Kmer & kmer, vector<bool> & samplesWithKmer, bool force);
+	void createKmersMatrixOutputFile();
+
+	void printMatrixHeader();
 
 public:
 
-	MatrixOwner();
-	~MatrixOwner();
+	KmerMatrixOwner();
+	~KmerMatrixOwner();
 
 	void receive(Message & message);
 
 	enum {
-		FIRST_TAG = 10300,
+		FIRST_TAG = 10350,
 		GREETINGS,
-		PUSH_PAYLOAD,
-		PUSH_PAYLOAD_OK,
-		PUSH_PAYLOAD_END,
-		GRAM_MATRIX_IS_READY,
+		PUSH_KMER_SAMPLES,
+		PUSH_KMER_SAMPLES_OK,
+		PUSH_KMER_SAMPLES_END,
+		KMER_MATRIX_IS_READY,
 		LAST_TAG
 	};
 
 };
 
 #endif
-

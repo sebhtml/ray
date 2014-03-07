@@ -5,6 +5,7 @@ Surveyor-y += code/Surveyor/GenomeAssemblyReader.o
 Surveyor-y += code/Surveyor/CoalescenceManager.o
 Surveyor-y += code/Surveyor/ExperimentVertex.o
 Surveyor-y += code/Surveyor/MatrixOwner.o
+Surveyor-y += code/Surveyor/KmerMatrixOwner.o
 Surveyor-y += code/Surveyor/SequenceKmerReader.o
 
 obj-y += $(Surveyor-y)

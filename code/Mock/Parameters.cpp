@@ -1617,7 +1617,8 @@ void Parameters::showUsage(){
 	showOption("-read-sample-assembly SampleName SampleAssemblyFile", "Reads an assembly (a fasta file)");
 	cout<<endl;
 
-
+	showOption("-run-kmer-matrix", "Print out a 0|1 kmer matrix. Rows being all the kmers and columns being all the samples.");
+	cout<<endl;
 
 
 	cout<<"  Assembly options (defaults work well)"<<endl;
