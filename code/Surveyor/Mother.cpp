@@ -428,7 +428,7 @@ void Mother::startSurveyor() {
 
 		string & element = commands->at(i);
 
-		if (element != "-run-kmer-matrix") {
+		if (element != "-write-kmer-matrix") {
 			// DONE: Check bounds for file names
 
 			map<string,int> fastTable;
