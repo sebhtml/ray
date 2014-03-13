@@ -53,8 +53,8 @@ void GenomeAssemblyReader::receive(Message & message) {
 	int type = message.getTag();
 
 	/*
-	printName();
-	cout << "received tag " << type << endl;
+	  printName();
+	  cout << "received tag " << type << endl;
 	*/
 
 	if(type == START_PARTY) {
@@ -64,8 +64,8 @@ void GenomeAssemblyReader::receive(Message & message) {
 	} else if(type == CoalescenceManager::PAYLOAD_RESPONSE) {
 
 		/*
-		printName();
-		cout << " DEBUG readLine because PAYLOAD_RESPONSE" << endl;
+		  printName();
+		  cout << " DEBUG readLine because PAYLOAD_RESPONSE" << endl;
 		*/
 		// read the next line now !
 		readKmer();
@@ -110,25 +110,36 @@ void GenomeAssemblyReader::readKmer() {
 
 	if(m_kmerReader.hasAnotherKmer()){
 
-	m_kmerReader.fetchNextKmer(sequence);
+		m_kmerReader.fetchNextKmer(sequence);
 
-	manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
+		// A kmer won't be valid only if there's a trailing
+		// empty line in the fasta file in entry
+		// Ideally this would be FIX in SequenceKmerReader.cpp
+		if (sequence != "") {
+			manageCommunicationForNewKmer(sequence, coverage, badParent , badChild);
+		} else {
+			killActor();
+		}
+
 #if 0
-	cout << "DEBUG: Sending a Kmer to storekeeper" << endl;
+		cout << "DEBUG: Sending a Kmer to storekeeper" << endl;
 #endif
-	}else{
-
-		Message finishedMessage;
-		finishedMessage.setTag(DONE);
-
-		send(m_parent, finishedMessage);
-
-		die();
+	} else {
+		killActor();
 	}
-
 
 }
 
+
+
+void GenomeAssemblyReader::killActor() {
+	Message finishedMessage;
+	finishedMessage.setTag(DONE);
+
+	send(m_parent, finishedMessage);
+
+	die();
+}
 
 
 void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parents, string & children){
@@ -137,14 +148,14 @@ void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, Cove
 	// if this is the first one, send the k-mer length too
 	if(m_loaded == 0) {
 
-	Message aMessage;
-	aMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
+		Message aMessage;
+		aMessage.setTag(CoalescenceManager::SET_KMER_LENGTH);
 
-	int length = sequence.length();
-	aMessage.setBuffer(&length);
-	aMessage.setNumberOfBytes(sizeof(length));
+		int length = sequence.length();
+		aMessage.setBuffer(&length);
+		aMessage.setNumberOfBytes(sizeof(length));
 
-	send(m_aggregator, aMessage);
+		send(m_aggregator, aMessage);
 	}
 
 	Kmer kmer;
@@ -160,31 +171,31 @@ void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, Cove
 	// add parents
 	for(int i = 0 ; i < (int)parents.length() ; ++i) {
 
-	string parent = sequence;
-	for(int j = 0 ; j < (int) parent.length()-1 ; ++j) {
-		parent[j + 1] = parent[j];
-	}
-	parent[0] = parents[i];
+		string parent = sequence;
+		for(int j = 0 ; j < (int) parent.length()-1 ; ++j) {
+			parent[j + 1] = parent[j];
+		}
+		parent[0] = parents[i];
 
-	Kmer parentKmer;
-	parentKmer.loadFromTextRepresentation(parent.c_str());
+		Kmer parentKmer;
+		parentKmer.loadFromTextRepresentation(parent.c_str());
 
-	vertex.addIngoingEdge(&kmer, &parentKmer, sequence.length());
+		vertex.addIngoingEdge(&kmer, &parentKmer, sequence.length());
 	}
 
 	// add children
 	for(int i = 0 ; i < (int)children.length() ; ++i) {
 
-	string child = sequence;
-	for(int j = 0 ; j < (int) child.length()-1 ; ++j) {
-		child[j] = child[j + 1];
-	}
-	child[child.length() - 1] = children[i];
+		string child = sequence;
+		for(int j = 0 ; j < (int) child.length()-1 ; ++j) {
+			child[j] = child[j + 1];
+		}
+		child[child.length() - 1] = children[i];
 
-	Kmer childKmer;
-	childKmer.loadFromTextRepresentation(child.c_str());
+		Kmer childKmer;
+		childKmer.loadFromTextRepresentation(child.c_str());
 
-	vertex.addOutgoingEdge(&kmer, &childKmer, sequence.length());
+		vertex.addOutgoingEdge(&kmer, &childKmer, sequence.length());
 	}
 
 	char messageBuffer[100];
@@ -218,8 +229,8 @@ void GenomeAssemblyReader::manageCommunicationForNewKmer(string & sequence, Cove
 
 	int period = 1000000;
 	if(m_loaded % period == 0) {
-	printName();
-	cout << " loaded " << m_loaded << " sequences" << endl;
+		printName();
+		cout << " loaded " << m_loaded << " sequences" << endl;
 
 	}
 	m_loaded ++;
