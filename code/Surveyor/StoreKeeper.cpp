@@ -648,13 +648,13 @@ void StoreKeeper::sendKmersSamples() {
 		set<PhysicalKmerColor> * samples = m_colorSet.getPhysicalColors(currentVirtualColor);
 
 		for(set<PhysicalKmerColor>:: iterator sampleIterator = samples->begin();
-		    sampleIterator != samples->end(); ++sampleIterator) {
+			sampleIterator != samples->end(); ++sampleIterator) {
 			PhysicalKmerColor value = *sampleIterator;
 			samplesVector[value] = true;
 		}
 
 		for (std::vector<bool>::iterator it = samplesVector.begin();
-		     it != samplesVector.end(); ++it) {
+			it != samplesVector.end(); ++it) {
 			buffer[bytes] = *it;
 			bytes++;
 		}
