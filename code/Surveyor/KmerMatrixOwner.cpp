@@ -155,10 +155,12 @@ void KmerMatrixOwner::createKmersMatrixOutputFile() {
 void KmerMatrixOwner::printMatrixHeader() {
 	ostringstream header;
 	header << "kmers";
+
 	for(vector<string>::iterator sample = m_sampleNames->begin();
-	    sample != m_sampleNames->end(); ++sample) {
+		sample != m_sampleNames->end(); ++sample) {
 		header << "\t" << *sample;
 	}
+
 	header << endl;
 	flushFileOperationBuffer(true, &header, &m_kmerMatrixFile, CONFIG_FILE_IO_BUFFER_SIZE);
 }
