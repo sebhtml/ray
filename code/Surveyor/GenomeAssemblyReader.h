@@ -59,6 +59,8 @@ private:
 	void startParty(Message & message);
 
 	void manageCommunicationForNewKmer(string & sequence, CoverageDepth & coverage, string & parent, string & child);
+	void killActor();
+
 
 	int m_kmerSize;
 	SequenceKmerReader m_kmerReader;

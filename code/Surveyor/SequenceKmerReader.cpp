@@ -69,18 +69,20 @@ void SequenceKmerReader::fetchNextKmer(string & kmer){
 	while(m_tmpSequence.length() < (unsigned) m_kmerSize && !m_reader.eof()){
 		m_reader.getline(m_buffer, 1024);
 		if (m_buffer[0] != '>'){
-
 			if(m_buffer[strlen(m_buffer)-1] == '\n'){
 				m_buffer[strlen(m_buffer)-1] = '\0';
 			}
 			addBufferToTmpSequence();
+		} else {
+			m_buffer[0] = '\0';
+			m_tmpSequence.clear();
 		}
 	}
 
 	if(m_tmpSequence.length() >= (unsigned) m_kmerSize){
 		kmer = m_tmpSequence.substr(0,m_kmerSize);
 		convertSequenceToUpperCase(kmer);
-		m_tmpSequence.erase(0,1);
+		m_tmpSequence.erase(m_tmpSequence.begin(),m_tmpSequence.begin()+1);
 	}
 
 }
@@ -93,22 +95,29 @@ void SequenceKmerReader::addBufferToTmpSequence() {
 	int i = 0;
 
 	while (m_buffer[i] != '\0'  && untilEndOfBuffer == true){
+
 		if(m_buffer[i] == 'N' || m_buffer[i] == 'n' ){
+
 			if(m_tmpSequence.length() < (unsigned) m_kmerSize){
 				m_tmpSequence.clear();
+
 				if (m_reader.eof() &&
 				    (strlen(m_buffer) - i + m_tmpSequence.length()) < (unsigned) m_kmerSize){
 					untilEndOfBuffer = false;
 				}
+
 			}
 			else {
-				m_buffer[0] = m_buffer[i];
+				memmove(m_buffer, m_buffer + i, (BUFFER_SIZE - 2));
 				untilEndOfBuffer = false;
 			}
+
 		} else {
 			m_tmpSequence += m_buffer[i];
 		}
+
 		++i;
+
 	}
 
 	if (untilEndOfBuffer) {

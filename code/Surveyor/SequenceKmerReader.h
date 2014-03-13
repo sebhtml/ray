@@ -26,6 +26,8 @@ using namespace std;
 
 #include <RayPlatform/files/FileReader.h>
 
+#define BUFFER_SIZE 1024
+
 class SequenceKmerReader {
 
 
@@ -37,7 +39,7 @@ private:
 	bool m_emptyBuffer;
 
 	FileReader m_reader;
-	char m_buffer[1024];
+	char m_buffer[BUFFER_SIZE];
 	bool m_bad;
 	int m_loaded;
 
