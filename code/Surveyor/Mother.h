@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Sébastien Boisvert, Maxime Déraspe
+    Copyright 2013, 2014 Sébastien Boisvert, Maxime Déraspe
     Copyright 2013 Université Laval
     Copyright 2013 Centre Hospitalier Universitaire de Québec
 
