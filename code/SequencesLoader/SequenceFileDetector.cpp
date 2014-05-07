@@ -96,6 +96,9 @@ string SequenceFileDetector::replaceString(const string & templateString, const 
 	return result;
 }
 
+/**
+ * This method matches pair of files according to their names.
+ */
 bool SequenceFileDetector::match(map<string, int> & fileIndex,
 	vector<string> & files,
 	string & sequence1, string & sequence2, bool leftSequenceIs1,
