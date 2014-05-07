@@ -41,7 +41,7 @@ SequenceFileDetector::SequenceFileDetector() {
 // TODO: this code does not detect loops...
 void SequenceFileDetector::gatherAllFiles(string & root, vector<string> & rawFiles) {
 
-#if 0
+#ifdef DEBUG_SMART_LOADER
 	cout << "DEBUG SequenceFileDetector::gatherAllFiles ";
 	cout << root << endl;
 #endif
@@ -96,6 +96,40 @@ string SequenceFileDetector::replaceString(const string & templateString, const 
 	return result;
 }
 
+bool SequenceFileDetector::match(map<string, int> & fileIndex,
+	vector<string> & files,
+	const char * sequence1, const char * sequence2,
+	bool enableSmartMatchingMode,
+	set<int> & consumedFiles, int fileNumber) {
+
+	int i = fileNumber;
+
+	string & file1 = files[i];
+	string newFile = replaceString(file1, "_R1_", "_R2_");
+
+	if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+			&& newFile != file1) {
+
+		int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+		assert(i != index2);
+#endif /// CONFIG_ASSERT
+
+		if(consumedFiles.count(index2) == 0) {
+			m_leftFiles.push_back(file1);
+			m_rightFiles.push_back(newFile);
+			consumedFiles.insert(i);
+			consumedFiles.insert(index2);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 void SequenceFileDetector::detectSequenceFiles(string & directory) {
 
 	// read files
@@ -121,6 +155,10 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 	for(int i = 0 ; i < (int) files.size() ; ++i) {
 
 		string & fileName = files[i];
+
+#ifdef DEBUG_SMART_LOADER
+		cout << "DEBUG fileIndex " << i << " " << fileName << endl;
+#endif
 
 		fileIndex[fileName] = i;
 	}
@@ -152,6 +190,12 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		// _1.fa + _2.fa
 		// _2.fa + _1.fa
 
+
+/*
+		if(match(fileIndex, files, "_R1_", "_R2_", enableSmartMatchingMode, consumedFiles, i))
+			continue;
+*/
+
 		// first, replace the _R1_ with _R2_
 		string & file1 = files[i];
 		string newFile = replaceString(file1, "_R1_", "_R2_");
@@ -174,6 +218,31 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 				continue;
 			}
 		}
+
+		// try to replace the _R2. with _R1.
+		file1 = files[i];
+		newFile = replaceString(file1, "_R2.", "_R1.");
+
+		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
+				&& newFile != file1) {
+
+			int index2 = fileIndex[newFile];
+
+#ifdef CONFIG_ASSERT
+			assert(i != index2);
+#endif // CONFIG_ASSERT
+
+			if(consumedFiles.count(index2) == 0) {
+				m_leftFiles.push_back(newFile);
+				m_rightFiles.push_back(file1);
+				consumedFiles.insert(i);
+				consumedFiles.insert(index2);
+
+				continue;
+			}
+		}
+
+
 
 		// try to replace the _R2_ with _R1_
 		file1 = files[i];

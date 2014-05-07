@@ -23,6 +23,11 @@
 
 #include <RayPlatform/core/OperatingSystem.h>
 
+#include <string>
+#include <map>
+#include <set>
+using namespace std;
+
 /**
  *
  * This class receives a directory
@@ -42,6 +47,12 @@ class SequenceFileDetector {
 
 	string replaceString(const string & templateString, const string & oldString,
 			const string & newString);
+
+	bool match(map<string, int> & fileIndex,
+		vector<string> & files,
+		const char * sequence1, const char * sequence2,
+		bool enableSmartMatchingMode,
+		set<int> & consumedFiles, int fileNumber);
 
 public:
 
