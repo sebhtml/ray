@@ -50,7 +50,7 @@ class SequenceFileDetector {
 
 	bool match(map<string, int> & fileIndex,
 		vector<string> & files,
-		const char * sequence1, const char * sequence2,
+		string & sequence1, string & sequence2, bool leftSequenceIs1,
 		bool enableSmartMatchingMode,
 		set<int> & consumedFiles, int fileNumber);
 

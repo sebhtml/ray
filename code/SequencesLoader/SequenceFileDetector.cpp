@@ -98,14 +98,14 @@ string SequenceFileDetector::replaceString(const string & templateString, const 
 
 bool SequenceFileDetector::match(map<string, int> & fileIndex,
 	vector<string> & files,
-	const char * sequence1, const char * sequence2,
+	string & sequence1, string & sequence2, bool leftSequenceIs1,
 	bool enableSmartMatchingMode,
 	set<int> & consumedFiles, int fileNumber) {
 
 	int i = fileNumber;
 
 	string & file1 = files[i];
-	string newFile = replaceString(file1, "_R1_", "_R2_");
+	string newFile = replaceString(file1, sequence1, sequence2);
 
 	if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
 			&& newFile != file1) {
@@ -117,8 +117,16 @@ bool SequenceFileDetector::match(map<string, int> & fileIndex,
 #endif /// CONFIG_ASSERT
 
 		if(consumedFiles.count(index2) == 0) {
-			m_leftFiles.push_back(file1);
-			m_rightFiles.push_back(newFile);
+
+			if(leftSequenceIs1) {
+				m_leftFiles.push_back(file1);
+				m_rightFiles.push_back(newFile);
+			} else {
+				m_leftFiles.push_back(newFile);
+				m_rightFiles.push_back(file1);
+
+			}
+
 			consumedFiles.insert(i);
 			consumedFiles.insert(index2);
 
@@ -190,129 +198,42 @@ void SequenceFileDetector::detectSequenceFiles(string & directory) {
 		// _1.fa + _2.fa
 		// _2.fa + _1.fa
 
+		vector<string> tokens;
 
-/*
-		if(match(fileIndex, files, "_R1_", "_R2_", enableSmartMatchingMode, consumedFiles, i))
+		tokens.push_back("_R1_");
+		tokens.push_back("_R2_");
+
+		tokens.push_back("_R1.");
+		tokens.push_back("_R2.");
+
+		tokens.push_back("_1.f");
+		tokens.push_back("_2.f");
+
+		bool foundMatch = false;
+
+		for(int tokenIndex = 0 ; tokenIndex < (int)tokens.size() ; tokenIndex += 2) {
+
+			string & leftToken = tokens[tokenIndex];
+			string & rightToken = tokens[tokenIndex + 1];
+
+			if(match(fileIndex, files, leftToken, rightToken, true,
+				enableSmartMatchingMode, consumedFiles, i)){
+
+				foundMatch = true;
+				break;
+			}
+
+			if(match(fileIndex, files, rightToken, leftToken, false,
+				enableSmartMatchingMode, consumedFiles, i)){
+
+				foundMatch = true;
+				break;
+
+			}
+		}
+
+		if(foundMatch)
 			continue;
-*/
-
-		// first, replace the _R1_ with _R2_
-		string & file1 = files[i];
-		string newFile = replaceString(file1, "_R1_", "_R2_");
-
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
-				&& newFile != file1) {
-
-			int index2 = fileIndex[newFile];
-
-#ifdef CONFIG_ASSERT
-			assert(i != index2);
-#endif // CONFIG_ASSERT
-
-			if(consumedFiles.count(index2) == 0) {
-				m_leftFiles.push_back(file1);
-				m_rightFiles.push_back(newFile);
-				consumedFiles.insert(i);
-				consumedFiles.insert(index2);
-
-				continue;
-			}
-		}
-
-		// try to replace the _R2. with _R1.
-		file1 = files[i];
-		newFile = replaceString(file1, "_R2.", "_R1.");
-
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
-				&& newFile != file1) {
-
-			int index2 = fileIndex[newFile];
-
-#ifdef CONFIG_ASSERT
-			assert(i != index2);
-#endif // CONFIG_ASSERT
-
-			if(consumedFiles.count(index2) == 0) {
-				m_leftFiles.push_back(newFile);
-				m_rightFiles.push_back(file1);
-				consumedFiles.insert(i);
-				consumedFiles.insert(index2);
-
-				continue;
-			}
-		}
-
-
-
-		// try to replace the _R2_ with _R1_
-		file1 = files[i];
-		newFile = replaceString(file1, "_R2_", "_R1_");
-
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
-				&& newFile != file1) {
-
-			int index2 = fileIndex[newFile];
-
-#ifdef CONFIG_ASSERT
-			assert(i != index2);
-#endif // CONFIG_ASSERT
-
-			if(consumedFiles.count(index2) == 0) {
-				m_leftFiles.push_back(newFile);
-				m_rightFiles.push_back(file1);
-				consumedFiles.insert(i);
-				consumedFiles.insert(index2);
-
-				continue;
-			}
-		}
-
-		// replace the _1.fa with _2.fa
-		file1 = files[i];
-		newFile = replaceString(file1, "_1.f", "_2.f");
-
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
-				&& newFile != file1) {
-
-			int index2 = fileIndex[newFile];
-
-#ifdef CONFIG_ASSERT
-			assert(i != index2);
-#endif // CONFIG_ASSERT
-
-			if(consumedFiles.count(index2) == 0) {
-				m_leftFiles.push_back(file1);
-				m_rightFiles.push_back(newFile);
-				consumedFiles.insert(i);
-				consumedFiles.insert(index2);
-
-				continue;
-			}
-		}
-
-		// try to replace the _2.fa with _1.fa
-		file1 = files[i];
-		newFile = replaceString(file1, "_2.f", "_1.f");
-
-		if(enableSmartMatchingMode && fileIndex.count(newFile) > 0
-				&& newFile != file1) {
-
-			int index2 = fileIndex[newFile];
-
-#ifdef CONFIG_ASSERT
-			assert(i != index2);
-#endif // CONFIG_ASSERT
-
-			if(consumedFiles.count(index2) == 0) {
-
-				m_leftFiles.push_back(newFile);
-				m_rightFiles.push_back(file1);
-				consumedFiles.insert(i);
-				consumedFiles.insert(index2);
-
-				continue;
-			}
-		}
 
 		// try to do it by brute force !
 
