@@ -218,7 +218,7 @@ bool GeneOntology::fetchArguments(){
 		cout<<m_annotationFileName<<endl;
 
 		ifstream test1(m_ontologyFileName.c_str());
-		bool test1Result=test1;
+		bool test1Result=test1.is_open();
 		test1.close();
 
 		if(!test1Result){
@@ -227,7 +227,7 @@ bool GeneOntology::fetchArguments(){
 		}
 
 		ifstream test2(m_annotationFileName.c_str());
-		bool test2Result=test2;
+		bool test2Result=test2.is_open();
 		test2.close();
 
 		if(!test2Result){
